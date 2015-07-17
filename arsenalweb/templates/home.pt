@@ -1,0 +1,159 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<div metal:use-macro="layout">
+    <div metal:fill-slot="content">
+
+<script src="/static/js/Chart.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+
+    $('#srf_btn').click(function() {
+      if($(this).css("margin-left") == "0px")
+      {
+          $('.srf').animate({"margin-left": '-=200'},600);
+          $('#main_c').animate({"margin-left": '-=200'},600);
+          $('#srf_btn').animate({"margin-left": '-=200'},600);
+          $('#srf_btn').switchClass( "srf_btn_in", "srf_btn_out");
+      }
+      else
+      {
+          $('.srf').animate({"margin-left": '+=200'},600);
+          $('#main_c').animate({"margin-left": '+=200'},600);
+          $('#srf_btn').animate({"margin-left": '+=200'},600);
+          $('#srf_btn').switchClass( "srf_btn_out", "srf_btn_in");
+      }
+    });
+
+  });
+</script>
+
+
+<div id="main_c">
+  <div id="panel_c">
+        <div class="content_c">
+          <div class="content">
+            <div class="centered">
+
+        <!-- line chart canvas element -->
+        <div class="dash_chart">
+           <div class="chart_header"><h3>Nodes by status</h3></div>
+           <canvas id="nodes_by_status" width="450" height="275"></canvas>
+           <div id="nodes_by_status_l" class="chart_legend"></div>
+        </div>
+        <!-- pie chart canvas element -->
+        <div class="dash_chart">
+           <div id="operating_systems_h" class="chart_header"><h3>Nodes by operating system</h3></div>
+           <canvas id="operating_systems" width="450" height="275"></canvas>
+           <div id="operating_systems_l" class="chart_legend"></div>
+        </div>
+        <script>
+      $(document).ready(function() {
+
+            // line chart data
+            var nodesByStatusData = {
+                labels : ["December","January","February","March","April","May"],
+                datasets : [
+                {
+                    label: "setup",
+                    strokeColor : "rgb(72,61,139)",
+                    fillColor : "rgba(72,61,139,0.5)",
+                    pointColor : "rgb(72,61,139)",
+                    pointStrokeColor : "rgb(72,61,139)",
+                    data : [0,5,9,12,9,16]
+                },
+                {
+                    label: "initializing",
+                    strokeColor : "rgb(128,0,128)",
+                    fillColor : "rgba(128,0,128,0.5)",
+                    pointColor : "rgb(128,0,128)",
+                    pointStrokeColor : "rgb(128,0,128)",
+                    data : [3,5,1,3,4,2]
+                },
+                {
+                    label: "inservice",
+                    strokeColor : "rgb(70,130,180)",
+                    fillColor : "rgba(70,130,180,0.5)",
+                    pointColor : "rgb(70,130,180)",
+                    pointStrokeColor : "rgb(70,130,180)",
+                    data : [3,56,79,121,174,220]
+                },
+                {
+                    label: "decom",
+                    strokeColor : "rgb(176,196,222)",
+                    fillColor : "rgba(176,196,222,0.5)",
+                    pointColor : "rgb(176,196,222)",
+                    pointStrokeColor : "rgb(176,196,222)",
+                    data : [0,5,13,19,27,44]
+                }
+
+            ]
+            }
+            // get line chart canvas
+        var nodes_by_status = new Chart(document.getElementById("nodes_by_status").getContext("2d")).Line(nodesByStatusData);
+        document.getElementById("nodes_by_status_l").innerHTML = nodes_by_status.generateLegend();
+
+            // pie chart data
+            var osData = [
+                {
+                    value: 1118,
+                    color:"rgb(72,61,139)",
+                    highlight: "rgba(72,61,139,0.8)",
+                    label: "CentOS (Final) 6.2 x86_64"
+                },
+                {
+                    value : 327,
+                    color : "rgb(128,0,128)",
+                    highlight: "rgba(128,0,128,0.8)",
+                    label: "CentOS (Final) 5.4 x86_64"
+                },
+                {
+                    value : 91,
+                    color : "rgb(70,130,180)",
+                    highlight: "rgba(70,130,180,0.8)",
+                    label: "XenServer (xenenterprise) 5.5.0-15119p i386"
+                },
+                {
+                    value : 68,
+                    color : "rgb(176,196,222)",
+                    highlight: "rgba(176,196,222,0.8)",
+                    label: "CentOS (Final) 5.7 x86_64"
+                }
+            ];
+            // pie chart options
+            var pieOptions = {
+                 segmentShowStroke : false,
+                 animateScale : true,
+                 legendTemplate : '<ul><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>'
+            }
+
+        var operating_systems = new Chart(document.getElementById("operating_systems").getContext("2d")).Doughnut(osData, pieOptions);
+        document.getElementById("operating_systems_l").innerHTML = operating_systems.generateLegend();
+
+      });
+
+        </script>
+
+
+
+            </div> <!-- centered -->
+          </div> <!-- content -->
+        </div> <!-- content_c -->
+  
+  </div> <!-- panel_c -->
+</div> <!-- main_c -->
+
+  </div> <!-- metal -->
+</div> <!-- metal -->

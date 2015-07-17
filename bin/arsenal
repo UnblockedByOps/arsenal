@@ -1,0 +1,422 @@
+#!/usr/bin/python
+#
+#  Copyright 2015 CityGrid Media, LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+import os
+import sys
+import subprocess
+import re
+import logging
+import optparse
+import ConfigParser
+import json
+import datetime
+import getpass
+import ast
+import requests
+
+log = logging.getLogger(__name__)
+# requests is chatty
+logging.getLogger("requests").setLevel(logging.WARNING)
+# FIXME: ssl issues
+requests.packages.urllib3.disable_warnings()
+session = requests.session()
+
+class Node(object):
+    def __init__(self,
+                 unique_id = None,
+                 name = None,
+                 puppet_version = None,
+                 facter_version = None,
+                 uptime = None,
+                 ec2 = None,
+                 network = None):
+        self.unique_id = unique_id
+        self.name = name
+        self.puppet_version = puppet_version
+        self.facter_version = facter_version
+        self.hardware_profile = HardwareProfile()
+        self.operating_system = network
+        self.uptime = uptime
+        self.ec2 = ec2
+        self.network = network
+ 
+
+class Ec2(object):
+    def __init__(self, 
+                 ec2_instance_id = None,
+                 ec2_ami_id = None,
+                 ec2_hostname = None,
+                 ec2_public_hostname = None,
+                 ec2_instance_type = None,
+                 ec2_security_groups = None,
+                 ec2_placement_availability_zone = None):
+        self.ec2_instance_id = ec2_instance_id
+        self.ec2_ami_id = ec2_ami_id
+        self.ec2_hostname = ec2_hostname
+        self.ec2_public_hostname = ec2_public_hostname
+        self.ec2_instance_type = ec2_instance_type
+        self.ec2_security_groups = ec2_security_groups
+        self.ec2_placement_availability_zone = ec2_placement_availability_zone
+ 
+
+class HardwareProfile(object):
+    def __init__(self,
+                 manufacturer = 'Unknown',
+                 model = 'Unknown'):
+        self.manufacturer = manufacturer
+        self.model = model
+
+
+class Network(object):
+    def __init__(self,
+                 interface = None,
+                 mac_addr = None):
+        self.interface = interface
+        self.mac_addr = mac_addr
+
+
+def facter():
+    # need this for custom facts - can add additional paths if needed
+    os.environ["FACTERLIB"] = "/var/lib/puppet/lib/facter"
+    p = subprocess.Popen( ['facter'], stdout=subprocess.PIPE )
+    p.wait()
+    lines = p.stdout.readlines()
+    lines = dict(k.split(' => ') for k in
+                   [s.strip() for s in lines if ' => ' in s])
+    
+    return lines
+
+
+def api_submit(request, cookies=None, headers=None, data=None, method='get'):
+
+    api_url = (api_protocol
+               + '://'
+               + api_host
+               + request)
+
+    if method == 'put':
+        log.debug('Submitting data to API: %s' % api_url)
+    
+        r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
+    
+        # re-auth if our cookie is invalid/expired
+        if r.status_code == requests.codes.unauthorized:
+            cookies = authenticate()
+            r = session.put(api_url, verify=verify_ssl, cookies=cookies)
+    
+        if r.status_code == requests.codes.ok:
+            print "Command successful."
+        elif r.status_code == requests.codes.forbidden:
+            print "Authorization failed."
+        else:
+            print "Command failed."
+    else:
+        r = session.get(api_url, verify=verify_ssl)
+        return r.json()
+    
+def read_cookie():
+    log.debug('Checking for cookie file: %s' % (cookie_file))
+    if os.path.isfile(cookie_file):
+        log.debug('Cookie file found: %s' % (cookie_file))
+        with open(cookie_file, 'r') as contents:
+            cookies = contents.read()
+        return cookies
+    else:
+        log.debug('Cookie file does not exist: %s' % (cookie_file))
+        return None
+
+
+def write_cookie(cookies):
+    log.info('Writing cookie file: %s' % (cookie_file))
+
+    try:
+        cd = dict(cookies)
+        with open(cookie_file, "w") as cf:
+            cf.write(str(cd))
+        os.chmod(cookie_file, 0600)
+    except Exception, e:
+        logging.error('Unable to write cookie: %s' % cookie_file)
+        logging.error('Exception: %s' % e)
+
+    return True
+
+
+def authenticate():
+    log.info('Authenticating login: %s' % (login))
+    if login == 'kaboom':
+        password = kaboom_password
+    else:
+        password = getpass.getpass('password: ')
+
+    try:
+        payload = {'form.submitted': True,
+                   'api.client': True,
+                   'return_url': '/api',
+                   'login': login,
+                   'password': password
+        }
+        r = session.post(api_protocol
+                         + '://'
+                         + api_host
+                         + '/login', data=payload)
+
+        if r.status_code == requests.codes.ok:
+
+            cookies = session.cookies.get_dict()
+            log.info('Cookies are: %s' %(cookies))
+            try:
+                write_cookie(cookies)
+                return cookies
+            except Exception, e:
+                logging.error('Exception: %s' % e)
+
+        else:
+            log.error('Authentication failed')
+            sys.exit(1)
+
+    except Exception, e:
+        logging.error('Exception: %s' % e)
+        log.error('Authentication failed')
+        sys.exit(1)
+
+def api_put(url_string, headers=None, data=None):
+    log.debug('Updating api...')
+
+    try:
+        cookies = read_cookie()
+        if cookies:
+            api_submit(url_string, ast.literal_eval(cookies), headers, data, method='put')
+        else:
+            cookies = authenticate()
+            api_submit(url_string, cookies, headers, data, method='put')
+
+    except Exception, e:
+        logging.error('Failed: %s' % e)
+
+def api_get(url_string):
+    response = api_submit(url_string)
+    print response
+
+def get_unique_id(**facts):
+    log.info('determining unique_id...')
+    if facts['kernel'] == 'Linux' or facts['kernel'] == 'FreeBSD':
+        if 'ec2_instance_id' in facts:
+            unique_id = facts['ec2_instance_id']
+            log.info('unique_id is from ec2_instance_id: {0}'.format(unique_id))
+        elif os.path.isfile('/usr/sbin/dmidecode'):
+            unique_id = get_uuid()
+            if unique_id:
+                log.info('unique_id is from dmidecode: {0}'.format(unique_id))
+            else:
+                unique_id = facts['macaddress']
+                log.info('unique_id is from mac address: {0}'.format(unique_id))
+        else:
+            unique_id = facts['macaddress']
+            log.info('unique_id is from mac address: {0}'.format(unique_id))
+    else:
+        unique_id = facts['macaddress']
+        log.info('unique_id is from mac address: {0}'.format(unique_id))
+    return unique_id
+
+
+def get_uuid():
+    p = subprocess.Popen( ['/usr/sbin/dmidecode', '-s', 'system-uuid'], stdout=subprocess.PIPE )
+    p.wait()
+    uuid = p.stdout.readlines()
+    # FIXME: Need some validation here
+    return uuid
+
+
+def get_hardware_profile(facts):
+    log.info('Collecting hardware profile data.')
+    hardware_profile = HardwareProfile()
+    try:
+        hardware_profile.manufacturer = facts['manufacturer']
+        hardware_profile.model = facts['productname']
+        log.info('Hardware profile from dmidecode.')
+    except KeyError:
+        try:
+            xen_match = "xen"
+            if re.match(xen_match, facts['virtual']) and facts['is_virtual'] == 'true':
+                hardware_profile.manufacturer = 'Citrix'
+                hardware_profile.model = 'Xen Guest'
+                log.info('Hardware profile is virtual.')
+        except KeyError:
+            log.error('Unable to determine hardware profile.')
+    return hardware_profile
+
+
+def collect_data():
+    log.info('Collecting data for node.')
+    data = Node()
+    facts = facter()
+    unique_id = get_unique_id(**facts)
+    data.unique_id = unique_id
+
+    # EC2 facts
+    if 'ec2_instance_id' in facts:
+        ec2 = Ec2()
+        ec2.ec2_instance_id = facts['ec2_instance_id']
+        ec2.ec2_ami_id = facts['ec2_ami_id']
+        ec2.ec2_hostname = facts['ec2_hostname']
+        ec2.ec2_public_hostname = facts['ec2_public_hostname']
+        ec2.ec2_instance_type = facts['ec2_instance_type']
+        ec2.ec2_security_groups = facts['ec2_security_groups']
+        ec2.ec2_placement_availability_zone = facts['ec2_placement_availability_zone']
+        data.ec2 = ec2
+
+    # puppet & facter versions
+    if 'puppetversion' in facts:
+        data.puppet_version = facts['puppetversion'] 
+        data.facter_version = facts['facterversion']
+
+    # Report uptime
+    data.uptime = facts['uptime']
+
+    data.hardware_profile = get_hardware_profile(facts)
+
+#    data[operating_system[version_number]] = facts['lsbdistrelease']
+
+    #
+    # Gather software-related information
+    #
+    # Use our custom fact for aws. Required since hostname -f
+    # doens't work on ec2 hosts.
+    # FIXME: need regex match
+    if 'ct_fqdn' in facts and facts['ct_loc'] == 'aws1':
+       data.name = facts['ct_fqdn']
+    else:
+       data.name = facts['fqdn']
+
+    return data
+
+def main(argv):
+
+    parser = optparse.OptionParser(
+        description='Arsenal Operations Database Client.')
+    parser.add_option('--config',
+                      '-c',
+                      action='store',
+                      type='string',
+                      dest='config_file',
+                      help='Config file to use.',
+                      default='/app/arsenal/conf/arsenal.conf')
+    parser.add_option('--login',
+                      '-l',
+                      action='store',
+                      type='string',
+                      dest='login',
+                      help='Login name making the request',
+                      default=os.environ['USER'])
+    parser.add_option('--kookie',
+                      '-k',
+                      action='store',
+                      type='string',
+                      dest='cookie_file',
+                      help='Cookie file to use for auth',
+                      default=os.environ['HOME'] + '/.arsenal_cookie')
+    parser.add_option('--register',
+                      '-r',
+                      action='store_true',
+                      dest='register',
+                      help='Register the node with arsenal.',
+                      default=None)
+    parser.add_option('--secrets',
+                      '-s',
+                      action='store',
+                      type='string',
+                      dest='secrets_config_file',
+                      help='Secret config file to use.',
+                      default='/app/secrets/arsenal.conf')
+    parser.add_option('--verbose',
+                      '-v',
+                      action='store_true',
+                      dest='verbose',
+                      help='Log debug messages to the log file',
+                      default=None)
+
+    (options, args) = parser.parse_args()
+
+    # Get the config
+    config = ConfigParser.ConfigParser()
+    config.read(options.config_file)
+    secrets_config = ConfigParser.ConfigParser()
+    secrets_config.read(options.secrets_config_file)
+    # Globalizing these. Otherwise will be passing them all over the
+    # place for no reason.
+    global api_host
+    global api_protocol
+    global verify_ssl
+    global ca_bundle_file
+    global login
+    global cookie_file
+    global kaboom_password
+    api_host = config.get('main', 'api.host')
+    api_protocol = config.get('main', 'api.protocol')
+    ca_bundle_file = config.get('main', 'ca.bundle.file')
+    verify_ssl = bool(config.get('main', 'verify.ssl'))
+    log_file = config.get('main', 'log.file')
+    login = options.login
+    cookie_file = options.cookie_file
+    kaboom_password = secrets_config.get('main', 'kaboom.password')
+
+    if options.verbose:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    # Set up logging to file
+    logging.basicConfig(level=log_level,
+                        format='%(asctime)s %(levelname)-8s- %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        filename=log_file,
+                        filemode='a')
+
+    console = logging.StreamHandler()
+    console.setLevel(log_level)
+    formatter = logging.Formatter('%(levelname)-8s- %(message)s')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
+    if options.verbose:
+        log.info('Debug messages are being written to the log file : %s'
+                     % log_file)
+    log.info('Using server: %s'
+                 % api_host)
+
+    if login == 'kaboom':
+    
+        if not os.geteuid() == 0:
+            log.error('Login {0} must run as root.'.format(login))
+            sys.exit(1)
+
+        # FIXME: Will need os checking here
+        cookie_file = '/root/.arsenal_cookie'
+
+    # We know what we have to do, so let's go
+    if options.register:
+        data = collect_data()
+        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+        headers = {'content-type': 'application/json'}
+        data = json.dumps(data, default=lambda o: o.__dict__)
+        api_put('/api/nodes', headers, data)
+        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))
+
+#    api_put('/api/nodes?format=whizbang')
+#    api_get('/api/nodes')
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

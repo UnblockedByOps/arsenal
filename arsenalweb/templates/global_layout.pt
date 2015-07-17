@@ -1,0 +1,131 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang="en-US"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      metal:define-macro="layout">
+  <head profile="http://www.w3.org/2005/10/profile">
+    <link rel="icon"
+        type="image/png"
+        href="/static/img/favico.png?v=2">
+    <title>Arsenal: ${page_title}</title>
+    <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/jquery-2.1.3.min.js"></script>
+    <script src="/static/js/jquery-ui.min.js"></script>
+    <script src="/static/js/jquery.dragtable.js"></script>
+    <script src="/static/js/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+
+        $('#menu_btn_container').click(function(){
+          $('#menu').slideToggle();
+        });
+
+        $("#searchResultsTable").tablesorter({
+            sortList: [[0,0]]
+        });
+
+        $('#searchResultsTable').dragtable({
+            maxMovingRows:1,
+            dragHandle:'.drag-handle',
+            persistState: function(table) {
+              if (!window.sessionStorage) return;
+              var ss = window.sessionStorage;
+              table.el.find('th').each(function(i) {
+                if(this.id != '') {table.sortOrder[this.id]=i;}
+              });
+              ss.setItem('tableorder',JSON.stringify(table.sortOrder));
+            },
+            restoreState: eval('(' + window.sessionStorage.getItem('tableorder') + ')')
+        });
+      });
+    </script>
+  </head>
+  <body>
+
+    <div id='top'>
+
+      <div id='top_r1'>
+        <div id='logo_container'>
+          <a href='/'><img src="/static/img/shield-s.png"></a>
+        </div>
+
+<div id='search_c_c'>
+        <div id='search_c'>
+
+          <form action="/search">
+            <div id="select_c">
+              <select>
+                <option selected="selected">nodes</option>
+                <option>node groups</option>
+                <option>tags</option>
+              </select>
+            </div>
+            <input type="text" class="search_box" placeholder="Search...">
+            <div id="search_btn_c">
+              <input type="submit" class="search_btn" value="" alt="search">
+            </div>
+          </form>
+        </div>
+      </div>
+</div>
+
+      <div id='top_r2'>
+        <div id='main_menu'>
+          <ul class="main_menu">
+            <li class="main_menu">
+              <span id="main_menu_btn">Menu</span>
+              <ul class="main_menu">
+                <li>
+                  <div class="menu_group">
+                    <h3>Manage</h3>
+                    <a href="/nodes">nodes</a><br>
+                    <a href="/node_groups">node groups</a><br>
+                    <a href="/tags">tags</a><br>
+                  </div>
+                  <div class="menu_group">
+                    <h3>Meta</h3>
+                    <a href="/statuses">statuses</a><br>
+                    <a href="/hardware_profiles">hardware profiles</a><br>
+                    <a href="/operating_systems">operating systems</a><br>
+                  </div>
+                  <div class="menu_group">
+                    <h3>Admin</h3>
+                    <a href="/accounts">accounts</a><br>
+                    <a href="/account_groups">groups</a><br>
+                    <a href="/audits">audits</a>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="main">
+
+          <h1 id="page_title" tal:condition="page_title is not 'Login'">${page_title}</h1>
+
+          <div metal:define-slot="content"> </div>
+
+
+    </div>
+
+  </body>
+</html>

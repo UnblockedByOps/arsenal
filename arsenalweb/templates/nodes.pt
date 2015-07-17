@@ -1,0 +1,275 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<div metal:use-macro="layout">
+    <div metal:fill-slot="content">
+
+<script type="text/javascript">
+  $(document).ajaxStart(function() {
+    $("#select_object").hide();
+    $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
+  });
+  
+  $(document).ready(function() {
+
+    $('#srf_btn').click(function() {
+      if($(this).css("margin-left") == "0px")
+      {
+          $('.srf').animate({"margin-left": '-=250'},600);
+          $('#main_c').animate({"margin-left": '-=250'},600);
+          $('#srf_btn').animate({"margin-left": '-=250'},600);
+          $('#srf_btn').switchClass( "srf_btn_in", "srf_btn_out");
+      }
+      else
+      {
+          $('.srf').animate({"margin-left": '+=250'},600);
+          $('#main_c').animate({"margin-left": '+=250'},600);
+          $('#srf_btn').animate({"margin-left": '+=250'},600);
+          $('#srf_btn').switchClass( "srf_btn_out", "srf_btn_in");
+      }
+    });
+
+    $(".srf_slide").click(function() {
+      $(this).siblings("ul").slideToggle();
+    });
+
+    // Menu for selecting columns to show
+    $("#columns_menu_btn").click(function(){
+      $(".columns_menu").slideToggle();
+    });
+
+    $('.columns_menu_content :checkbox').change(function(){
+//       var cols = $(this).attr("name").split("_", 2);
+//       $('td:nth-child(' + cols[1] + '),th:nth-child(' + cols[1] + ')').toggle();
+      var cols = $(this).attr("name").split("-", 2);
+      $(".sr-" + cols[1]).toggle('slide', {
+            direction: 'left'
+        }, 500);
+      console.log(".sr_" + cols[1]);
+
+        if ($(this).is(':checked'))
+        {
+            // do something
+//alert( $(this).attr("name") );
+
+        }
+        else
+        {
+            // do something else
+        }
+    });
+
+    $(".resizable1").resizable(
+    {
+        autoHide: false,
+        handles: 's',
+        minHeight: 70,
+        containment: "#panel_c",
+        resize: function(s, ui)
+        {
+            var parent = ui.element.parent();
+            var remainingSpace = parent.height() - ui.element.outerHeight(),
+                divTwo = ui.element.next(),
+                divTwoHeight = (remainingSpace - (divTwo.outerHeight() - divTwo.height()))/parent.height()*100+"%";
+                divTwo.height(divTwoHeight);
+        },
+        stop: function(s, ui)
+        {
+            var parent = ui.element.parent();
+            ui.element.css(
+            {
+                height: ui.element.height()/parent.height()*100+"%",
+            });
+        }
+    });
+
+    $('.lower_pane').click(function(event){
+        event.preventDefault();
+        var url = $(this).attr('href');
+        $.ajax({
+            url: url,
+            success: function(result){
+              $("#content_insert").html(result);
+            },
+            error: function (jXHR, textStatus, errorThrown) {
+              $("#content_insert").html(errorThrown);
+            }
+        });
+    });
+
+  });
+</script>
+
+
+<div id="srf_c">
+  <div class="srf">
+  <h2 id="srf_title">Refine By</h2>
+  <ul>
+    <li>
+      <input class="srf_slide pmc" type="checkbox" id="srf_status" name="srf_status" />
+      <label class="srf_header pmc-label" for="srf_status">Status</label>
+      <ul>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_1" name="srf_status_1" />
+          <label for="srf_status_1">initializing</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_2" name="srf_status_2" />
+          <label for="srf_status_2">setup</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_3" name="srf_status_3" />
+          <label for="srf_status_3">inservice</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_4" name="srf_status_4" />
+          <label for="srf_status_4">broken</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_5" name="srf_status_5" />
+          <label for="srf_status_5">hibernating</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_status_6" name="srf_status_6" />
+          <label for="srf_status_6">decom</label>
+        </li>
+      </ul>
+    </li>
+  
+    <li>
+      <input class="srf_slide pmc" type="checkbox" id="srf_operating_system" name="srf_operating_system" />
+      <label class="srf_header pmc-label" for="srf_operating_system">Operating System</label>
+      <ul>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_operating_system_1" name="srf_operating_system_1" />
+          <label for="srf_operating_system_1">CentOS 6.2 x86_64</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_operating_system_2" name="srf_operating_system_2" />
+          <label for="srf_operating_system_2">CentOS 7.0.1406 x86_64</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_operating_system_3" name="srf_operating_system_3" />
+          <label for="srf_operating_system_3">CentOS 4.7 x86_64</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_operating_system_4" name="srf_operating_system_4" />
+          <label for="srf_operating_system_4">XenServer (xenenterprise) 6.5.0-90233c x86_64</label>
+        </li>
+      </ul>
+    </li>
+
+    <li>
+      <input class="srf_slide pmc" type="checkbox" id="srf_hardware_profile" name="srf_hardware_profile" />
+      <label class="srf_header pmc-label" for="srf_hardware_profile">Hardware Profile</label>
+      <ul>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_hardware_profile_1" name="srf_hardware_profile_1" />
+          <label for="srf_hardware_profile_1">Citrix Xen Guest</label>
+        </li>
+        <li class="srf_content">
+          <input type="checkbox" id="srf_hardware_profile_2" name="srf_hardware_profile_2" />
+          <label for="srf_hardware_profile_2">Dell Inc. PowerEdge R710</label>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  </div>
+  
+  <div id="srf_btn" class="srf_btn_in">
+  </div>
+</div>
+
+<div id="main_c">
+  <div id="panel_c">
+    <div class="wrap">
+      <div class="resizable resizable1">
+        <div class="content_c">
+          <div class="content">
+            <div id="search_results">
+
+              <div id="columns_menu_c">
+                <div id="columns_menu_btn">
+                 Columns
+                </div>
+                <div class="columns_menu">
+                    <p>Select the columns you wish to display</p>
+                    <ul>
+                      <li class="columns_menu_content">
+                        <input type="checkbox" id="cm-node_name" name="cm-node_name" checked="checked"/>
+                        <label for="cm-node_name">Node Name</label>
+                      </li>
+                      <li class="columns_menu_content">
+                        <input type="checkbox" id="cm-uniq_id" name="cm-uniq_id" checked="checked"/>
+                        <label for="cm-uniq_id">Unique ID</label>
+                      </li>
+                      <li class="columns_menu_content">
+                        <input type="checkbox" id="cm-status" name="cm-status" checked="checked"/>
+                        <label for="cm-status">Status</label>
+                      </li>
+                      <li class="columns_menu_content">
+                        <input type="checkbox" id="cm-node_groups" name="cm-node_groups" checked="checked"/>
+                        <label for="cm-node_groups">Node Groups</label>
+                      </li>
+                      <li class="columns_menu_content">
+                        <input type="checkbox" id="cm-last_update" name="cm-last_update" checked="checked"/>
+                        <label for="cm-last_update">Last Update</label>
+                      </li>
+                    </ul>
+                </div>
+              </div>
+  
+              <table id="searchResultsTable" class="tablesorter sar-table">
+                <thead>
+                  <tr>
+                    <th class="sr-node_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Name</span></div></th>
+                    <th class="sr-uniq_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Unique ID</span></div></th>
+                    <th class="sr-status"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status</span></div></th>
+                    <th class="sr-node_groups"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">node groups</span></div></th>
+                    <th class="sr-last_update"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Last Update</span></div></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr tal:repeat="item nodes">
+                    <td class="sr-node_name"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.name">server.dc.domain.com</a></td>
+                    <td class="sr-uniq_id" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
+                    <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.status_id)" tal:content="item.status.name">initializing</a></td>
+                    <td>default_install</td>
+                    <td tal:content="item.updated">2015/04/23 21:02:15</td>
+                  </tr>
+                </tbody>
+              </table>
+  
+            </div> <!-- search_results -->
+          </div> <!-- content -->
+        </div> <!-- content_c -->
+      </div> <!-- resizable1 -->
+  
+      <div class="resizable resizable2">
+        <div class="content_c">
+          <div class="content">
+      
+            <div id="content_insert">
+              <h3 id="select_object">Select an object above</h3>
+            </div> <!-- content_insert -->
+          </div> <!-- content -->
+        </div> <!-- content_c -->
+      </div> <!-- resizable2 -->
+    </div> <!-- wrap -->
+  </div> <!-- panel_c -->
+</div> <!-- main_c -->
+
+  </div> <!-- metal -->
+</div> <!-- metal -->

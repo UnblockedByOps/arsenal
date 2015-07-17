@@ -1,0 +1,103 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!doctype html>
+<html lang="en">
+<head profile="http://www.w3.org/2005/10/profile">
+  <meta charset="utf-8">
+  <title>resizable demo</title>
+
+    <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
+
+  <style>
+    #box {
+        display: inline-block;
+        position: relative;
+        top: 50px;
+        background: red;
+        line-height: 1;
+    }
+
+#hoverDiv {
+    width: 150px;
+    height: 40px;
+    position: relative;
+    top: 300px;
+}
+#hoverDiv:hover {
+    background: #ff0000;
+}
+#hoverDiv:hover .showme {
+    display: inline;
+}
+.showme {
+    display: none;
+    width: 100px;
+    height: 200px;
+    background: #0000ff;
+    padding: 10px 5px 0px 5px;
+    border: 1px solid #777777;
+    border-top: none;
+    z-index: 10;
+    position: fixed;
+    left:0;
+    top:40px;
+}
+
+    
+  </style>
+
+</head>
+<body>
+
+  <div id='box'>
+    <div id='search_c_c'>
+      <div id='search_c'>
+        <form action="/search">
+          <div id="select_c">
+            <select>
+              <option selected="selected">nodes</option>
+              <option>node groups</option>
+              <option>tags</option>
+            </select>
+          </div>
+          <input type="text" class="search_box" placeholder="Search...">
+          <div id="search_btn_c">
+            <input type="submit" class="search_btn" value="" alt="search">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+<div>
+<div id="hoverDiv">
+    
+    <a href="#">Hover Me!</a>
+    
+    <div class="showme">
+        <p> Hidden Stuff!</p>
+    </div>
+        <div>
+        <p> dksjf ksdjlkd jldskfldskjf lsdkj dslkfjdskl slkfj dlkf jlkdsajf dsklfsj lkdsajf lksdfj lkfjds lkdsjf dslkfjds lfkdsjf dklsfj sdlkfjds lkdsj flkds fjldksafj dslkfjds ldsfkj </p>
+    </div>
+    
+</div>
+</div>
+
+ 
+</body>
+</html>
