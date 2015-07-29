@@ -32,8 +32,8 @@ log = logging.getLogger(__name__)
 def _api_get(request, uri, payload=None):
 
     # FIXME: Hardcode for now
-    verify_ssl = False
-    api_protocol = 'http'
+    verify_ssl = request.registry.settings['arsenal.verify_ssl']
+    api_protocol = request.registry.settings['arsenal.api_protocol']
     api_host = request.host
 
     # This becomes the api call
@@ -61,8 +61,8 @@ def _api_get(request, uri, payload=None):
 def _api_put(request, uri, data=None):
 
     # FIXME: Hardcode for now
-    verify_ssl = False
-    api_protocol = 'http'
+    verify_ssl = request.registry.settings['arsenal.verify_ssl']
+    api_protocol = request.registry.settings['arsenal.api_protocol']
     api_host = request.host
     headers = request.headers
     headers['content-type'] = 'application/json'
