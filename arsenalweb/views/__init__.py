@@ -16,6 +16,7 @@ from pyramid.renderers import get_renderer
 from pyramid.httpexceptions import HTTPFound
 from pyramid.session import signed_deserialize
 from pyramid_ldap import groupfinder as ldap_groupfinder
+from pyramid.response import Response
 import logging
 import requests
 from passlib.hash import sha512_crypt
@@ -28,9 +29,9 @@ from arsenalweb.models import (
 log = logging.getLogger(__name__)
 
 
-def _api_get(request, uri):
+def _api_get(request, uri, payload=None):
 
-    # Hardcode for now
+    # FIXME: Hardcode for now
     verify_ssl = False
     api_protocol = 'http'
     api_host = request.host
@@ -41,17 +42,45 @@ def _api_get(request, uri):
                + api_host
                + uri)
 
-    logging.info('Requesting data from API: %s' % api_url)
-    r = requests.get(api_url, verify=verify_ssl)
+    log.info('Requesting data from API: {0} params: {1}'.format(api_url, payload))
+    r = requests.get(api_url, verify=verify_ssl, params=payload)
 
     if r.status_code == requests.codes.ok:
-
-        logging.info('Response data: %s' % r.json())
+        log.info('Response data: %s' % r.json())
         return r.json()
-
+    elif r.status_code == requests.codes.not_found:
+        log.warn('404: Object not found.')
     else:
+        log.error('There was an error querying the API: '
+                  'http_status_code=%s,reason=%s,request=%s'
+                  % (r.status_code, r.reason, api_url))
 
-        logging.info('There was an error querying the API: '
+    return None
+
+
+def _api_put(request, uri, data=None):
+
+    # FIXME: Hardcode for now
+    verify_ssl = False
+    api_protocol = 'http'
+    api_host = request.host
+    headers = request.headers
+    headers['content-type'] = 'application/json'
+
+    # This becomes the api call
+    api_url = (api_protocol
+               + '://'
+               + api_host
+               + uri)
+
+    log.info('Submitting data to API: {0} data: {1}'.format(api_url, data))
+    r = requests.put(api_url, verify=verify_ssl, headers=headers, data=data)
+
+    if r.status_code == requests.codes.ok:
+        log.info('Response data: %s' % r.json())
+        return r.json()
+    else:
+        log.error('There was an error querying the API: '
                       'http_status_code=%s,reason=%s,request=%s'
                       % (r.status_code, r.reason, api_url))
         return None

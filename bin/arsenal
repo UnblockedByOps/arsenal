@@ -80,6 +80,18 @@ class HardwareProfile(object):
         self.model = model
 
 
+class OperatingSystem(object):
+    def __init__(self,
+                 variant = 'Unknown',
+                 version_number = 'Unknown',
+                 architecture = 'Unknown',
+                 description = 'Unknown'):
+        self.variant = variant
+        self.version_number = version_number
+        self.architecture = architecture
+        self.description = description
+
+
 class Network(object):
     def __init__(self,
                  interface = None,
@@ -127,6 +139,7 @@ def api_submit(request, cookies=None, headers=None, data=None, method='get'):
         r = session.get(api_url, verify=verify_ssl)
         return r.json()
     
+
 def read_cookie():
     log.debug('Checking for cookie file: %s' % (cookie_file))
     if os.path.isfile(cookie_file):
@@ -192,6 +205,7 @@ def authenticate():
         log.error('Authentication failed')
         sys.exit(1)
 
+
 def api_put(url_string, headers=None, data=None):
     log.debug('Updating api...')
 
@@ -206,9 +220,11 @@ def api_put(url_string, headers=None, data=None):
     except Exception, e:
         logging.error('Failed: %s' % e)
 
+
 def api_get(url_string):
     response = api_submit(url_string)
     print response
+
 
 def get_unique_id(**facts):
     log.info('determining unique_id...')
@@ -237,7 +253,7 @@ def get_uuid():
     p.wait()
     uuid = p.stdout.readlines()
     # FIXME: Need some validation here
-    return uuid
+    return uuid[0].rstrip()
 
 
 def get_hardware_profile(facts):
@@ -257,6 +273,20 @@ def get_hardware_profile(facts):
         except KeyError:
             log.error('Unable to determine hardware profile.')
     return hardware_profile
+
+
+def get_operating_system(facts):
+    log.info('Collecting operating_system data.')
+    operating_system = OperatingSystem()
+    try:
+        operating_system.variant = facts['operatingsystem']
+        operating_system.version_number = facts['operatingsystemrelease']
+        operating_system.architecture = facts['architecture']
+        operating_system.description = facts['lsbdistdescription']
+    except KeyError:
+        log.error('Unable to determine operating system.')
+
+    return operating_system
 
 
 def collect_data():
@@ -287,6 +317,8 @@ def collect_data():
     data.uptime = facts['uptime']
 
     data.hardware_profile = get_hardware_profile(facts)
+
+    data.operating_system = get_operating_system(facts)
 
 #    data[operating_system[version_number]] = facts['lsbdistrelease']
 
@@ -408,15 +440,16 @@ def main(argv):
 
     # We know what we have to do, so let's go
     if options.register:
+
         data = collect_data()
+
         log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+
         headers = {'content-type': 'application/json'}
         data = json.dumps(data, default=lambda o: o.__dict__)
         api_put('/api/nodes', headers, data)
-        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))
 
-#    api_put('/api/nodes?format=whizbang')
-#    api_get('/api/nodes')
+#        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

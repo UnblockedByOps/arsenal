@@ -96,6 +96,10 @@ def main(global_config, **settings):
     config.add_route('node_group', '/node_groups/{resource}')
     config.add_route('statuses', '/statuses')
     config.add_route('status', '/statuses/{id}')
+    config.add_route('hardware_profiles', '/hardware_profiles')
+    config.add_route('hardware_profile', '/hardware_profiles/{id}')
+    config.add_route('operating_systems', '/operating_systems')
+    config.add_route('operating_system', '/operating_systems/{id}')
     config.add_route('test', '/test')
     config.add_route('test2', '/test2')
     # API Endpoints
@@ -103,6 +107,10 @@ def main(global_config, **settings):
     config.add_route('api_node', '/api/nodes/{id}')
     config.add_route('api_statuses', '/api/statuses')
     config.add_route('api_status', '/api/statuses/{id}')
+    config.add_route('api_hardware_profiles', '/api/hardware_profiles')
+    config.add_route('api_hardware_profile', '/api/hardware_profiles/{id}')
+    config.add_route('api_operating_systems', '/api/operating_systems')
+    config.add_route('api_operating_system', '/api/operating_systems/{id}')
 
     config.add_renderer('json', JSON(indent=2))
     config.add_renderer('xml', XML())

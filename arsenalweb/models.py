@@ -47,11 +47,14 @@ class Node(Base):
     unique_id                = Column(Text, nullable=False)
     status_id                = Column(Integer, ForeignKey('statuses.status_id'), nullable=False)
     hardware_profile_id      = Column(Integer, ForeignKey('hardware_profiles.hardware_profile_id'), nullable=False)
+    operating_system_id      = Column(Integer, ForeignKey('operating_systems.operating_system_id'), nullable=False)
     uptime                   = Column(Text, nullable=False)
     created                  = Column(TIMESTAMP, nullable=False)
     updated                  = Column(TIMESTAMP, nullable=False)
     updated_by               = Column(Text, nullable=False)
     status                   = relationship("Status", backref=backref('nodes'))
+    hardware_profile         = relationship("HardwareProfile", backref=backref('nodes'))
+    operating_system         = relationship("OperatingSystem", backref=backref('nodes'))
 
     def __json__(self, request):
         return dict(
@@ -59,8 +62,11 @@ class Node(Base):
             name=self.name,
             unique_id=self.unique_id,
             status_id=self.status_id,
-            hardware_profile_id=self.hardware_profile_id,
             status=self.status,
+            hardware_profile_id=self.hardware_profile_id,
+            hardware_profile=self.hardware_profile,
+            operating_system_id=self.operating_system_id,
+            operating_system=self.operating_system,
             uptime=self.uptime,
             created=self.created.isoformat(),
             updated=self.updated.isoformat(),
@@ -78,6 +84,65 @@ class Node(Base):
             updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
+
+
+class HardwareProfile(Base):
+    __tablename__ = 'hardware_profiles'
+    hardware_profile_id   = Column(Integer, primary_key=True, nullable=False)
+    model                 = Column(Text, nullable=False)
+    manufacturer          = Column(Text, nullable=False)
+    created               = Column(TIMESTAMP, nullable=False)
+    updated               = Column(TIMESTAMP, nullable=False)
+    updated_by            = Column(Text, nullable=False)
+
+    def __json__(self, request):
+        return dict(
+            hardware_profile_id=self.hardware_profile_id,
+            model=self.model,
+            manufacturer=self.manufacturer,
+            created=self.created.isoformat(),
+            updated=self.updated.isoformat(),
+            updated_by=self.updated_by,
+            )
+
+    @hybrid_method
+    def get_hardware_profile_id(self, manufacturer, model):
+        q = DBSession.query(HardwareProfile)
+        q = q.filter(HardwareProfile.manufacturer == '%s' % manufacturer)
+        q = q.filter(HardwareProfile.model == '%s' % model)
+        return q.one()
+
+
+class OperatingSystem(Base):
+    __tablename__ = 'operating_systems'
+    operating_system_id   = Column(Integer, primary_key=True, nullable=False)
+    variant               = Column(Text, nullable=False)
+    version_number        = Column(Text, nullable=False)
+    architecture          = Column(Text, nullable=False)
+    description           = Column(Text, nullable=False)
+    created               = Column(TIMESTAMP, nullable=False)
+    updated               = Column(TIMESTAMP, nullable=False)
+    updated_by            = Column(Text, nullable=False)
+
+    def __json__(self, request):
+        return dict(
+            operating_system_id=self.operating_system_id,
+            variant=self.variant,
+            version_number=self.version_number,
+            architecture=self.architecture,
+            description=self.description,
+            created=self.created.isoformat(),
+            updated=self.updated.isoformat(),
+            updated_by=self.updated_by,
+            )
+
+    @hybrid_method
+    def get_operating_system_id(self, variant, version_number, architecture):
+        q = DBSession.query(OperatingSystem)
+        q = q.filter(OperatingSystem.variant == '%s' % variant)
+        q = q.filter(OperatingSystem.version_number == '%s' % version_number)
+        q = q.filter(OperatingSystem.rchitecture == '%s' % architecture)
+        return q.one()
 
 
 class Status(Base):

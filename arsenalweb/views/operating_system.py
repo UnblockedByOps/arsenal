@@ -15,31 +15,19 @@
 from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
-    site_layout,
     log,
     _api_get,
     )
 
-
-@view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
-def view_statuses(request):
-    page_title = 'Statuses'
+@view_config(route_name='operating_system', permission='view', renderer='arsenalweb:templates/operating_system.pt')
+def view_operating_system(request):
+    page_title = 'Operating System'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
+    uri = '/api/operating_systems/{0}'.format(request.matchdict['id'])
+    operating_system = _api_get(request, uri)
 
-    uri = '/api/statuses'
-    statuses = _api_get(request, uri)
-
-    return {'layout': site_layout('max'),
-            'page_title': page_title,
+    return {'page_title': page_title,
             'au': au,
-            'statuses': statuses,
+            'operating_system': operating_system,
            }
-

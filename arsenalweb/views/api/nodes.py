@@ -15,14 +15,19 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 import json
+import requests
 from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (
     get_authenticated_user,
     log,
+    _api_get,
+    _api_put,
     )
 from arsenalweb.models import (
     DBSession,
     Node,
+    HardwareProfile,
     )
 
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
@@ -50,9 +55,8 @@ def api_node_read(request):
                 q = DBSession.query(Node)
                 nodes = q.limit(perpage).offset(offset).all()
                 return nodes
-            except Exception, e:
-                conn_err_msg = e
-                return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
+            except NoResultFound:
+                return Response(content_type='application/json', status_int=404)
 
         if request.matchdict['id']:
             log.info('Displaying single node')
@@ -60,15 +64,12 @@ def api_node_read(request):
                 q = DBSession.query(Node).filter(Node.node_id==request.matchdict['id'])
                 node = q.one()
                 return node
-            except Exception, e:
-                conn_err_msg = e
-                return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
+            except NoResultFound:
+                return Response(content_type='application/json', status_int=404)
             
     except Exception, e:
-        conn_err_msg = e
-        return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
-
-    return {'read_api':'true'}
+        log.error('Error querying api={0},exception={1}'.format(request.url, e))
+        return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
@@ -81,31 +82,99 @@ def api_node_write(request):
 
         if request.path == '/api/nodes':
 
-            q = DBSession.query(Node).filter(Node.unique_id==payload['unique_id'])
-            check = DBSession.query(q.exists()).scalar()
-            # Create
-            if not check:
-                log.info("Creating new node: {0}".format(payload['unique_id']))
-                utcnow = datetime.utcnow()
-                n = Node(unique_id=payload['unique_id'],
-                         name=payload['name'],
-                         uptime=payload['uptime'],
-                         updated_by=au['user_id'],
-                         created=utcnow,
-                         updated=utcnow)
-                DBSession.add(n)
-                DBSession.flush()
-            # Update
+            # Get the hardware_profile_id or create if it doesn't exist.
+            try:
+                manufacturer = payload['hardware_profile']['manufacturer']
+                model = payload['hardware_profile']['model']
+
+                uri = '/api/hardware_profiles'
+                data = {'manufacturer': manufacturer,
+                        'model': model
+                }
+                hardware_profile = _api_get(request, uri, data)
+
+                if not hardware_profile:
+                    log.info('hardware_profile not found, creating')
+                    data_j = json.dumps(data, default=lambda o: o.__dict__)
+                    _api_put(request, uri, data=data_j)
+                    hardware_profile = _api_get(request, uri, data)
+
+                hardware_profile_id = hardware_profile['hardware_profile_id']
+                log.info('hardware_profile is: {0}'.format(hardware_profile))
+            except Exception, e:
+                log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+                raise
+
+            # Get the operating_system_id or create if it doesn't exist.
+            try:
+                variant = payload['operating_system']['variant']
+                version_number = payload['operating_system']['version_number']
+                architecture = payload['operating_system']['architecture']
+                description = payload['operating_system']['description']
+
+                uri = '/api/operating_systems'
+                data = {'variant': variant,
+                        'version_number': version_number,
+                        'architecture': architecture,
+                        'description': description
+                }
+                operating_system = _api_get(request, uri, data)
+
+                if not operating_system:
+    
+                    log.info('operating_system not found, attempting to create')
+                    data_j = json.dumps(data, default=lambda o: o.__dict__)
+                    _api_put(request, uri, data=data_j)
+                    operating_system = _api_get(request, uri, data)
+
+                operating_system_id = operating_system['operating_system_id']
+                log.info('operating_system is: {0}'.format(operating_system))
+            except Exception, e:
+                log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+                raise
+
+            try:
+                unique_id = payload['unique_id']
+                name = payload['name']
+                uptime = payload['uptime']
+
+                log.info('Checking for unique_id: {0}'.format(unique_id))
+                q = DBSession.query(Node).filter(Node.unique_id==unique_id)
+                q.one()
+            except NoResultFound, e:
+                try:
+                    log.info('Creating new node: {0}'.format(unique_id))
+                    utcnow = datetime.utcnow()
+                    n = Node(unique_id=unique_id,
+                             name=name,
+                             hardware_profile_id=hardware_profile_id,
+                             operating_system_id=operating_system_id,
+                             uptime=uptime,
+                             status_id=2,
+                             updated_by=au['user_id'],
+                             created=utcnow,
+                             updated=utcnow)
+                    DBSession.add(n)
+                    DBSession.flush()
+                except Exception, e:
+                    log.error('Error creating new node name={0},unique_id={1},exception={2}'.format(name, unique_id, e))
+                    raise
             else:
-                log.info("Updating node: {0}".format(payload['unique_id']))
-                n = DBSession.query(Node).filter(Node.unique_id==payload['unique_id']).one()
-                n.name = payload['name']
-                n.uptime = payload['uptime']
-                n.updated_by=au['user_id']
-                DBSession.flush()
+                try:
+                    log.info('Updating node: {0}'.format(unique_id))
+                    n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
+                    n.name = name
+                    n.hardware_profile_id = hardware_profile_id
+                    n.operating_system_id = operating_system_id
+                    n.uptime = uptime
+                    n.updated_by=au['user_id']
+                    DBSession.flush()
+                except Exception, e:
+                    log.error('Error updating node name={0},unique_id={1},exception={2}'.format(name, unique_id, e))
+                    raise
 
-            return json.dumps(n, default=lambda o: o.__dict__)
-    except:
+            return n
 
-        return {'':''}
-
+    except Exception, e:
+        log.error('Error with node API! exception: {0}'.format(e))
+        return Response(str(e), content_type='application/json', status_int=500)

@@ -27,7 +27,8 @@ CREATE TABLE `tags` (
   `object_type`            varchar(255) COLLATE utf8_bin NOT NULL,
   `object_id`              int(11) UNSIGNED NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_tag_id on tags (tag_id);
 
@@ -42,7 +43,8 @@ CREATE TABLE `hardware_profiles` (
   `manufacturer`           varchar(255) COLLATE utf8_bin NOT NULL,
   `model`                  varchar(255) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE UNIQUE INDEX idx_uniq_hardware_profile on hardware_profiles (manufacturer, model);
 
@@ -125,7 +127,7 @@ CREATE TABLE `nodes` (
   `node_id`                           int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name`                              varchar(255) COLLATE utf8_bin NOT NULL,
   `unique_id`                         varchar(255) NOT NULL,
-  `status_id`                         int(11) DEFAULT 2,
+  `status_id`                         int(11) NOT NULL,
   `serial_number`                     varchar(255) DEFAULT NULL,
   `hardware_profile_id`               int(11) DEFAULT NULL,
   `operating_system_id`               int(11) DEFAULT NULL,
@@ -195,25 +197,27 @@ CREATE TABLE `statuses` (
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_status_name on statuses (name);
+CREATE UNIQUE INDEX idx_status_name_uniq on statuses (name);
 
 
 ###
 ### TABLE: operating_systems
 ###   The operating_systems table.
 ###
+### FIXME: needs a unique index
+###
 DROP TABLE IF EXISTS `operating_systems`;
 CREATE TABLE `operating_systems` (
   `operating_system_id`    int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `vendor`                 varchar(255) COLLATE utf8_bin NOT NULL,
   `variant`                varchar(255) COLLATE utf8_bin NOT NULL,
   `version_number`         varchar(255) COLLATE utf8_bin NOT NULL,
   `architecture`           varchar(255) COLLATE utf8_bin NOT NULL,
-  `description`            text NOT NULL,
+  `description`            text,
+  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_operating_systems_uniq on operating_systems (variant,version_number,architecture);
 
 ###
 ### TABLE: virtual_assignments

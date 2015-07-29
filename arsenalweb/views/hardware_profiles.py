@@ -21,25 +21,17 @@ from arsenalweb.views import (
     )
 
 
-@view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
-def view_statuses(request):
-    page_title = 'Statuses'
+@view_config(route_name='hardware_profiles', permission='view', renderer='arsenalweb:templates/hardware_profiles.pt')
+def view_hardware_profiles(request):
+    page_title = 'Hardware Profiles'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
-
-    uri = '/api/statuses'
-    statuses = _api_get(request, uri)
+    uri = '/api/hardware_profiles'
+    hardware_profiles = _api_get(request, uri)
 
     return {'layout': site_layout('max'),
             'page_title': page_title,
             'au': au,
-            'statuses': statuses,
+            'hardware_profiles': hardware_profiles,
            }
 

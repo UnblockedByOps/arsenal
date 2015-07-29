@@ -192,34 +192,34 @@
                  Columns
                 </div>
                 <div class="columns_menu">
-                  <p>Select the columns you wish to display</p>
-                  <ul>
-                    <li tal:repeat="item sorted(nodes[0].iterkeys())" class="columns_menu_content">
-                      <input type="checkbox" id="cm-${item}" name="cm-${item}" checked="checked"/>
-                      <label for="cm-${item}">${item}</label>
-                    </li>
-                  </ul>
+                    <p>Select the columns you wish to display</p>
+                    <ul>
+                      <li tal:repeat="item sorted(hardware_profiles[0].iterkeys())" class="columns_menu_content">
+                        <input type="checkbox" id="cm-${item}" name="cm-${item}" checked="checked"/>
+                        <label for="cm-${item}">${item}</label>
+                      </li>
+                    </ul>
                 </div>
               </div>
   
               <table id="searchResultsTable" class="tablesorter sar-table">
                 <thead>
-                  <tr>
-                    <th class="sr-name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Name</span></div></th>
-                    <th class="sr-unique_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Unique ID</span></div></th>
-                    <th class="sr-status"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status</span></div></th>
-                    <th class="sr-node_groups"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">node groups</span></div></th>
+                  <tr> 
+                    <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
+                    <th class="sr-hardware_profile_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Hardware Profile ID</span></div></th>
+                    <th class="sr-manufacturer"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Manufacturer</span></div></th>
+                    <th class="sr-model"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Model</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
                     <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated</span></div></th>
                     <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr tal:repeat="item nodes">
-                    <td class="sr-node_name"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.name">server.dc.domain.com</a></td>
-                    <td class="sr-uniq_id" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
-                    <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.status_id)" tal:content="item.status.name">initializing</a></td>
-                    <td>default_install</td>
+                  <tr tal:repeat="item hardware_profiles">
+                    <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
+                    <td class="sr-hardware_profile_id" tal:content="item.hardware_profile_id">0</td>
+                    <td class="sr-manufacturer"><a class="lower_pane" tal:attributes="href '/hardware_profiles/{0}'.format(item.hardware_profile_id)" tal:content="item.manufacturer">Acme</a></td>
+                    <td class="sr-model"><a class="lower_pane" tal:attributes="href '/hardware_profiles/{0}'.format(item.hardware_profile_id)" tal:content="item.model">Space Modulator</a></td>
                     <td class="sr-updated_by" tal:content="item.updated_by">2015/04/23 21:02:15</td>
                     <td class="sr-updated" tal:content="item.updated">2015/04/23 21:02:15</td>
                     <td class="sr-created" tal:content="item.created">2015/04/23 21:02:15</td>

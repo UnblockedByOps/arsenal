@@ -15,31 +15,19 @@
 from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
-    site_layout,
     log,
     _api_get,
     )
 
-
-@view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
-def view_statuses(request):
-    page_title = 'Statuses'
+@view_config(route_name='hardware_profile', permission='view', renderer='arsenalweb:templates/hardware_profile.pt')
+def view_hardware_profile(request):
+    page_title = 'Hardware profile'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
+    uri = '/api/hardware_profiles/{0}'.format(request.matchdict['id'])
+    hardware_profile = _api_get(request, uri)
 
-    uri = '/api/statuses'
-    statuses = _api_get(request, uri)
-
-    return {'layout': site_layout('max'),
-            'page_title': page_title,
+    return {'page_title': page_title,
             'au': au,
-            'statuses': statuses,
+            'hardware_profile': hardware_profile,
            }
-
