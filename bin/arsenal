@@ -48,7 +48,7 @@ class Node(object):
         self.puppet_version = puppet_version
         self.facter_version = facter_version
         self.hardware_profile = HardwareProfile()
-        self.operating_system = network
+        self.operating_system = OperatingSystem()
         self.uptime = uptime
         self.ec2 = ec2
         self.network = network
@@ -253,7 +253,10 @@ def get_uuid():
     p.wait()
     uuid = p.stdout.readlines()
     # FIXME: Need some validation here
-    return uuid[0].rstrip()
+    if uuid:
+        return uuid[0].rstrip()
+
+    return None
 
 
 def get_hardware_profile(facts):
