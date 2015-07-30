@@ -111,6 +111,8 @@ def main(global_config, **settings):
     config.add_route('api_hardware_profile', '/api/hardware_profiles/{id}')
     config.add_route('api_operating_systems', '/api/operating_systems')
     config.add_route('api_operating_system', '/api/operating_systems/{id}')
+    config.add_route('api_node_groups', '/api/node_groups')
+    config.add_route('api_node_group', '/api/node_groups/{id}')
 
     config.add_renderer('json', JSON(indent=2))
     config.add_renderer('xml', XML())
@@ -157,10 +159,10 @@ def main(global_config, **settings):
             ga = g.get_all_assignments()
             if ga:
                 ga = tuple(ga)
-                log.debug("Adding group: %s perm: %s" % (g.group_name, ga))
+                log.info("Adding group: %s perm: %s" % (g.group_name, ga))
                 RootFactory.__acl__.append([Allow, g.group_name, ga])
     except Exception, e:
         log.warn("%s (%s)" % (Exception, e))
-
+                
     config.scan()
     return config.make_wsgi_app()

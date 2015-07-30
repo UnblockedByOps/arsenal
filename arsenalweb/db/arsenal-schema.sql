@@ -99,7 +99,8 @@ CREATE TABLE `node_group_assignments` (
   `node_id`                   int(11) UNSIGNED,
   `node_group_id`             int(11) UNSIGNED,
   `created`                   timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                   timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated`                   timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_node_group_assignment_id on node_group_assignments (node_group_assignment_id);
 
@@ -110,13 +111,16 @@ CREATE INDEX idx_node_group_assignment_id on node_group_assignments (node_group_
 DROP TABLE IF EXISTS `node_groups`;
 CREATE TABLE `node_groups` (
   `node_group_id`          int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `owner`                  varchar(255) COLLATE utf8_bin NOT NULL,
+  `node_group_name`        varchar(255) COLLATE utf8_bin NOT NULL,
+  `node_group_owner`       varchar(255) COLLATE utf8_bin NOT NULL,
   `description`            text NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_node_group_id on node_groups (node_group_id);
+CREATE UNIQUE INDEX idx_unique_node_group_name on node_groups (node_group_name);
+
 
 ###
 ### TABLE: nodes

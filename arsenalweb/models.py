@@ -145,6 +145,45 @@ class OperatingSystem(Base):
         return q.one()
 
 
+class NodeGroup(Base):
+    __tablename__      = 'node_groups'
+    node_group_id      = Column(Integer, primary_key=True, nullable=False)
+    node_group_name    = Column(Text, nullable=False)
+    node_group_owner   = Column(Text, nullable=False)
+    description        = Column(Text, nullable=False)
+    created            = Column(TIMESTAMP, nullable=False)
+    updated            = Column(TIMESTAMP, nullable=False)
+    updated_by         = Column(Text, nullable=False)
+
+    def __json__(self, request):
+        return dict(
+            node_group_id=self.node_group_id,
+            node_group_name=self.node_group_name,
+            node_group_owner=self.node_group_owner,
+            description=self.description,
+            created=self.created.isoformat(),
+            updated=self.updated.isoformat(),
+            updated_by=self.updated_by,
+            )
+
+    @hybrid_method
+    def get_node_group_id(self, node_group_name):
+        q = DBSession.query(NodeGroup)
+        q = q.filter(NodeGroup.node_group_name == '%s' % node_group_name)
+        return q.one()
+
+
+class NodeGroupAssignment(Base):
+    __tablename__               = 'node_group_assignments'
+    node_group_assignment_id    = Column(Integer, primary_key=True, nullable=False)
+    node_id                     = Column(Integer, ForeignKey('nodes.node_id'), nullable=False)
+    node_group_id               = Column(Integer, ForeignKey('node_groups.node_group_id'), nullable=False)
+    updated_by                  = Column(Text, nullable=False)
+    created                     = Column(TIMESTAMP, nullable=False)
+    updated                     = Column(TIMESTAMP, nullable=False)
+    node_group                  = relationship("NodeGroup", backref=backref('node_group_assignments'))
+
+
 class Status(Base):
     __tablename__ = 'statuses'
     status_id        = Column(Integer, primary_key=True, nullable=False)

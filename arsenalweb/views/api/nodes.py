@@ -15,7 +15,6 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 import json
-import requests
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (

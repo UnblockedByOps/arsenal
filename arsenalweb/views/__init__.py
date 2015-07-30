@@ -31,16 +31,11 @@ log = logging.getLogger(__name__)
 
 def _api_get(request, uri, payload=None):
 
-    # FIXME: Hardcode for now
     verify_ssl = request.registry.settings['arsenal.verify_ssl']
     api_protocol = request.registry.settings['arsenal.api_protocol']
     api_host = request.host
 
-    # This becomes the api call
-    api_url = (api_protocol
-               + '://'
-               + api_host
-               + uri)
+    api_url = '{0}://{1}{2}'.format(api_protocol, api_host, uri)
 
     log.info('Requesting data from API: {0} params: {1}'.format(api_url, payload))
     r = requests.get(api_url, verify=verify_ssl, params=payload)
@@ -60,18 +55,13 @@ def _api_get(request, uri, payload=None):
 
 def _api_put(request, uri, data=None):
 
-    # FIXME: Hardcode for now
     verify_ssl = request.registry.settings['arsenal.verify_ssl']
     api_protocol = request.registry.settings['arsenal.api_protocol']
     api_host = request.host
     headers = request.headers
     headers['content-type'] = 'application/json'
 
-    # This becomes the api call
-    api_url = (api_protocol
-               + '://'
-               + api_host
-               + uri)
+    api_url = '{0}://{1}{2}'.format(api_protocol, api_host, uri)
 
     log.info('Submitting data to API: {0} data: {1}'.format(api_url, data))
     r = requests.put(api_url, verify=verify_ssl, headers=headers, data=data)
@@ -174,28 +164,26 @@ def get_authenticated_user(request):
 
     (first_last, user_id, login, groups, first, last, auth, prd_auth, admin_auth, cp_auth) = ('', '', '', '', '', '', False, False, False, False)
 
-    if request.authenticated_userid:
+    user_id = request.authenticated_userid
+    try:
+        user = DBSession.query(User).filter(User.user_name==user_id).one()
+        first = user.first_name
+        last = user.last_name
+        groups = local_groupfinder(user_id, request)
+        first_last = "%s %s" % (first, last)
+        auth = True
+        log.info("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
+    except Exception, e:
+        log.info("%s (%s)" % (Exception, e))
 
-        user_id = request.authenticated_userid
+    if request.registry.settings['arsenal.use_ldap'] and not groups:
         try:
-            user = DBSession.query(User).filter(User.user_name==user_id).one()
-            first = user.first_name
-            last = user.last_name
-            groups = local_groupfinder(user_id, request)
+            (first,last) = format_user(user_id)
+            groups = ldap_groupfinder(user_id, request)
             first_last = "%s %s" % (first, last)
             auth = True
-            log.info("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
         except Exception, e:
-            log.info("%s (%s)" % (Exception, e))
-
-        if request.registry.settings['arsenal.use_ldap'] and not groups:
-            try:
-                (first,last) = format_user(user_id)
-                groups = ldap_groupfinder(user_id, request)
-                first_last = "%s %s" % (first, last)
-                auth = True
-            except Exception, e:
-                log.error("%s (%s)" % (Exception, e))
+            log.error("%s (%s)" % (Exception, e))
 
     try:
         login = validate_username_cookie(request.cookies['un'], request.registry.settings['arsenal.cookie_token'])
