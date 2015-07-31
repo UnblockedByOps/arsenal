@@ -16,7 +16,7 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div id="title">
-<span class="title_type">STATUS</span><span class="title_name">${status.name}</span>
+<span class="title_type">STATUS</span><span class="title_name">${status.status_name}</span>
 </div>
 
 <ul class="tabs">

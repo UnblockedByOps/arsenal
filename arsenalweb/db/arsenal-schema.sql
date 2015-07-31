@@ -22,7 +22,7 @@ use arsenal;
 DROP TABLE IF EXISTS `tags`;
 CREATE TABLE `tags` (
   `tag_id`                 int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
+  `tag_name`               varchar(255) COLLATE utf8_bin NOT NULL,
   `value`                  varchar(255) COLLATE utf8_bin NOT NULL,
   `object_type`            varchar(255) COLLATE utf8_bin NOT NULL,
   `object_id`              int(11) UNSIGNED NOT NULL,
@@ -73,19 +73,19 @@ CREATE INDEX idx_ip_addresses_id on ip_addresses (ip_address_id);
 ###
 DROP TABLE IF EXISTS `network_interfaces`;
 CREATE TABLE `network_interfaces` (
-  `network_interface_id`   int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin,
-  `interface_type`         varchar(255) COLLATE utf8_bin,
-  `physical`               tinyint(1) UNSIGNED,
-  `hardware_address`       varchar(255) COLLATE utf8_bin,
-  `up`                     tinyint(1) UNSIGNED,
-  `link`                   tinyint(1) UNSIGNED,
-  `speed`                  int(11) UNSIGNED,
-  `full_duplex`            tinyint(1) UNSIGNED,
-  `autonegotiate`          tinyint(1) UNSIGNED,
-  `node_id`                int(11) UNSIGNED NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `network_interface_id`    int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `network_interface_name`  varchar(255) COLLATE utf8_bin,
+  `interface_type`          varchar(255) COLLATE utf8_bin,
+  `physical`                tinyint(1) UNSIGNED,
+  `hardware_address`        varchar(255) COLLATE utf8_bin,
+  `up`                      tinyint(1) UNSIGNED,
+  `link`                    tinyint(1) UNSIGNED,
+  `speed`                   int(11) UNSIGNED,
+  `full_duplex`             tinyint(1) UNSIGNED,
+  `autonegotiate`           tinyint(1) UNSIGNED,
+  `node_id`                 int(11) UNSIGNED NOT NULL,
+  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_network_interface_id on network_interfaces (network_interface_id);
 
@@ -129,7 +129,7 @@ CREATE UNIQUE INDEX idx_unique_node_group_name on node_groups (node_group_name);
 DROP TABLE IF EXISTS `nodes`;
 CREATE TABLE `nodes` (
   `node_id`                           int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                              varchar(255) COLLATE utf8_bin NOT NULL,
+  `node_name`                         varchar(255) COLLATE utf8_bin NOT NULL,
   `unique_id`                         varchar(255) NOT NULL,
   `status_id`                         int(11) NOT NULL,
   `serial_number`                     varchar(255) DEFAULT NULL,
@@ -195,13 +195,13 @@ CREATE INDEX idx_ec2_id on ec2 (ec2_id);
 DROP TABLE IF EXISTS `statuses`;
 CREATE TABLE `statuses` (
   `status_id`              int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
+  `status_name`            varchar(255) COLLATE utf8_bin NOT NULL,
   `description`            text NOT NULL,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_status_name_uniq on statuses (name);
+CREATE UNIQUE INDEX idx_status_name_uniq on statuses (status_name);
 
 
 ###

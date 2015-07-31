@@ -16,7 +16,7 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div id="title">
-<span class="title_type">NODE</span> <span class="title_name">${node.name}</span>
+<span class="title_type">NODE</span> <span class="title_name">${node.node_name}</span>
 </div>
 
 <ul class="tabs">
@@ -25,7 +25,7 @@
     <label for="tab1">Node</label>
     <div id="tab-content1" class="tab-content">
       Unique ID: <span class="mono">${node.unique_id}</span><br>
-      Status: <span class="mono">${node.status.name}</span><br>
+      Status: <span class="mono">${node.status.status_name}</span><br>
       Uptime: <span class="mono">${node.uptime}</span><br>
       Created At: <span class="mono">${node.created}</span><br>
       Updated At: <span class="mono">${node.updated}</span><br>

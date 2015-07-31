@@ -134,7 +134,7 @@ def api_node_write(request):
 
             try:
                 unique_id = payload['unique_id']
-                name = payload['name']
+                node_name = payload['node_name']
                 uptime = payload['uptime']
 
                 log.info('Checking for unique_id: {0}'.format(unique_id))
@@ -145,7 +145,7 @@ def api_node_write(request):
                     log.info('Creating new node: {0}'.format(unique_id))
                     utcnow = datetime.utcnow()
                     n = Node(unique_id=unique_id,
-                             name=name,
+                             node_name=node_name,
                              hardware_profile_id=hardware_profile_id,
                              operating_system_id=operating_system_id,
                              uptime=uptime,
@@ -156,20 +156,20 @@ def api_node_write(request):
                     DBSession.add(n)
                     DBSession.flush()
                 except Exception, e:
-                    log.error('Error creating new node name={0},unique_id={1},exception={2}'.format(name, unique_id, e))
+                    log.error('Error creating new node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
                     raise
             else:
                 try:
                     log.info('Updating node: {0}'.format(unique_id))
                     n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
-                    n.name = name
+                    n.node_name = node_name
                     n.hardware_profile_id = hardware_profile_id
                     n.operating_system_id = operating_system_id
                     n.uptime = uptime
                     n.updated_by=au['user_id']
                     DBSession.flush()
                 except Exception, e:
-                    log.error('Error updating node name={0},unique_id={1},exception={2}'.format(name, unique_id, e))
+                    log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
                     raise
 
             return n

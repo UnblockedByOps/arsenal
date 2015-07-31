@@ -37,14 +37,14 @@ session = requests.session()
 class Node(object):
     def __init__(self,
                  unique_id = None,
-                 name = None,
+                 node_name = None,
                  puppet_version = None,
                  facter_version = None,
                  uptime = None,
                  ec2 = None,
                  network = None):
         self.unique_id = unique_id
-        self.name = name
+        self.node_name = node_name
         self.puppet_version = puppet_version
         self.facter_version = facter_version
         self.hardware_profile = HardwareProfile()
@@ -122,7 +122,6 @@ def facter():
     return lines
 
 
-def api_submit(request, cookies=None, headers=None, data=None, method='get'):
 
     api_url = (api_protocol
                + '://'
@@ -235,6 +234,56 @@ def authenticate():
         sys.exit(1)
 
 
+def api_submit(request, cookies=None, headers=None, data=None, params=None, method='get'):
+
+    api_url = (api_protocol
+               + '://'
+               + api_host
+               + request)
+
+    if method == 'put':
+        log.debug('Submitting data to API: %s' % api_url)
+
+        r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
+
+        # re-auth if our cookie is invalid/expired
+        if r.status_code == requests.codes.unauthorized:
+            cookies = authenticate()
+            r = session.put(api_url, verify=verify_ssl, cookies=cookies)
+
+        if r.status_code == requests.codes.ok:
+            print "Command successful."
+        elif r.status_code == requests.codes.forbidden:
+            print "Authorization failed."
+        else:
+            print "Command failed."
+    elif method == 'delete':
+
+        log.debug('Deleting data from API: %s' % api_url)
+
+        r = session.delete(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
+
+        # re-auth if our cookie is invalid/expired
+        if r.status_code == requests.codes.unauthorized:
+            cookies = authenticate()
+            r = session.delete(api_url, verify=verify_ssl, cookies=cookies)
+
+        if r.status_code == requests.codes.ok:
+            print "Command successful."
+
+        elif r.status_code == requests.codes.forbidden:
+            print "Authorization failed."
+        else:
+            print "Command failed."
+    elif method == 'get_params':
+        r = session.get(api_url, verify=verify_ssl, params=params)
+        return r.json()
+
+    else:
+        r = session.get(api_url, verify=verify_ssl)
+        return r.json()
+
+
 def api_put(url_string, headers=None, data=None):
     log.debug('Updating API...')
 
@@ -267,6 +316,11 @@ def api_delete(url_string, headers=None, data=None):
 
 def api_get(url_string):
     response = api_submit(url_string)
+    print response
+
+
+def api_get_params(url_string, params):
+    response = api_submit(url_string, params=params, method='get_params')
     print response
 
 
@@ -376,9 +430,9 @@ def collect_data():
     # doens't work on ec2 hosts.
     # FIXME: need regex match
     if 'ct_fqdn' in facts and facts['ct_loc'] == 'aws1':
-       data.name = facts['ct_fqdn']
+       data.node_name = facts['ct_fqdn']
     else:
-       data.name = facts['fqdn']
+       data.node_name = facts['fqdn']
 
     return data
 
@@ -462,6 +516,7 @@ def main(argv):
 
 
     (options, args) = parser.parse_args()
+    params = dict(u.split("=") for u in args)
 
     # Get the config
     config = ConfigParser.ConfigParser()
@@ -521,6 +576,10 @@ def main(argv):
 
     # FIXME: just in here for testing
     api_endpoint = None
+
+    # FIXME: Default data object from params. Is this ok?
+    data = json.dumps(params, default=lambda o: o.__dict__)
+
     # We know what we have to do, so let's go
     if options.register:
 
@@ -534,7 +593,6 @@ def main(argv):
     elif options.api_set:
 
         headers = {'content-type': 'application/json'}
-        data = dict(u.split("=") for u in options.params.split(","))
 
         if options.action:
             action = options.action
@@ -542,17 +600,15 @@ def main(argv):
         else:
             api_endpoint = '/api/{0}'.format(options.object_type)
 
-        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+        log.info('data is: {0}'.format(data))
         log.info('api_endpoint is: {0}'.format(api_endpoint))
     
         if api_endpoint:
-            data = json.dumps(data, default=lambda o: o.__dict__)
             api_put(api_endpoint, headers, data)
 
     elif options.api_delete:
 
         headers = {'content-type': 'application/json'}
-        data = dict(u.split("=") for u in options.params.split(","))
 
         if options.action:
             action = options.action
@@ -560,15 +616,16 @@ def main(argv):
         else:
             api_endpoint = '/api/{0}'.format(options.object_type)
 
-        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+        log.info('data is: {0}'.format(data))
         log.info('api_endpoint is: {0}'.format(api_endpoint))
 
         if api_endpoint:
-            data = json.dumps(data, default=lambda o: o.__dict__)
             api_delete(api_endpoint, headers, data)
 
     else:
         log.info('Reading from the API. (soon)')
+        api_endpoint = '/api/{0}'.format(options.object_type)
+        api_get_params(api_endpoint, params=data)
 
 
 #        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))

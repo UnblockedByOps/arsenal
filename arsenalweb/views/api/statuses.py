@@ -79,13 +79,13 @@ def api_status_write(request):
 
         if request.matchdict['resource'] == 'statuses':
 
-            q = DBSession.query(Status).filter(Status.name==payload['name'])
+            q = DBSession.query(Status).filter(Status.status_name==payload['status_name'])
             check = DBSession.query(q.exists()).scalar()
             # Create
             if not check:
-                log.info("Creating new status: {0}".format(payload['name']))
+                log.info("Creating new status: {0}".format(payload['status_name']))
                 utcnow = datetime.utcnow()
-                s = Status(name=payload['name'],
+                s = Status(status_name=payload['status_name'],
                            description=payload['description'],
                            updated_by=au['user_id'],
                            created=utcnow,
@@ -96,7 +96,7 @@ def api_status_write(request):
             else:
                 log.info("Updating status: {0}".format(payload['status_id']))
                 s = DBSession.query(Status).filter(Status.status_id==payload['status_id']).one()
-                s.name = payload['name']
+                s.status_name = payload['status_name']
                 s.description = payload['description']
                 s.updated_by=au['user_id']
                 DBSession.flush()

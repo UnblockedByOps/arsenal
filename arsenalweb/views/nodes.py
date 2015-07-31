@@ -50,4 +50,3 @@ def view_nodes(request):
             'au': au,
             'nodes': nodes,
            }
-

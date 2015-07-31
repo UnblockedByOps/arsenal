@@ -236,7 +236,7 @@
                 <tbody>
                   <tr tal:repeat="item statuses">
                     <td class="sr-status_id" tal:content="item.status_id">0</td>
-                    <td class="sr-status_name"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status_id)" tal:content="item.name">initializing</a></td>
+                    <td class="sr-status_name"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status_id)" tal:content="item.status_name">initializing</a></td>
                     <td class="sr-description" tal:content="item.description">Description.</td>
                     <td tal:content="item.updated_by">2015/04/23 21:02:15</td>
                     <td tal:content="item.updated">2015/04/23 21:02:15</td>

@@ -43,7 +43,7 @@ def _localize_date(obj):
 class Node(Base):
     __tablename__ = 'nodes'
     node_id                  = Column(Integer, primary_key=True, nullable=False)
-    name                     = Column(Text, nullable=False)
+    node_name                = Column(Text, nullable=False)
     unique_id                = Column(Text, nullable=False)
     status_id                = Column(Integer, ForeignKey('statuses.status_id'), nullable=False)
     hardware_profile_id      = Column(Integer, ForeignKey('hardware_profiles.hardware_profile_id'), nullable=False)
@@ -59,7 +59,7 @@ class Node(Base):
     def __json__(self, request):
         return dict(
             node_id=self.node_id,
-            name=self.name,
+            node_name=self.node_name,
             unique_id=self.unique_id,
             status_id=self.status_id,
             status=self.status,
@@ -77,7 +77,7 @@ class Node(Base):
     def __xml__(self, request):
         return dict(
             node_id=self.node_id,
-            name=self.name,
+            node_name=self.node_name,
             unique_id=self.unique_id,
             uptime=self.uptime,
             created=self.created.isoformat(),
@@ -187,7 +187,7 @@ class NodeGroupAssignment(Base):
 class Status(Base):
     __tablename__ = 'statuses'
     status_id        = Column(Integer, primary_key=True, nullable=False)
-    name             = Column(Text, nullable=False)
+    status_name      = Column(Text, nullable=False)
     description      = Column(Text, nullable=False)
     created          = Column(TIMESTAMP, nullable=False)
     updated          = Column(TIMESTAMP, nullable=False)
@@ -196,7 +196,7 @@ class Status(Base):
     def __json__(self, request):
         return dict(
             status_id=self.status_id,
-            name=self.name,
+            status_name=self.status_name,
             description=self.description,
             created=self.created.isoformat(),
             updated=self.updated.isoformat(),

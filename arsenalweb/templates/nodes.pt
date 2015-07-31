@@ -205,7 +205,7 @@
               <table id="searchResultsTable" class="tablesorter sar-table">
                 <thead>
                   <tr>
-                    <th class="sr-name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Name</span></div></th>
+                    <th class="sr-node_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Name</span></div></th>
                     <th class="sr-unique_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Unique ID</span></div></th>
                     <th class="sr-status"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status</span></div></th>
                     <th class="sr-node_groups"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">node groups</span></div></th>
@@ -216,9 +216,9 @@
                 </thead>
                 <tbody>
                   <tr tal:repeat="item nodes">
-                    <td class="sr-node_name"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.name">server.dc.domain.com</a></td>
+                    <td class="sr-node_name"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.node_name">server.dc.domain.com</a></td>
                     <td class="sr-uniq_id" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
-                    <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.status_id)" tal:content="item.status.name">initializing</a></td>
+                    <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.status_id)" tal:content="item.status.status_name">initializing</a></td>
                     <td>default_install</td>
                     <td class="sr-updated_by" tal:content="item.updated_by">2015/04/23 21:02:15</td>
                     <td class="sr-updated" tal:content="item.updated">2015/04/23 21:02:15</td>
