@@ -14,28 +14,21 @@
 #
 from pyramid.view import view_config
 from pyramid.response import Response
-import json
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (
     get_authenticated_user,
     log,
-    _api_get,
-    _api_put,
     )
 from arsenalweb.models import (
     DBSession,
-    Node,
     NodeGroup,
-    NodeGroupAssignment,
     )
 
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
 @view_config(route_name='api_node_groups', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_node_groups', request_method='GET', request_param='format=xml', renderer='xml')
 @view_config(route_name='api_node_group', request_method='GET', renderer='json')
 @view_config(route_name='api_node_group', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_node_group', request_method='GET', request_param='format=xml', renderer='xml')
 def api_node_group_read(request):
 
     perpage = 40
