@@ -14,6 +14,7 @@
 #
 from pyramid.view import view_config
 from pyramid.response import Response
+from sqlalchemy.orm.exc import NoResultFound
 import json
 from datetime import datetime
 from arsenalweb.views import (
@@ -27,12 +28,9 @@ from arsenalweb.models import (
 
 @view_config(route_name='api_statuses', request_method='GET', renderer='json')
 @view_config(route_name='api_statuses', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_statuses', request_method='GET', request_param='format=xml', renderer='xml')
 @view_config(route_name='api_status', request_method='GET', renderer='json')
 @view_config(route_name='api_status', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_status', request_method='GET', request_param='format=xml', renderer='xml')
 def api_status_read(request):
-    au = get_authenticated_user(request)
 
     perpage = 40
     offset = 0
@@ -44,30 +42,43 @@ def api_status_read(request):
 
     try:
         if request.path == '/api/statuses':
-            log.info('Displaying all statuses')
-            try:
-                q = DBSession.query(Status)
-                statuses = q.limit(perpage).offset(offset).all()
-                return statuses
-            except Exception, e:
-                conn_err_msg = e
-                return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
+
+            status_name = request.params.get('status_name')
+            if status_name:
+                log.info('Querying for status: {0}'.format(request.url))
+                try:
+                    q = DBSession.query(Status)
+                    q = q.filter(Status.status_name==status_name)
+                    return q.one()
+                except Exception, e:
+                    log.error('Error querying status={0},exception={2}'.format(request.url, e))
+                    raise
+            else:
+                log.info('Displaying all statuses')
+                try:
+                    q = DBSession.query(Status)
+                    statuses = q.limit(perpage).offset(offset).all()
+                    return statuses
+                except Exception, e:
+                    log.error('Error querying status={0},exception={2}'.format(request.url, e))
+                    raise
 
         if request.matchdict['id']:
+
             log.info('Displaying single status')
             try:
                 q = DBSession.query(Status).filter(Status.status_id==request.matchdict['id'])
                 status = q.one()
                 return status
             except Exception, e:
-                conn_err_msg = e
-                return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
-            
+                log.error('Error querying status={0},exception={2}'.format(request.url, e))
+                raise
+
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
     except Exception, e:
         conn_err_msg = e
         return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
-
-    return {'read_api':'true'}
 
 
 @view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json')

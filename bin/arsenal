@@ -121,6 +121,20 @@ def facter():
     return lines
 
 
+def get_cookie_auth():
+    try:
+        cookies = read_cookie()
+        if not cookies:
+            cookies = authenticate()
+        else:
+            cookies = ast.literal_eval(cookies)
+
+        return cookies
+
+    except Exception, e:
+        logging.error('Failed: %s' % e)
+
+
 def read_cookie():
     log.debug('Checking for cookie file: %s' % (cookie_file))
     if os.path.isfile(cookie_file):
@@ -187,7 +201,7 @@ def authenticate():
         sys.exit(1)
 
 
-def api_submit(request, cookies=None, headers=None, data=None, params=None, method='get'):
+def api_submit(request, headers=None, data=None, params=None, method='get'):
 
     api_url = (api_protocol
                + '://'
@@ -195,6 +209,9 @@ def api_submit(request, cookies=None, headers=None, data=None, params=None, meth
                + request)
 
     if method == 'put':
+
+        cookies = get_cookie_auth()
+
         log.debug('Submitting data to API: %s' % api_url)
 
         r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
@@ -211,6 +228,8 @@ def api_submit(request, cookies=None, headers=None, data=None, params=None, meth
         else:
             print "Command failed."
     elif method == 'delete':
+
+        cookies = get_cookie_auth()
 
         log.debug('Deleting data from API: %s' % api_url)
 
@@ -235,21 +254,6 @@ def api_submit(request, cookies=None, headers=None, data=None, params=None, meth
     else:
         r = session.get(api_url, verify=verify_ssl)
         return r.json()
-
-
-def api_put(url_string, headers=None, data=None):
-    log.debug('Updating API...')
-
-    try:
-        cookies = read_cookie()
-        if cookies:
-            api_submit(url_string, ast.literal_eval(cookies), headers, data, method='put')
-        else:
-            cookies = authenticate()
-            api_submit(url_string, cookies, headers, data, method='put')
-
-    except Exception, e:
-        logging.error('Failed: %s' % e)
 
 
 def api_delete(url_string, headers=None, data=None):
@@ -287,7 +291,7 @@ def _api_set(args):
     log.info('data is: {0}'.format(data))
     log.info('api_endpoint is: {0}'.format(api_endpoint))
 
-    api_put(api_endpoint, headers, data)
+    api_submit(api_endpoint, headers, data, method='put')
 
 
 # FIXME: Redundant
@@ -417,14 +421,52 @@ def collect_data():
     return data
 
 
+def ask_yes_no(question, answer_yes=None, default='no'):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+        It must be "yes" (the default), "no" or None (meaning
+        an answer is required of the user).
+
+    The "answer" return value is True for "yes" or False for "no".
+    """
+
+    if answer_yes:
+        return True
+
+    valid = {"yes": True, "y": True, "ye": True,
+             "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = raw_input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' "
+                             "(or 'y' or 'n').\n")
+
 def _register(args):
+        """Collect all the data about a node and register
+           it with the server"""
         data = collect_data()
 
         log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
 
         headers = {'content-type': 'application/json'}
         data = json.dumps(data, default=lambda o: o.__dict__)
-        api_put('/api/nodes', headers, data)
+        api_submit('/api/nodes', headers, data, method='put')
 
 
 def _nodes(args):
@@ -442,7 +484,10 @@ def _nodes(args):
     if args.set_tags:
         set_tag(args)
     if args.set_status:
-        set_status(args)
+        r = _nodes_search(args)
+        if r:
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r)), args.answer_yes):
+                _set_status(args, r)
     if args.set_node_groups:
         assign_node_groups(args)
     if args.del_node_groups:
@@ -453,26 +498,55 @@ def _nodes(args):
                 args.set_node_groups,
                 args.del_node_groups)):
 
-        log.info('Reading from the API.')
-        search_terms = list(args.search.split(","))
-        data = dict(u.split("=") for u in search_terms)
-        log.info('data is: {0}'.format(data))
+        _nodes_search(args)
 
-        api_endpoint = '/api/{0}'.format(args.object_type)
-        r = api_submit(api_endpoint, params=data, method='get_params')
 
-        # FIXME: Doesn't work with neste objects or dicts
-        if args.fields:
-            for res in r:
-                print '- {0}'.format(res['node_name'])
-#                print res['status']['status_name']
-                for f in list(args.fields.split(",")):
-                    if f == 'node_name':
-                        continue
-                    print '    {0}: {1}'.format(f, res[f])
-        else:
-            for res in r:
-                print res['node_name']
+def _set_status(args, nodes):
+
+    log.info('Setting status for nodes: {0}'.format(",".join(nodes)))
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    headers = {'content-type': 'application/json'}
+    data = {'status': args.set_status}
+    data = json.dumps(data, default=lambda o: o.__dict__)
+    api_submit('/api/nodes/1', headers, data, method='put')
+
+
+def _nodes_search(args):
+
+    log.info('Searching for nodes.')
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    search_terms = list(args.search.split(","))
+    data = dict(u.split("=") for u in search_terms)
+    log.info('data is: {0}'.format(data))
+
+    api_endpoint = '/api/{0}'.format(args.object_type)
+    r = api_submit(api_endpoint, params=data, method='get_params')
+
+    # FIXME: Doesn't work beyond the top level
+    if args.fields:
+        for res in r:
+            print '- {0}'.format(res['node_name'])
+#            print res['status']['status_name']
+            for f in list(args.fields.split(",")):
+                if f == 'node_name':
+                    continue
+                print '    {0}: {1}'.format(f, res[f])
+    # Default to returning just the node name
+    else:
+        nodes = []
+        for res in r:
+            nodes.append(res['node_name'])
+        return nodes
+
+
+def _nodes_create(args):
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
 
 
 def _node_groups(args):
@@ -483,56 +557,56 @@ def _node_groups(args):
 def _parse_args():
 
     pp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, add_help=False)
+    mp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Arsenal CLI')
 
-    pp.add_argument('--exact',
+    mp.add_argument('--exact',
                     action='store_true',
                     dest="exact_get",
                     help='exact match search terms.')
-    pp.add_argument('--config',
+    mp.add_argument('--config',
                    '-c',
                    dest='config_file',
                    help='Configuration file to use',
                    default='/app/arsenal/conf/arsenal.conf')
-    pp.add_argument('--fields',
+    mp.add_argument('--fields',
                    '-f',
                    dest='fields',
                    help='fields to display',
                    default=None)
-    pp.add_argument('--kookie',
+    mp.add_argument('--kookie',
                    '-k',
                    dest='cookie_file',
                    help='Cookie file to use for auth.',
                    default=os.environ['HOME'] + '/.arsenal_cookie')
-    pp.add_argument('--login',
+    mp.add_argument('--login',
                    '-l',
                    help='Login name making the request.',
                    default=os.environ['USER'])
-    pp.add_argument('--secrets',
+    mp.add_argument('--secrets',
                    '-s',
                    dest='secrets_config_file',
                    help='Secret config file to use.',
                    default='/app/secrets/arsenal.conf')
-    pp.add_argument('--server',
+    mp.add_argument('--server',
                    dest='api_host',
                    help='arsenal server to use. Overrides config file (FIXME: not yet)',
                    default=None)
-    pp.add_argument('--quiet',
+    mp.add_argument('--quiet',
                    '-q',
                    action='store_true',
                    help='Only log errors.',
                    default=None)
-    pp.add_argument('--verbose',
+    mp.add_argument('--verbose',
                    '-v',
                    action='store_true',
                    help='Log debug messages to the log file',
                    default=None)
-    pp.add_argument('--yes',
+    mp.add_argument('--yes',
                     '-y',
                     action='store_true',
                     dest="answer_yes",
                     help='answer yes to prompts.')
     
-    mp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Arsenal CLI')
 
     otsp = mp.add_subparsers(title="Object Type",
                              dest="object_type")
@@ -602,6 +676,15 @@ def _parse_args():
     ncsc.add_argument('--unique_id',
                       dest="unique_id",
                       help='unique_id to assign.')
+    # FIXME: Should these be required?
+    rncag.add_argument('--hardware_profile_id',
+                       required=False,
+                       dest="hardware_profile_id",
+                       help='hardware_profile_id to assign.')
+    rncag.add_argument('--operating_system_id',
+                       required=False,
+                       dest="operating_system_id",
+                       help='operating_system_id to assign.')
     rncag.add_argument('--name',
                        required=True,
                        dest="node_name",
@@ -610,16 +693,7 @@ def _parse_args():
                        required=True,
                        dest="status_id",
                        help='status_id to assign.')
-    # FIXME: Should these be required?
-    rncag.add_argument('--hardware_profile_id',
-                       required=True,
-                       dest="hardware_profile_id",
-                       help='hardware_profile_id to assign.')
-    rncag.add_argument('--operating_system_id',
-                       required=True,
-                       dest="operating_system_id",
-                       help='operating_system_id to assign.')
-    rncag.set_defaults(func=_nodes)
+    rncag.set_defaults(func=_nodes_create)
 
     # nodes delete subcommand (ndsc)
     ndsc = nasp.add_parser("delete",
@@ -754,12 +828,6 @@ def main():
 
         # FIXME: Will need os checking here
         cookie_file = '/root/.arsenal_cookie'
-
-    # FIXME: just in here for testing
-    api_endpoint = None
-
-    # FIXME: Default data object from params. Is this ok?
-#    data = json.dumps(params, default=lambda o: o.__dict__)
 
     # call whatever function was selected
     args.func(args)

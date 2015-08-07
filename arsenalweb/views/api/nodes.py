@@ -26,15 +26,13 @@ from arsenalweb.views import (
 from arsenalweb.models import (
     DBSession,
     Node,
-    HardwareProfile,
+    Status,
     )
 
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
 @view_config(route_name='api_nodes', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_nodes', request_method='GET', request_param='format=xml', renderer='xml')
 @view_config(route_name='api_node', request_method='GET', renderer='json')
 @view_config(route_name='api_node', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_node', request_method='GET', request_param='format=xml', renderer='xml')
 def api_node_read(request):
 
     perpage = 40
@@ -54,7 +52,7 @@ def api_node_read(request):
                 # Filter on all the passed in terms
                 q = DBSession.query(Node)
                 for k,v in request.GET.items():
-                    s+='{0},{1}'.format(k, v)    
+                    s+='{0}={1},'.format(k, v)    
                     # Lazy
                     q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
                     # Exact
@@ -83,6 +81,7 @@ def api_node_read(request):
 
 
 @view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_node', permission='api_write', request_method='PUT', renderer='json')
 def api_node_write(request):
 
     au = get_authenticated_user(request)
@@ -90,6 +89,7 @@ def api_node_write(request):
     try:
         payload = request.json_body
 
+        # FIXME: right now /api/nodes expects all paramters to be passed, no piecemeal updates.
         if request.path == '/api/nodes':
 
             # Get the hardware_profile_id or create if it doesn't exist.
@@ -184,6 +184,36 @@ def api_node_write(request):
                     raise
 
             return n
+
+        if request.matchdict['id']:
+
+            node_id = request.matchdict['id']
+            payload = request.json_body
+
+            s = ''
+            for k,v in payload.items():
+                s+='{0}={1},'.format(k, v)
+
+            if 'status' in payload.keys():
+                status_id = Status.get_status_id(payload['status'])
+                log.info('status_id: {0}'.format(status_id))
+
+            log.info('Updating node_id: {0} params: {1}'.format(node_id, s))
+
+#            q = DBSession.query(Node).filter(Node.node_id==node_id)
+#            n = q.one()
+#
+#            for k,v in payload.items():
+#                getattr(n ,k) == v
+
+            # n.node_name = node_name
+            # n.hardware_profile_id = hardware_profile_id
+            # n.operating_system_id = operating_system_id
+            # n.uptime = uptime
+            # n.status_id = status_id
+
+#            n.updated_by=au['user_id']
+#            DBSession.flush()
 
     except Exception, e:
         log.error('Error with node API! exception: {0}'.format(e))

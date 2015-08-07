@@ -130,7 +130,7 @@ DROP TABLE IF EXISTS `nodes`;
 CREATE TABLE `nodes` (
   `node_id`                           int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `node_name`                         varchar(255) COLLATE utf8_bin NOT NULL,
-  `unique_id`                         varchar(255) NOT NULL,
+  `unique_id`                         varchar(255) DEFAULT NULL,
   `status_id`                         int(11) NOT NULL,
   `serial_number`                     varchar(255) DEFAULT NULL,
   `hardware_profile_id`               int(11) DEFAULT NULL,

@@ -27,10 +27,8 @@ from arsenalweb.models import (
 
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_hardware_profiles', request_method='GET', request_param='format=xml', renderer='xml')
 @view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_hardware_profile', request_method='GET', request_param='format=xml', renderer='xml')
 def api_hardware_profile_read(request):
 
     perpage = 40
@@ -44,17 +42,8 @@ def api_hardware_profile_read(request):
     try:
         if request.path == '/api/hardware_profiles':
 
-            params = {'model': None,
-                      'manufacturer': None,
-                     }
-            for p in params:
-                try:
-                    params[p] = request.params[p]
-                except:
-                    pass
-        
-            model = params['model']
-            manufacturer = params['manufacturer']
+            model = request.params.get('model')
+            manufacturer = request.params.get('manufacturer')
 
             if model:
                 log.info('Querying for hardware_profile: {0}'.format(request.url))

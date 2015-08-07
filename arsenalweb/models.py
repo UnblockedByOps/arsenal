@@ -95,6 +95,17 @@ class HardwareProfile(Base):
     updated               = Column(TIMESTAMP, nullable=False)
     updated_by            = Column(Text, nullable=False)
 
+    @hybrid_method
+    def get_hardware_profile_id(self, manufacturer, model):
+        q = DBSession.query(HardwareProfile)
+        q = q.filter(HardwareProfile.manufacturer == '%s' % manufacturer)
+        q = q.filter(HardwareProfile.model == '%s' % model)
+        try:
+            h = q.one()
+            return h.hardware_profile_id
+        except:
+            return None
+
     def __json__(self, request):
         return dict(
             hardware_profile_id=self.hardware_profile_id,
@@ -104,13 +115,6 @@ class HardwareProfile(Base):
             updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
-
-    @hybrid_method
-    def get_hardware_profile_id(self, manufacturer, model):
-        q = DBSession.query(HardwareProfile)
-        q = q.filter(HardwareProfile.manufacturer == '%s' % manufacturer)
-        q = q.filter(HardwareProfile.model == '%s' % model)
-        return q.one()
 
 
 class OperatingSystem(Base):
@@ -205,6 +209,16 @@ class Status(Base):
     created          = Column(TIMESTAMP, nullable=False)
     updated          = Column(TIMESTAMP, nullable=False)
     updated_by       = Column(Text, nullable=False)
+
+    @hybrid_method
+    def get_status_id(self, status_name):
+        q = DBSession.query(Status)
+        q = q.filter(Status.status_name == status_name)
+        try:
+            s = q.one()
+            return s.status_id
+        except:
+            return None
 
     def __json__(self, request):
         return dict(
