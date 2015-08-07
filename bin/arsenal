@@ -19,10 +19,9 @@ import sys
 import subprocess
 import re
 import logging
-import optparse
+import argparse
 import ConfigParser
 import json
-import datetime
 import getpass
 import ast
 import requests
@@ -121,52 +120,6 @@ def facter():
     
     return lines
 
-
-
-    api_url = (api_protocol
-               + '://'
-               + api_host
-               + request)
-
-    if method == 'put':
-        log.debug('Submitting data to API: %s' % api_url)
-    
-        r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
-    
-        # re-auth if our cookie is invalid/expired
-        if r.status_code == requests.codes.unauthorized:
-            cookies = authenticate()
-            r = session.put(api_url, verify=verify_ssl, cookies=cookies)
-    
-        if r.status_code == requests.codes.ok:
-            print "Command successful."
-        elif r.status_code == requests.codes.forbidden:
-            print "Authorization failed."
-        else:
-            print "Command failed."
-    elif method == 'delete':
-
-        log.debug('Deleting data from API: %s' % api_url)
-
-        r = session.delete(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
-
-        # re-auth if our cookie is invalid/expired
-        if r.status_code == requests.codes.unauthorized:
-            cookies = authenticate()
-            r = session.delete(api_url, verify=verify_ssl, cookies=cookies)
-
-        if r.status_code == requests.codes.ok:
-            print "Command successful."
-
-        elif r.status_code == requests.codes.forbidden:
-            print "Authorization failed."
-        else:
-            print "Command failed."
-
-    else:
-        r = session.get(api_url, verify=verify_ssl)
-        return r.json()
-    
 
 def read_cookie():
     log.debug('Checking for cookie file: %s' % (cookie_file))
@@ -321,7 +274,34 @@ def api_get(url_string):
 
 def api_get_params(url_string, params):
     response = api_submit(url_string, params=params, method='get_params')
-    print response
+    return response
+
+# FIXME: Redundant
+def _api_set(args):
+    log.info('API set')
+
+    headers = {'content-type': 'application/json'}
+    data = json.dumps(dict(u.split("=") for u in args.params), default=lambda o: o.__dict__)
+    api_endpoint = '/api/{0}'.format(args.object_type)
+
+    log.info('data is: {0}'.format(data))
+    log.info('api_endpoint is: {0}'.format(api_endpoint))
+
+    api_put(api_endpoint, headers, data)
+
+
+# FIXME: Redundant
+def _api_delete(args):
+    log.info('API delete')
+
+    headers = {'content-type': 'application/json'}
+    data = json.dumps(dict(u.split("=") for u in args.params), default=lambda o: o.__dict__)
+    api_endpoint = '/api/{0}'.format(args.object_type)
+
+    log.info('data is: {0}'.format(data))
+    log.info('api_endpoint is: {0}'.format(api_endpoint))
+
+    api_delete(api_endpoint, headers, data)
 
 
 def get_unique_id(**facts):
@@ -436,93 +416,291 @@ def collect_data():
 
     return data
 
-def main(argv):
 
-    parser = optparse.OptionParser(
-        description='Arsenal Operations Database Client.')
-    parser.add_option('--action',
-                      '-a',
-                      action='store',
-                      type='string',
-                      dest='action',
-                      help='The type of action to perform on the objet. Add instructions.',
-                      default=None)
-    parser.add_option('--config',
-                      '-c',
-                      action='store',
-                      type='string',
-                      dest='config_file',
-                      help='Config file to use.',
-                      default='/app/arsenal/conf/arsenal.conf')
-    parser.add_option('--delete',
-                      '-d',
-                      action='store_true',
-                      dest='api_delete',
-                      help='Delete data from the API',
-                      default=None)
-    parser.add_option('--login',
-                      '-l',
-                      action='store',
-                      type='string',
-                      dest='login',
-                      help='Login name making the request',
-                      default=os.environ['USER'])
-    parser.add_option('--kookie',
-                      '-k',
-                      action='store',
-                      type='string',
-                      dest='cookie_file',
-                      help='Cookie file to use for auth',
-                      default=os.environ['HOME'] + '/.arsenal_cookie')
-    parser.add_option('--object',
-                      '-o',
-                      action='store',
-                      type='string',
-                      dest='object_type',
-                      help='Type of object to query. Default is nodes. Need to put instructions on how to get all types here',
-                      default='nodes')
-    parser.add_option('--params',
-                      '-p',
-                      action='store',
-                      type='string',
-                      dest='params',
-                      help='Comma separated key=value paramters. Need to put instructions on how to get all available/required params here',
-                      default='nodes')
-    parser.add_option('--register',
-                      '-r',
-                      action='store_true',
-                      dest='register',
-                      help='Register the node with arsenal.',
-                      default=None)
-    parser.add_option('--secrets',
-                      '-S',
-                      action='store',
-                      type='string',
-                      dest='secrets_config_file',
-                      help='Secret config file to use.',
-                      default='/app/secrets/arsenal.conf')
-    parser.add_option('--set',
-                      '-s',
-                      action='store_true',
-                      dest='api_set',
-                      help='Write data to the API',
-                      default=None)
-    parser.add_option('--verbose',
-                      '-v',
-                      action='store_true',
-                      dest='verbose',
-                      help='Log debug messages to the log file',
-                      default=None)
+def _register(args):
+        data = collect_data()
+
+        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+
+        headers = {'content-type': 'application/json'}
+        data = json.dumps(data, default=lambda o: o.__dict__)
+        api_put('/api/nodes', headers, data)
 
 
-    (options, args) = parser.parse_args()
-    params = dict(u.split("=") for u in args)
+def _nodes(args):
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    # FIXME: Ths is going to get ugly real fast
+#    actions = ['set_tags', 'set_status', 'set_node_groups', 'del_node_groups']
+#    for a in actions:
+#        foo = getattr(args, a)()
+#        print "FOO IS: ", foo
+#        if foo:
+#           globals()[foo](args) 
+    if args.set_tags:
+        set_tag(args)
+    if args.set_status:
+        set_status(args)
+    if args.set_node_groups:
+        assign_node_groups(args)
+    if args.del_node_groups:
+        deassign_node_groups(args)
+
+    if not any((args.set_tags,
+                args.set_status,
+                args.set_node_groups,
+                args.del_node_groups)):
+
+        log.info('Reading from the API.')
+        search_terms = list(args.search.split(","))
+        data = dict(u.split("=") for u in search_terms)
+        log.info('data is: {0}'.format(data))
+
+        api_endpoint = '/api/{0}'.format(args.object_type)
+        r = api_submit(api_endpoint, params=data, method='get_params')
+
+        # FIXME: Doesn't work with neste objects or dicts
+        if args.fields:
+            for res in r:
+                print '- {0}'.format(res['node_name'])
+#                print res['status']['status_name']
+                for f in list(args.fields.split(",")):
+                    if f == 'node_name':
+                        continue
+                    print '    {0}: {1}'.format(f, res[f])
+        else:
+            for res in r:
+                print res['node_name']
+
+
+def _node_groups(args):
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+
+def _parse_args():
+
+    pp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, add_help=False)
+
+    pp.add_argument('--exact',
+                    action='store_true',
+                    dest="exact_get",
+                    help='exact match search terms.')
+    pp.add_argument('--config',
+                   '-c',
+                   dest='config_file',
+                   help='Configuration file to use',
+                   default='/app/arsenal/conf/arsenal.conf')
+    pp.add_argument('--fields',
+                   '-f',
+                   dest='fields',
+                   help='fields to display',
+                   default=None)
+    pp.add_argument('--kookie',
+                   '-k',
+                   dest='cookie_file',
+                   help='Cookie file to use for auth.',
+                   default=os.environ['HOME'] + '/.arsenal_cookie')
+    pp.add_argument('--login',
+                   '-l',
+                   help='Login name making the request.',
+                   default=os.environ['USER'])
+    pp.add_argument('--secrets',
+                   '-s',
+                   dest='secrets_config_file',
+                   help='Secret config file to use.',
+                   default='/app/secrets/arsenal.conf')
+    pp.add_argument('--server',
+                   dest='api_host',
+                   help='arsenal server to use. Overrides config file (FIXME: not yet)',
+                   default=None)
+    pp.add_argument('--quiet',
+                   '-q',
+                   action='store_true',
+                   help='Only log errors.',
+                   default=None)
+    pp.add_argument('--verbose',
+                   '-v',
+                   action='store_true',
+                   help='Log debug messages to the log file',
+                   default=None)
+    pp.add_argument('--yes',
+                    '-y',
+                    action='store_true',
+                    dest="answer_yes",
+                    help='answer yes to prompts.')
+    
+    mp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Arsenal CLI')
+
+    otsp = mp.add_subparsers(title="Object Type",
+                             dest="object_type")
+
+    ### REGISTER
+    # This is a bit of a cheat since technically it's not an object type.
+    # Putting it at the top level since it is the primary command.
+    r_help = ("Register this node to the server.\n\n")
+    rotp = otsp.add_parser("register",
+                           description=r_help,
+                           help=r_help,
+                           parents=[pp])
+    rotp.set_defaults(func=_register)
+
+    ### NODES
+    ### nodes object_type parser (notp)
+    n_help = ("Perform actions on the nodes object_type. Use the search \n"
+              "action to perform assignment actions such as tagging, \n"
+              "assigning node_groups, and setting status.\n\n")
+    notp = otsp.add_parser("nodes",
+                           description=n_help,
+                           help=n_help,
+                           parents=[pp])
+    
+    # nodes action sub-parser (nasp)
+    nasp = notp.add_subparsers(title="Actions",
+                               dest="action_command")
+
+    # nodes search subcommand (nssc)
+    nssc = nasp.add_parser("search",
+                           help="Search for node objects and optionally act upon the results.",
+                           parents=[pp])
+
+    # assignment action argument group (ansqg)
+    ansag = nssc.add_argument_group('Assignment Actions')
+
+    ansag.add_argument('--status',
+                       dest="set_status",
+                       help='status to assign to the search results.')
+    ansag.add_argument('--tag',
+                       dest="set_tags",
+                       help='Comma separated list of key=value pairs to tag to the search results.')
+    ansag.add_argument('--del_tag',
+                       dest="del_tags",
+                       help='Comma separated list of key=value pairs to un-tag from the search results.')
+    ansag.add_argument('--node_groups',
+                       dest="set_node_groups",
+                       help='Comma separated list of node_groups to assign to the search results.')
+    ansag.add_argument('--del_node_groups',
+                       dest="del_node_groups",
+                       help='Comma separated list of node_groups to un-assign from the search results.')
+    nssc.add_argument('search',
+                      default=None,
+                      metavar='search_terms',
+                      help='Comma separated list of key=value pairs to search for.')
+    nssc.set_defaults(func=_nodes)
+
+    # nodes create subcommand (ncsc)
+    ncsc = nasp.add_parser("create",
+                           description="Create node objects.",
+                           help="Create node objects.",
+                           parents=[pp])
+
+    # nodes required argument group (rncag)
+    rncag = ncsc.add_argument_group('required arguments')
+
+    ncsc.add_argument('--unique_id',
+                      dest="unique_id",
+                      help='unique_id to assign.')
+    rncag.add_argument('--name',
+                       required=True,
+                       dest="node_name",
+                       help='node_name to create')
+    rncag.add_argument('--status_id',
+                       required=True,
+                       dest="status_id",
+                       help='status_id to assign.')
+    # FIXME: Should these be required?
+    rncag.add_argument('--hardware_profile_id',
+                       required=True,
+                       dest="hardware_profile_id",
+                       help='hardware_profile_id to assign.')
+    rncag.add_argument('--operating_system_id',
+                       required=True,
+                       dest="operating_system_id",
+                       help='operating_system_id to assign.')
+    rncag.set_defaults(func=_nodes)
+
+    # nodes delete subcommand (ndsc)
+    ndsc = nasp.add_parser("delete",
+                           help="Delete node objects.",
+                           parents=[pp])
+    ndsc.add_argument('search',
+                      default=None,
+                      metavar='search_terms',
+                      help='Comma separated list of key=value pairs to search for.')
+    ndsc.set_defaults(func=_nodes)
+
+    ### NODE_GROUPS
+    ### node_groups object_type parser (ngotp)
+    ng_help = ("Perform actions on the node_groups object_type. Use the \n"
+               "search action to perform assignment actions such as tagging.\n\n")
+    ngotp = otsp.add_parser("node_groups",
+                            description=ng_help,
+                            help=ng_help,
+                            parents=[pp])
+
+    # node_groups action sub-parser (ngasp)
+    ngasp = ngotp.add_subparsers(title="Available actions",
+                                 dest="action_command")
+    # node_groups search subcommand (ngssc)
+    ngssc = ngasp.add_parser("search",
+                             help="Search for node_group objects and optionally act upon the results.",
+                             parents=[pp])
+    ngssc.add_argument('--tag',
+                       dest="set_tags",
+                       help='Comma separated list of key=value pairs to tag to the node_group.')
+    ngssc.add_argument('search',
+                       default=None,
+                       metavar='search_terms',
+                       help='Comma separated list of key=value pairs to search for.')
+    ngssc.set_defaults(func=_node_groups)
+
+    # node_groups create subcommand (ngcsc)
+    ngcsc = ngasp.add_parser("create",
+                             help="Create node_group objects.",
+                             parents=[pp])
+
+    # required node_group greate argument group (rngcag)
+    rngcag = ngcsc.add_argument_group('required arguments')
+
+    rngcag.add_argument('--name',
+                        required=True,
+                        dest="node_group_name",
+                        help='node_group_name to create.')
+    rngcag.add_argument('--description',
+                        required=True,
+                        dest="node_group_description",
+                        help='node_group_description to assign.')
+    rngcag.add_argument('--owner',
+                        required=True,
+                        dest="node_group_owner",
+                        help='node_group_owner to assign.')
+    rngcag.set_defaults(func=_node_groups)
+
+    # node_groups delete subcommand (ngdsc)
+    ngdsc = ngasp.add_parser("delete",
+                             help="Delete node_group objects.",
+                             parents=[pp])
+    ngdsc.add_argument('search',
+                       default=None,
+                       metavar='search_terms',
+                       help='Comma separated list of key=value pairs to search for.')
+    ngdsc.set_defaults(func=_node_groups)
+
+    return mp.parse_args()   
+
+
+def main():
+
+    # parse the args
+    args = _parse_args()
 
     # Get the config
     config = ConfigParser.ConfigParser()
-    config.read(options.config_file)
+    config.read(args.config_file)
     secrets_config = ConfigParser.ConfigParser()
-    secrets_config.read(options.secrets_config_file)
+    secrets_config.read(args.secrets_config_file)
     # Globalizing these. Otherwise will be passing them all over the
     # place for no reason.
     global api_host
@@ -532,17 +710,20 @@ def main(argv):
     global login
     global cookie_file
     global kaboom_password
-    api_host = config.get('main', 'api.host')
+    # command line first, config file second.
+    api_host = args.api_host if args.api_host else config.get('main', 'api.host')
     api_protocol = config.get('main', 'api.protocol')
     ca_bundle_file = config.get('main', 'ca.bundle.file')
     verify_ssl = bool(config.get('main', 'verify.ssl'))
     log_file = config.get('main', 'log.file')
-    login = options.login
-    cookie_file = options.cookie_file
+    login = args.login
+    cookie_file = args.cookie_file
     kaboom_password = secrets_config.get('main', 'kaboom.password')
 
-    if options.verbose:
+    if args.verbose:
         log_level = logging.DEBUG
+    elif args.quiet:
+        log_level = logging.ERROR
     else:
         log_level = logging.INFO
 
@@ -559,7 +740,7 @@ def main(argv):
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
 
-    if options.verbose:
+    if args.verbose:
         log.info('Debug messages are being written to the log file : %s'
                      % log_file)
     log.info('Using server: %s'
@@ -578,57 +759,12 @@ def main(argv):
     api_endpoint = None
 
     # FIXME: Default data object from params. Is this ok?
-    data = json.dumps(params, default=lambda o: o.__dict__)
+#    data = json.dumps(params, default=lambda o: o.__dict__)
 
-    # We know what we have to do, so let's go
-    if options.register:
-
-        data = collect_data()
-
-        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
-
-        headers = {'content-type': 'application/json'}
-        data = json.dumps(data, default=lambda o: o.__dict__)
-        api_put('/api/nodes', headers, data)
-    elif options.api_set:
-
-        headers = {'content-type': 'application/json'}
-
-        if options.action:
-            action = options.action
-            log.info('performing: {0}'.format(action))
-        else:
-            api_endpoint = '/api/{0}'.format(options.object_type)
-
-        log.info('data is: {0}'.format(data))
-        log.info('api_endpoint is: {0}'.format(api_endpoint))
-    
-        if api_endpoint:
-            api_put(api_endpoint, headers, data)
-
-    elif options.api_delete:
-
-        headers = {'content-type': 'application/json'}
-
-        if options.action:
-            action = options.action
-            log.info('performing: {0}'.format(action))
-        else:
-            api_endpoint = '/api/{0}'.format(options.object_type)
-
-        log.info('data is: {0}'.format(data))
-        log.info('api_endpoint is: {0}'.format(api_endpoint))
-
-        if api_endpoint:
-            api_delete(api_endpoint, headers, data)
-
-    else:
-        log.info('Reading from the API. (soon)')
-        api_endpoint = '/api/{0}'.format(options.object_type)
-        api_get_params(api_endpoint, params=data)
-
+    # call whatever function was selected
+    args.func(args)
 
 #        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

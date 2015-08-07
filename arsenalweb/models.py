@@ -60,7 +60,10 @@ class Node(Base):
     def node_groups(self):
         ngs = []
         for a in self.node_group_assignments:
-            ngs.append(a.node_groups.__json__(self))
+            # Test to make sure the node group wasn't deleted after the 
+            # assignment was made
+            if a.node_groups:
+                ngs.append(a.node_groups.__json__(self))
         return ngs
 
 

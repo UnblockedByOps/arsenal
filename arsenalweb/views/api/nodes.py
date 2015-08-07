@@ -37,8 +37,6 @@ from arsenalweb.models import (
 @view_config(route_name='api_node', request_method='GET', request_param='format=xml', renderer='xml')
 def api_node_read(request):
 
-    au = get_authenticated_user(request)
-
     perpage = 40
     offset = 0
 
@@ -49,23 +47,36 @@ def api_node_read(request):
 
     try:
         if request.path == '/api/nodes':
-            log.info('Displaying all nodes')
-            try:
+
+            if request.params:
+                s = ""
+
+                # Filter on all the passed in terms
+                q = DBSession.query(Node)
+                for k,v in request.GET.items():
+                    s+='{0},{1}'.format(k, v)    
+                    # Lazy
+                    q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
+                    # Exact
+                    # q = q.filter(getattr(Node ,k)==v)
+                log.info('Searching for node with params: {0}'.format(s))
+                node = q.all()
+                return node
+            else:
+                log.info('Displaying all nodes')
                 q = DBSession.query(Node)
                 nodes = q.limit(perpage).offset(offset).all()
                 return nodes
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
 
         if request.matchdict['id']:
             log.info('Displaying single node')
-            try:
-                q = DBSession.query(Node).filter(Node.node_id==request.matchdict['id'])
-                node = q.one()
-                return node
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
+            q = DBSession.query(Node).filter(Node.node_id==request.matchdict['id'])
+            node = q.one()
+            return node
             
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
+
     except Exception, e:
         log.error('Error querying api={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
@@ -177,3 +188,59 @@ def api_node_write(request):
     except Exception, e:
         log.error('Error with node API! exception: {0}'.format(e))
         return Response(str(e), content_type='application/json', status_int=500)
+
+
+@view_config(route_name='api_nodes', permission='api_write', request_method='DELETE', renderer='json')
+def api_nodes_delete(request):
+
+    au = get_authenticated_user(request)
+
+    try:
+        payload = request.json_body
+
+        if request.path == '/api/nodes':
+
+            # FIXME: This is ugly
+            node_name = payload.get('node_name', None)
+            unique_id = payload.get('unique_id', None)
+#                unique_id = payload['unique_id'] or None
+
+            if not any((node_name, unique_id)):
+                log.error('You must specify one of node_name or unique_id')
+                return Response(content_type='application/json', status_int=400)
+            else:
+                try:
+                    log.info('Checking for node_name={0},unique_id={1}'.format(node_name, unique_id))
+                    q = DBSession.query(Node)
+
+                    if node_name:
+                        q = q.filter(Node.node_name==node_name)
+                    if unique_id:
+                        q = q.filter(Node.unique_id==unique_id)
+                    q.one()
+                except NoResultFound, e:
+                    return Response(content_type='application/json', status_int=404)
+
+                else:
+                    try:
+                        # FIXME: Need auditing
+                        log.info('Deleting node_name={0},unique_id={1}'.format(node_name, unique_id))
+                        n = DBSession.query(Node)
+                        if node_name:
+                            n = n.filter(Node.node_name==node_name)
+                        if unique_id:
+                            n = n.filter(Node.unique_id==unique_id)
+                        n = n.one()
+                        DBSession.delete(n)
+                        DBSession.flush()
+                    except Exception, e:
+                        log.info('Error deleting node_name={0},unique_id={1}'.format(node_name, unique_id))
+                        raise
+
+                return n
+
+    except Exception, e:
+        log.error('Error with node API! exception: {0}'.format(e))
+        raise
+        return Response(str(e), content_type='application/json', status_int=500)
+
