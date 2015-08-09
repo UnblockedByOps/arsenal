@@ -44,19 +44,9 @@ def api_operating_system_read(request):
     try:
         if request.path == '/api/operating_systems':
 
-            params = {'variant': None,
-                      'version_number': None,
-                      'architecture': None,
-                     }
-            for p in params:
-                try:
-                    params[p] = request.params[p]
-                except:
-                    pass
-        
-            variant = params['variant']
-            version_number = params['version_number']
-            architecture = params['architecture']
+            variant = request.params.get('variant')
+            version_number = request.params.get('version_number')
+            architecture = request.params.get('architecture')
 
             if variant:
                 log.info('Querying for operating_system: {0}'.format(request.url))
@@ -66,8 +56,6 @@ def api_operating_system_read(request):
                     q = q.filter(OperatingSystem.version_number==version_number)
                     q = q.filter(OperatingSystem.architecture==architecture)
                     return q.one()
-                except NoResultFound:
-                    return Response(content_type='application/json', status_int=404)
                 except Exception, e:
                     log.error('Error querying operating_system={0},exception={2}'.format(request.url, e))
                     raise
@@ -77,8 +65,6 @@ def api_operating_system_read(request):
                 try:
                     q = DBSession.query(OperatingSystem)
                     return q.limit(perpage).offset(offset).all()
-                except NoResultFound:
-                    return Response(content_type='application/json', status_int=404)
                 except Exception, e:
                     log.error('Error querying for operating_systems={0},exception={0}'.format(request.url, e))
                     raise
@@ -89,12 +75,12 @@ def api_operating_system_read(request):
                 q = DBSession.query(OperatingSystem)
                 q = q.filter(OperatingSystem.operating_system_id==request.matchdict['id'])
                 return q.one()
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
             except Exception, e:
                 log.error('Error querying for operating_system={0},exception={1}'.format(request.url, e))
                 raise
             
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
     except Exception, e:
         return Response(str(e), content_type='text/plain', status_int=500)
 
@@ -140,12 +126,6 @@ def api_operating_system_write(request):
             else:
                 try:
                     log.info('Updating operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
-
-#                    os = DBSession.query(OperatingSystem)
-#                    os = os.filter(OperatingSystem.variant==variant)
-#                    os = os.filter(OperatingSystem.version_number==version_number)
-#                    os = os.filter(OperatingSystem.architecture==architecture)
-#                    os = os.one()
 
                     os.variant = variant
                     os.version_number = version_number

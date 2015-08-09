@@ -14,9 +14,8 @@
 #
 from pyramid.view import view_config
 from pyramid.response import Response
-from sqlalchemy.orm.exc import NoResultFound
-import json
 from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (
     get_authenticated_user,
     log,
@@ -44,6 +43,7 @@ def api_status_read(request):
         if request.path == '/api/statuses':
 
             status_name = request.params.get('status_name')
+
             if status_name:
                 log.info('Querying for status: {0}'.format(request.url))
                 try:
@@ -83,37 +83,89 @@ def api_status_read(request):
 
 @view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json')
 def api_status_write(request):
+
+    au = get_authenticated_user(request)
+
+    try:
+        payload = request.json_body
+        status_name = payload['status_name']
+        description = payload['description']
+
+        if request.path == '/api/statuses':
+
+            log.info('Checking for status_name={0},description={1}'.format(status_name, description))
+            try:
+                s = DBSession.query(Status.status_name==status_name)
+                s.one()
+            except NoResultFound, e:
+                try:
+                    log.info("Creating new status: {0}".format(status_name))
+                    utcnow = datetime.utcnow()
+                    s = Status(status_name=status_name,
+                               description=description,
+                               updated_by=au['user_id'],
+                               created=utcnow,
+                               updated=utcnow)
+                    DBSession.add(s)
+                    DBSession.flush()
+                except Exception, e:
+                    log.error('Error creating status_name={0},description={1},exception={2}'.format(status_name, description, e))
+                    raise
+            # Update
+            else:
+                try:
+                    log.info('Updating status_name={0},description={1}'.format(status_name, description))
+
+                    s.status_name = payload['status_name']
+                    s.description = payload['description']
+                    s.updated_by=au['user_id']
+
+                    DBSession.flush()
+
+                except Exception, e:
+                    log.error('Error updating status_name={0},description={1},exception={2}'.format(status_name, description, e))
+                    raise
+
+            return s
+
+    except Exception, e:
+        return Response(str(e), content_type='text/plain', status_int=500)
+
+
+@view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json')
+def api_status_delete(request):
+
+    # Will be used for auditing
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
 
-        if request.matchdict['resource'] == 'statuses':
+        if request.path == '/api/statuses':
 
-            q = DBSession.query(Status).filter(Status.status_name==payload['status_name'])
-            check = DBSession.query(q.exists()).scalar()
-            # Create
-            if not check:
-                log.info("Creating new status: {0}".format(payload['status_name']))
-                utcnow = datetime.utcnow()
-                s = Status(status_name=payload['status_name'],
-                           description=payload['description'],
-                           updated_by=au['user_id'],
-                           created=utcnow,
-                           updated=utcnow)
-                DBSession.add(s)
-                DBSession.flush()
-            # Update
+            try:
+                status_name = payload['status_name']
+
+                log.info('Checking for status_name={0}'.format(status_name))
+                s = DBSession.query(Status.status_name==status_name)
+                s.one()
+            except NoResultFound, e:
+                return Response(content_type='application/json', status_int=404)
+
             else:
-                log.info("Updating status: {0}".format(payload['status_id']))
-                s = DBSession.query(Status).filter(Status.status_id==payload['status_id']).one()
-                s.status_name = payload['status_name']
-                s.description = payload['description']
-                s.updated_by=au['user_id']
-                DBSession.flush()
+                try:
+                    # FIXME: Need auditing
+                    # FIXME: What about orphaned assigments?
+                    log.info('Deleting status_name={0}'.format(status_name))
+                    DBSession.delete(s)
+                    DBSession.flush()
+                except Exception, e:
+                    log.info('Error deleting status_name={0}'.format(status_name))
+                    raise
 
-            return json.dumps(s, default=lambda o: o.__dict__)
-    except:
+            # FIXME: Return none is 200 or ?
+            # return nga
 
-        return {'':''}
-
+    except Exception, e:
+        log.error('Error with node_group_assignment API! exception: {0}'.format(e))
+        return Response(str(e), content_type='application/json', status_int=500)

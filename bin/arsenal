@@ -22,6 +22,9 @@ import logging
 import argparse
 import ConfigParser
 import json
+import yaml
+import collections
+import textwrap
 import getpass
 import ast
 import requests
@@ -201,7 +204,9 @@ def authenticate():
         sys.exit(1)
 
 
-def api_submit(request, headers=None, data=None, params=None, method='get'):
+def api_submit(request, data=None,  method='get'):
+
+    headers = {'content-type': 'application/json'}
 
     api_url = (api_protocol
                + '://'
@@ -210,6 +215,7 @@ def api_submit(request, headers=None, data=None, params=None, method='get'):
 
     if method == 'put':
 
+        data = json.dumps(data, default=lambda o: o.__dict__)
         cookies = get_cookie_auth()
 
         log.debug('Submitting data to API: %s' % api_url)
@@ -229,6 +235,7 @@ def api_submit(request, headers=None, data=None, params=None, method='get'):
             print "Command failed."
     elif method == 'delete':
 
+        data = json.dumps(data, default=lambda o: o.__dict__)
         cookies = get_cookie_auth()
 
         log.debug('Deleting data from API: %s' % api_url)
@@ -248,64 +255,12 @@ def api_submit(request, headers=None, data=None, params=None, method='get'):
         else:
             print "Command failed."
     elif method == 'get_params':
-        r = session.get(api_url, verify=verify_ssl, params=params)
+        r = session.get(api_url, verify=verify_ssl, params=data)
         return r.json()
 
     else:
         r = session.get(api_url, verify=verify_ssl)
         return r.json()
-
-
-def api_delete(url_string, headers=None, data=None):
-    log.debug('Deleting from API...')
-
-    try:
-        cookies = read_cookie()
-        if cookies:
-            api_submit(url_string, ast.literal_eval(cookies), headers, data, method='delete')
-        else:
-            cookies = authenticate()
-            api_submit(url_string, cookies, headers, data, method='put')
-
-    except Exception, e:
-        logging.error('Failed: %s' % e)
-
-
-def api_get(url_string):
-    response = api_submit(url_string)
-    print response
-
-
-def api_get_params(url_string, params):
-    response = api_submit(url_string, params=params, method='get_params')
-    return response
-
-# FIXME: Redundant
-def _api_set(args):
-    log.info('API set')
-
-    headers = {'content-type': 'application/json'}
-    data = json.dumps(dict(u.split("=") for u in args.params), default=lambda o: o.__dict__)
-    api_endpoint = '/api/{0}'.format(args.object_type)
-
-    log.info('data is: {0}'.format(data))
-    log.info('api_endpoint is: {0}'.format(api_endpoint))
-
-    api_submit(api_endpoint, headers, data, method='put')
-
-
-# FIXME: Redundant
-def _api_delete(args):
-    log.info('API delete')
-
-    headers = {'content-type': 'application/json'}
-    data = json.dumps(dict(u.split("=") for u in args.params), default=lambda o: o.__dict__)
-    api_endpoint = '/api/{0}'.format(args.object_type)
-
-    log.info('data is: {0}'.format(data))
-    log.info('api_endpoint is: {0}'.format(api_endpoint))
-
-    api_delete(api_endpoint, headers, data)
 
 
 def get_unique_id(**facts):
@@ -457,19 +412,17 @@ def ask_yes_no(question, answer_yes=None, default='no'):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
+## NODES
 def _register(args):
         """Collect all the data about a node and register
            it with the server"""
         data = collect_data()
 
         log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
-
-        headers = {'content-type': 'application/json'}
-        data = json.dumps(data, default=lambda o: o.__dict__)
-        api_submit('/api/nodes', headers, data, method='put')
+        api_submit('/api/nodes', data, method='put')
 
 
-def _nodes(args):
+def search_nodes(args):
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
@@ -484,10 +437,13 @@ def _nodes(args):
     if args.set_tags:
         set_tag(args)
     if args.set_status:
-        r = _nodes_search(args)
-        if r:
-            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r)), args.answer_yes):
-                _set_status(args, r)
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append(n['node_name'])
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _set_status(args, results)
     if args.set_node_groups:
         assign_node_groups(args)
     if args.del_node_groups:
@@ -498,60 +454,142 @@ def _nodes(args):
                 args.set_node_groups,
                 args.del_node_groups)):
 
-        _nodes_search(args)
+        results = _search(args)
 
+        # FIXME: Doesn't work beyond the top level for individual fields
+        if args.fields:
+            for r in results:
+                print '- {0}\n'.format(r['node_name'])
+#                print res['status']['status_name']
+                if args.fields == 'all':
+                    # FIXME: Is this really the best way?
+                    # This produces ugly formatting
+                    # print(yaml.safe_dump(r, encoding='utf-8', allow_unicode=True))
+                    #print(yaml.dump(r, default_flow_style=False))
+                    c = convert(r)
+#                    f = (yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
+#                    print textwrap.fill(f, initial_indent='', subsequent_indent='    ')
+                    print(yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
+
+#                    print json.dumps(r, default=lambda o: o.__dict__, sort_keys=True,
+#                                     indent=2, separators=(',', ': ')).
+
+                    #for f in r.keys():
+                    #    if f == 'node_name':
+                    #        continue
+                    #    print '    {0}: {1}'.format(f, r[f])
+                else:
+                    for f in list(args.fields.split(",")):
+                        if f == 'node_name':
+                            continue
+                        print '    {0}: {1}'.format(f, r[f])
+        # Default to returning just the node name
+        else:
+            for r in results:
+                print r['node_name']
+
+
+def convert(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert, data))
+    else:
+        return data
 
 def _set_status(args, nodes):
 
-    log.info('Setting status for nodes: {0}'.format(",".join(nodes)))
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
-    headers = {'content-type': 'application/json'}
-    data = {'status': args.set_status}
-    data = json.dumps(data, default=lambda o: o.__dict__)
-    api_submit('/api/nodes/1', headers, data, method='put')
+    data = {'status_name': args.set_status}
+    status = api_submit('/api/statuses', data, method='get_params')
+     
+    data = {'status_id': status['status_id']}
+
+    for n in nodes:
+        log.info('Setting status node={0},status={1}'.format(n['node_name'], status['status_name']))
+        api_submit('/api/nodes/{0}'.format(n['node_id']), data, method='put')
 
 
-def _nodes_search(args):
+def create_nodes(args):
 
-    log.info('Searching for nodes.')
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
+
+
+def delete_nodes(args):
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+
+## NODE_GROUPS
+def search_node_groups(args):
+    """Search for node groups and perform optional assignment
+       actions."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    if args.set_tags:
+        set_tag(args)
+ 
+    # switch to any if there's more than one
+    if not args.set_tags:
+
+        results = _search(args)
+
+        if args.fields:
+            for r in results:
+                print '- {0}'.format(r['node_group_name'])
+                if args.fields == 'all':
+                    for f in r.keys():
+                        if f == 'node_group_name':
+                            continue
+                        print '    {0}: {1}'.format(f, r[f])
+                else:
+                    for f in list(args.fields.split(",")):
+                        if f == 'node_group_name':
+                            continue
+                        print '    {0}: {1}'.format(f, r[f])
+        # Default to returning just the node_group name
+        else:
+            for r in results:
+                print r['node_group_name']
+
+
+def create_node_groups(args):
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    data = {'node_group_name': args.node_group_name,
+            'node_group_owner': args.node_group_owner,
+            'node_group_description': args.node_group_description,
+           }
+
+    log.info('Creating node_group node_group_name={0},node_group_owner={1},node_group_description={2}'.format(args.node_group_name, args.node_group_owner, args.node_group_description))
+    api_submit('/api/{0}'.format(args.object_type), data, method='put')
+
+
+def delete_node_groups(args):
+    log.info('action_command is: {0}'.format(args.action_command))
+
+
+def _search(args):
+
+    log.info('Searching for {0}'.format(args.object_type))
+    log.info('action_command is: {0}'.format(args.action_command))
 
     search_terms = list(args.search.split(","))
     data = dict(u.split("=") for u in search_terms)
     log.info('data is: {0}'.format(data))
 
     api_endpoint = '/api/{0}'.format(args.object_type)
-    r = api_submit(api_endpoint, params=data, method='get_params')
-
-    # FIXME: Doesn't work beyond the top level
-    if args.fields:
-        for res in r:
-            print '- {0}'.format(res['node_name'])
-#            print res['status']['status_name']
-            for f in list(args.fields.split(",")):
-                if f == 'node_name':
-                    continue
-                print '    {0}: {1}'.format(f, res[f])
-    # Default to returning just the node name
-    else:
-        nodes = []
-        for res in r:
-            nodes.append(res['node_name'])
-        return nodes
-
-
-def _nodes_create(args):
-
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
-
-
-def _node_groups(args):
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    r = api_submit(api_endpoint, data, method='get_params')
+    return r
 
 
 def _parse_args():
@@ -640,7 +678,7 @@ def _parse_args():
                            help="Search for node objects and optionally act upon the results.",
                            parents=[pp])
 
-    # assignment action argument group (ansqg)
+    # nodes assignment action argument group (ansqg)
     ansag = nssc.add_argument_group('Assignment Actions')
 
     ansag.add_argument('--status',
@@ -662,7 +700,7 @@ def _parse_args():
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search for.')
-    nssc.set_defaults(func=_nodes)
+    nssc.set_defaults(func=search_nodes)
 
     # nodes create subcommand (ncsc)
     ncsc = nasp.add_parser("create",
@@ -676,24 +714,23 @@ def _parse_args():
     ncsc.add_argument('--unique_id',
                       dest="unique_id",
                       help='unique_id to assign.')
-    # FIXME: Should these be required?
+    # FIXME: Should this be required?
     rncag.add_argument('--hardware_profile_id',
                        required=False,
                        dest="hardware_profile_id",
                        help='hardware_profile_id to assign.')
+    # FIXME: Should this be required?
     rncag.add_argument('--operating_system_id',
-                       required=False,
                        dest="operating_system_id",
                        help='operating_system_id to assign.')
     rncag.add_argument('--name',
-                       required=True,
                        dest="node_name",
                        help='node_name to create')
     rncag.add_argument('--status_id',
                        required=True,
                        dest="status_id",
                        help='status_id to assign.')
-    rncag.set_defaults(func=_nodes_create)
+    rncag.set_defaults(func=create_nodes)
 
     # nodes delete subcommand (ndsc)
     ndsc = nasp.add_parser("delete",
@@ -703,7 +740,7 @@ def _parse_args():
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search for.')
-    ndsc.set_defaults(func=_nodes)
+    ndsc.set_defaults(func=delete_nodes)
 
     ### NODE_GROUPS
     ### node_groups object_type parser (ngotp)
@@ -721,14 +758,18 @@ def _parse_args():
     ngssc = ngasp.add_parser("search",
                              help="Search for node_group objects and optionally act upon the results.",
                              parents=[pp])
-    ngssc.add_argument('--tag',
-                       dest="set_tags",
-                       help='Comma separated list of key=value pairs to tag to the node_group.')
+
+    # node_groups assignment action argument group (angsag)
+    angsag = ngssc.add_argument_group('Assignment Actions')
+
+    angsag.add_argument('--tag',
+                        dest="set_tags",
+                        help='Comma separated list of key=value pairs to tag to the node_group.')
     ngssc.add_argument('search',
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search for.')
-    ngssc.set_defaults(func=_node_groups)
+    ngssc.set_defaults(func=search_node_groups)
 
     # node_groups create subcommand (ngcsc)
     ngcsc = ngasp.add_parser("create",
@@ -750,7 +791,7 @@ def _parse_args():
                         required=True,
                         dest="node_group_owner",
                         help='node_group_owner to assign.')
-    rngcag.set_defaults(func=_node_groups)
+    rngcag.set_defaults(func=create_node_groups)
 
     # node_groups delete subcommand (ngdsc)
     ngdsc = ngasp.add_parser("delete",
@@ -760,7 +801,7 @@ def _parse_args():
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search for.')
-    ngdsc.set_defaults(func=_node_groups)
+    ngdsc.set_defaults(func=delete_node_groups)
 
     return mp.parse_args()   
 

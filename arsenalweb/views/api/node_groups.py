@@ -41,23 +41,41 @@ def api_node_group_read(request):
 
     try:
         if request.path == '/api/node_groups':
-            log.info('Displaying all node_groups')
-            try:
-                q = DBSession.query(NodeGroup)
-                node_groups = q.limit(perpage).offset(offset).all()
-                return node_groups
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
+
+            node_group_name = request.params.get('node_group_name')
+            
+            if node_group_name:
+                log.info('Querying for node_group: {0}'.format(request.url))
+                try:
+                    q = DBSession.query(NodeGroup)
+                    q = q.filter(NodeGroup.node_group_name==node_group_name)
+                    return q.all()
+                except Exception, e:
+                    log.error('Error querying node_group={0},exception={2}'.format(request.url, e))
+                    raise
+            else:
+                log.info('Displaying all node_groups')
+                try:
+                    q = DBSession.query(NodeGroup)
+                    node_groups = q.limit(perpage).offset(offset).all()
+                    return node_groups
+                except Exception, e:
+                    log.error('Error querying node_group={0},exception={2}'.format(request.url, e))
+                    raise
 
         if request.matchdict['id']:
+
             log.info('Displaying single node group')
             try:
                 q = DBSession.query(NodeGroup).filter(NodeGroup.node_group_id==request.matchdict['id'])
                 node_group = q.one()
                 return node_group
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
-            
+            except Exception, e:
+                log.error('Error querying node_group={0},exception={2}'.format(request.url, e))
+                raise
+
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
     except Exception, e:
         log.error('Error querying api={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
@@ -76,7 +94,7 @@ def api_node_groups_write(request):
             try:
                 node_group_name = payload['node_group_name']
                 node_group_owner = payload['node_group_owner']
-                description = payload['description']
+                node_group_description = payload['node_group_description']
 
                 log.info('Checking for node_group_name: {0}'.format(node_group_name))
                 q = DBSession.query(NodeGroup).filter(NodeGroup.node_group_name==node_group_name)
@@ -87,14 +105,14 @@ def api_node_groups_write(request):
                     utcnow = datetime.utcnow()
                     ng = NodeGroup(node_group_name=node_group_name,
                                    node_group_owner=node_group_owner,
-                                   description=description,
+                                   description=node_group_description,
                                    updated_by=au['user_id'],
                                    created=utcnow,
                                    updated=utcnow)
                     DBSession.add(ng)
                     DBSession.flush()
-                except Exception, e:
-                    log.error('Error creating new node_group node_group_name={0},node_group_owner={1},description={2},exception={3}'.format(node_group_name, node_group_owner, description, e))
+                except Exception as e:
+                    log.error('Error creating new node_group node_group_name={0},node_group_owner={1},description={2},exception={3}'.format(node_group_name, node_group_owner, node_group_description, e))
                     raise
             else:
                 try:
@@ -102,16 +120,16 @@ def api_node_groups_write(request):
                     ng = DBSession.query(NodeGroup).filter(NodeGroup.node_group_name==node_group_name).one()
                     ng.node_group_name = node_group_name
                     ng.node_group_owner = node_group_owner
-                    ng.description = description
+                    ng.description = node_group_description
                     ng.updated_by=au['user_id']
                     DBSession.flush()
-                except Exception, e:
-                    log.error('Error updating node_group node_group_name={0},node_group_owner={1},description={2},exception={3}'.format(node_group_name, node_group_owner, description, e))
+                except Exception as e:
+                    log.error('Error updating node_group node_group_name={0},node_group_owner={1},description={2},exception={3}'.format(node_group_name, node_group_owner, node_group_description, e))
                     raise
 
             return ng
 
-    except Exception, e:
+    except Exception as e:
         log.error('Error with node_group API! exception: {0}'.format(e))
         return Response(str(e), content_type='application/json', status_int=500)
 
@@ -119,6 +137,7 @@ def api_node_groups_write(request):
 @view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_groups_delete(request):
 
+    # Will be used for auditing
     au = get_authenticated_user(request)
 
     try:
@@ -130,24 +149,25 @@ def api_node_groups_delete(request):
                 node_group_name = payload['node_group_name']
 
                 log.info('Checking for node_group_name: {0}'.format(node_group_name))
-                q = DBSession.query(NodeGroup).filter(NodeGroup.node_group_name==node_group_name)
-                q.one()
+                ng = DBSession.query(NodeGroup.node_group_name==node_group_name)
+                ng.one()
             except NoResultFound, e:
                 return Response(content_type='application/json', status_int=404)
 
             else:
                 try:
                     # FIXME: Need auditing
+                    # FIXME: What about orphaned assigments?
                     log.info('Deleting node_group: {0}'.format(node_group_name))
-                    ng = DBSession.query(NodeGroup).filter(NodeGroup.node_group_name==node_group_name).one()
                     DBSession.delete(ng)
                     DBSession.flush()
-                except Exception, e:
+                except Exception as e:
                     log.error('Error deleting node_group node_group_name={0}exception={1}'.format(node_group_name, e))
                     raise
 
-            return ng
+            # FIXME: Return none is 200 or ?
+            # return ng
 
-    except Exception, e:
+    except Exception as e:
         log.error('Error with node_group API! exception: {0}'.format(e))
         return Response(str(e), content_type='application/json', status_int=500)

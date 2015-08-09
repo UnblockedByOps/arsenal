@@ -99,10 +99,10 @@ def api_hardware_profile_write(request):
 
             log.info('Checking for hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
             try:
-                q = DBSession.query(HardwareProfile)
-                q = q.filter(HardwareProfile.manufacturer==manufacturer)
-                q = q.filter(HardwareProfile.model==model)
-                q.one()
+                hp = DBSession.query(HardwareProfile)
+                hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
+                hp = hp.filter(HardwareProfile.model==model)
+                hp.one()
             except NoResultFound, e:
                 try:
                     log.info('Creating new hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
@@ -121,11 +121,6 @@ def api_hardware_profile_write(request):
             else:
                 try:
                     log.info('Updating hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
-
-                    hp = DBSession.query(HardwareProfile)
-                    hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
-                    hp = hp.filter(HardwareProfile.model==model)
-                    hp = hp.one()
 
                     hp.manufacturer = manufacturer
                     hp.model = model

@@ -110,6 +110,7 @@ def api_node_group_assignments_write(request):
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_group_assignments_delete(request):
 
+    # Will be used for auditing
     au = get_authenticated_user(request)
 
     try:
@@ -122,10 +123,10 @@ def api_node_group_assignments_delete(request):
                 node_group_id = payload['node_group_id']
 
                 log.info('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                q = DBSession.query(NodeGroupAssignment)
-                q = q.filter(NodeGroupAssignment.node_id==node_id)
-                q = q.filter(NodeGroupAssignment.node_group_id==node_group_id)
-                q.one()
+                nga = DBSession.query(NodeGroupAssignment)
+                nga = nga.filter(NodeGroupAssignment.node_id==node_id)
+                nga = nga.filter(NodeGroupAssignment.node_group_id==node_group_id)
+                nga.one()
             except NoResultFound, e:
                 return Response(content_type='application/json', status_int=404)
 
@@ -133,16 +134,14 @@ def api_node_group_assignments_delete(request):
                 try:
                     # FIXME: Need auditing
                     log.info('Deleting node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                    nga = DBSession.query(NodeGroupAssignment)
-                    nga = nga.filter(NodeGroupAssignment.node_id==node_id)
-                    nga = nga.filter(NodeGroupAssignment.node_group_id==node_group_id).one()
                     DBSession.delete(nga)
                     DBSession.flush()
                 except Exception, e:
                     log.info('Error deleting node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
                     raise
 
-            return nga
+            # FIXME: Return none is 200?
+            # return nga
 
     except Exception, e:
         log.error('Error with node_group_assignment API! exception: {0}'.format(e))

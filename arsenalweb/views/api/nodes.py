@@ -48,7 +48,6 @@ def api_node_read(request):
 
             if request.params:
                 s = ""
-
                 # Filter on all the passed in terms
                 q = DBSession.query(Node)
                 for k,v in request.GET.items():
@@ -57,9 +56,9 @@ def api_node_read(request):
                     q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
                     # Exact
                     # q = q.filter(getattr(Node ,k)==v)
-                log.info('Searching for node with params: {0}'.format(s))
-                node = q.all()
-                return node
+                log.info('Searching for node with params: {0}'.format(s.rstrip(',')))
+                nodes = q.all()
+                return nodes
             else:
                 log.info('Displaying all nodes')
                 q = DBSession.query(Node)
@@ -67,6 +66,7 @@ def api_node_read(request):
                 return nodes
 
         if request.matchdict['id']:
+
             log.info('Displaying single node')
             q = DBSession.query(Node).filter(Node.node_id==request.matchdict['id'])
             node = q.one()
@@ -90,6 +90,7 @@ def api_node_write(request):
         payload = request.json_body
 
         # FIXME: right now /api/nodes expects all paramters to be passed, no piecemeal updates.
+        # Also no support for bulk updates
         if request.path == '/api/nodes':
 
             # Get the hardware_profile_id or create if it doesn't exist.
@@ -194,26 +195,32 @@ def api_node_write(request):
             for k,v in payload.items():
                 s+='{0}={1},'.format(k, v)
 
-            if 'status' in payload.keys():
-                status_id = Status.get_status_id(payload['status'])
-                log.info('status_id: {0}'.format(status_id))
-
-            log.info('Updating node_id: {0} params: {1}'.format(node_id, s))
-
-#            q = DBSession.query(Node).filter(Node.node_id==node_id)
-#            n = q.one()
+#            if 'status' in payload.keys():
 #
-#            for k,v in payload.items():
-#                getattr(n ,k) == v
+#                # FIXME: This
+#                uri = '/api/statuses'
+#                data = {'status_name': payload['status']}
+#                status = _api_get(request, uri, data)
+#                status_id = status['status_id']
+#
+#                # FIXME: vs. this ???
+#                # status_id = Status.get_status_id(payload['status'])
+#
+#                log.info('status_id: {0}'.format(status_id))
 
-            # n.node_name = node_name
-            # n.hardware_profile_id = hardware_profile_id
-            # n.operating_system_id = operating_system_id
-            # n.uptime = uptime
-            # n.status_id = status_id
+            log.info('Updating node_id: {0} params: {1}'.format(node_id, s.rstrip(',')))
 
-#            n.updated_by=au['user_id']
-#            DBSession.flush()
+            q = DBSession.query(Node).filter(Node.node_id==node_id)
+            n = q.one()
+
+            # FIXME: Do we want to limit anything here? Keys that don't exist will 
+            # be ignored, keys that can't be set with throw an error. Doesn't
+            # feel right though to just accept what's put to the endpoint.
+            for k,v in payload.items():
+                setattr(n ,k, v)
+
+            n.updated_by=au['user_id']
+            DBSession.flush()
 
     except Exception, e:
         log.error('Error with node API! exception: {0}'.format(e))
