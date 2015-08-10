@@ -416,6 +416,7 @@ def ask_yes_no(question, answer_yes=None, default='no'):
 def _register(args):
         """Collect all the data about a node and register
            it with the server"""
+
         data = collect_data()
 
         log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
@@ -423,6 +424,8 @@ def _register(args):
 
 
 def search_nodes(args):
+    """Search for nodes and perform optional assignment
+       actions."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
@@ -490,6 +493,8 @@ def search_nodes(args):
 
 
 def convert(data):
+    """Helper method to format output. (might not be final solution)"""
+
     if isinstance(data, basestring):
         return str(data)
     elif isinstance(data, collections.Mapping):
@@ -500,6 +505,7 @@ def convert(data):
         return data
 
 def _set_status(args, nodes):
+    """Set the status of one or more nodes."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
@@ -562,6 +568,8 @@ def search_node_groups(args):
 
 
 def create_node_groups(args):
+    """Create a new node_group."""
+
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
@@ -575,7 +583,25 @@ def create_node_groups(args):
 
 
 def delete_node_groups(args):
+    """Delete an existing node_group."""
+
+    # FIXME: Not ready yet. name and id or ?
     log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+
+    results = _search(args)
+
+    r_names = []
+    for n in results:
+        r_names.append(n['node_group_name'])
+
+    if ask_yes_no("We are ready to delete the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+        for n in results:
+            log.info('Deleting node_group node_group_name={0}'.format(n['node_group_name']))
+            data = {'node_group_id': n['node_group_id']}
+            # FIXME: name? id? both?
+            api_submit('/api/{0}/{1}'.format(args.object_type, n['node_group_name']), data, method='delete')
 
 
 def _search(args):
@@ -606,11 +632,6 @@ def _parse_args():
                    dest='config_file',
                    help='Configuration file to use',
                    default='/app/arsenal/conf/arsenal.conf')
-    mp.add_argument('--fields',
-                   '-f',
-                   dest='fields',
-                   help='fields to display',
-                   default=None)
     mp.add_argument('--kookie',
                    '-k',
                    dest='cookie_file',
@@ -677,6 +698,11 @@ def _parse_args():
     nssc = nasp.add_parser("search",
                            help="Search for node objects and optionally act upon the results.",
                            parents=[pp])
+    nssc.add_argument('--fields',
+                      '-f',
+                      dest='fields',
+                      help='fields to display',
+                      default=None)
 
     # nodes assignment action argument group (ansqg)
     ansag = nssc.add_argument_group('Assignment Actions')
@@ -758,6 +784,11 @@ def _parse_args():
     ngssc = ngasp.add_parser("search",
                              help="Search for node_group objects and optionally act upon the results.",
                              parents=[pp])
+    ngssc.add_argument('--fields',
+                       '-f',
+                       dest='fields',
+                       help='fields to display',
+                       default=None)
 
     # node_groups assignment action argument group (angsag)
     angsag = ngssc.add_argument_group('Assignment Actions')
