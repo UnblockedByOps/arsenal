@@ -38,6 +38,7 @@ session = requests.session()
 
 class Node(object):
     def __init__(self,
+                 register = False,
                  unique_id = None,
                  node_name = None,
                  puppet_version = None,
@@ -45,6 +46,7 @@ class Node(object):
                  uptime = None,
                  ec2 = None,
                  network = None):
+        self.register = register
         self.unique_id = unique_id
         self.node_name = node_name
         self.puppet_version = puppet_version
@@ -225,7 +227,7 @@ def api_submit(request, data=None,  method='get'):
         # re-auth if our cookie is invalid/expired
         if r.status_code == requests.codes.unauthorized:
             cookies = authenticate()
-            r = session.put(api_url, verify=verify_ssl, cookies=cookies)
+            r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
 
         if r.status_code == requests.codes.ok:
             print "Command successful."
@@ -418,6 +420,7 @@ def _register(args):
            it with the server"""
 
         data = collect_data()
+        data.register = True
 
         log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
         api_submit('/api/nodes', data, method='put')
@@ -448,9 +451,21 @@ def search_nodes(args):
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
                 _set_status(args, results)
     if args.set_node_groups:
-        assign_node_groups(args)
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append(n['node_name'])
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _assign_node_groups(args, results)
     if args.del_node_groups:
-        deassign_node_groups(args)
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append(n['node_name'])
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _deassign_node_groups(args, results)
 
     if not any((args.set_tags,
                 args.set_status,
@@ -520,10 +535,63 @@ def _set_status(args, nodes):
         api_submit('/api/nodes/{0}'.format(n['node_id']), data, method='put')
 
 
-def create_nodes(args):
+# FIXME: next two are very similar. can combine?
+def _assign_node_groups(args, nodes):
+    """Assign node_groups to one or more nodes."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
+
+    node_groups = []
+    for ng in args.set_node_groups.split(','):
+        data = {'node_group_name': ng}
+        r = api_submit('/api/node_groups', data, method='get_params')
+        if r:
+            node_groups.append(r[0])
+
+    for n in nodes:
+        for ng in node_groups:
+            log.info('Assigning node_group={0} to node={1}'.format(ng['node_group_name'], n['node_name']))
+            data = {'node_id': n['node_id'],
+                    'node_group_id': ng['node_group_id']}
+            api_submit('/api/node_group_assignments', data, method='put')
+
+
+def _deassign_node_groups(args, nodes):
+    """Remove node_groups from one or more nodes."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    node_groups = []
+    for ng in args.del_node_groups.split(','):
+        data = {'node_group_name': ng}
+        r = api_submit('/api/node_groups', data, method='get_params')
+        if r:
+            node_groups.append(r[0])
+
+    for n in nodes:
+        for ng in node_groups:
+            log.info('Removing assignment of node_group={0} from node={1}'.format(ng['node_group_name'], n['node_name']))
+            data = {'node_id': n['node_id'],
+                    'node_group_id': ng['node_group_id']}
+            api_submit('/api/node_group_assignments', data, method='delete')
+
+
+def create_nodes(args):
+    """Create a new node."""
+
+    # FIXME: Support unique_id, hardware_profile, and operating_system?
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    data = {'register': False,
+            'node_name': args.node_name,
+            'node_status_id': args.status_id,
+           }
+
+    log.info('Creating node node_name={0},status_id={1}'.format(args.node_name, args.status_id))
+    api_submit('/api/{0}'.format(args.object_type), data, method='put')
 
 
 def delete_nodes(args):
@@ -585,23 +653,26 @@ def create_node_groups(args):
 def delete_node_groups(args):
     """Delete an existing node_group."""
 
-    # FIXME: Not ready yet. name and id or ?
+    # FIXME: Support name and id or ?
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
-
+    args.search = 'node_group_name={0}'.format(args.node_group_name)
     results = _search(args)
 
-    r_names = []
-    for n in results:
-        r_names.append(n['node_group_name'])
-
-    if ask_yes_no("We are ready to delete the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+    if results:
+        r_names = []
         for n in results:
-            log.info('Deleting node_group node_group_name={0}'.format(n['node_group_name']))
-            data = {'node_group_id': n['node_group_id']}
-            # FIXME: name? id? both?
-            api_submit('/api/{0}/{1}'.format(args.object_type, n['node_group_name']), data, method='delete')
+            r_names.append(n['node_group_name'])
+
+        if ask_yes_no("We are ready to delete the following {0}: \n{1}\n Continue?".format(args.object_type, "\n".join(r_names)), args.answer_yes):
+            for n in results:
+                log.info('Deleting node_group_name={0}'.format(n['node_group_name']))
+                data = {'node_group_id': n['node_group_id']}
+                # FIXME: name? id? both?
+                api_submit('/api/{0}/{1}'.format(args.object_type, n['node_group_id']), data, method='delete')
+    else:
+        log.info('No results found')
 
 
 def _search(args):
@@ -611,6 +682,7 @@ def _search(args):
 
     search_terms = list(args.search.split(","))
     data = dict(u.split("=") for u in search_terms)
+    data['exact_get'] = args.exact_get
     log.info('data is: {0}'.format(data))
 
     api_endpoint = '/api/{0}'.format(args.object_type)
@@ -623,10 +695,6 @@ def _parse_args():
     pp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, add_help=False)
     mp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Arsenal CLI')
 
-    mp.add_argument('--exact',
-                    action='store_true',
-                    dest="exact_get",
-                    help='exact match search terms.')
     mp.add_argument('--config',
                    '-c',
                    dest='config_file',
@@ -701,8 +769,12 @@ def _parse_args():
     nssc.add_argument('--fields',
                       '-f',
                       dest='fields',
-                      help='fields to display',
+                      help='Comma separated list of fields to display, or \'all\' for all fields.',
                       default=None)
+    nssc.add_argument('--exact',
+                      action='store_true',
+                      dest="exact_get",
+                      help='Exact match search terms.')
 
     # nodes assignment action argument group (ansqg)
     ansag = nssc.add_argument_group('Assignment Actions')
@@ -737,22 +809,22 @@ def _parse_args():
     # nodes required argument group (rncag)
     rncag = ncsc.add_argument_group('required arguments')
 
-    ncsc.add_argument('--unique_id',
+    ncsc.add_argument('--unique_id', '-u',
                       dest="unique_id",
                       help='unique_id to assign.')
     # FIXME: Should this be required?
-    rncag.add_argument('--hardware_profile_id',
-                       required=False,
-                       dest="hardware_profile_id",
-                       help='hardware_profile_id to assign.')
+    ncsc.add_argument('--hardware_profile_id', '-hp',
+                      dest="hardware_profile_id",
+                      help='hardware_profile_id to assign.')
     # FIXME: Should this be required?
-    rncag.add_argument('--operating_system_id',
-                       dest="operating_system_id",
-                       help='operating_system_id to assign.')
-    rncag.add_argument('--name',
+    ncsc.add_argument('--operating_system_id', '-os',
+                      dest="operating_system_id",
+                      help='operating_system_id to assign.')
+    rncag.add_argument('--name', '-n',
+                       required=True,
                        dest="node_name",
                        help='node_name to create')
-    rncag.add_argument('--status_id',
+    rncag.add_argument('--status_id', '-s',
                        required=True,
                        dest="status_id",
                        help='status_id to assign.')
@@ -787,8 +859,12 @@ def _parse_args():
     ngssc.add_argument('--fields',
                        '-f',
                        dest='fields',
-                       help='fields to display',
+                       help='Comma separated list of fields to display, or \'all\' for all fields.',
                        default=None)
+    ngssc.add_argument('--exact',
+                       action='store_true',
+                       dest="exact_get",
+                       help='Exact match search terms.')
 
     # node_groups assignment action argument group (angsag)
     angsag = ngssc.add_argument_group('Assignment Actions')
@@ -810,15 +886,15 @@ def _parse_args():
     # required node_group greate argument group (rngcag)
     rngcag = ngcsc.add_argument_group('required arguments')
 
-    rngcag.add_argument('--name',
+    rngcag.add_argument('--name', '-n',
                         required=True,
                         dest="node_group_name",
                         help='node_group_name to create.')
-    rngcag.add_argument('--description',
+    rngcag.add_argument('--description', '-d',
                         required=True,
                         dest="node_group_description",
                         help='node_group_description to assign.')
-    rngcag.add_argument('--owner',
+    rngcag.add_argument('--owner', '-o',
                         required=True,
                         dest="node_group_owner",
                         help='node_group_owner to assign.')
@@ -828,10 +904,13 @@ def _parse_args():
     ngdsc = ngasp.add_parser("delete",
                              help="Delete node_group objects.",
                              parents=[pp])
-    ngdsc.add_argument('search',
-                       default=None,
-                       metavar='search_terms',
-                       help='Comma separated list of key=value pairs to search for.')
+    # required node_group delete argument group (rngdag)
+    rngdag = ngdsc.add_argument_group('required arguments')
+
+    rngdag.add_argument('--name', '-n',
+                        required=True,
+                        dest="node_group_name",
+                        help='node_group_name to delete.')
     ngdsc.set_defaults(func=delete_node_groups)
 
     return mp.parse_args()   

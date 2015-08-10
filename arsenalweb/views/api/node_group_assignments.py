@@ -126,7 +126,7 @@ def api_node_group_assignments_delete(request):
                 nga = DBSession.query(NodeGroupAssignment)
                 nga = nga.filter(NodeGroupAssignment.node_id==node_id)
                 nga = nga.filter(NodeGroupAssignment.node_group_id==node_group_id)
-                nga.one()
+                nga = nga.one()
             except NoResultFound, e:
                 return Response(content_type='application/json', status_int=404)
 
