@@ -20,6 +20,9 @@ from arsenalweb.views import (
     get_authenticated_user,
     log,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     NodeGroup,
@@ -165,22 +168,25 @@ def api_node_group_schema(request):
 
 @view_config(route_name='api_node_group_r', request_method='GET', renderer='json')
 def api_node_group_read_attrib(request):
-    print "YUPPERZ"
 
-    node_group_id = request.matchdict['id']
-    resource = request.matchdict['resource']
-    log.info('Querying for node_group attribute={0},url={1}'.format(resource, request.url))
-
-    try:
-        ng = DBSession.query(NodeGroup)
-        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-        ng = ng.one()
-        return { resource: getattr(ng, resource) }
-    except (NoResultFound, AttributeError):
-        return Response(content_type='application/json', status_int=404)
-    except Exception as e:
-        log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
-        raise
+# FIXME: Not working
+     return get_api_attribute(request, 'node_groups', 'NodeGroup')
+#    node_group_id = request.matchdict['id']
+#    resource = request.matchdict['resource']
+#    log.info('Querying for node_group attribute={0},url={1}'.format(resource, request.url))
+#
+#    try:
+#        ng = DBSession.query(NodeGroup)
+#        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
+#        ng = ng.one()
+#
+#        return { resource: getattr(ng, resource) }
+#
+#    except (NoResultFound, AttributeError):
+#        return Response(content_type='application/json', status_int=404)
+#    except Exception as e:
+#        log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
+#        raise
 
 
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
