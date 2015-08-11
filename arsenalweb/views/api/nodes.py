@@ -29,10 +29,31 @@ from arsenalweb.models import (
     Status,
     )
 
+@view_config(route_name='api_nodes', request_method='GET', request_param='schema=true', renderer='json')
+def api_node_schema(request):
+    """Document the API. Used by the CLI for help"""
+
+    node = Node()
+    node.node_id='Primary key (int)'
+    node.node_name='The name of the node (text)'
+    node.unique_id='The unique_id of the node (text)'
+    node.status_id='Status ID (FK -> statuses table)'
+#    node.status='Status object from status table'
+    node.hardware_profile_id='Hardware Profile ID (FK -> hardware_profiles table)'
+#    node.hardware_profile='Hardware Profile object from hardware_profiles table'
+    node.operating_system_id='Operating System ID (FK -> operating_systems table)'
+#    node.operating_system=self.operating_system
+    node.uptime='Node uptime (text)'
+#    node.node_groups=self.node_groups
+    node.created='Datetime object'
+    node.updated='Datetime object'
+    node.updated_by='User that updated the record (string)'
+
+    return node
+
+
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
-@view_config(route_name='api_nodes', request_method='GET', request_param='format=json', renderer='json')
 @view_config(route_name='api_node', request_method='GET', renderer='json')
-@view_config(route_name='api_node', request_method='GET', request_param='format=json', renderer='json')
 def api_node_read(request):
 
     perpage = 40
@@ -51,13 +72,19 @@ def api_node_read(request):
                 # Filter on all the passed in terms
                 q = DBSession.query(Node)
                 exact_get =  request.GET.getone("exact_get")
+
+                # FIXME: This is awful. Need a better way to distinguish 
+                # meta params from search params without having to
+                # pre-define everything.
                 for k,v in request.GET.items():
                     if k == 'exact_get':
                         continue
                     s+='{0}={1},'.format(k, v)    
-                    if exact_get:
+                    if exact_get == True:
+                        log.info('Exact filtering on {0}={1}'.format(k, v))
                         q = q.filter(getattr(Node ,k)==v)
                     else:
+                        log.info('Loose filtering on {0}={1}'.format(k, v))
                         q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
                 log.info('Searching for node with params: {0}'.format(s.rstrip(',')))
                 nodes = q.all()

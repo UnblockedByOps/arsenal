@@ -35,9 +35,13 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
 def _localize_date(obj):
+    try:
         utc = arrow.get(obj)
-        zone = 'US/Pacific' # FIXME: This needs to be configurable somehow
-        return  utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss ZZ')
+        # FIXME: This needs to be configurable somehow
+        zone = 'US/Pacific'
+        return utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss ZZ')
+    except:
+        return 'Datetime object'
 
 
 class Node(Base):
@@ -80,8 +84,10 @@ class Node(Base):
             operating_system=self.operating_system,
             uptime=self.uptime,
             node_groups=self.node_groups,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
             updated_by=self.updated_by,
             )
 
@@ -111,8 +117,10 @@ class HardwareProfile(Base):
             hardware_profile_id=self.hardware_profile_id,
             model=self.model,
             manufacturer=self.manufacturer,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
 
@@ -135,8 +143,10 @@ class OperatingSystem(Base):
             version_number=self.version_number,
             architecture=self.architecture,
             description=self.description,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
 
@@ -164,8 +174,10 @@ class NodeGroupAssignment(Base):
             node_group_assignment_id=self.node_group_assignment_id,
             node_id=self.node_id,
             node_group_id=self.node_group_id,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
 #            node=self.node,
             )
@@ -189,8 +201,10 @@ class NodeGroup(Base):
             node_group_name=self.node_group_name,
             node_group_owner=self.node_group_owner,
             description=self.description,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
 
@@ -225,8 +239,10 @@ class Status(Base):
             status_id=self.status_id,
             status_name=self.status_name,
             description=self.description,
-            created=self.created.isoformat(),
-            updated=self.updated.isoformat(),
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+#            created=self.created.isoformat(),
+#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
 

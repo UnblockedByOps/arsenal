@@ -658,6 +658,8 @@ def delete_node_groups(args):
     log.info('object_type is: {0}'.format(args.object_type))
 
     args.search = 'node_group_name={0}'.format(args.node_group_name)
+    # FIXME: This is crappy.
+    args.exact_get = False
     results = _search(args)
 
     if results:
@@ -688,6 +690,14 @@ def _search(args):
     api_endpoint = '/api/{0}'.format(args.object_type)
     r = api_submit(api_endpoint, data, method='get_params')
     return r
+
+def gen_nodes_search():
+    data = {'schema': 'true'}
+    # FIXME: can't access globals
+    r = session.get('http://192.168.1.1:8281/api/nodes', verify=False, params=data)
+    docs = r.json()
+
+    return '\n\nSearch terms: \n\n {0}'.format(', '.join(docs.keys()))
 
 
 def _parse_args():
@@ -765,6 +775,7 @@ def _parse_args():
     # nodes search subcommand (nssc)
     nssc = nasp.add_parser("search",
                            help="Search for node objects and optionally act upon the results.",
+                           epilog=gen_nodes_search(),
                            parents=[pp])
     nssc.add_argument('--fields',
                       '-f',
