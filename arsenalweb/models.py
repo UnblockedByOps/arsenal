@@ -70,6 +70,16 @@ class Node(Base):
                 ngs.append(a.node_groups.__json__(self))
         return ngs
 
+    @hybrid_property
+    def tags(self):
+        tags = []
+        for a in self.tag_node_assignments:
+            # Test to make sure the node group wasn't deleted after the
+            # assignment was made
+            if a.tags:
+                tags.append(a.tags.__json__(self))
+        return tags
+
 
     def __json__(self, request):
         return dict(
@@ -84,8 +94,7 @@ class Node(Base):
             operating_system=self.operating_system,
             uptime=self.uptime,
             node_groups=self.node_groups,
-#            created=self.created.isoformat(),
-#            updated=self.updated.isoformat(),
+            tags=self.tags,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
             updated_by=self.updated_by,
@@ -176,24 +185,40 @@ class NodeGroupAssignment(Base):
             node_group_id=self.node_group_id,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
-#            created=self.created.isoformat(),
-#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
 #            node=self.node,
             )
 
 
 class NodeGroup(Base):
-    __tablename__      = 'node_groups'
-    node_group_id      = Column(Integer, primary_key=True, nullable=False)
-    node_group_name    = Column(Text, nullable=False)
-    node_group_owner   = Column(Text, nullable=False)
-    description        = Column(Text, nullable=False)
-    created            = Column(TIMESTAMP, nullable=False)
-    updated            = Column(TIMESTAMP, nullable=False)
-    updated_by         = Column(Text, nullable=False)
+    __tablename__          = 'node_groups'
+    node_group_id          = Column(Integer, primary_key=True, nullable=False)
+    node_group_name        = Column(Text, nullable=False)
+    node_group_owner       = Column(Text, nullable=False)
+    description            = Column(Text, nullable=False)
+    created                = Column(TIMESTAMP, nullable=False)
+    updated                = Column(TIMESTAMP, nullable=False)
+    updated_by             = Column(Text, nullable=False)
     node_group_assignments = relationship("NodeGroupAssignment", backref=backref('node_groups'),
                                           lazy="dynamic")
+
+    @hybrid_property
+    def tags(self):
+        tags = []
+        for a in self.tag_node_group_assignments:
+            # Test to make sure the node group wasn't deleted after the
+            # assignment was made
+            if a.tags:
+                tags.append(a.tags.__json__(self))
+        return tags
+
+
+    @hybrid_method
+    def get_node_group_id(self, node_group_name):
+        q = DBSession.query(NodeGroup)
+        q = q.filter(NodeGroup.node_group_name == '%s' % node_group_name)
+        return q.one()
+
 
     def __json__(self, request):
         return dict(
@@ -201,18 +226,77 @@ class NodeGroup(Base):
             node_group_name=self.node_group_name,
             node_group_owner=self.node_group_owner,
             description=self.description,
+            tags=self.tags,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
-#            created=self.created.isoformat(),
-#            updated=self.updated.isoformat(),
             updated_by=self.updated_by,
             )
 
-    @hybrid_method
-    def get_node_group_id(self, node_group_name):
-        q = DBSession.query(NodeGroup)
-        q = q.filter(NodeGroup.node_group_name == '%s' % node_group_name)
-        return q.one()
+
+class Tag(Base):
+    __tablename__                 = 'tags'
+    tag_id                        = Column(Integer, primary_key=True, nullable=False)
+    tag_name                      = Column(Text, nullable=False)
+    tag_value                     = Column(Text, nullable=False)
+    created                       = Column(TIMESTAMP, nullable=False)
+    updated                       = Column(TIMESTAMP, nullable=False)
+    updated_by                    = Column(Text, nullable=False)
+    tag_node_assignments          = relationship("TagNodeAssignment", backref=backref('tags'),
+                                                 lazy="dynamic")
+    tag_node_group_assignments    = relationship("TagNodeGroupAssignment", backref=backref('tags'),
+                                                 lazy="dynamic")
+
+    def __json__(self, request):
+        return dict(
+            tag_id=self.tag_id,
+            tag_name=self.tag_name,
+            tag_value=self.tag_value,
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+            updated_by=self.updated_by,
+            )
+
+
+class TagNodeAssignment(Base):
+    __tablename__             = 'tag_node_assignments'
+    tag_node_assignment_id    = Column(Integer, primary_key=True, nullable=False)
+    tag_id                    = Column(Integer, ForeignKey('tags.tag_id'), nullable=False)
+    node_id                   = Column(Integer, ForeignKey('nodes.node_id'), nullable=False) # Clunky
+    updated_by                = Column(Text, nullable=False)
+    created                   = Column(TIMESTAMP, nullable=False)
+    updated                   = Column(TIMESTAMP, nullable=False)
+    node                      = relationship("Node", backref=backref('tag_node_assignments'))
+
+    def __json__(self, request):
+        return dict(
+            tag_node_assignment_id=self.tag_node_assignment_id,
+            tag_id=self.tag_id,
+            node_id=self.node_id,
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+            updated_by=self.updated_by,
+            )
+
+
+class TagNodeGroupAssignment(Base):
+    __tablename__                   = 'tag_node_group_assignments'
+    tag_node_group_assignment_id    = Column(Integer, primary_key=True, nullable=False)
+    tag_id                          = Column(Integer, ForeignKey('tags.tag_id'), nullable=False)
+    node_group_id                   = Column(Integer, ForeignKey('node_groups.node_group_id'), nullable=False) # Clunky
+    updated_by                      = Column(Text, nullable=False)
+    created                         = Column(TIMESTAMP, nullable=False)
+    updated                         = Column(TIMESTAMP, nullable=False)
+    node_group                      = relationship("NodeGroup", backref=backref('tag_node_group_assignments'))
+
+    def __json__(self, request):
+        return dict(
+            tag_node_group_assignment_id=self.tag_node_group_assignment_id,
+            tag_id=self.tag_id,
+            node_group_id=self.node_group_id,
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+            updated_by=self.updated_by,
+            )
 
 
 class Status(Base):

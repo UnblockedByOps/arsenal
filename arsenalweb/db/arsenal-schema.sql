@@ -23,14 +23,45 @@ DROP TABLE IF EXISTS `tags`;
 CREATE TABLE `tags` (
   `tag_id`                 int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `tag_name`               varchar(255) COLLATE utf8_bin NOT NULL,
-  `value`                  varchar(255) COLLATE utf8_bin NOT NULL,
-  `object_type`            varchar(255) COLLATE utf8_bin NOT NULL,
-  `object_id`              int(11) UNSIGNED NOT NULL,
+  `tag_value`              varchar(255) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_tag_id on tags (tag_id);
+CREATE UNIQUE INDEX idx_uniq_tag on tags (tag_name, tag_value);
+
+###
+### TABLE: tag_node_assignments
+###   This contains assignments of tags to nodes object_type.
+###
+DROP TABLE IF EXISTS `tag_node_assignments`;
+CREATE TABLE `tag_node_assignments` (
+  `tag_node_assignment_id`     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `tag_id`                     int(11) UNSIGNED,
+  `node_id`                    int(11) UNSIGNED, # to start, node_id or node_group_id
+  `created`                    timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                    timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`                 varchar(200) COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_tag_node_assignment_id on tag_node_assignments (tag_node_assignment_id);
+CREATE UNIQUE INDEX idx_uniq_tag_node_assignment on tag_node_assignments (tag_id, node_id);
+
+###
+### TABLE: tag_node_group_assignments
+###   This contains assignments of tags to node_groups object_type.
+###
+DROP TABLE IF EXISTS `tag_node_group_assignments`;
+CREATE TABLE `tag_node_group_assignments` (
+  `tag_node_group_assignment_id`  int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `tag_id`                        int(11) UNSIGNED,
+  `node_group_id`                 int(11) UNSIGNED, # to start, node_id or node_group_id
+  `created`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`                    varchar(200) COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_tag_node_group_assignment_id on tag_node_group_assignments (tag_node_group_assignment_id);
+CREATE UNIQUE INDEX idx_uniq_tag_node_group_assignment on tag_node_group_assignments (tag_id, node_group_id);
 
 ###
 ### TABLE: hardware_profiles

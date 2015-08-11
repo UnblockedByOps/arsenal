@@ -36,3 +36,5 @@ INSERT INTO statuses VALUES (4, 'hibernating', 'Instances that have been spun do
 INSERT INTO statuses VALUES (5, 'decom', 'Nodes that are dead and gone.', 'Admin', NOW(),NOW());
 
 ALTER TABLE places ADD cs_id bigint(1) COLLATE utf8_bin NOT NULL AFTER place_id;
+
+

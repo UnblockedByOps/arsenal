@@ -31,23 +31,359 @@ from arsenalweb.models import (
 
 @view_config(route_name='api_nodes', request_method='GET', request_param='schema=true', renderer='json')
 def api_node_schema(request):
-    """Document the API. Used by the CLI for help"""
+    """Document the API poc."""
 
-    node = Node()
-    node.node_id='Primary key (int)'
-    node.node_name='The name of the node (text)'
-    node.unique_id='The unique_id of the node (text)'
-    node.status_id='Status ID (FK -> statuses table)'
-#    node.status='Status object from status table'
-    node.hardware_profile_id='Hardware Profile ID (FK -> hardware_profiles table)'
-#    node.hardware_profile='Hardware Profile object from hardware_profiles table'
-    node.operating_system_id='Operating System ID (FK -> operating_systems table)'
-#    node.operating_system=self.operating_system
-    node.uptime='Node uptime (text)'
-#    node.node_groups=self.node_groups
-    node.created='Datetime object'
-    node.updated='Datetime object'
-    node.updated_by='User that updated the record (string)'
+    log.info('schema requested')
+
+    node = {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "id": "https://REPLACE",
+      "type": "object",
+      "properties": {
+        "status": {
+          "id": "https://REPLACE/status",
+          "type": "object",
+          "properties": {
+            "updated": {
+              "id": "https://REPLACE/status/updated",
+              "type": "string"
+            },
+            "description": {
+              "id": "https://REPLACE/status/description",
+              "type": "string"
+            },
+            "status_id": {
+              "id": "https://REPLACE/status/status_id",
+              "type": "integer"
+            },
+            "status_name": {
+              "id": "https://REPLACE/status/status_name",
+              "type": "string"
+            },
+            "updated_by": {
+              "id": "https://REPLACE/status/updated_by",
+              "type": "string"
+            },
+            "created": {
+              "id": "https://REPLACE/status/created",
+              "type": "string"
+            }
+          },
+          "required": [
+            "updated",
+            "description",
+            "status_id",
+            "status_name",
+            "updated_by",
+            "created"
+          ]
+        },
+        "uptime": {
+          "id": "https://REPLACE/uptime",
+          "type": "string"
+        },
+        "operating_system": {
+          "id": "https://REPLACE/operating_system",
+          "type": "object",
+          "properties": {
+            "version_number": {
+              "id": "https://REPLACE/operating_system/version_number",
+              "type": "string"
+            },
+            "description": {
+              "id": "https://REPLACE/operating_system/description",
+              "type": "string"
+            },
+            "operating_system_id": {
+              "id": "https://REPLACE/operating_system/operating_system_id",
+              "type": "integer"
+            },
+            "created": {
+              "id": "https://REPLACE/operating_system/created",
+              "type": "string"
+            },
+            "variant": {
+              "id": "https://REPLACE/operating_system/variant",
+              "type": "string"
+            },
+            "updated": {
+              "id": "https://REPLACE/operating_system/updated",
+              "type": "string"
+            },
+            "architecture": {
+              "id": "https://REPLACE/operating_system/architecture",
+              "type": "string"
+            },
+            "updated_by": {
+              "id": "https://REPLACE/operating_system/updated_by",
+              "type": "string"
+            }
+          }
+        },
+        "updated_by": {
+          "id": "https://REPLACE/updated_by",
+          "type": "string"
+        },
+        "operating_system_id": {
+          "id": "https://REPLACE/operating_system_id",
+          "type": "integer"
+        },
+        "tags": {
+          "id": "https://REPLACE/tags",
+          "type": "array",
+          "items": {
+            "id": "https://REPLACE/tags/0",
+            "type": "object",
+            "properties": {
+              "updated": {
+                "id": "https://REPLACE/tags/0/updated",
+                "type": "string"
+              },
+              "updated_by": {
+                "id": "https://REPLACE/tags/0/updated_by",
+                "type": "string"
+              },
+              "created": {
+                "id": "https://REPLACE/tags/0/created",
+                "type": "string"
+              },
+              "tag_name": {
+                "id": "https://REPLACE/tags/0/tag_name",
+                "type": "string"
+              },
+              "tag_id": {
+                "id": "https://REPLACE/tags/0/tag_id",
+                "type": "integer"
+              },
+              "tag_value": {
+                "id": "https://REPLACE/tags/0/tag_value",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "hardware_profile": {
+          "id": "https://REPLACE/hardware_profile",
+          "type": "object",
+          "properties": {
+            "updated": {
+              "id": "https://REPLACE/hardware_profile/updated",
+              "type": "string"
+            },
+            "updated_by": {
+              "id": "https://REPLACE/hardware_profile/updated_by",
+              "type": "string"
+            },
+            "created": {
+              "id": "https://REPLACE/hardware_profile/created",
+              "type": "string"
+            },
+            "hardware_profile_id": {
+              "id": "https://REPLACE/hardware_profile/hardware_profile_id",
+              "type": "integer"
+            },
+            "model": {
+              "id": "https://REPLACE/hardware_profile/model",
+              "type": "string"
+            },
+            "manufacturer": {
+              "id": "https://REPLACE/hardware_profile/manufacturer",
+              "type": "string"
+            }
+          }
+        },
+        "created": {
+          "id": "https://REPLACE/created",
+          "type": "string"
+        },
+        "updated": {
+          "id": "https://REPLACE/updated",
+          "type": "string"
+        },
+        "node_name": {
+          "id": "https://REPLACE/node_name",
+          "type": "string"
+        },
+        "node_id": {
+          "id": "https://REPLACE/node_id",
+          "type": "integer"
+        },
+        "status_id": {
+          "id": "https://REPLACE/status_id",
+          "type": "integer"
+        },
+        "node_groups": {
+          "id": "https://REPLACE/node_groups",
+          "type": "array",
+          "items": [
+            {
+              "id": "https://REPLACE/node_groups/0",
+              "type": "object",
+              "properties": {
+                "updated": {
+                  "id": "https://REPLACE/node_groups/0/updated",
+                  "type": "string"
+                },
+                "node_group_owner": {
+                  "id": "https://REPLACE/node_groups/0/node_group_owner",
+                  "type": "string"
+                },
+                "description": {
+                  "id": "https://REPLACE/node_groups/0/description",
+                  "type": "string"
+                },
+                "tags": {
+                  "id": "https://REPLACE/node_groups/0/tags",
+                  "type": "array",
+                  "items": [
+                    {
+                      "id": "https://REPLACE/node_groups/0/tags/0",
+                      "type": "object",
+                      "properties": {
+                        "updated": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/updated",
+                          "type": "string"
+                        },
+                        "updated_by": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/updated_by",
+                          "type": "string"
+                        },
+                        "created": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/created",
+                          "type": "string"
+                        },
+                        "tag_name": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/tag_name",
+                          "type": "string"
+                        },
+                        "tag_id": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/tag_id",
+                          "type": "integer"
+                        },
+                        "tag_value": {
+                          "id": "https://REPLACE/node_groups/0/tags/0/tag_value",
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "id": "https://REPLACE/node_groups/0/tags/1",
+                      "type": "object",
+                      "properties": {
+                        "updated": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/updated",
+                          "type": "string"
+                        },
+                        "updated_by": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/updated_by",
+                          "type": "string"
+                        },
+                        "created": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/created",
+                          "type": "string"
+                        },
+                        "tag_name": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/tag_name",
+                          "type": "string"
+                        },
+                        "tag_id": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/tag_id",
+                          "type": "integer"
+                        },
+                        "tag_value": {
+                          "id": "https://REPLACE/node_groups/0/tags/1/tag_value",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "created": {
+                  "id": "https://REPLACE/node_groups/0/created",
+                  "type": "string"
+                },
+                "updated_by": {
+                  "id": "https://REPLACE/node_groups/0/updated_by",
+                  "type": "string"
+                },
+                "node_group_id": {
+                  "id": "https://REPLACE/node_groups/0/node_group_id",
+                  "type": "integer"
+                },
+                "node_group_name": {
+                  "id": "https://REPLACE/node_groups/0/node_group_name",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "id": "https://REPLACE/node_groups/1",
+              "type": "object",
+              "properties": {
+                "updated": {
+                  "id": "https://REPLACE/node_groups/1/updated",
+                  "type": "string"
+                },
+                "node_group_owner": {
+                  "id": "https://REPLACE/node_groups/1/node_group_owner",
+                  "type": "string"
+                },
+                "description": {
+                  "id": "https://REPLACE/node_groups/1/description",
+                  "type": "string"
+                },
+                "tags": {
+                  "id": "https://REPLACE/node_groups/1/tags",
+                  "type": "array",
+                  "items": []
+                },
+                "created": {
+                  "id": "https://REPLACE/node_groups/1/created",
+                  "type": "string"
+                },
+                "updated_by": {
+                  "id": "https://REPLACE/node_groups/1/updated_by",
+                  "type": "string"
+                },
+                "node_group_id": {
+                  "id": "https://REPLACE/node_groups/1/node_group_id",
+                  "type": "integer"
+                },
+                "node_group_name": {
+                  "id": "https://REPLACE/node_groups/1/node_group_name",
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "hardware_profile_id": {
+          "id": "https://REPLACE/hardware_profile_id",
+          "type": "integer"
+        },
+        "unique_id": {
+          "id": "https://REPLACE/unique_id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "uptime",
+        "operating_system",
+        "updated_by",
+        "operating_system_id",
+        "tags",
+        "hardware_profile",
+        "created",
+        "updated",
+        "node_name",
+        "node_id",
+        "status_id",
+        "node_groups",
+        "hardware_profile_id",
+        "unique_id"
+      ]
+    }
 
     return node
 
@@ -67,20 +403,22 @@ def api_node_read(request):
     try:
         if request.path == '/api/nodes':
 
+            exact_get =  request.GET.get("exact_get", None)
+
             if request.params:
                 s = ""
                 # Filter on all the passed in terms
                 q = DBSession.query(Node)
-                exact_get =  request.GET.getone("exact_get")
 
-                # FIXME: This is awful. Need a better way to distinguish 
-                # meta params from search params without having to
-                # pre-define everything.
                 for k,v in request.GET.items():
+                    # FIXME: This is sub-par. Need a better way to distinguish 
+                    # meta params from search params without having to
+                    # pre-define everything.
                     if k == 'exact_get':
                         continue
+
                     s+='{0}={1},'.format(k, v)    
-                    if exact_get == True:
+                    if exact_get:
                         log.info('Exact filtering on {0}={1}'.format(k, v))
                         q = q.filter(getattr(Node ,k)==v)
                     else:

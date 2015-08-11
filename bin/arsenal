@@ -658,8 +658,6 @@ def delete_node_groups(args):
     log.info('object_type is: {0}'.format(args.object_type))
 
     args.search = 'node_group_name={0}'.format(args.node_group_name)
-    # FIXME: This is crappy.
-    args.exact_get = False
     results = _search(args)
 
     if results:
@@ -691,13 +689,18 @@ def _search(args):
     r = api_submit(api_endpoint, data, method='get_params')
     return r
 
-def gen_nodes_search():
-    data = {'schema': 'true'}
-    # FIXME: can't access globals
-    r = session.get('http://192.168.1.1:8281/api/nodes', verify=False, params=data)
-    docs = r.json()
+def gen_help(help_type):
+    """Generte the list of searchable terms for help"""
+    
+    terms = {
+        'nodes_search': [ 'node_id', 'node_name', 'unique_id', 'status_id',
+                          'status', 'hardware_profile_id', 'hardware_profile',
+                          'operating_system_id', 'operating_system', 'uptime',
+                          'node_groups', 'created', 'updated', 'updated_by',
+        ],
+    }
 
-    return '\n\nSearch terms: \n\n {0}'.format(', '.join(docs.keys()))
+    return '[ {0} ]'.format(', '.join(sorted(terms[help_type])))
 
 
 def _parse_args():
@@ -775,7 +778,6 @@ def _parse_args():
     # nodes search subcommand (nssc)
     nssc = nasp.add_parser("search",
                            help="Search for node objects and optionally act upon the results.",
-                           epilog=gen_nodes_search(),
                            parents=[pp])
     nssc.add_argument('--fields',
                       '-f',
@@ -785,6 +787,7 @@ def _parse_args():
     nssc.add_argument('--exact',
                       action='store_true',
                       dest="exact_get",
+                      default=None,
                       help='Exact match search terms.')
 
     # nodes assignment action argument group (ansqg)
@@ -808,7 +811,7 @@ def _parse_args():
     nssc.add_argument('search',
                       default=None,
                       metavar='search_terms',
-                      help='Comma separated list of key=value pairs to search for.')
+                      help='Comma separated list of key=value pairs to search for.\n {0}'.format(gen_help('nodes_search')))
     nssc.set_defaults(func=search_nodes)
 
     # nodes create subcommand (ncsc)
@@ -875,6 +878,7 @@ def _parse_args():
     ngssc.add_argument('--exact',
                        action='store_true',
                        dest="exact_get",
+                       default=None,
                        help='Exact match search terms.')
 
     # node_groups assignment action argument group (angsag)

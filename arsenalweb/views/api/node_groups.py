@@ -25,10 +25,166 @@ from arsenalweb.models import (
     NodeGroup,
     )
 
+
+@view_config(route_name='api_node_groups', request_method='GET', request_param='schema=true', renderer='json')
+def api_node_group_schema(request):
+
+    node_group = {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "id": "https://REPLACE",
+      "type": "object",
+      "properties": {
+        "updated": {
+          "id": "https://REPLACE/updated",
+          "type": "string",
+          "default": "2015-07-30 15:00:37 -07:00"
+        },
+        "node_group_owner": {
+          "id": "https://REPLACE/node_group_owner",
+          "type": "string",
+          "default": "aaron.bandt@citygridmedia.com"
+        },
+        "description": {
+          "id": "https://REPLACE/description",
+          "type": "string",
+          "default": "Default Install"
+        },
+        "tags": {
+          "id": "https://REPLACE/tags",
+          "type": "array",
+          "items": [
+            {
+              "id": "https://REPLACE/tags/0",
+              "type": "object",
+              "properties": {
+                "updated": {
+                  "id": "https://REPLACE/tags/0/updated",
+                  "type": "string",
+                  "default": "2015-08-11 13:44:35 -07:00"
+                },
+                "updated_by": {
+                  "id": "https://REPLACE/tags/0/updated_by",
+                  "type": "string",
+                  "default": "Admin"
+                },
+                "created": {
+                  "id": "https://REPLACE/tags/0/created",
+                  "type": "string",
+                  "default": "2015-08-11 13:44:35 -07:00"
+                },
+                "tag_name": {
+                  "id": "https://REPLACE/tags/0/tag_name",
+                  "type": "string",
+                  "default": "ct_BusinessUnit"
+                },
+                "tag_id": {
+                  "id": "https://REPLACE/tags/0/tag_id",
+                  "type": "integer",
+                  "default": 1
+                },
+                "tag_value": {
+                  "id": "https://REPLACE/tags/0/tag_value",
+                  "type": "string",
+                  "default": "CityGrid"
+                }
+              }
+            },
+            {
+              "id": "https://REPLACE/tags/1",
+              "type": "object",
+              "properties": {
+                "updated": {
+                  "id": "https://REPLACE/tags/1/updated",
+                  "type": "string",
+                  "default": "2015-08-11 13:44:35 -07:00"
+                },
+                "updated_by": {
+                  "id": "https://REPLACE/tags/1/updated_by",
+                  "type": "string",
+                  "default": "Admin"
+                },
+                "created": {
+                  "id": "https://REPLACE/tags/1/created",
+                  "type": "string",
+                  "default": "2015-08-11 13:44:35 -07:00"
+                },
+                "tag_name": {
+                  "id": "https://REPLACE/tags/1/tag_name",
+                  "type": "string",
+                  "default": "ct_BusinessUnit"
+                },
+                "tag_id": {
+                  "id": "https://REPLACE/tags/1/tag_id",
+                  "type": "integer",
+                  "default": 2
+                },
+                "tag_value": {
+                  "id": "https://REPLACE/tags/1/tag_value",
+                  "type": "string",
+                  "default": "Citysearch"
+                }
+              }
+            }
+          ]
+        },
+        "created": {
+          "id": "https://REPLACE/created",
+          "type": "string",
+          "default": "2015-07-30 15:00:37 -07:00"
+        },
+        "updated_by": {
+          "id": "https://REPLACE/updated_by",
+          "type": "string",
+          "default": "kaboom"
+        },
+        "node_group_id": {
+          "id": "https://REPLACE/node_group_id",
+          "type": "integer",
+          "default": 2
+        },
+        "node_group_name": {
+          "id": "https://REPLACE/node_group_name",
+          "type": "string",
+          "default": "default_install"
+        }
+      },
+      "required": [
+        "updated",
+        "node_group_owner",
+        "description",
+        "tags",
+        "created",
+        "updated_by",
+        "node_group_id",
+        "node_group_name"
+      ]
+    }
+
+    return node_group
+
+
+@view_config(route_name='api_node_group_r', request_method='GET', renderer='json')
+def api_node_group_read_attrib(request):
+    print "YUPPERZ"
+
+    node_group_id = request.matchdict['id']
+    resource = request.matchdict['resource']
+    log.info('Querying for node_group attribute={0},url={1}'.format(resource, request.url))
+
+    try:
+        ng = DBSession.query(NodeGroup)
+        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
+        ng = ng.one()
+        return { resource: getattr(ng, resource) }
+    except (NoResultFound, AttributeError):
+        return Response(content_type='application/json', status_int=404)
+    except Exception as e:
+        log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
+        raise
+
+
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
-@view_config(route_name='api_node_groups', request_method='GET', request_param='format=json', renderer='json')
 @view_config(route_name='api_node_group', request_method='GET', renderer='json')
-@view_config(route_name='api_node_group', request_method='GET', request_param='format=json', renderer='json')
 def api_node_group_read(request):
 
     perpage = 40
@@ -51,7 +207,7 @@ def api_node_group_read(request):
                     ng = ng.filter(NodeGroup.node_group_name==node_group_name)
                     return ng.all()
                 except Exception as e:
-                    log.error('Error querying node_group={0},exception={2}'.format(request.url, e))
+                    log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
                     raise
             else:
                 log.info('Displaying all node_groups')
@@ -60,7 +216,7 @@ def api_node_group_read(request):
                     ngs = ngs.limit(perpage).offset(offset).all()
                     return ngs
                 except Exception as e:
-                    log.error('Error querying node_group={0},exception={2}'.format(request.url, e))
+                    log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
                     raise
 
         if request.matchdict['id']:
@@ -81,7 +237,7 @@ def api_node_group_read(request):
         return Response(content_type='application/json', status_int=404)
 
     except Exception as e:
-        log.error('Error querying api={0},exception={1}'.format(request.url, e))
+        log.error('Error querying node_groups api={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
@@ -154,8 +310,9 @@ def api_node_groups_delete(request):
                 node_group_name = payload['node_group_name']
 
                 log.info('Checking for node_group_name: {0}'.format(node_group_name))
-                ng = DBSession.query(NodeGroup.node_group_name==node_group_name)
-                ng.one()
+                ng = DBSession.query(NodeGroup)
+                ng = ng.filter(NodeGroup.node_group_name==node_group_name)
+                ng = ng.one()
             except NoResultFound:
                 return Response(content_type='application/json', status_int=404)
 
@@ -167,7 +324,7 @@ def api_node_groups_delete(request):
                     DBSession.delete(ng)
                     DBSession.flush()
                 except Exception as e:
-                    log.error('Error deleting node_group node_group_name={0}exception={1}'.format(node_group_name, e))
+                    log.error('Error deleting node_group node_group_name={0},exception={1}'.format(node_group_name, e))
                     raise
 
         if request.matchdict['id']:
@@ -190,7 +347,7 @@ def api_node_groups_delete(request):
                    DBSession.delete(ng)
                    DBSession.flush()
                except Exception as e:
-                   log.error('Error deleting node_group node_group_name={0}exception={1}'.format(ng.node_group_name, e))
+                   log.error('Error deleting node_group node_group_name={0},exception={1}'.format(ng.node_group_name, e))
                    raise
 
             # FIXME: Return none is 200 or ?
