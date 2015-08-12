@@ -658,6 +658,8 @@ def delete_node_groups(args):
     log.info('object_type is: {0}'.format(args.object_type))
 
     args.search = 'node_group_name={0}'.format(args.node_group_name)
+    # FIXME: do we want this to be optional? i.e. put it in argparse?
+    args.exact_get = True
     results = _search(args)
 
     if results:

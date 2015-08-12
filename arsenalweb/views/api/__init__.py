@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import re
 from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (
@@ -21,27 +22,33 @@ from arsenalweb.models import (
     DBSession,
     Node,
     NodeGroup,
+    NodeGroupAssignment,
+    Status,
+    Tag,
+    HardwareProfile,
+    OperatingSystem,
     )
 
-def get_api_attribute(request, object_type, model_type):
+def get_api_attribute(request, model_type):
 
-    objects = {'node': 'Node',
-               'node_groups': 'NodeGroup',
-    }
-                
+    # Convert camel case to underscore for id mapping.
+    a = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+    c = a.sub(r' \1', model_type).lower().strip()
+    c = c.replace(" ","_") + '_id'
+
     resource_id = request.matchdict['id']
     resource = request.matchdict['resource']
-    log.info('Querying for {0} attribute={1},url={2}'.format(object_type, resource, request.url))
+    log.info('Querying for attribute={0},url={1}'.format(resource, request.url))
 
     try:
-        q = DBSession.query('{0}'.format(model_type))
-        q = q.filter(getattr(model_type, 'node_group_id') == resource_id)
-        print "AFTER AFTER ", q
+        # FIXME: Something better here than globals?
+        q = DBSession.query(globals()[model_type])
+        q = q.filter(getattr(globals()[model_type], c) == resource_id)
         q = q.one()
         return { resource: getattr(q, resource) }
 
-#    except (NoResultFound, AttributeError):
-#        return Response(content_type='application/json', status_int=404)
+    except (NoResultFound, AttributeError):
+        return Response(content_type='application/json', status_int=404)
     except Exception as e:
         log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
         raise

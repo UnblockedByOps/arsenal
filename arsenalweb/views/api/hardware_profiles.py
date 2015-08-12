@@ -20,15 +20,23 @@ from arsenalweb.views import (
     get_authenticated_user,
     log,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     HardwareProfile,
     )
 
+
+@view_config(route_name='api_hardware_profile_r', request_method='GET', renderer='json')
+def api_hardware_profile_read_attrib(request):
+
+     return get_api_attribute(request, 'HardwareProfile')
+
+
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
-@view_config(route_name='api_hardware_profiles', request_method='GET', request_param='format=json', renderer='json')
 @view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
-@view_config(route_name='api_hardware_profile', request_method='GET', request_param='format=json', renderer='json')
 def api_hardware_profile_read(request):
 
     perpage = 40

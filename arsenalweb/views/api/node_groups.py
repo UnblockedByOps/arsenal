@@ -31,6 +31,7 @@ from arsenalweb.models import (
 
 @view_config(route_name='api_node_groups', request_method='GET', request_param='schema=true', renderer='json')
 def api_node_group_schema(request):
+    """Schema document for node_groups API"""
 
     node_group = {
       "$schema": "http://json-schema.org/draft-04/schema#",
@@ -168,30 +169,39 @@ def api_node_group_schema(request):
 
 @view_config(route_name='api_node_group_r', request_method='GET', renderer='json')
 def api_node_group_read_attrib(request):
+    """Process read requests for /api/node_groups/{id}/{resource} route matches"""
 
-# FIXME: Not working
-     return get_api_attribute(request, 'node_groups', 'NodeGroup')
-#    node_group_id = request.matchdict['id']
-#    resource = request.matchdict['resource']
-#    log.info('Querying for node_group attribute={0},url={1}'.format(resource, request.url))
-#
-#    try:
-#        ng = DBSession.query(NodeGroup)
-#        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-#        ng = ng.one()
-#
-#        return { resource: getattr(ng, resource) }
-#
-#    except (NoResultFound, AttributeError):
-#        return Response(content_type='application/json', status_int=404)
-#    except Exception as e:
-#        log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
-#        raise
+    return get_api_attribute(request, 'NodeGroup')
+
+
+@view_config(route_name='api_node_group', request_method='GET', renderer='json')
+def api_node_group_read_id(request):
+    """Process read requests for /api/node_groups/{id} route matches"""
+
+    try:
+        node_group_id = request.matchdict['id']
+        log.info('Displaying single node_group node_group_id={0}'.format(node_group_id))
+
+        try:
+            ng = DBSession.query(NodeGroup)
+            ng = ng.filter(NodeGroup.node_group_id==node_group_id)
+            ng = ng.one()
+            return ng
+        except Exception as e:
+            log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
+            raise
+
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
+
+    except Exception as e:
+        log.error('Error querying node_groups api={0},exception={1}'.format(request.url, e))
+        return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
-@view_config(route_name='api_node_group', request_method='GET', renderer='json')
 def api_node_group_read(request):
+    """Process read requests for /api/node_groups route match"""
 
     perpage = 40
     offset = 0
@@ -202,39 +212,23 @@ def api_node_group_read(request):
         pass
 
     try:
-        if request.path == '/api/node_groups':
+        node_group_name = request.params.get('node_group_name')
 
-            node_group_name = request.params.get('node_group_name')
-            
-            if node_group_name:
-                log.info('Querying for node_group: {0}'.format(request.url))
-                try:
-                    ng = DBSession.query(NodeGroup)
-                    ng = ng.filter(NodeGroup.node_group_name==node_group_name)
-                    return ng.all()
-                except Exception as e:
-                    log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
-                    raise
-            else:
-                log.info('Displaying all node_groups')
-                try:
-                    ngs = DBSession.query(NodeGroup)
-                    ngs = ngs.limit(perpage).offset(offset).all()
-                    return ngs
-                except Exception as e:
-                    log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
-                    raise
-
-        if request.matchdict['id']:
-
-            node_group_id = request.matchdict['id']
-            log.info('Displaying single node_group node_group_id={0}'.format(node_group_id))
-
+        if node_group_name:
+            log.info('Querying for node_group: {0}'.format(request.url))
             try:
                 ng = DBSession.query(NodeGroup)
-                ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-                ng = ng.one()
-                return ng
+                ng = ng.filter(NodeGroup.node_group_name==node_group_name)
+                return ng.all()
+            except Exception as e:
+                log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
+                raise
+        else:
+            log.info('Displaying all node_groups')
+            try:
+                ngs = DBSession.query(NodeGroup)
+                ngs = ngs.limit(perpage).offset(offset).all()
+                return ngs
             except Exception as e:
                 log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
                 raise
@@ -249,6 +243,7 @@ def api_node_group_read(request):
 
 @view_config(route_name='api_node_groups', permission='api_write', request_method='PUT', renderer='json')
 def api_node_groups_write(request):
+    """Process write requests for /api/node_groups route match"""
 
     au = get_authenticated_user(request)
 
@@ -300,9 +295,41 @@ def api_node_groups_write(request):
         return Response(str(e), content_type='application/json', status_int=500)
 
 
-@view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_node_group', permission='api_write', request_method='DELETE', renderer='json')
+def api_node_groups_delete_id(request):
+    """Process delete requests for /api/node_groups/{id} route match."""
+
+    # Will be used for auditing
+    au = get_authenticated_user(request)
+
+    try:
+        node_group_id = request.matchdict['id']
+
+        log.info('Checking for node_group_id={0}'.format(node_group_id))
+        ng = DBSession.query(NodeGroup)
+        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
+        ng = ng.one()
+
+        # FIXME: Need auditing
+        # FIXME: What about orphaned assigments?
+        log.info('Deleting node_group_name={0}'.format(ng.node_group_name))
+        DBSession.delete(ng)
+        DBSession.flush()
+
+        # FIXME: Return none is 200 or ?
+        # return ng
+
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
+
+    except Exception as e:
+        log.error('Error deleting node_group node_group_name={0},exception={1}'.format(ng.node_group_name, e))
+        return Response(str(e), content_type='application/json', status_int=500)
+
+
+@view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_groups_delete(request):
+    """Process delete requests for /api/node_groups route match."""
 
     # Will be used for auditing
     au = get_authenticated_user(request)
@@ -310,55 +337,26 @@ def api_node_groups_delete(request):
     try:
         payload = request.json_body
 
-        if request.path == '/api/node_groups':
+        node_group_name = payload['node_group_name']
 
-            try:
-                node_group_name = payload['node_group_name']
+        log.info('Checking for node_group_name: {0}'.format(node_group_name))
+        ng = DBSession.query(NodeGroup)
+        ng = ng.filter(NodeGroup.node_group_name==node_group_name)
+        ng = ng.one()
 
-                log.info('Checking for node_group_name: {0}'.format(node_group_name))
-                ng = DBSession.query(NodeGroup)
-                ng = ng.filter(NodeGroup.node_group_name==node_group_name)
-                ng = ng.one()
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
+        # FIXME: Need auditing
+        # FIXME: What about orphaned assigments?
+        log.info('Deleting node_group: {0}'.format(node_group_name))
+        DBSession.delete(ng)
+        DBSession.flush()
 
-            else:
-                try:
-                    # FIXME: Need auditing
-                    # FIXME: What about orphaned assigments?
-                    log.info('Deleting node_group: {0}'.format(node_group_name))
-                    DBSession.delete(ng)
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error deleting node_group node_group_name={0},exception={1}'.format(node_group_name, e))
-                    raise
+        # FIXME: Return none is 200 or ?
+        # return ng
 
-        if request.matchdict['id']:
-
-           try:
-               node_group_id = request.matchdict['id']
-
-               log.info('Checking for node_group_id={0}'.format(node_group_id))
-               ng = DBSession.query(NodeGroup)
-               ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-               ng = ng.one()
-           except NoResultFound:
-               return Response(content_type='application/json', status_int=404)
-
-           else:
-               try:
-                   # FIXME: Need auditing
-                   # FIXME: What about orphaned assigments?
-                   log.info('Deleting node_group_name={0}'.format(ng.node_group_name))
-                   DBSession.delete(ng)
-                   DBSession.flush()
-               except Exception as e:
-                   log.error('Error deleting node_group node_group_name={0},exception={1}'.format(ng.node_group_name, e))
-                   raise
-
-            # FIXME: Return none is 200 or ?
-            # return ng
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
 
     except Exception as e:
-        log.error('Error with node_group API! exception: {0}'.format(e))
+        log.error('Error deleting node_group node_group_name={0},exception={1}'.format(node_group_name, e))
         return Response(str(e), content_type='application/json', status_int=500)
+

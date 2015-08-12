@@ -20,10 +20,20 @@ from arsenalweb.views import (
     get_authenticated_user,
     log,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     Tag,
     )
+
+
+@view_config(route_name='api_tag_r', request_method='GET', renderer='json')
+def api_tag_read_attrib(request):
+
+     return get_api_attribute(request, 'Tag')
+
 
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
 @view_config(route_name='api_tag', request_method='GET', renderer='json')

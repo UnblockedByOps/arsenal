@@ -23,6 +23,9 @@ from arsenalweb.views import (
     _api_get,
     _api_put,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     Node,
@@ -367,25 +370,19 @@ def api_node_schema(request):
         }
       },
       "required": [
-        "status",
-        "uptime",
-        "operating_system",
-        "updated_by",
-        "operating_system_id",
-        "tags",
-        "hardware_profile",
-        "created",
-        "updated",
         "node_name",
-        "node_id",
         "status_id",
-        "node_groups",
-        "hardware_profile_id",
         "unique_id"
       ]
     }
 
     return node
+
+
+@view_config(route_name='api_node_r', request_method='GET', renderer='json')
+def api_node_read_attrib(request):
+
+     return get_api_attribute(request, 'Node')
 
 
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
@@ -406,7 +403,7 @@ def api_node_read(request):
             exact_get =  request.GET.get("exact_get", None)
 
             if request.params:
-                s = ""
+                s = ''
                 # Filter on all the passed in terms
                 q = DBSession.query(Node)
 

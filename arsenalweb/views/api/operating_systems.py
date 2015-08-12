@@ -20,17 +20,23 @@ from arsenalweb.views import (
     get_authenticated_user,
     log,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     OperatingSystem,
     )
 
+
+@view_config(route_name='api_operating_system_r', request_method='GET', renderer='json')
+def api_operating_systemread_attrib(request):
+
+     return get_api_attribute(request, 'OperatingSystem')
+
+
 @view_config(route_name='api_operating_systems', request_method='GET', renderer='json')
-@view_config(route_name='api_operating_systems', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_operating_systems', request_method='GET', request_param='format=xml', renderer='xml')
 @view_config(route_name='api_operating_system', request_method='GET', renderer='json')
-@view_config(route_name='api_operating_system', request_method='GET', request_param='format=json', renderer='json')
-@view_config(route_name='api_operating_system', request_method='GET', request_param='format=xml', renderer='xml')
 def api_operating_system_read(request):
 
     perpage = 40

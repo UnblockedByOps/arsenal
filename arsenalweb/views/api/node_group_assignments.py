@@ -20,15 +20,41 @@ from arsenalweb.views import (
     get_authenticated_user,
     log,
     )
+from arsenalweb.views.api import (
+    get_api_attribute,
+    )
 from arsenalweb.models import (
     DBSession,
     NodeGroupAssignment,
     )
 
-@view_config(route_name='api_node_group_assignments', request_method='GET', renderer='json')
-@view_config(route_name='api_node_group_assignments', request_method='GET', request_param='format=json', renderer='json')
+
+@view_config(route_name='api_node_group_assignment_r', request_method='GET', renderer='json')
+def api_node_group_assignment_read_attrib(request):
+
+     return get_api_attribute(request, 'NodeGroupAssignment')
+
+
 @view_config(route_name='api_node_group_assignment', request_method='GET', renderer='json')
-@view_config(route_name='api_node_group_assignment', request_method='GET', request_param='format=json', renderer='json')
+def api_node_group_assignment_read_id(request):
+
+    try:
+        log.info('Displaying single node group assignment')
+        nga = DBSession.query(NodeGroupAssignment)
+        nga = nga.filter(NodeGroupAssignment.node_group_assignment_id==request.matchdict['id'])
+        nga = nga.one()
+
+        return nga
+
+    except NoResultFound:
+            return Response(content_type='application/json', status_int=404)
+
+    except Exception, e:
+        log.error('Error querying api={0},exception={1}'.format(request.url, e))
+        return Response(str(e), content_type='application/json', status_int=500)
+
+
+@view_config(route_name='api_node_group_assignments', request_method='GET', renderer='json')
 def api_node_group_assignment_read(request):
 
     perpage = 40
@@ -40,28 +66,43 @@ def api_node_group_assignment_read(request):
         pass
 
     try:
-        if request.path == '/api/node_group_assignments':
+        # FIXME: need to be able to search for individual assignments
+        node_id = request.params.get('node_id')
+        node_group_id = request.params.get('node_group_id')
+        exact_get =  request.GET.get("exact_get", None)
 
-            node_id = request.params.get('node_id')
-            node_group_id = request.params.get('node_group_id')
+        s = ''
+        nga = DBSession.query(NodeGroupAssignment)
+        if any((node_id, node_group_id)):
 
+            # FIXME: this is starting to get replicated. Can it be a function?
+            for k,v in request.GET.items():
+                # FIXME: This is sub-par. Need a better way to distinguish
+                # meta params from search params without having to
+                # pre-define everything.
+                if k == 'exact_get':
+                    continue
+
+                s+='{0}={1},'.format(k, v)
+                if exact_get:
+                    log.info('Exact filtering on {0}={1}'.format(k, v))
+                    nga = nga.filter(getattr(NodeGroupAssignment ,k)==v)
+                else:
+                    log.info('Loose filtering on {0}={1}'.format(k, v))
+                    nga = nga.filter(getattr(NodeGroupAssignment ,k).like('%{0}%'.format(v)))
+
+            log.info('Searching for node_group_assignments with params: {0}'.format(s.rstrip(',')))
+
+        else:
             log.info('Displaying all node_group_assignments')
-            try:
-                q = DBSession.query(NodeGroupAssignment)
-                node_group_assignments = q.limit(perpage).offset(offset).all()
-                return node_group_assignments
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
 
-        if request.matchdict['id']:
-            log.info('Displaying single node group assignment')
-            try:
-                q = DBSession.query(NodeGroupAssignment).filter(NodeGroupAssignment.node_group_assignment_id==request.matchdict['id'])
-                node_group_assignment = q.one()
-                return node_group_assignment
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
-            
+        nga = nga.limit(perpage).offset(offset).all()
+
+        return nga
+
+    except NoResultFound:
+            return Response(content_type='application/json', status_int=404)
+
     except Exception, e:
         log.error('Error querying api={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
