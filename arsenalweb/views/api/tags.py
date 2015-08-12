@@ -22,6 +22,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -29,15 +32,32 @@ from arsenalweb.models import (
     )
 
 
+@view_config(route_name='api_tags', request_method='GET', request_param='schema=true', renderer='json')
+def api_tag_schema(request):
+    """Schema document for tags API"""
+
+    tag = {
+    }
+
+    return tag
+
 @view_config(route_name='api_tag_r', request_method='GET', renderer='json')
 def api_tag_read_attrib(request):
+    """Process read requests for /api/tags/{id}/{resource} route matches"""
 
-     return get_api_attribute(request, 'Tag')
+    return get_api_attribute(request, 'Tag')
+
+
+@view_config(route_name='api_tag', request_method='GET', renderer='json')
+def api_tag_read_id(request):
+    """Process read requests for /api/tags/{id} route matches"""
+
+    return api_read_by_id(request, 'Tag')
 
 
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
-@view_config(route_name='api_tag', request_method='GET', renderer='json')
 def api_tag_read(request):
+    """Process read requests for /api/tags route match"""
 
     perpage = 40
     offset = 0
@@ -88,20 +108,6 @@ def api_tag_read(request):
                     log.error('Error querying tags={0},exception={1}'.format(request.url, e))
                     raise
 
-        if request.matchdict['id']:
-
-            tag_id = request.matchdict['id']
-            log.info('Displaying single tag tag_id={0}'.format(tag_id))
-
-            try:
-                t = DBSession.query(Tag)
-                t = t.filter(Tag.tag_id==tag_id)
-                t = t.one()
-                return t
-            except Exception as e:
-                log.error('Error querying tag={0},exception={1}'.format(request.url, e))
-                raise
-
     except NoResultFound:
         return Response(content_type='application/json', status_int=404)
 
@@ -112,6 +118,7 @@ def api_tag_read(request):
 
 @view_config(route_name='api_tags', permission='api_write', request_method='PUT', renderer='json')
 def api_node_tags_write(request):
+    """Process write requests for /api/tags route match"""
 
     au = get_authenticated_user(request)
 
@@ -143,19 +150,11 @@ def api_node_tags_write(request):
                 except Exception as e:
                     log.error('Error creating new tag tag_name={0},tag_value={1},exception={3}'.format(tag_name, tag_value, e))
                     raise
-            # FIXME: By definition this will never get hit becasue there are 
-            # no fields to update other than the two that constitue a unqiue
-            # tag. Perhaps just return a 200?
+            # Since there are no fields to update other than the two that
+            # constitue a unqiue tag we return a 409 and handle it in 
+            # client/UI.
             else:
-                try:
-                    log.info('Updating tag_name={0},tag_value={1}'.format(tag_name, tag_value))
-                    t.tag_name = tag_name
-                    t.tag_value = tag_value
-                    t.updated_by=au['user_id']
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error updating tag tag_name={0},tag_value={1},exception={2}'.format(tag_name, tag_value, e))
-                    raise
+                return Response(content_type='application/json', status_int=409)
 
             return t
 
@@ -164,67 +163,18 @@ def api_node_tags_write(request):
         return Response(str(e), content_type='application/json', status_int=500)
 
 
-@view_config(route_name='api_tags', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_tag', permission='api_write', request_method='DELETE', renderer='json')
+def api_tags_delete_id(request):
+    """Process delete requests for /api/tags/{id} route match."""
+
+    return api_delete_by_id(request, 'Tag')
+
+
+@view_config(route_name='api_tags', permission='api_write', request_method='DELETE', renderer='json')
 def api_tags_delete(request):
+    """Process delete requests for /api/tags route match. Iterates
+       over passed parameters."""
 
-    # Will be used for auditing
-    au = get_authenticated_user(request)
+    return api_delete_by_params(request, 'Tag')
 
-    try:
-        payload = request.json_body
 
-        if request.path == '/api/tags':
-
-            try:
-                tag_name = payload['tag_name']
-                tag_value = payload['tag_value']
-
-                log.info('Checking for tag tag_name={0},tag_value={1}'.format(tag_name, tag_value))
-                t = DBSession.query(Tag)
-                t = t.filter(Tag.tag_name==tag_name)
-                t = t.filter(Tag.tag_value==tag_value)
-                t = t.one()
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
-
-            else:
-                try:
-                    # FIXME: Need auditing
-                    # FIXME: What about orphaned assigments?
-                    log.info('Deleting tag tag_name={0},tag_value={1}'.format(tag_name, tag_value))
-                    DBSession.delete(t)
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error deleting tag tag_name={0},tag_value={1},exception={2}'.format(tag_name, tag_value, e))
-                    raise
-
-        if request.matchdict['id']:
-
-           try:
-               tag_id = request.matchdict['id']
-
-               log.info('Checking for tag_id={0}'.format(tag_id))
-               t = DBSession.query(Tag)
-               t = t.filter(Tag.tag_id==tag_id)
-               t = t.one()
-           except NoResultFound:
-               return Response(content_type='application/json', status_int=404)
-
-           else:
-               try:
-                   # FIXME: Need auditing
-                   # FIXME: What about orphaned assigments?
-                   log.info('Deleting tag tag_name={0},tag_value={1}'.format(tag_name, tag_value))
-                   DBSession.delete(t)
-                   DBSession.flush()
-               except Exception as e:
-                   log.error('Error deleting tag tag_name={0},tag_value={1},exception={2}'.format(tag_name, tag_value, e))
-                   raise
-
-            # FIXME: Return none is 200 or ?
-            # return t
-
-    except Exception as e:
-        log.error('Error with tag API! exception: {0}'.format(e))
-        return Response(str(e), content_type='application/json', status_int=500)

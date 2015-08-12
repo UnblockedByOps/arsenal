@@ -22,6 +22,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -178,25 +181,7 @@ def api_node_group_read_attrib(request):
 def api_node_group_read_id(request):
     """Process read requests for /api/node_groups/{id} route matches"""
 
-    try:
-        node_group_id = request.matchdict['id']
-        log.info('Displaying single node_group node_group_id={0}'.format(node_group_id))
-
-        try:
-            ng = DBSession.query(NodeGroup)
-            ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-            ng = ng.one()
-            return ng
-        except Exception as e:
-            log.error('Error querying node_group={0},exception={1}'.format(request.url, e))
-            raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error querying node_groups api={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_id(request, 'NodeGroup')
 
 
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
@@ -299,64 +284,12 @@ def api_node_groups_write(request):
 def api_node_groups_delete_id(request):
     """Process delete requests for /api/node_groups/{id} route match."""
 
-    # Will be used for auditing
-    au = get_authenticated_user(request)
-
-    try:
-        node_group_id = request.matchdict['id']
-
-        log.info('Checking for node_group_id={0}'.format(node_group_id))
-        ng = DBSession.query(NodeGroup)
-        ng = ng.filter(NodeGroup.node_group_id==node_group_id)
-        ng = ng.one()
-
-        # FIXME: Need auditing
-        # FIXME: What about orphaned assigments?
-        log.info('Deleting node_group_name={0}'.format(ng.node_group_name))
-        DBSession.delete(ng)
-        DBSession.flush()
-
-        # FIXME: Return none is 200 or ?
-        # return ng
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error deleting node_group node_group_name={0},exception={1}'.format(ng.node_group_name, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_delete_by_id(request, 'NodeGroup')
 
 
 @view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_groups_delete(request):
-    """Process delete requests for /api/node_groups route match."""
+    """Process delete requests for /api/node_groups route match. Iterates
+       over passed parameters."""
 
-    # Will be used for auditing
-    au = get_authenticated_user(request)
-
-    try:
-        payload = request.json_body
-
-        node_group_name = payload['node_group_name']
-
-        log.info('Checking for node_group_name: {0}'.format(node_group_name))
-        ng = DBSession.query(NodeGroup)
-        ng = ng.filter(NodeGroup.node_group_name==node_group_name)
-        ng = ng.one()
-
-        # FIXME: Need auditing
-        # FIXME: What about orphaned assigments?
-        log.info('Deleting node_group: {0}'.format(node_group_name))
-        DBSession.delete(ng)
-        DBSession.flush()
-
-        # FIXME: Return none is 200 or ?
-        # return ng
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error deleting node_group node_group_name={0},exception={1}'.format(node_group_name, e))
-        return Response(str(e), content_type='application/json', status_int=500)
-
+    return api_delete_by_params(request, 'NodeGroup')

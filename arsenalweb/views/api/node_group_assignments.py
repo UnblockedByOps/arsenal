@@ -22,6 +22,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -31,31 +34,21 @@ from arsenalweb.models import (
 
 @view_config(route_name='api_node_group_assignment_r', request_method='GET', renderer='json')
 def api_node_group_assignment_read_attrib(request):
+    """Process read requests for /api/node_group_assignments/{id}/{resource} route matches"""
 
-     return get_api_attribute(request, 'NodeGroupAssignment')
+    return get_api_attribute(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignment', request_method='GET', renderer='json')
 def api_node_group_assignment_read_id(request):
+    """Process read requests for /api/node_group_assignments/{id} route matches"""
 
-    try:
-        log.info('Displaying single node group assignment')
-        nga = DBSession.query(NodeGroupAssignment)
-        nga = nga.filter(NodeGroupAssignment.node_group_assignment_id==request.matchdict['id'])
-        nga = nga.one()
-
-        return nga
-
-    except NoResultFound:
-            return Response(content_type='application/json', status_int=404)
-
-    except Exception, e:
-        log.error('Error querying api={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_id(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignments', request_method='GET', renderer='json')
 def api_node_group_assignment_read(request):
+    """Process read requests for /api/node_group_assignments route match"""
 
     perpage = 40
     offset = 0
@@ -66,7 +59,6 @@ def api_node_group_assignment_read(request):
         pass
 
     try:
-        # FIXME: need to be able to search for individual assignments
         node_id = request.params.get('node_id')
         node_group_id = request.params.get('node_group_id')
         exact_get =  request.GET.get("exact_get", None)
@@ -103,87 +95,61 @@ def api_node_group_assignment_read(request):
     except NoResultFound:
             return Response(content_type='application/json', status_int=404)
 
-    except Exception, e:
+    except Exception as e:
         log.error('Error querying api={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='PUT', renderer='json')
 def api_node_group_assignments_write(request):
+    """Process write requests for /api/node_group_assignments route match"""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
 
-        if request.path == '/api/node_group_assignments':
+        try:
+            node_id = payload['node_id']
+            node_group_id = payload['node_group_id']
 
+            log.info('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
+            q = DBSession.query(NodeGroupAssignment)
+            q = q.filter(NodeGroupAssignment.node_id==node_id)
+            q = q.filter(NodeGroupAssignment.node_group_id==node_group_id)
+            q.one()
+            log.info('node_group_assignment already exists')
+            return Response(content_type='application/json', status_int=409)
+        except NoResultFound:
             try:
-                node_id = payload['node_id']
-                node_group_id = payload['node_group_id']
+                log.info('Creating new node_group_assignment for node_id={0},node_group_id={1}'.format(node_id, node_group_id))
+                utcnow = datetime.utcnow()
+                nga = NodeGroupAssignment(node_id=node_id,
+                                          node_group_id=node_group_id,
+                                          updated_by=au['user_id'],
+                                          created=utcnow,
+                                          updated=utcnow)
+                DBSession.add(nga)
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error creating new node_group_assignment node_id={0},node_group_id={1},exception={2}'.format(node_id, node_group_id, e))
+                raise
 
-                log.info('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                q = DBSession.query(NodeGroupAssignment)
-                q = q.filter(NodeGroupAssignment.node_id==node_id)
-                q = q.filter(NodeGroupAssignment.node_group_id==node_group_id)
-                q.one()
-                log.info('node_group_assignment already exists')
-            except NoResultFound, e:
-                try:
-                    log.info('Creating new node_group_assignment for node_id: {0} node_group_id {1}'.format(node_id, node_group_id))
-                    utcnow = datetime.utcnow()
-                    nga = NodeGroupAssignment(node_id=node_id,
-                                              node_group_id=node_group_id,
-                                              updated_by=au['user_id'],
-                                              created=utcnow,
-                                              updated=utcnow)
-                    DBSession.add(nga)
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error creating new node_group_assignment node_id={0},node_group_id={1},exception={2}'.format(node_id, node_group_id, e))
-                    raise
-
-    except Exception, e:
+    except Exception as e:
         log.error('Error with node_group_assignment API! exception: {0}'.format(e))
         return Response(str(e), content_type='application/json', status_int=500)
+
+
+@view_config(route_name='api_node_group_assignment', permission='api_write', request_method='DELETE', renderer='json')
+def api_node_group_assignments_delete_id(request):
+    """Process delete requests for /api/node_group_assignments/{id} route match."""
+
+    return api_delete_by_id(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_group_assignments_delete(request):
+    """Process delete requests for /api/node_group_assignments route match.
+       Iterates over passed parameters."""
 
-    # Will be used for auditing
-    au = get_authenticated_user(request)
-
-    try:
-        payload = request.json_body
-
-        if request.path == '/api/node_group_assignments':
-
-            try:
-                node_id = payload['node_id']
-                node_group_id = payload['node_group_id']
-
-                log.info('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                nga = DBSession.query(NodeGroupAssignment)
-                nga = nga.filter(NodeGroupAssignment.node_id==node_id)
-                nga = nga.filter(NodeGroupAssignment.node_group_id==node_group_id)
-                nga = nga.one()
-            except NoResultFound, e:
-                return Response(content_type='application/json', status_int=404)
-
-            else:
-                try:
-                    # FIXME: Need auditing
-                    log.info('Deleting node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                    DBSession.delete(nga)
-                    DBSession.flush()
-                except Exception, e:
-                    log.info('Error deleting node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-                    raise
-
-            # FIXME: Return none is 200?
-            # return nga
-
-    except Exception, e:
-        log.error('Error with node_group_assignment API! exception: {0}'.format(e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_delete_by_params(request, 'NodeGroupAssignment')

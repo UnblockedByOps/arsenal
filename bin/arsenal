@@ -25,6 +25,7 @@ import json
 import yaml
 import collections
 import textwrap
+import types
 import getpass
 import ast
 import requests
@@ -206,6 +207,20 @@ def authenticate():
         sys.exit(1)
 
 
+def check_response_codes(r):
+    """Checks the response codes and logs appropriate messaging for
+       the client"""
+
+    if r.status_code == requests.codes.ok:
+        log.info('Command successful.')
+    elif r.status_code == requests.codes.conflict:
+        log.info('Resource already exists.')
+    elif r.status_code == requests.codes.forbidden:
+        log.info('Authorization failed.')
+    else:
+        log.info('Command failed.')
+
+
 def api_submit(request, data=None,  method='get'):
 
     headers = {'content-type': 'application/json'}
@@ -229,12 +244,8 @@ def api_submit(request, data=None,  method='get'):
             cookies = authenticate()
             r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
 
-        if r.status_code == requests.codes.ok:
-            print "Command successful."
-        elif r.status_code == requests.codes.forbidden:
-            print "Authorization failed."
-        else:
-            print "Command failed."
+        check_response_codes(r)
+
     elif method == 'delete':
 
         data = json.dumps(data, default=lambda o: o.__dict__)
@@ -249,23 +260,24 @@ def api_submit(request, data=None,  method='get'):
             cookies = authenticate()
             r = session.delete(api_url, verify=verify_ssl, cookies=cookies)
 
-        if r.status_code == requests.codes.ok:
-            print "Command successful."
+        check_response_codes(r)
 
-        elif r.status_code == requests.codes.forbidden:
-            print "Authorization failed."
-        else:
-            print "Command failed."
     elif method == 'get_params':
         r = session.get(api_url, verify=verify_ssl, params=data)
-        return r.json()
+        if r.status_code == requests.codes.ok:
+            return r.json()
 
     else:
         r = session.get(api_url, verify=verify_ssl)
-        return r.json()
+        if r.status_code == requests.codes.ok:
+            return r.json()
+
+    return None
 
 
 def get_unique_id(**facts):
+    """Determines the unique_id of a node"""
+
     log.info('determining unique_id...')
     if facts['kernel'] == 'Linux' or facts['kernel'] == 'FreeBSD':
         if 'ec2_instance_id' in facts:
@@ -288,6 +300,8 @@ def get_unique_id(**facts):
 
 
 def get_uuid():
+    """Gets the uuid of a node from dmidecode if available."""
+
     p = subprocess.Popen( ['/usr/sbin/dmidecode', '-s', 'system-uuid'], stdout=subprocess.PIPE )
     p.wait()
     uuid = p.stdout.readlines()
@@ -299,6 +313,8 @@ def get_uuid():
 
 
 def get_hardware_profile(facts):
+    """Collets hardware_profile details of a node."""
+
     log.info('Collecting hardware profile data.')
     hardware_profile = HardwareProfile()
     try:
@@ -318,6 +334,8 @@ def get_hardware_profile(facts):
 
 
 def get_operating_system(facts):
+    """Collets operating_system details of a node."""
+
     log.info('Collecting operating_system data.')
     operating_system = OperatingSystem()
     try:
@@ -332,6 +350,8 @@ def get_operating_system(facts):
 
 
 def collect_data():
+    """Main data collection function use to register a node."""
+
     log.info('Collecting data for node.')
     data = Node()
     facts = facter()
@@ -440,8 +460,23 @@ def search_nodes(args):
 #        print "FOO IS: ", foo
 #        if foo:
 #           globals()[foo](args) 
+    # FIXME: duped code for set and del
     if args.set_tags:
-        set_tag(args)
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append('node_name={0},unique_id={1}'.format(n['node_name'], n['unique_id']))
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _set_or_del_tags(args, results, 'node')
+    if args.del_tags:
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append('node_name={0},unique_id={1}'.format(n['node_name'], n['unique_id']))
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _set_or_del_tags(args, results, 'node', 'delete')
     if args.set_status:
         results = _search(args)
         if results:
@@ -468,43 +503,51 @@ def search_nodes(args):
                 _deassign_node_groups(args, results)
 
     if not any((args.set_tags,
+                args.del_tags,
                 args.set_status,
                 args.set_node_groups,
                 args.del_node_groups)):
 
         results = _search(args)
 
-        # FIXME: Doesn't work beyond the top level for individual fields
-        if args.fields:
-            for r in results:
-                print '- {0}\n'.format(r['node_name'])
-#                print res['status']['status_name']
-                if args.fields == 'all':
-                    # FIXME: Is this really the best way?
-                    # This produces ugly formatting
-                    # print(yaml.safe_dump(r, encoding='utf-8', allow_unicode=True))
-                    #print(yaml.dump(r, default_flow_style=False))
-                    c = convert(r)
-#                    f = (yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
-#                    print textwrap.fill(f, initial_indent='', subsequent_indent='    ')
-                    print(yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
-
-#                    print json.dumps(r, default=lambda o: o.__dict__, sort_keys=True,
-#                                     indent=2, separators=(',', ': ')).
-
-                    #for f in r.keys():
-                    #    if f == 'node_name':
-                    #        continue
-                    #    print '    {0}: {1}'.format(f, r[f])
-                else:
-                    for f in list(args.fields.split(",")):
-                        if f == 'node_name':
-                            continue
-                        print '    {0}: {1}'.format(f, r[f])
-        # Default to returning just the node name
+        if not results:
+            print 'No results found'
         else:
-            for r in results:
-                print r['node_name']
+
+            # FIXME: Doesn't work beyond the top level for individual fields
+            if args.fields:
+                for r in results:
+                    print '- {0}\n'.format(r['node_name'])
+#                    print res['status']['status_name']
+                    if args.fields == 'all':
+                        # FIXME: Is this really the best way?
+                        # This produces ugly formatting
+                        # print(yaml.safe_dump(r, encoding='utf-8', allow_unicode=True))
+                        #print(yaml.dump(r, default_flow_style=False))
+                        c = convert(r)
+#                        f = (yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
+#                        print textwrap.fill(f, initial_indent='', subsequent_indent='    ')
+                        print(yaml.dump(c, default_flow_style=False, encoding='utf-8', allow_unicode=True, indent=2))
+
+#                        print json.dumps(r, default=lambda o: o.__dict__, sort_keys=True,
+#                                         indent=2, separators=(',', ': ')).
+
+                        #for f in r.keys():
+                        #    if f == 'node_name':
+                        #        continue
+                        #    print '    {0}: {1}'.format(f, r[f])
+                    else:
+                        for f in list(args.fields.split(",")):
+                            if f == 'node_name':
+                                continue
+                            if type(r[f]) is types.ListType:
+                                print '{0}: \n{1}'.format(f, yaml.safe_dump(r[f], encoding='utf-8', allow_unicode=True))
+                            else:
+                                print '    {0}: {1}'.format(f, r[f])
+            # Default to returning just the node name
+            else:
+                for r in results:
+                    print r['node_name']
 
 
 def convert(data):
@@ -608,11 +651,26 @@ def search_node_groups(args):
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
+    # FIXME: duped code for set and delete
     if args.set_tags:
-        set_tag(args)
+        results = _search(args)
+        if results:
+            r_names = []
+            for ng in results:
+                r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
+            if ask_yes_no("We are ready to update the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _set_or_del_tags(args, results, 'node_group')
+    if args.del_tags:
+        results = _search(args)
+        if results:
+            r_names = []
+            for ng in results:
+                r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
+            if ask_yes_no("We are ready to update the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _set_or_del_tags(args, results, 'node_group', 'delete')
  
     # switch to any if there's more than one
-    if not args.set_tags:
+    if not any((args.set_tags, args.del_tags)):
 
         results = _search(args)
 
@@ -677,6 +735,117 @@ def delete_node_groups(args):
         log.info('No results found')
 
 
+## TAGS
+def search_tags(args):
+    """Search for tags and perform optional assignment
+       actions."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    if args.set_tags:
+        set_tag(args)
+
+    # switch to any if there's more than one
+    if not args.set_tags:
+
+        results = _search(args)
+
+        if args.fields:
+            for r in results:
+                print '- {0}'.format(r['tag_name'])
+                if args.fields == 'all':
+                    for f in r.keys():
+                        if f == 'tag_name':
+                            continue
+                        print '    {0}: {1}'.format(f, r[f])
+                else:
+                    for f in list(args.fields.split(",")):
+                        if f == 'tag_name':
+                            continue
+                        print '    {0}: {1}'.format(f, r[f])
+        # Default to returning just the node_group name
+        else:
+            for r in results:
+                print r['tag_name']
+
+
+# FIXME: Don't love that I need action_type
+def _set_or_del_tags(args, objects, action_object, api_action = 'set'):
+    """Assign tags to one or more objects (nodes or node_groups)."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    o_id = action_object + '_id'
+    o_name = action_object + '_name'
+    # FIXME: clunky
+    if api_action == 'delete':
+        my_tags = args.del_tags
+        http_method = 'delete'
+    else:
+        my_tags = args.set_tags
+        http_method = 'put'
+
+    tags = []
+    for t in my_tags.split(','):
+        lst = t.split('=')
+        data = {'tag_name': lst[0],
+                'tag_value': lst[1]
+        }
+        r = api_submit('/api/tags', data, method='get_params')
+        if r:
+            tags.append(r[0])
+
+    for o in objects:
+        for t in tags:
+            log.info('{0} tag {1}={2} to {3}={4}'.format(api_action, t['tag_name'], t['tag_value'], o_name, o[o_name]))
+            data = {o_id: o[o_id],
+                    'tag_id': t['tag_id']}
+            api_submit('/api/tag_{0}_assignments'.format(action_object), data, method=http_method)
+
+
+def create_tags(args):
+    """Create a new tag."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    data = {'tag_name': args.tag_name,
+            'tag_value': args.tag_value,
+           }
+
+    log.info('Creating tag tag_name={0},tag_value={1}'.format(args.tag_name, args.tag_value))
+    api_submit('/api/{0}'.format(args.object_type), data, method='put')
+
+
+def delete_tags(args):
+    """Delete an existing tag."""
+
+    # FIXME: Support name and id or ?
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    args.search = 'tag_name={0},tag_value={1}'.format(args.tag_name, args.tag_value)
+    # FIXME: do we want this to be optional? i.e. put it in argparse?
+    args.exact_get = True
+    results = _search(args)
+
+    if results:
+        r_names = []
+        for n in results:
+            r_names.append('{0}={1}'.format(n['tag_name'], n['tag_value']))
+
+        if ask_yes_no("We are ready to delete the following {0}: \n{1}\n Continue?".format(args.object_type, "\n".join(r_names)), args.answer_yes):
+            for n in results:
+                log.info('Deleting tag_name={0},tag_value={1}'.format(n['tag_name'], n['tag_value']))
+                data = {'tag_id': n['tag_id']}
+                # FIXME: name? id? both?
+                api_submit('/api/{0}/{1}'.format(args.object_type, n['tag_id']), data, method='delete')
+    else:
+        log.info('No results found')
+
+
 def _search(args):
 
     log.info('Searching for {0}'.format(args.object_type))
@@ -699,6 +868,11 @@ def gen_help(help_type):
                           'status', 'hardware_profile_id', 'hardware_profile',
                           'operating_system_id', 'operating_system', 'uptime',
                           'node_groups', 'created', 'updated', 'updated_by',
+        ],
+        'node_groups_search': [ 'node_group_id', 'node_group_name', 
+                                'node_group_owner', 'description',
+        ],
+        'tags_search': [ 'tag_id', 'tag_name', 'tag_value',
         ],
     }
 
@@ -750,6 +924,8 @@ def _parse_args():
                     help='answer yes to prompts.')
     
 
+    # FIXME: Really need a generator for all this. Perhaps one that can take json
+    # as an input?
     otsp = mp.add_subparsers(title="Object Type",
                              dest="object_type")
 
@@ -892,7 +1068,7 @@ def _parse_args():
     ngssc.add_argument('search',
                        default=None,
                        metavar='search_terms',
-                       help='Comma separated list of key=value pairs to search for.')
+                       help='Comma separated list of key=value pairs to search for.\n {0}'.format(gen_help('node_groups_search')))
     ngssc.set_defaults(func=search_node_groups)
 
     # node_groups create subcommand (ngcsc)
@@ -929,6 +1105,83 @@ def _parse_args():
                         dest="node_group_name",
                         help='node_group_name to delete.')
     ngdsc.set_defaults(func=delete_node_groups)
+
+    ### TAGS
+    ### tags object_type parser (totp)
+    t_help = ("Perform actions on the tags object_type. Use the search\n"
+               "action to perform assignment actions such as tagging.\n\n")
+    totp = otsp.add_parser("tags",
+                            description=t_help,
+                            help=t_help,
+                            parents=[pp])
+
+    # tags action sub-parser (tasp)
+    tasp = totp.add_subparsers(title="Available actions",
+                               dest="action_command")
+    # tags search subcommand (tssc)
+    tssc = tasp.add_parser("search",
+                           help="Search for tags objects and optionally act upon the results.",
+                           parents=[pp])
+    tssc.add_argument('--fields',
+                      '-f',
+                      dest='fields',
+                      help='Comma separated list of fields to display, or \'all\' for all fields.',
+                      default=None)
+    tssc.add_argument('--exact',
+                      action='store_true',
+                      dest="exact_get",
+                      default=None,
+                      help='Exact match search terms.')
+
+# FIXME: do we want to 'reverse' tag? i.e. select a tag and 
+# assign it many nodes or nodegroups?
+    # tags assignment action argument group (atsag)
+    atsag = tssc.add_argument_group('Assignment Actions')
+
+    atsag.add_argument('--tag',
+                        dest="set_tags",
+                        help='Comma separated list of key=value pairs to tag to the node_group.')
+    tssc.add_argument('search',
+                      default=None,
+                      metavar='search_terms',
+                      help='Comma separated list of key=value pairs to search for.\n {0}'.format(gen_help('tags_search')))
+    atsag.set_defaults(func=search_tags)
+
+    # tags create subcommand (tcsc)
+    tcsc = tasp.add_parser("create",
+                           help="Create tag objects.",
+                           parents=[pp])
+
+    # required tag greate argument group (rtcag)
+    rtcag = tcsc.add_argument_group('required arguments')
+
+    rtcag.add_argument('--name', '-n',
+                        required=True,
+                        dest="tag_name",
+                        help='tag_name to create.')
+    rtcag.add_argument('--value',
+                        required=True,
+                        dest="tag_value",
+                        help='tag_value to assign to the name.')
+    rtcag.set_defaults(func=create_tags)
+
+    # tags delete subcommand (tdsc)
+    tdsc = tasp.add_parser("delete",
+                           help="Delete tag objects.",
+                           parents=[pp])
+
+    # required tag delete argument group (rtdag)
+    rtdag = tdsc.add_argument_group('required arguments')
+
+    rtdag.add_argument('--name', '-n',
+                        required=True,
+                        dest="tag_name",
+                        help='tag_name to delete.')
+    rtdag.add_argument('--value',
+                        required=True,
+                        dest="tag_value",
+                        help='tag_value to delete.')
+    tdsc.set_defaults(func=delete_tags)
 
     return mp.parse_args()   
 

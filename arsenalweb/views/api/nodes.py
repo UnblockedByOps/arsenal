@@ -437,7 +437,8 @@ def api_node_read(request):
             node = q.one()
             return node
             
-    except NoResultFound:
+    # FIXME: Should AttributeError return something different?
+    except (NoResultFound, AttributeError):
         return Response(content_type='application/json', status_int=404)
 
     except Exception, e:
