@@ -116,6 +116,8 @@ class Network(object):
 
 
 def facter():
+    """Reads in facts from facter"""
+
     # need this for custom facts - can add additional paths if needed
     os.environ["FACTERLIB"] = "/var/lib/puppet/lib/facter"
     p = subprocess.Popen( ['facter'], stdout=subprocess.PIPE )
@@ -128,6 +130,9 @@ def facter():
 
 
 def get_cookie_auth():
+    """Gets cookies from cookie file or authenticates if no cookie file
+       is present"""
+
     try:
         cookies = read_cookie()
         if not cookies:
@@ -142,6 +147,8 @@ def get_cookie_auth():
 
 
 def read_cookie():
+    """Reads cookies from cookie file"""
+
     log.debug('Checking for cookie file: %s' % (cookie_file))
     if os.path.isfile(cookie_file):
         log.debug('Cookie file found: %s' % (cookie_file))
@@ -154,6 +161,8 @@ def read_cookie():
 
 
 def write_cookie(cookies):
+    """Writes cookies to cookie file"""
+
     log.info('Writing cookie file: %s' % (cookie_file))
 
     try:
@@ -161,14 +170,17 @@ def write_cookie(cookies):
         with open(cookie_file, "w") as cf:
             cf.write(str(cd))
         os.chmod(cookie_file, 0600)
-    except Exception, e:
+
+        return True
+    except Exception as e:
         logging.error('Unable to write cookie: %s' % cookie_file)
         logging.error('Exception: %s' % e)
 
-    return True
-
 
 def authenticate():
+    """Prompts for user password and authenticates against the API.
+       Writes response cookies to file for later use."""
+
     log.info('Authenticating login: %s' % (login))
     if login == 'kaboom':
         password = kaboom_password
@@ -213,15 +225,18 @@ def check_response_codes(r):
 
     if r.status_code == requests.codes.ok:
         log.info('Command successful.')
+        return r.json()
     elif r.status_code == requests.codes.conflict:
         log.info('Resource already exists.')
     elif r.status_code == requests.codes.forbidden:
         log.info('Authorization failed.')
     else:
         log.info('Command failed.')
+        sys.exit(1)
 
 
-def api_submit(request, data=None,  method='get'):
+def api_submit(request, data=None, method='get'):
+    """Manages http requests to the API."""
 
     headers = {'content-type': 'application/json'}
 
@@ -244,7 +259,7 @@ def api_submit(request, data=None,  method='get'):
             cookies = authenticate()
             r = session.put(api_url, verify=verify_ssl, cookies=cookies, headers=headers, data=data)
 
-        check_response_codes(r)
+        return check_response_codes(r)
 
     elif method == 'delete':
 
@@ -260,7 +275,7 @@ def api_submit(request, data=None,  method='get'):
             cookies = authenticate()
             r = session.delete(api_url, verify=verify_ssl, cookies=cookies)
 
-        check_response_codes(r)
+        return check_response_codes(r)
 
     elif method == 'get_params':
         r = session.get(api_url, verify=verify_ssl, params=data)
@@ -273,6 +288,42 @@ def api_submit(request, data=None,  method='get'):
             return r.json()
 
     return None
+
+
+def _search(args):
+    """Main serach function to query the API."""
+
+    log.info('Searching for {0}'.format(args.object_type))
+    log.info('action_command is: {0}'.format(args.action_command))
+
+    search_terms = list(args.search.split(","))
+    data = dict(u.split("=") for u in search_terms)
+    data['exact_get'] = args.exact_get
+    log.info('data is: {0}'.format(data))
+
+    api_endpoint = '/api/{0}'.format(args.object_type)
+    r = api_submit(api_endpoint, data, method='get_params')
+
+    return r
+
+
+def gen_help(help_type):
+    """Generte the list of searchable terms for help"""
+
+    terms = {
+        'nodes_search': [ 'node_id', 'node_name', 'unique_id', 'status_id',
+                          'status', 'hardware_profile_id', 'hardware_profile',
+                          'operating_system_id', 'operating_system', 'uptime',
+                          'node_groups', 'created', 'updated', 'updated_by',
+        ],
+        'node_groups_search': [ 'node_group_id', 'node_group_name',
+                                'node_group_owner', 'description',
+        ],
+        'tags_search': [ 'tag_id', 'tag_name', 'tag_value',
+        ],
+    }
+
+    return '[ {0} ]'.format(', '.join(sorted(terms[help_type])))
 
 
 def get_unique_id(**facts):
@@ -434,6 +485,7 @@ def ask_yes_no(question, answer_yes=None, default='no'):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
+
 ## NODES
 def _register(args):
         """Collect all the data about a node and register
@@ -466,17 +518,17 @@ def search_nodes(args):
         if results:
             r_names = []
             for n in results:
-                r_names.append('node_name={0},unique_id={1}'.format(n['node_name'], n['unique_id']))
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _set_or_del_tags(args, results, 'node')
+                _manage_tag_assignments(args, results, 'node')
     if args.del_tags:
         results = _search(args)
         if results:
             r_names = []
             for n in results:
-                r_names.append('node_name={0},unique_id={1}'.format(n['node_name'], n['unique_id']))
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _set_or_del_tags(args, results, 'node', 'delete')
+                _manage_tag_assignments(args, results, 'node', 'delete')
     if args.set_status:
         results = _search(args)
         if results:
@@ -492,7 +544,7 @@ def search_nodes(args):
             for n in results:
                 r_names.append(n['node_name'])
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _assign_node_groups(args, results)
+                _manage_node_group_assignments(args, results)
     if args.del_node_groups:
         results = _search(args)
         if results:
@@ -500,7 +552,7 @@ def search_nodes(args):
             for n in results:
                 r_names.append(n['node_name'])
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _deassign_node_groups(args, results)
+                _manage_node_group_assignments(args, results)
 
     if not any((args.set_tags,
                 args.del_tags,
@@ -562,6 +614,7 @@ def convert(data):
     else:
         return data
 
+
 def _set_status(args, nodes):
     """Set the status of one or more nodes."""
 
@@ -578,15 +631,23 @@ def _set_status(args, nodes):
         api_submit('/api/nodes/{0}'.format(n['node_id']), data, method='put')
 
 
-# FIXME: next two are very similar. can combine?
-def _assign_node_groups(args, nodes):
-    """Assign node_groups to one or more nodes."""
+def _manage_node_group_assignments(args, nodes):
+    """Assign or De-assign node_groups to one or more nodes."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
+    if args.del_node_groups:
+        node_groups_list = args.del_node_groups
+        api_action = 'delete'
+        log_action = 'Deleting'
+    else:
+        node_groups_list = args.set_node_groups
+        api_action = 'put'
+        log_action = 'Assigning'
+
     node_groups = []
-    for ng in args.set_node_groups.split(','):
+    for ng in node_groups_list.split(','):
         data = {'node_group_name': ng}
         r = api_submit('/api/node_groups', data, method='get_params')
         if r:
@@ -594,53 +655,83 @@ def _assign_node_groups(args, nodes):
 
     for n in nodes:
         for ng in node_groups:
-            log.info('Assigning node_group={0} to node={1}'.format(ng['node_group_name'], n['node_name']))
+            log.info('{0} node_group={1} to node={2}'.format(log_action, ng['node_group_name'], n['node_name']))
             data = {'node_id': n['node_id'],
                     'node_group_id': ng['node_group_id']}
-            api_submit('/api/node_group_assignments', data, method='put')
-
-
-def _deassign_node_groups(args, nodes):
-    """Remove node_groups from one or more nodes."""
-
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
-
-    node_groups = []
-    for ng in args.del_node_groups.split(','):
-        data = {'node_group_name': ng}
-        r = api_submit('/api/node_groups', data, method='get_params')
-        if r:
-            node_groups.append(r[0])
-
-    for n in nodes:
-        for ng in node_groups:
-            log.info('Removing assignment of node_group={0} from node={1}'.format(ng['node_group_name'], n['node_name']))
-            data = {'node_id': n['node_id'],
-                    'node_group_id': ng['node_group_id']}
-            api_submit('/api/node_group_assignments', data, method='delete')
+            api_submit('/api/node_group_assignments', data, method=api_action)
 
 
 def create_nodes(args):
     """Create a new node."""
 
-    # FIXME: Support unique_id, hardware_profile, and operating_system?
+    # FIXME: Support hardware_profile, and operating_system?
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
+
+    # Check if the node exists (by checking unique_id) first
+    # so it can ask if you want to update the existing entry, which
+    # essentially would just be changing either the node_name or status_id.
+    data = { 'unique_id': args.unique_id, }
+    r = api_submit('/api/nodes', data, method='get_params')
 
     data = {'register': False,
             'node_name': args.node_name,
+            'unique_id': args.unique_id,
             'node_status_id': args.status_id,
            }
 
-    log.info('Creating node node_name={0},status_id={1}'.format(args.node_name, args.status_id))
-    api_submit('/api/{0}'.format(args.object_type), data, method='put')
+    if r:
+        if ask_yes_no('Entry already exists: {0}: {1}\n Would you like to update it?'.format(args.node_name, args.unique_id), args.answer_yes):
+            log.info('Updating node node_name={0},unique_id={1},status_id={2}'.format(args.node_name, args.unique_id, args.status_id))
+            api_submit('/api/{0}'.format(args.object_type), data, method='put')
+
+    else:
+        log.info('Creating node node_name={0},unique_id={1},status_id={2}'.format(args.node_name, args.unique_id, args.status_id))
+        api_submit('/api/{0}'.format(args.object_type), data, method='put')
 
 
 def delete_nodes(args):
+    """Delete an existing node."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
+
+    if args.node_id:
+        # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
+        args.exact_get = True
+        api_endpoint = '/api/nodes/{0}'.format(args.node_id)
+        r = api_submit(api_endpoint, method='get')
+        # FIXME: individual records don't return a list. Is that ok, or should the api always return a list?
+        if r:
+            results = [r]
+        else:
+            results = None
+    else:
+
+        search = ''
+        if args.node_name:
+            search = 'node_name={0},'.format(args.node_name)
+        if args.unique_id:
+            search = 'unique_id={0},'.format(args.unique_id)
+
+        args.search = search.rstrip(',')
+
+        # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
+        args.exact_get = True
+        results = _search(args)
+
+    if not results:
+        log.info('No results found')
+    else:
+        r_names = []
+        for n in results:
+            r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
+
+        if ask_yes_no("We are ready to delete the following {0}: \n{1}\n Continue?".format(args.object_type, "\n".join(r_names)), args.answer_yes):
+            for n in results:
+                log.info('Deleting node_name={0},unique_id={1}'.format(n['node_name'], n['unique_id']))
+                data = {'node_id': n['node_id']}
+                api_submit('/api/{0}/{1}'.format(args.object_type, n['node_id']), data, method='delete')
 
 
 ## NODE_GROUPS
@@ -651,25 +742,20 @@ def search_node_groups(args):
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
 
-    # FIXME: duped code for set and delete
-    if args.set_tags:
+    if (args.set_tags or args.del_tags):
         results = _search(args)
-        if results:
+        if not results:
+            log.info('No results found')
+        else:
             r_names = []
             for ng in results:
                 r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
             if ask_yes_no("We are ready to update the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _set_or_del_tags(args, results, 'node_group')
-    if args.del_tags:
-        results = _search(args)
-        if results:
-            r_names = []
-            for ng in results:
-                r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
-            if ask_yes_no("We are ready to update the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
-                _set_or_del_tags(args, results, 'node_group', 'delete')
+                api_action = 'set'
+                if args.del_tags:
+                    api_action = 'delete'
+                _manage_tag_assignments(args, results, 'node_group', api_action)
  
-    # switch to any if there's more than one
     if not any((args.set_tags, args.del_tags)):
 
         results = _search(args)
@@ -681,16 +767,24 @@ def search_node_groups(args):
             if args.fields:
                 for r in results:
                     print '- {0}'.format(r['node_group_name'])
+                    #FIXME: gross output, duplicate code
                     if args.fields == 'all':
                         for f in r.keys():
                             if f == 'node_group_name':
                                 continue
-                            print '    {0}: {1}'.format(f, r[f])
+                            if type(r[f]) is types.ListType:
+                                print '{0}: \n{1}'.format(f, yaml.safe_dump(r[f], encoding='utf-8', allow_unicode=True))
+                            else:
+                                print '    {0}: {1}'.format(f, r[f])
                     else:
                         for f in list(args.fields.split(",")):
                             if f == 'node_group_name':
                                 continue
-                            print '    {0}: {1}'.format(f, r[f])
+                            if type(r[f]) is types.ListType:
+                                print '{0}: \n{1}'.format(f, yaml.safe_dump(r[f], encoding='utf-8', allow_unicode=True))
+                            else:
+                                print '    {0}: {1}'.format(f, r[f])
+
             # Default to returning just the node_group name
             else:
                 for r in results:
@@ -720,7 +814,7 @@ def delete_node_groups(args):
     log.info('object_type is: {0}'.format(args.object_type))
 
     args.search = 'node_group_name={0}'.format(args.node_group_name)
-    # FIXME: do we want this to be optional? i.e. put it in argparse?
+    # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
     args.exact_get = True
     results = _search(args)
 
@@ -774,9 +868,8 @@ def search_tags(args):
                 print r['tag_name']
 
 
-# FIXME: Don't love that I need action_type
-def _set_or_del_tags(args, objects, action_object, api_action = 'set'):
-    """Assign tags to one or more objects (nodes or node_groups)."""
+def _manage_tag_assignments(args, objects, action_object, api_action = 'set'):
+    """Assign or De-assign tags to one or more objects (nodes or node_groups)."""
 
     log.info('action_command is: {0}'.format(args.action_command))
     log.info('object_type is: {0}'.format(args.object_type))
@@ -800,6 +893,10 @@ def _set_or_del_tags(args, objects, action_object, api_action = 'set'):
         r = api_submit('/api/tags', data, method='get_params')
         if r:
             tags.append(r[0])
+        else:
+            log.info('tag not found, creating')
+            r = api_submit('/api/tags', data, method='put')
+            tags.append(r)
 
     for o in objects:
         for t in tags:
@@ -831,7 +928,7 @@ def delete_tags(args):
     log.info('object_type is: {0}'.format(args.object_type))
 
     args.search = 'tag_name={0},tag_value={1}'.format(args.tag_name, args.tag_value)
-    # FIXME: do we want this to be optional? i.e. put it in argparse?
+    # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
     args.exact_get = True
     results = _search(args)
 
@@ -850,40 +947,8 @@ def delete_tags(args):
         log.info('No results found')
 
 
-def _search(args):
-
-    log.info('Searching for {0}'.format(args.object_type))
-    log.info('action_command is: {0}'.format(args.action_command))
-
-    search_terms = list(args.search.split(","))
-    data = dict(u.split("=") for u in search_terms)
-    data['exact_get'] = args.exact_get
-    log.info('data is: {0}'.format(data))
-
-    api_endpoint = '/api/{0}'.format(args.object_type)
-    r = api_submit(api_endpoint, data, method='get_params')
-    return r
-
-def gen_help(help_type):
-    """Generte the list of searchable terms for help"""
-
-    terms = {
-        'nodes_search': [ 'node_id', 'node_name', 'unique_id', 'status_id',
-                          'status', 'hardware_profile_id', 'hardware_profile',
-                          'operating_system_id', 'operating_system', 'uptime',
-                          'node_groups', 'created', 'updated', 'updated_by',
-        ],
-        'node_groups_search': [ 'node_group_id', 'node_group_name',
-                                'node_group_owner', 'description',
-        ],
-        'tags_search': [ 'tag_id', 'tag_name', 'tag_value',
-        ],
-    }
-
-    return '[ {0} ]'.format(', '.join(sorted(terms[help_type])))
-
-
 def _parse_args():
+    """Parse all the command line arguments."""
 
     pp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, add_help=False)
     mp = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Arsenal CLI')
@@ -1005,11 +1070,9 @@ def _parse_args():
     # nodes required argument group (rncag)
     rncag = ncsc.add_argument_group('required arguments')
 
-    # FIXME: Should this be required?
     ncsc.add_argument('--hardware_profile_id', '-hp',
                       dest="hardware_profile_id",
                       help='hardware_profile_id to assign.')
-    # FIXME: Should this be required?
     ncsc.add_argument('--operating_system_id', '-os',
                       dest="operating_system_id",
                       help='operating_system_id to assign.')
@@ -1029,12 +1092,17 @@ def _parse_args():
 
     # nodes delete subcommand (ndsc)
     ndsc = nasp.add_parser("delete",
-                           help="Delete node objects.",
+                           help="Delete node objects. At least one of name, unique_id, or id is required",
                            parents=[pp])
-    ndsc.add_argument('search',
-                      default=None,
-                      metavar='search_terms',
-                      help='Comma separated list of key=value pairs to search for.')
+    ndsc.add_argument('--name', '-n',
+                      dest="node_name",
+                      help='node_name to delete.')
+    ndsc.add_argument('--unique_id', '-u',
+                      dest="unique_id",
+                      help='unique_id to delete.')
+    ndsc.add_argument('--id', '-i',
+                      dest="node_id",
+                      help='node_id to delete.')
     ndsc.set_defaults(func=delete_nodes)
 
     ### NODE_GROUPS
@@ -1191,10 +1259,17 @@ def _parse_args():
                         help='tag_value to delete.')
     tdsc.set_defaults(func=delete_tags)
 
-    return mp.parse_args()   
+    args = mp.parse_args()
+
+    if (args.object_type=='nodes' and args.action_command=='delete'):
+        if not (args.node_name or args.unique_id or args.node_id):
+            ndsc.error('Too few parameters, please specify at least one of --name, --unique_id or --id')
+
+    return args
 
 
 def main():
+    """The earth-shattering kaboom"""
 
     # parse the args
     args = _parse_args()
@@ -1223,6 +1298,8 @@ def main():
     cookie_file = args.cookie_file
     kaboom_password = secrets_config.get('main', 'kaboom.password')
 
+    # FIXME: Should we write to the log file at INFO even when console is ERROR?
+    # FIXME: Should we write to a log at all for regular users? Perhaps only if they ask for it i.e another option?
     if args.verbose:
         log_level = logging.DEBUG
     elif args.quiet:
@@ -1261,7 +1338,6 @@ def main():
     # call whatever function was selected
     args.func(args)
 
-#        print json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=4, separators=(',', ': '))
 
 if __name__ == '__main__':
     main()

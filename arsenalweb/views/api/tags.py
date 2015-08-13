@@ -125,38 +125,36 @@ def api_node_tags_write(request):
     try:
         payload = request.json_body
 
-        if request.path == '/api/tags':
+        try:
+            tag_name = payload['tag_name']
+            tag_value = payload['tag_value']
 
+            log.info('Checking for tag_name: {0}'.format(tag_name))
+            t = DBSession.query(Tag)
+            t = t.filter(Tag.tag_name==tag_name)
+            t = t.filter(Tag.tag_value==tag_value)
+            t = t.one()
+        except NoResultFound:
             try:
-                tag_name = payload['tag_name']
-                tag_value = payload['tag_value']
+                log.info('Creating new tag_name={0},tag_value={1}'.format(tag_name, tag_value))
+                utcnow = datetime.utcnow()
+                t = Tag(tag_name=tag_name,
+                        tag_value=tag_value,
+                        updated_by=au['user_id'],
+                        created=utcnow,
+                        updated=utcnow)
+                DBSession.add(t)
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error creating new tag tag_name={0},tag_value={1},exception={3}'.format(tag_name, tag_value, e))
+                raise
+        # Since there are no fields to update other than the two that
+        # constitue a unqiue tag we return a 409 and handle it in 
+        # client/UI.
+        else:
+            return Response(content_type='application/json', status_int=409)
 
-                log.info('Checking for tag_name: {0}'.format(tag_name))
-                t = DBSession.query(Tag)
-                t = t.filter(Tag.tag_name==tag_name)
-                t = t.filter(Tag.tag_value==tag_value)
-                t = t.one()
-            except NoResultFound:
-                try:
-                    log.info('Creating new tag_name={0},tag_value={1}'.format(tag_name, tag_value))
-                    utcnow = datetime.utcnow()
-                    t = Tag(tag_name=tag_name,
-                            tag_value=tag_value,
-                            updated_by=au['user_id'],
-                            created=utcnow,
-                            updated=utcnow)
-                    DBSession.add(t)
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error creating new tag tag_name={0},tag_value={1},exception={3}'.format(tag_name, tag_value, e))
-                    raise
-            # Since there are no fields to update other than the two that
-            # constitue a unqiue tag we return a 409 and handle it in 
-            # client/UI.
-            else:
-                return Response(content_type='application/json', status_int=409)
-
-            return t
+        return t
 
     except Exception as e:
         log.error('Error with tag API! exception: {0}'.format(e))

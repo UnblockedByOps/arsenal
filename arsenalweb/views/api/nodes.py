@@ -25,6 +25,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -32,9 +35,10 @@ from arsenalweb.models import (
     Status,
     )
 
+
 @view_config(route_name='api_nodes', request_method='GET', request_param='schema=true', renderer='json')
 def api_node_schema(request):
-    """Document the API poc."""
+    """Schema document for nodes API"""
 
     log.info('schema requested')
 
@@ -381,13 +385,21 @@ def api_node_schema(request):
 
 @view_config(route_name='api_node_r', request_method='GET', renderer='json')
 def api_node_read_attrib(request):
+    """Process read requests for /api/nodes/{id}/{resource} route matches"""
 
-     return get_api_attribute(request, 'Node')
+    return get_api_attribute(request, 'Node')
+
+
+@view_config(route_name='api_node', request_method='GET', renderer='json')
+def api_node_read_id(request):
+    """Process read requests for /api/nodes/{id} route matches"""
+
+    return api_read_by_id(request, 'Node')
 
 
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
-@view_config(route_name='api_node', request_method='GET', renderer='json')
 def api_node_read(request):
+    """Process read requests for /api/nodes route match"""
 
     perpage = 40
     offset = 0
@@ -398,45 +410,36 @@ def api_node_read(request):
         pass
 
     try:
-        if request.path == '/api/nodes':
+        exact_get =  request.GET.get("exact_get", None)
 
-            exact_get =  request.GET.get("exact_get", None)
+        if request.params:
+            s = ''
+            # Filter on all the passed in terms
+            q = DBSession.query(Node)
 
-            if request.params:
-                s = ''
-                # Filter on all the passed in terms
-                q = DBSession.query(Node)
+            for k,v in request.GET.items():
+                # FIXME: This is sub-par. Need a better way to distinguish 
+                # meta params from search params without having to
+                # pre-define everything.
+                if k == 'exact_get':
+                    continue
 
-                for k,v in request.GET.items():
-                    # FIXME: This is sub-par. Need a better way to distinguish 
-                    # meta params from search params without having to
-                    # pre-define everything.
-                    if k == 'exact_get':
-                        continue
+                s+='{0}={1},'.format(k, v)    
+                if exact_get:
+                    log.info('Exact filtering on {0}={1}'.format(k, v))
+                    q = q.filter(getattr(Node ,k)==v)
+                else:
+                    log.info('Loose filtering on {0}={1}'.format(k, v))
+                    q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
+            log.info('Searching for node with params: {0}'.format(s.rstrip(',')))
+            nodes = q.all()
+            return nodes
+        else:
+            log.info('Displaying all nodes')
+            q = DBSession.query(Node)
+            nodes = q.limit(perpage).offset(offset).all()
+            return nodes
 
-                    s+='{0}={1},'.format(k, v)    
-                    if exact_get:
-                        log.info('Exact filtering on {0}={1}'.format(k, v))
-                        q = q.filter(getattr(Node ,k)==v)
-                    else:
-                        log.info('Loose filtering on {0}={1}'.format(k, v))
-                        q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
-                log.info('Searching for node with params: {0}'.format(s.rstrip(',')))
-                nodes = q.all()
-                return nodes
-            else:
-                log.info('Displaying all nodes')
-                q = DBSession.query(Node)
-                nodes = q.limit(perpage).offset(offset).all()
-                return nodes
-
-        if request.matchdict['id']:
-
-            log.info('Displaying single node')
-            q = DBSession.query(Node).filter(Node.node_id==request.matchdict['id'])
-            node = q.one()
-            return node
-            
     # FIXME: Should AttributeError return something different?
     except (NoResultFound, AttributeError):
         return Response(content_type='application/json', status_int=404)
@@ -446,123 +449,162 @@ def api_node_read(request):
         return Response(str(e), content_type='application/json', status_int=500)
 
 
-@view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
 @view_config(route_name='api_node', permission='api_write', request_method='PUT', renderer='json')
+def api_node_write_id(request):
+    """Process write requests for /api/nodes/{id} route match"""
+
+
+    au = get_authenticated_user(request)
+
+    try:
+        node_id = request.matchdict['id']
+        payload = request.json_body
+
+        s = ''
+        for k,v in payload.items():
+            s+='{0}={1},'.format(k, v)
+
+        log.info('Updating node_id: {0} params: {1}'.format(node_id, s.rstrip(',')))
+
+        q = DBSession.query(Node).filter(Node.node_id==node_id)
+        n = q.one()
+
+        # FIXME: Do we want to limit anything here? Keys that don't exist will
+        # be ignored, keys that can't be set with throw an error. Doesn't
+        # feel right though to just accept what's put to the endpoint.
+        for k,v in payload.items():
+            setattr(n ,k, v)
+
+        n.updated_by=au['user_id']
+        DBSession.flush()
+
+    except Exception as e:
+        log.error('Error with node API! exception: {0}'.format(e))
+        return Response(str(e), content_type='application/json', status_int=500)
+
+    return n
+
+
+@view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
 def api_node_write(request):
+    """Process write requests for /api/nodes route match"""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
 
-        # FIXME: right now /api/nodes expects all paramters to be passed, no piecemeal updates.
-        # Also no support for bulk updates
-        if request.path == '/api/nodes':
+        # FIXME: right now /api/nodes expects all paramters to be passed, no piecemeal updates. Also no support for bulk updates
+        if payload['register']:
 
-            if payload['register']:
+            # Get the hardware_profile_id or create if it doesn't exist.
+            try:
+                manufacturer = payload['hardware_profile']['manufacturer']
+                model = payload['hardware_profile']['model']
 
-                # Get the hardware_profile_id or create if it doesn't exist.
-                try:
-                    manufacturer = payload['hardware_profile']['manufacturer']
-                    model = payload['hardware_profile']['model']
+                uri = '/api/hardware_profiles'
+                data = {'manufacturer': manufacturer,
+                        'model': model
+                }
+                hardware_profile = _api_get(request, uri, data)
 
-                    uri = '/api/hardware_profiles'
-                    data = {'manufacturer': manufacturer,
-                            'model': model
-                    }
+                if not hardware_profile:
+                    log.info('hardware_profile not found, creating')
+                    data_j = json.dumps(data, default=lambda o: o.__dict__)
+                    _api_put(request, uri, data=data_j)
                     hardware_profile = _api_get(request, uri, data)
 
-                    if not hardware_profile:
-                        log.info('hardware_profile not found, creating')
-                        data_j = json.dumps(data, default=lambda o: o.__dict__)
-                        _api_put(request, uri, data=data_j)
-                        hardware_profile = _api_get(request, uri, data)
+                hardware_profile_id = hardware_profile['hardware_profile_id']
+                log.info('hardware_profile is: {0}'.format(hardware_profile))
+            except Exception as e:
+                log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+                raise
 
-                    hardware_profile_id = hardware_profile['hardware_profile_id']
-                    log.info('hardware_profile is: {0}'.format(hardware_profile))
-                except Exception, e:
-                    log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
-                    raise
+            # Get the operating_system_id or create if it doesn't exist.
+            try:
+                variant = payload['operating_system']['variant']
+                version_number = payload['operating_system']['version_number']
+                architecture = payload['operating_system']['architecture']
+                description = payload['operating_system']['description']
 
-                # Get the operating_system_id or create if it doesn't exist.
-                try:
-                    variant = payload['operating_system']['variant']
-                    version_number = payload['operating_system']['version_number']
-                    architecture = payload['operating_system']['architecture']
-                    description = payload['operating_system']['description']
+                uri = '/api/operating_systems'
+                data = {'variant': variant,
+                        'version_number': version_number,
+                        'architecture': architecture,
+                        'description': description
+                }
+                operating_system = _api_get(request, uri, data)
 
-                    uri = '/api/operating_systems'
-                    data = {'variant': variant,
-                            'version_number': version_number,
-                            'architecture': architecture,
-                            'description': description
-                    }
+                if not operating_system:
+    
+                    log.info('operating_system not found, attempting to create')
+                    data_j = json.dumps(data, default=lambda o: o.__dict__)
+                    _api_put(request, uri, data=data_j)
                     operating_system = _api_get(request, uri, data)
 
-                    if not operating_system:
-    
-                        log.info('operating_system not found, attempting to create')
-                        data_j = json.dumps(data, default=lambda o: o.__dict__)
-                        _api_put(request, uri, data=data_j)
-                        operating_system = _api_get(request, uri, data)
+                operating_system_id = operating_system['operating_system_id']
+                log.info('operating_system is: {0}'.format(operating_system))
+            except Exception, e:
+                log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+                raise
 
-                    operating_system_id = operating_system['operating_system_id']
-                    log.info('operating_system is: {0}'.format(operating_system))
-                except Exception, e:
-                    log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
-                    raise
+            try:
+                unique_id = payload['unique_id']
+                node_name = payload['node_name']
+                uptime = payload['uptime']
 
+                log.info('Checking for unique_id: {0}'.format(unique_id))
+                q = DBSession.query(Node).filter(Node.unique_id==unique_id)
+                q.one()
+            except NoResultFound, e:
                 try:
-                    unique_id = payload['unique_id']
-                    node_name = payload['node_name']
-                    uptime = payload['uptime']
-
-                    log.info('Checking for unique_id: {0}'.format(unique_id))
-                    q = DBSession.query(Node).filter(Node.unique_id==unique_id)
-                    q.one()
-                except NoResultFound, e:
-                    try:
-                        log.info('Creating new node: {0}'.format(unique_id))
-                        utcnow = datetime.utcnow()
-                        n = Node(unique_id=unique_id,
-                                 node_name=node_name,
-                                 hardware_profile_id=hardware_profile_id,
-                                 operating_system_id=operating_system_id,
-                                 uptime=uptime,
-                                 status_id=2,
-                                 updated_by=au['user_id'],
-                                 created=utcnow,
-                                 updated=utcnow)
-                        DBSession.add(n)
-                        DBSession.flush()
-                    except Exception as e:
-                        log.error('Error creating new node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
-                        raise
-                else:
-                    try:
-                        log.info('Updating node: {0}'.format(unique_id))
-                        n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
-                        n.node_name = node_name
-                        n.hardware_profile_id = hardware_profile_id
-                        n.operating_system_id = operating_system_id
-                        n.uptime = uptime
-                        n.updated_by=au['user_id']
-                        DBSession.flush()
-                    except Exception as e:
-                        log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
-                        raise
-            else:
-
-                # Manually created node via the client.
-                try:
-                    node_name = payload['node_name']
-                    status_id = payload['node_status_id']
+                    log.info('Creating new node: {0}'.format(unique_id))
                     utcnow = datetime.utcnow()
+                    n = Node(unique_id=unique_id,
+                             node_name=node_name,
+                             hardware_profile_id=hardware_profile_id,
+                             operating_system_id=operating_system_id,
+                             uptime=uptime,
+                             status_id=2,
+                             updated_by=au['user_id'],
+                             created=utcnow,
+                             updated=utcnow)
+                    DBSession.add(n)
+                    DBSession.flush()
+                except Exception as e:
+                    log.error('Error creating new node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
+                    raise
+            else:
+                try:
+                    log.info('Updating node: {0}'.format(unique_id))
+                    n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
+                    n.node_name = node_name
+                    n.hardware_profile_id = hardware_profile_id
+                    n.operating_system_id = operating_system_id
+                    n.uptime = uptime
+                    n.updated_by=au['user_id']
+                    DBSession.flush()
+                except Exception as e:
+                    log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
+                    raise
+        else:
+
+            # Manually created node via the client.
+            try:
+                node_name = payload['node_name']
+                unique_id = payload['unique_id']
+                status_id = payload['node_status_id']
+
+                log.info('Checking for unique_id: {0}'.format(unique_id))
+                q = DBSession.query(Node).filter(Node.unique_id==unique_id)
+                q.one()
+            except NoResultFound, e:
+                try:
 
                     log.info('Manually creating new node: {0}'.format(node_name))
-
-                    # FIXME: unique_id, hardware_profile, and operating_system?
+                    utcnow = datetime.utcnow()
                     n = Node(node_name=node_name,
+                             unique_id=unique_id,
                              status_id=status_id,
                              updated_by=au['user_id'],
                              created=utcnow,
@@ -570,103 +612,37 @@ def api_node_write(request):
                     DBSession.add(n)
                     DBSession.flush()
                 except Exception as e:
-                    log.error('Error creating new node node_name={0},status_id={1},exception={2}'.format(node_name, status_id, e))
+                    log.error('Error creating new node node_name={0}unique_id={1},status_id={2},exception={3}'.format(node_name, unique_id, status_id, e))
+                    raise
+            else:
+                try:
+                    log.info('Updating node: {0}'.format(unique_id))
+                    n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
+                    n.node_name = node_name
+                    n.status_id = status_id
+                    n.updated_by=au['user_id']
+                    DBSession.flush()
+                except Exception as e:
+                    log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
                     raise
 
-            return n
+        return n
 
-        if request.matchdict['id']:
-
-            node_id = request.matchdict['id']
-            payload = request.json_body
-
-            s = ''
-            for k,v in payload.items():
-                s+='{0}={1},'.format(k, v)
-
-#            if 'status' in payload.keys():
-#
-#                # FIXME: This
-#                uri = '/api/statuses'
-#                data = {'status_name': payload['status']}
-#                status = _api_get(request, uri, data)
-#                status_id = status['status_id']
-#
-#                # FIXME: vs. this ???
-#                # status_id = Status.get_status_id(payload['status'])
-#
-#                log.info('status_id: {0}'.format(status_id))
-
-            log.info('Updating node_id: {0} params: {1}'.format(node_id, s.rstrip(',')))
-
-            q = DBSession.query(Node).filter(Node.node_id==node_id)
-            n = q.one()
-
-            # FIXME: Do we want to limit anything here? Keys that don't exist will 
-            # be ignored, keys that can't be set with throw an error. Doesn't
-            # feel right though to just accept what's put to the endpoint.
-            for k,v in payload.items():
-                setattr(n ,k, v)
-
-            n.updated_by=au['user_id']
-            DBSession.flush()
-
-    except Exception, e:
+    except Exception as e:
         log.error('Error with node API! exception: {0}'.format(e))
         return Response(str(e), content_type='application/json', status_int=500)
+
+
+@view_config(route_name='api_node', permission='api_write', request_method='DELETE', renderer='json')
+def api_nodes_delete_id(request):
+    """Process delete requests for /api/nodes/{id} route match."""
+
+    return api_delete_by_id(request, 'Node')
 
 
 @view_config(route_name='api_nodes', permission='api_write', request_method='DELETE', renderer='json')
 def api_nodes_delete(request):
+    """Process delete requests for /api/nodes route match. Iterates
+       over passed parameters."""
 
-    au = get_authenticated_user(request)
-
-    try:
-        payload = request.json_body
-
-        if request.path == '/api/nodes':
-
-            # FIXME: This is ugly
-            node_name = payload.get('node_name', None)
-            unique_id = payload.get('unique_id', None)
-#                unique_id = payload['unique_id'] or None
-
-            if not any((node_name, unique_id)):
-                log.error('You must specify one of node_name or unique_id')
-                return Response(content_type='application/json', status_int=400)
-            else:
-                try:
-                    log.info('Checking for node_name={0},unique_id={1}'.format(node_name, unique_id))
-                    q = DBSession.query(Node)
-
-                    if node_name:
-                        q = q.filter(Node.node_name==node_name)
-                    if unique_id:
-                        q = q.filter(Node.unique_id==unique_id)
-                    q.one()
-                except NoResultFound, e:
-                    return Response(content_type='application/json', status_int=404)
-
-                else:
-                    try:
-                        # FIXME: Need auditing
-                        log.info('Deleting node_name={0},unique_id={1}'.format(node_name, unique_id))
-                        n = DBSession.query(Node)
-                        if node_name:
-                            n = n.filter(Node.node_name==node_name)
-                        if unique_id:
-                            n = n.filter(Node.unique_id==unique_id)
-                        n = n.one()
-                        DBSession.delete(n)
-                        DBSession.flush()
-                    except Exception, e:
-                        log.info('Error deleting node_name={0},unique_id={1}'.format(node_name, unique_id))
-                        raise
-
-                return n
-
-    except Exception, e:
-        log.error('Error with node API! exception: {0}'.format(e))
-        raise
-        return Response(str(e), content_type='application/json', status_int=500)
-
+    return api_delete_by_params(request, 'Node')
