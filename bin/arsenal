@@ -511,7 +511,7 @@ def search_nodes(args):
         results = _search(args)
 
         if not results:
-            print 'No results found'
+            log.info('No results found')
         else:
 
             # FIXME: Doesn't work beyond the top level for individual fields
@@ -674,23 +674,27 @@ def search_node_groups(args):
 
         results = _search(args)
 
-        if args.fields:
-            for r in results:
-                print '- {0}'.format(r['node_group_name'])
-                if args.fields == 'all':
-                    for f in r.keys():
-                        if f == 'node_group_name':
-                            continue
-                        print '    {0}: {1}'.format(f, r[f])
-                else:
-                    for f in list(args.fields.split(",")):
-                        if f == 'node_group_name':
-                            continue
-                        print '    {0}: {1}'.format(f, r[f])
-        # Default to returning just the node_group name
+        if not results:
+            log.info('No results found')
         else:
-            for r in results:
-                print r['node_group_name']
+
+            if args.fields:
+                for r in results:
+                    print '- {0}'.format(r['node_group_name'])
+                    if args.fields == 'all':
+                        for f in r.keys():
+                            if f == 'node_group_name':
+                                continue
+                            print '    {0}: {1}'.format(f, r[f])
+                    else:
+                        for f in list(args.fields.split(",")):
+                            if f == 'node_group_name':
+                                continue
+                            print '    {0}: {1}'.format(f, r[f])
+            # Default to returning just the node_group name
+            else:
+                for r in results:
+                    print r['node_group_name']
 
 
 def create_node_groups(args):
@@ -720,7 +724,9 @@ def delete_node_groups(args):
     args.exact_get = True
     results = _search(args)
 
-    if results:
+    if not results:
+        log.info('No results found')
+    else:
         r_names = []
         for n in results:
             r_names.append(n['node_group_name'])
@@ -731,8 +737,6 @@ def delete_node_groups(args):
                 data = {'node_group_id': n['node_group_id']}
                 # FIXME: name? id? both?
                 api_submit('/api/{0}/{1}'.format(args.object_type, n['node_group_id']), data, method='delete')
-    else:
-        log.info('No results found')
 
 
 ## TAGS
@@ -1001,9 +1005,6 @@ def _parse_args():
     # nodes required argument group (rncag)
     rncag = ncsc.add_argument_group('required arguments')
 
-    ncsc.add_argument('--unique_id', '-u',
-                      dest="unique_id",
-                      help='unique_id to assign.')
     # FIXME: Should this be required?
     ncsc.add_argument('--hardware_profile_id', '-hp',
                       dest="hardware_profile_id",
@@ -1016,6 +1017,10 @@ def _parse_args():
                        required=True,
                        dest="node_name",
                        help='node_name to create')
+    rncag.add_argument('--unique_id', '-u',
+                       required=True,
+                       dest="unique_id",
+                       help='unique_id to assign.')
     rncag.add_argument('--status_id', '-s',
                        required=True,
                        dest="status_id",
@@ -1065,6 +1070,9 @@ def _parse_args():
     angsag.add_argument('--tag',
                         dest="set_tags",
                         help='Comma separated list of key=value pairs to tag to the node_group.')
+    angsag.add_argument('--del_tag',
+                        dest="del_tags",
+                        help='Comma separated list of key=value pairs to un-tag from the search results.')
     ngssc.add_argument('search',
                        default=None,
                        metavar='search_terms',
