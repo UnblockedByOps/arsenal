@@ -866,14 +866,14 @@ def _search(args):
 
 def gen_help(help_type):
     """Generte the list of searchable terms for help"""
-    
+
     terms = {
         'nodes_search': [ 'node_id', 'node_name', 'unique_id', 'status_id',
                           'status', 'hardware_profile_id', 'hardware_profile',
                           'operating_system_id', 'operating_system', 'uptime',
                           'node_groups', 'created', 'updated', 'updated_by',
         ],
-        'node_groups_search': [ 'node_group_id', 'node_group_name', 
+        'node_groups_search': [ 'node_group_id', 'node_group_name',
                                 'node_group_owner', 'description',
         ],
         'tags_search': [ 'tag_id', 'tag_name', 'tag_value',
@@ -1141,7 +1141,7 @@ def _parse_args():
                       default=None,
                       help='Exact match search terms.')
 
-# FIXME: do we want to 'reverse' tag? i.e. select a tag and 
+# FIXME: do we want to 'reverse' tag? i.e. select a tag and
 # assign it many nodes or nodegroups?
     # tags assignment action argument group (atsag)
     atsag = tssc.add_argument_group('Assignment Actions')
