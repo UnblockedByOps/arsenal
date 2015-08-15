@@ -22,6 +22,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -29,15 +32,33 @@ from arsenalweb.models import (
     )
 
 
+@view_config(route_name='api_statuses', request_method='GET', request_param='schema=true', renderer='json')
+def api_statuses_schema(request):
+    """Schema document for the statuses API."""
+
+    ng = {
+    }
+
+    return ng
+
+
 @view_config(route_name='api_status_r', request_method='GET', renderer='json')
 def api_status_read_attrib(request):
+    """Process read requests for the /api/statuses/{id}/{resource} route."""
 
-     return get_api_attribute(request, 'Status')
+    return get_api_attribute(request, 'Status')
+
+
+@view_config(route_name='api_status', request_method='GET', renderer='json')
+def api_status_read_id(request):
+    """Process read requests for the /api/statuses/{id} route."""
+
+    return api_read_by_id(request, 'Status')
 
 
 @view_config(route_name='api_statuses', request_method='GET', renderer='json')
-@view_config(route_name='api_status', request_method='GET', renderer='json')
 def api_status_read(request):
+    """Process read requests for the /api/statuses route."""
 
     perpage = 40
     offset = 0
@@ -48,49 +69,38 @@ def api_status_read(request):
         pass
 
     try:
-        if request.path == '/api/statuses':
+        status_name = request.params.get('status_name')
 
-            status_name = request.params.get('status_name')
-
-            if status_name:
-                log.info('Querying for status: {0}'.format(request.url))
-                try:
-                    q = DBSession.query(Status)
-                    q = q.filter(Status.status_name==status_name)
-                    return q.one()
-                except Exception, e:
-                    log.error('Error querying status={0},exception={2}'.format(request.url, e))
-                    raise
-            else:
-                log.info('Displaying all statuses')
-                try:
-                    q = DBSession.query(Status)
-                    statuses = q.limit(perpage).offset(offset).all()
-                    return statuses
-                except Exception, e:
-                    log.error('Error querying status={0},exception={2}'.format(request.url, e))
-                    raise
-
-        if request.matchdict['id']:
-
-            log.info('Displaying single status')
+        if status_name:
+            log.debug('Searching for status: {0}'.format(request.url))
             try:
-                q = DBSession.query(Status).filter(Status.status_id==request.matchdict['id'])
-                status = q.one()
-                return status
-            except Exception, e:
-                log.error('Error querying status={0},exception={2}'.format(request.url, e))
+                s = DBSession.query(Status)
+                s = s.filter(Status.status_name==status_name)
+                return s.one()
+            except Exception as e:
+                log.error('Error reading status status_name={0},exception={2}'.format(status_name, e))
+                raise
+        else:
+            log.debug('Displaying all statuses')
+            try:
+                s = DBSession.query(Status)
+                s = s.limit(perpage).offset(offset).all()
+                return s
+            except Exception as e:
+                log.error('Error reading status status_name={0},exception={2}'.format(status_name, e))
                 raise
 
     except NoResultFound:
         return Response(content_type='application/json', status_int=404)
-    except Exception, e:
-        conn_err_msg = e
-        return Response(str(conn_err_msg), content_type='text/plain', status_int=500)
+
+    except Exception as e:
+        log.error('Error reading from statuses API={0},exception={1}'.format(request.url, e))
+        return Response(str(e), content_type='text/plain', status_int=500)
 
 
 @view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json')
 def api_status_write(request):
+    """Process write requests for /apistatusesnode_groups route."""
 
     au = get_authenticated_user(request)
 
@@ -99,81 +109,59 @@ def api_status_write(request):
         status_name = payload['status_name']
         description = payload['description']
 
-        if request.path == '/api/statuses':
-
-            log.info('Checking for status_name={0},description={1}'.format(status_name, description))
+        log.debug('Searching for statuses status_name={0},description={1}'.format(status_name, description))
+        try:
+            s = DBSession.query(Status.status_name==status_name)
+            s = s.one()
+        except NoResultFound:
             try:
-                s = DBSession.query(Status.status_name==status_name)
-                s.one()
-            except NoResultFound, e:
-                try:
-                    log.info("Creating new status: {0}".format(status_name))
-                    utcnow = datetime.utcnow()
-                    s = Status(status_name=status_name,
-                               description=description,
-                               updated_by=au['user_id'],
-                               created=utcnow,
-                               updated=utcnow)
-                    DBSession.add(s)
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error creating status_name={0},description={1},exception={2}'.format(status_name, description, e))
-                    raise
-            # Update
-            else:
-                try:
-                    log.info('Updating status_name={0},description={1}'.format(status_name, description))
+                log.info('Creating new status status_name={0},description={1}'.format(status_name, description))
+                utcnow = datetime.utcnow()
 
-                    s.status_name = payload['status_name']
-                    s.description = payload['description']
-                    s.updated_by=au['user_id']
+                s = Status(status_name=status_name,
+                           description=description,
+                           updated_by=au['user_id'],
+                           created=utcnow,
+                           updated=utcnow)
 
-                    DBSession.flush()
+                DBSession.add(s)
+                DBSession.flush()
+            except Exception, e:
+                log.error('Error creating status status_name={0},description={1},exception={2}'.format(status_name, description, e))
+                raise
+        else:
+            try:
+                log.info('Updating status_name={0},description={1}'.format(status_name, description))
 
-                except Exception, e:
-                    log.error('Error updating status_name={0},description={1},exception={2}'.format(status_name, description, e))
-                    raise
+                s.status_name = payload['status_name']
+                s.description = payload['description']
+                s.updated_by=au['user_id']
 
-            return s
+                DBSession.flush()
+
+            except Exception, e:
+                log.error('Error updating status status_name={0},description={1},exception={2}'.format(status_name, description, e))
+                raise
+
+        return s
 
     except Exception, e:
+        log.error('Error writing to statuses API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='text/plain', status_int=500)
+
+
+@view_config(route_name='api_status', permission='api_write', request_method='DELETE', renderer='json')
+def api_statuses_delete_id(request):
+    """Process delete requests for the /api/statuses/{id} route."""
+
+    return api_delete_by_id(request, 'Status')
 
 
 @view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json')
 def api_status_delete(request):
+    """Process delete requests for the /api/statuses route. Iterates
+       over passed parameters."""
 
-    # Will be used for auditing
-    au = get_authenticated_user(request)
+    return api_delete_by_params(request, 'Status')
 
-    try:
-        payload = request.json_body
 
-        if request.path == '/api/statuses':
-
-            try:
-                status_name = payload['status_name']
-
-                log.info('Checking for status_name={0}'.format(status_name))
-                s = DBSession.query(Status.status_name==status_name)
-                s.one()
-            except NoResultFound, e:
-                return Response(content_type='application/json', status_int=404)
-
-            else:
-                try:
-                    # FIXME: Need auditing
-                    # FIXME: What about orphaned assigments?
-                    log.info('Deleting status_name={0}'.format(status_name))
-                    DBSession.delete(s)
-                    DBSession.flush()
-                except Exception, e:
-                    log.info('Error deleting status_name={0}'.format(status_name))
-                    raise
-
-            # FIXME: Return none is 200 or ?
-            # return nga
-
-    except Exception, e:
-        log.error('Error with node_group_assignment API! exception: {0}'.format(e))
-        return Response(str(e), content_type='application/json', status_int=500)

@@ -22,21 +22,40 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
     OperatingSystem,
     )
 
+@view_config(route_name='api_operating_systems', request_method='GET', request_param='schema=true', renderer='json')
+def api_operating_systems_schema(request):
+    """Schema document for the operating_systems API."""
+
+    os = {
+    }
+
+    return os
+
 
 @view_config(route_name='api_operating_system_r', request_method='GET', renderer='json')
 def api_operating_systemread_attrib(request):
+    """Process read requests for the /api/operating_systems/{id}/{resource} route."""
 
-     return get_api_attribute(request, 'OperatingSystem')
+    return get_api_attribute(request, 'OperatingSystem')
+
+
+@view_config(route_name='api_operating_system', request_method='GET', renderer='json')
+def api_operating_system_read_id(request):
+    """Process read requests for the /api/operating_systems/{id} route."""
+
+    return api_read_by_id(request, 'OperatingSystem')
 
 
 @view_config(route_name='api_operating_systems', request_method='GET', renderer='json')
-@view_config(route_name='api_operating_system', request_method='GET', renderer='json')
 def api_operating_system_read(request):
 
     perpage = 40
@@ -48,103 +67,111 @@ def api_operating_system_read(request):
         pass
 
     try:
-        if request.path == '/api/operating_systems':
+        variant = request.params.get('variant')
+        version_number = request.params.get('version_number')
+        architecture = request.params.get('architecture')
 
-            variant = request.params.get('variant')
-            version_number = request.params.get('version_number')
-            architecture = request.params.get('architecture')
-
-            if variant:
-                log.info('Querying for operating_system: {0}'.format(request.url))
-                try:
-                    q = DBSession.query(OperatingSystem)
-                    q = q.filter(OperatingSystem.variant==variant)
-                    q = q.filter(OperatingSystem.version_number==version_number)
-                    q = q.filter(OperatingSystem.architecture==architecture)
-                    return q.one()
-                except Exception, e:
-                    log.error('Error querying operating_system={0},exception={2}'.format(request.url, e))
-                    raise
-
-            else:
-                log.info('Displaying all operating systems')
-                try:
-                    q = DBSession.query(OperatingSystem)
-                    return q.limit(perpage).offset(offset).all()
-                except Exception, e:
-                    log.error('Error querying for operating_systems={0},exception={0}'.format(request.url, e))
-                    raise
-
-        if request.matchdict['id']:
-            log.info('Displaying single operating system')
+        if variant:
+            log.debug('Searching for operating_system: {0}'.format(request.url))
             try:
-                q = DBSession.query(OperatingSystem)
-                q = q.filter(OperatingSystem.operating_system_id==request.matchdict['id'])
-                return q.one()
-            except Exception, e:
-                log.error('Error querying for operating_system={0},exception={1}'.format(request.url, e))
+                os = DBSession.query(OperatingSystem)
+                os = os.filter(OperatingSystem.variant==variant)
+                os = os.filter(OperatingSystem.version_number==version_number)
+                os = os.filter(OperatingSystem.architecture==architecture)
+                return os.one()
+            except Exception as e:
+                log.error('Error querying operating_system={0},exception={1}'.format(request.url, e))
                 raise
-            
+        else:
+            log.info('Displaying all operating systems')
+            try:
+                os = DBSession.query(OperatingSystem)
+                return os.limit(perpage).offset(offset).all()
+            except Exception as e:
+                log.error('Error reading all operating_systems exception={0}'.format(e))
+                raise
+
     except NoResultFound:
         return Response(content_type='application/json', status_int=404)
-    except Exception, e:
+
+    except Exception as e:
+        log.error('Error reading from api_operating_systems API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='text/plain', status_int=500)
 
 
 @view_config(route_name='api_operating_systems', permission='api_write', request_method='PUT', renderer='json')
 def api_operating_system_write(request):
+    """Process write requests for /api/operating_systems route."""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
+
         variant = payload['variant']
         version_number = payload['version_number']
         architecture = payload['architecture']
         description = payload['description']
 
-        if request.path == '/api/operating_systems':
-
-            log.info('Checking for operating_system variant={0},version_number={1},architecture={2}'.format(variant, version_number, architecture))
+        log.info('Checking for operating_system variant={0},version_number={1},architecture={2}'.format(variant, version_number, architecture))
+        try:
+            os = DBSession.query(OperatingSystem)
+            os = os.filter(OperatingSystem.variant==variant)
+            os = os.filter(OperatingSystem.version_number==version_number)
+            os = os.filter(OperatingSystem.architecture==architecture)
+            os = os.one()
+        except NoResultFound:
             try:
-                q = DBSession.query(OperatingSystem)
-                q = q.filter(OperatingSystem.variant==variant)
-                q = q.filter(OperatingSystem.version_number==version_number)
-                q = q.filter(OperatingSystem.architecture==architecture)
-                os = q.one()
-            except NoResultFound, e:
-                try:
-                    log.info('Creating new operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
-                    utcnow = datetime.utcnow()
-                    os = OperatingSystem(variant=variant,
-                                         version_number=version_number,
-                                         architecture=architecture,
-                                         description=description,
-                                         updated_by=au['user_id'],
-                                         created=utcnow,
-                                         updated=utcnow)
-                    DBSession.add(os)
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error creating new operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
-                    raise
-            # Update
-            else:
-                try:
-                    log.info('Updating operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
+                log.info('Creating new operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
+                utcnow = datetime.utcnow()
 
-                    os.variant = variant
-                    os.version_number = version_number
-                    os.architecture = architecture
-                    os.description = description
-                    os.updated_by=au['user_id']
+                os = OperatingSystem(variant=variant,
+                                     version_number=version_number,
+                                     architecture=architecture,
+                                     description=description,
+                                     updated_by=au['user_id'],
+                                     created=utcnow,
+                                     updated=utcnow)
 
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error updating operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
-                    raise
+                DBSession.add(os)
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error creating new operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+                raise
+        else:
+            try:
+                log.info('Updating operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
 
-            return os
+                os.variant = variant
+                os.version_number = version_number
+                os.architecture = architecture
+                os.description = description
+                os.updated_by=au['user_id']
 
-    except Exception, e:
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error updating operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+                raise
+
+        return os
+
+    except Exception as e:
+        log.error('Error writing to operating_systems API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='text/plain', status_int=500)
+
+
+@view_config(route_name='api_operating_system', permission='api_write', request_method='DELETE', renderer='json')
+def api_operating_systems_delete_id(request):
+    """Process delete requests for the /api/operating_systems/{id} route."""
+
+    return api_delete_by_id(request, 'OperatingSystem')
+
+
+@view_config(route_name='api_operating_systems', permission='api_write', request_method='DELETE', renderer='json')
+def api_operating_systems_delete(request):
+    """Process delete requests for the /api/operating_systems route. Iterates
+       over passed parameters."""
+
+    return api_delete_by_params(request, 'OperatingSystem')
+
+

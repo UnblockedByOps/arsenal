@@ -22,6 +22,9 @@ from arsenalweb.views import (
     )
 from arsenalweb.views.api import (
     get_api_attribute,
+    api_read_by_id,
+    api_delete_by_id,
+    api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
@@ -29,15 +32,33 @@ from arsenalweb.models import (
     )
 
 
+@view_config(route_name='api_hardware_profiles', request_method='GET', request_param='schema=true', renderer='json')
+def api_hardware_profiles_schema(request):
+    """Schema document for the hardware_profiles API."""
+
+    hp = {
+    }
+
+    return hp
+
+
 @view_config(route_name='api_hardware_profile_r', request_method='GET', renderer='json')
 def api_hardware_profile_read_attrib(request):
+    """Process read requests for the /api/hardware_profiles/{id}/{resource} route."""
 
-     return get_api_attribute(request, 'HardwareProfile')
+    return get_api_attribute(request, 'HardwareProfile')
+
+
+@view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
+def api_hardware_profile_read_id(request):
+    """Process read requests for the /api/node_groups/{id} route."""
+
+    return api_read_by_id(request, 'HardwareProfile')
 
 
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
-@view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
 def api_hardware_profile_read(request):
+    """Process read requests for the /api/hardware_profiles route."""
 
     perpage = 40
     offset = 0
@@ -48,98 +69,103 @@ def api_hardware_profile_read(request):
         pass
 
     try:
-        if request.path == '/api/hardware_profiles':
+        model = request.params.get('model')
+        manufacturer = request.params.get('manufacturer')
 
-            model = request.params.get('model')
-            manufacturer = request.params.get('manufacturer')
-
-            if model:
-                log.info('Querying for hardware_profile: {0}'.format(request.url))
-                try:
-                    q = DBSession.query(HardwareProfile)
-                    q = q.filter(HardwareProfile.manufacturer==manufacturer)
-                    q = q.filter(HardwareProfile.model==model)
-                    return q.one()
-                except NoResultFound:
-                    return Response(content_type='application/json', status_int=404)
-                except Exception, e:
-                    log.error('Error querying hardware_profile={0},exception={2}'.format(request.url, e))
-                    raise
-
-            else:
-                log.info('Displaying all hardware profiles')
-                try:
-                    q = DBSession.query(HardwareProfile)
-                    return q.limit(perpage).offset(offset).all()
-                except NoResultFound:
-                    return Response(content_type='application/json', status_int=404)
-                except Exception, e:
-                    log.error('Error querying for hardware_profiles={0},exception={0}'.format(request.url, e))
-                    raise
-
-        if request.matchdict['id']:
-            log.info('Displaying single hardware profile')
+        if model:
+            log.debug('Searching for hardware_profile: {0}'.format(request.url))
             try:
-                q = DBSession.query(HardwareProfile)
-                q = q.filter(HardwareProfile.hardware_profile_id==request.matchdict['id'])
-                return q.one()
-            except NoResultFound:
-                return Response(content_type='application/json', status_int=404)
-            except Exception, e:
-                log.error('Error querying for hardware_profile={0},exception={1}'.format(request.url, e))
+                hp = DBSession.query(HardwareProfile)
+                hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
+                hp = hp.filter(HardwareProfile.model==model)
+                return hp.one()
+            except Exception as e:
+                log.error('Error querying hardware_profile={0},exception={1}'.format(request.url, e))
                 raise
-            
-    except Exception, e:
+        else:
+            log.debug('Displaying all hardware profiles')
+            try:
+                hp = DBSession.query(HardwareProfile)
+                return hp.limit(perpage).offset(offset).all()
+            except Exception as e:
+                log.error('Error reading all hardware_profiles exception={0}'.format(e))
+                raise
+
+    except NoResultFound:
+        return Response(content_type='application/json', status_int=404)
+
+    except Exception as e:
+        log.error('Error reading from hardware_profiles API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='text/plain', status_int=500)
 
 
 @view_config(route_name='api_hardware_profiles', permission='api_write', request_method='PUT', renderer='json')
 def api_hardware_profile_write(request):
+    """Process write requests for /api/hardware_profiles route."""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
+
         manufacturer = payload['manufacturer']
         model = payload['model']
 
-        if request.path == '/api/hardware_profiles':
+        log.debug('Checking for hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
 
-            log.info('Checking for hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
+        try:
+            hp = DBSession.query(HardwareProfile)
+            hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
+            hp = hp.filter(HardwareProfile.model==model)
+            hp = hp.one()
+        except NoResultFound:
             try:
-                hp = DBSession.query(HardwareProfile)
-                hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
-                hp = hp.filter(HardwareProfile.model==model)
-                hp.one()
-            except NoResultFound, e:
-                try:
-                    log.info('Creating new hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
-                    utcnow = datetime.utcnow()
-                    hp = HardwareProfile(manufacturer = manufacturer,
-                                         model = model,
-                                         updated_by = au['user_id'],
-                                         created = utcnow,
-                                         updated = utcnow)
-                    DBSession.add(hp)
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error creating new harware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
-                    raise
-            # Update
-            else:
-                try:
-                    log.info('Updating hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
+                log.info('Creating new hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
+                utcnow = datetime.utcnow()
 
-                    hp.manufacturer = manufacturer
-                    hp.model = model
-                    hp.updated_by=au['user_id']
+                hp = HardwareProfile(manufacturer = manufacturer,
+                                     model = model,
+                                     updated_by = au['user_id'],
+                                     created = utcnow,
+                                     updated = utcnow)
 
-                    DBSession.flush()
-                except Exception, e:
-                    log.error('Error updating hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
-                    raise
+                DBSession.add(hp)
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error creating new harware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+                raise
+        else:
+            try:
+                log.info('Updating hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
 
-            return hp
+                hp.manufacturer = manufacturer
+                hp.model = model
+                hp.updated_by=au['user_id']
 
-    except Exception, e:
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error updating hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+                raise
+
+        return hp
+
+    except Exception as e:
+        log.error('Error writing to harware_profiles API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='text/plain', status_int=500)
+
+
+@view_config(route_name='api_hardware_profile', permission='api_write', request_method='DELETE', renderer='json')
+def api_hardware_profiles_delete_id(request):
+    """Process delete requests for the /api/hardware_profiles/{id} route."""
+
+    return api_delete_by_id(request, 'HardwareProfile')
+
+
+@view_config(route_name='api_hardware_profiles', permission='api_write', request_method='DELETE', renderer='json')
+def api_hardware_profiles_delete(request):
+    """Process delete requests for the /api/hardware_profiles route. Iterates
+       over passed parameters."""
+
+    return api_delete_by_params(request, 'HardwareProfile')
+
+

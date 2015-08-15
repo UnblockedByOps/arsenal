@@ -43,21 +43,21 @@ def api_tag_schema(request):
 
 @view_config(route_name='api_tag_r', request_method='GET', renderer='json')
 def api_tag_read_attrib(request):
-    """Process read requests for /api/tags/{id}/{resource} route matches"""
+    """Process read requests for the /api/tags/{id}/{resource} route."""
 
     return get_api_attribute(request, 'Tag')
 
 
 @view_config(route_name='api_tag', request_method='GET', renderer='json')
 def api_tag_read_id(request):
-    """Process read requests for /api/tags/{id} route matches"""
+    """Process read requests for the /api/tags/{id} route."""
 
     return api_read_by_id(request, 'Tag')
 
 
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
 def api_tag_read(request):
-    """Process read requests for /api/tags route match"""
+    """Process read requests for the /api/tags route."""
 
     perpage = 40
     offset = 0
@@ -68,109 +68,109 @@ def api_tag_read(request):
         pass
 
     try:
-        if request.path == '/api/tags':
+        exact_get =  request.GET.get("exact_get", None)
+        tag_name = request.params.get('tag_name')
+        tag_value = request.params.get('tag_value')
 
-            exact_get =  request.GET.get("exact_get", None)
-            tag_name = request.params.get('tag_name')
-            tag_value = request.params.get('tag_value')
-
-            if any((tag_name, tag_value)):
-                log.info('Querying for tag_name: {0}'.format(request.url))
-                s = ""
-                try:
-                    t = DBSession.query(Tag)
-                    for k,v in request.GET.items():
-                        # FIXME: This is sub-par. Need a better way to distinguish
-                        # meta params from search params without having to
-                        # pre-define everything.
-                        if k == 'exact_get':
-                            continue
+        if any((tag_name, tag_value)):
+            log.debug('Searching for tag_name: {0}'.format(request.url))
+            s = ""
+            try:
+                t = DBSession.query(Tag)
+                for k,v in request.GET.items():
+                    # FIXME: This is sub-par. Need a better way to distinguish
+                    # meta params from search params without having to
+                    # pre-define everything.
+                    if k == 'exact_get':
+                        continue
     
-                        s+='{0}={1},'.format(k, v)
-                        if exact_get:
-                            log.info('Exact filtering on {0}={1}'.format(k, v))
-                            t = t.filter(getattr(Tag ,k)==v)
-                        else:
-                            log.info('Loose filtering on {0}={1}'.format(k, v))
-                            t = t.filter(getattr(Tag ,k).like('%{0}%'.format(v)))
-                    log.info('Searching for tags with params: {0}'.format(s.rstrip(',')))
-                    return t.all()
-                except Exception as e:
-                    log.error('Error querying tag_name={0},exception={1}'.format(request.url, e))
-                    raise
-            else:
-                log.info('Displaying all tags')
-                try:
-                    ts = DBSession.query(Tag)
-                    ts = ts.limit(perpage).offset(offset).all()
-                    return ts
-                except Exception as e:
-                    log.error('Error querying tags={0},exception={1}'.format(request.url, e))
-                    raise
+                    s+='{0}={1},'.format(k, v)
+                    if exact_get:
+                        log.debug('Exact filtering on {0}={1}'.format(k, v))
+                        t = t.filter(getattr(Tag ,k)==v)
+                    else:
+                        log.debug('Loose filtering on {0}={1}'.format(k, v))
+                        t = t.filter(getattr(Tag ,k).like('%{0}%'.format(v)))
+
+                log.debug('Searching for tags {0}'.format(s.rstrip(',')))
+                return t.all()
+            except Exception as e:
+                log.error('Error reading tag tag_name={0},exception={1}'.format(request.url, e))
+                raise
+        else:
+            log.info('Displaying all tags')
+            try:
+                ts = DBSession.query(Tag)
+                return ts.limit(perpage).offset(offset).all()
+            except Exception as e:
+                log.error('Error reading all tags exception={0}'.format(e))
+                raise
 
     except NoResultFound:
         return Response(content_type='application/json', status_int=404)
 
     except Exception as e:
-        log.error('Error querying tags api={0},exception={1}'.format(request.url, e))
+        log.error('Error reading from tags API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_tags', permission='api_write', request_method='PUT', renderer='json')
 def api_node_tags_write(request):
-    """Process write requests for /api/tags route match"""
+    """Process write requests for the /api/tags route."""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
+        tag_name = payload['tag_name']
+        tag_value = payload['tag_value']
+
+        log.info('Searching for tag tag_name={0}'.format(tag_name))
 
         try:
-            tag_name = payload['tag_name']
-            tag_value = payload['tag_value']
-
-            log.info('Checking for tag_name: {0}'.format(tag_name))
             t = DBSession.query(Tag)
             t = t.filter(Tag.tag_name==tag_name)
             t = t.filter(Tag.tag_value==tag_value)
             t = t.one()
         except NoResultFound:
             try:
-                log.info('Creating new tag_name={0},tag_value={1}'.format(tag_name, tag_value))
+                log.info('Creating new tag tag_name={0},tag_value={1}'.format(tag_name, tag_value))
                 utcnow = datetime.utcnow()
+
                 t = Tag(tag_name=tag_name,
                         tag_value=tag_value,
                         updated_by=au['user_id'],
                         created=utcnow,
                         updated=utcnow)
+
                 DBSession.add(t)
                 DBSession.flush()
             except Exception as e:
-                log.error('Error creating new tag tag_name={0},tag_value={1},exception={3}'.format(tag_name, tag_value, e))
+                log.error('Error creating new tag tag_name={0},tag_value={1},exception={2}'.format(tag_name, tag_value, e))
                 raise
         # Since there are no fields to update other than the two that
-        # constitue a unqiue tag we return a 409 and handle it in 
-        # client/UI.
+        # constitue a unqiue tag we return a 409 when an update would
+        # have otherwise happened and handle it in client/UI.
         else:
             return Response(content_type='application/json', status_int=409)
 
         return t
 
     except Exception as e:
-        log.error('Error with tag API! exception: {0}'.format(e))
+        log.error('Error writing to tags API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_tag', permission='api_write', request_method='DELETE', renderer='json')
 def api_tags_delete_id(request):
-    """Process delete requests for /api/tags/{id} route match."""
+    """Process delete requests for the /api/tags/{id} route."""
 
     return api_delete_by_id(request, 'Tag')
 
 
 @view_config(route_name='api_tags', permission='api_write', request_method='DELETE', renderer='json')
 def api_tags_delete(request):
-    """Process delete requests for /api/tags route match. Iterates
+    """Process delete requests for the /api/tags route. Iterates
        over passed parameters."""
 
     return api_delete_by_params(request, 'Tag')

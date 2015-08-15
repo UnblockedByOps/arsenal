@@ -32,23 +32,33 @@ from arsenalweb.models import (
     )
 
 
+@view_config(route_name='api_node_group_assignments', request_method='GET', request_param='schema=true', renderer='json')
+def api_node_group_assignments_schema(request):
+    """Schema document for the node_group_assignments API."""
+
+    nga = {
+    }
+
+    return nga
+
+
 @view_config(route_name='api_node_group_assignment_r', request_method='GET', renderer='json')
 def api_node_group_assignment_read_attrib(request):
-    """Process read requests for /api/node_group_assignments/{id}/{resource} route matches"""
+    """Process read requests for the /api/node_group_assignments/{id}/{resource} route."""
 
     return get_api_attribute(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignment', request_method='GET', renderer='json')
 def api_node_group_assignment_read_id(request):
-    """Process read requests for /api/node_group_assignments/{id} route matches"""
+    """Process read requests for the /api/node_group_assignments/{id} route."""
 
     return api_read_by_id(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignments', request_method='GET', renderer='json')
 def api_node_group_assignment_read(request):
-    """Process read requests for /api/node_group_assignments route match"""
+    """Process read requests for the /api/node_group_assignments route."""
 
     perpage = 40
     offset = 0
@@ -77,16 +87,16 @@ def api_node_group_assignment_read(request):
 
                 s+='{0}={1},'.format(k, v)
                 if exact_get:
-                    log.info('Exact filtering on {0}={1}'.format(k, v))
+                    log.debug('Exact filtering on {0}={1}'.format(k, v))
                     nga = nga.filter(getattr(NodeGroupAssignment ,k)==v)
                 else:
-                    log.info('Loose filtering on {0}={1}'.format(k, v))
+                    log.debug('Loose filtering on {0}={1}'.format(k, v))
                     nga = nga.filter(getattr(NodeGroupAssignment ,k).like('%{0}%'.format(v)))
 
-            log.info('Searching for node_group_assignments with params: {0}'.format(s.rstrip(',')))
+            log.debug('Searching for node_group_assignments with params: {0}'.format(s.rstrip(',')))
 
         else:
-            log.info('Displaying all node_group_assignments')
+            log.debug('Displaying all node_group_assignments')
 
         nga = nga.limit(perpage).offset(offset).all()
 
@@ -96,39 +106,42 @@ def api_node_group_assignment_read(request):
             return Response(content_type='application/json', status_int=404)
 
     except Exception as e:
-        log.error('Error querying api={0},exception={1}'.format(request.url, e))
+        log.error('Error reading from node_group_assignments API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='PUT', renderer='json')
 def api_node_group_assignments_write(request):
-    """Process write requests for /api/node_group_assignments route match"""
+    """Process write requests for the /api/node_group_assignments route."""
 
     au = get_authenticated_user(request)
 
     try:
         payload = request.json_body
 
-        try:
-            node_id = payload['node_id']
-            node_group_id = payload['node_group_id']
+        node_id = payload['node_id']
+        node_group_id = payload['node_group_id']
 
-            log.info('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
-            q = DBSession.query(NodeGroupAssignment)
-            q = q.filter(NodeGroupAssignment.node_id==node_id)
-            q = q.filter(NodeGroupAssignment.node_group_id==node_group_id)
-            q.one()
+        log.debug('Checking for node_group_assignment node_id={0},node_group_id={1}'.format(node_id, node_group_id))
+
+        try:
+            nga = DBSession.query(NodeGroupAssignment)
+            nga = nga.filter(NodeGroupAssignment.node_id==node_id)
+            nga = nga.filter(NodeGroupAssignment.node_group_id==node_group_id)
+            nga = nga.one()
             log.info('node_group_assignment already exists')
             return Response(content_type='application/json', status_int=409)
         except NoResultFound:
             try:
-                log.info('Creating new node_group_assignment for node_id={0},node_group_id={1}'.format(node_id, node_group_id))
+                log.debug('Creating new node_group_assignment for node_id={0},node_group_id={1}'.format(node_id, node_group_id))
                 utcnow = datetime.utcnow()
+
                 nga = NodeGroupAssignment(node_id=node_id,
                                           node_group_id=node_group_id,
                                           updated_by=au['user_id'],
                                           created=utcnow,
                                           updated=utcnow)
+
                 DBSession.add(nga)
                 DBSession.flush()
             except Exception as e:
@@ -136,20 +149,20 @@ def api_node_group_assignments_write(request):
                 raise
 
     except Exception as e:
-        log.error('Error with node_group_assignment API! exception: {0}'.format(e))
+        log.error('Error writing to node_group_assignment API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node_group_assignment', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_group_assignments_delete_id(request):
-    """Process delete requests for /api/node_group_assignments/{id} route match."""
+    """Process delete requests for the /api/node_group_assignments/{id} route."""
 
     return api_delete_by_id(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='DELETE', renderer='json')
 def api_node_group_assignments_delete(request):
-    """Process delete requests for /api/node_group_assignments route match.
+    """Process delete requests for the /api/node_group_assignments route.
        Iterates over passed parameters."""
 
     return api_delete_by_params(request, 'NodeGroupAssignment')

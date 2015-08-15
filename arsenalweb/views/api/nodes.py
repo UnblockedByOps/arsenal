@@ -40,344 +40,9 @@ from arsenalweb.models import (
 def api_node_schema(request):
     """Schema document for nodes API"""
 
-    log.info('schema requested')
+    log.debug('schema requested')
 
     node = {
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "id": "https://REPLACE",
-      "type": "object",
-      "properties": {
-        "status": {
-          "id": "https://REPLACE/status",
-          "type": "object",
-          "properties": {
-            "updated": {
-              "id": "https://REPLACE/status/updated",
-              "type": "string"
-            },
-            "description": {
-              "id": "https://REPLACE/status/description",
-              "type": "string"
-            },
-            "status_id": {
-              "id": "https://REPLACE/status/status_id",
-              "type": "integer"
-            },
-            "status_name": {
-              "id": "https://REPLACE/status/status_name",
-              "type": "string"
-            },
-            "updated_by": {
-              "id": "https://REPLACE/status/updated_by",
-              "type": "string"
-            },
-            "created": {
-              "id": "https://REPLACE/status/created",
-              "type": "string"
-            }
-          },
-          "required": [
-            "updated",
-            "description",
-            "status_id",
-            "status_name",
-            "updated_by",
-            "created"
-          ]
-        },
-        "uptime": {
-          "id": "https://REPLACE/uptime",
-          "type": "string"
-        },
-        "operating_system": {
-          "id": "https://REPLACE/operating_system",
-          "type": "object",
-          "properties": {
-            "version_number": {
-              "id": "https://REPLACE/operating_system/version_number",
-              "type": "string"
-            },
-            "description": {
-              "id": "https://REPLACE/operating_system/description",
-              "type": "string"
-            },
-            "operating_system_id": {
-              "id": "https://REPLACE/operating_system/operating_system_id",
-              "type": "integer"
-            },
-            "created": {
-              "id": "https://REPLACE/operating_system/created",
-              "type": "string"
-            },
-            "variant": {
-              "id": "https://REPLACE/operating_system/variant",
-              "type": "string"
-            },
-            "updated": {
-              "id": "https://REPLACE/operating_system/updated",
-              "type": "string"
-            },
-            "architecture": {
-              "id": "https://REPLACE/operating_system/architecture",
-              "type": "string"
-            },
-            "updated_by": {
-              "id": "https://REPLACE/operating_system/updated_by",
-              "type": "string"
-            }
-          }
-        },
-        "updated_by": {
-          "id": "https://REPLACE/updated_by",
-          "type": "string"
-        },
-        "operating_system_id": {
-          "id": "https://REPLACE/operating_system_id",
-          "type": "integer"
-        },
-        "tags": {
-          "id": "https://REPLACE/tags",
-          "type": "array",
-          "items": {
-            "id": "https://REPLACE/tags/0",
-            "type": "object",
-            "properties": {
-              "updated": {
-                "id": "https://REPLACE/tags/0/updated",
-                "type": "string"
-              },
-              "updated_by": {
-                "id": "https://REPLACE/tags/0/updated_by",
-                "type": "string"
-              },
-              "created": {
-                "id": "https://REPLACE/tags/0/created",
-                "type": "string"
-              },
-              "tag_name": {
-                "id": "https://REPLACE/tags/0/tag_name",
-                "type": "string"
-              },
-              "tag_id": {
-                "id": "https://REPLACE/tags/0/tag_id",
-                "type": "integer"
-              },
-              "tag_value": {
-                "id": "https://REPLACE/tags/0/tag_value",
-                "type": "string"
-              }
-            }
-          }
-        },
-        "hardware_profile": {
-          "id": "https://REPLACE/hardware_profile",
-          "type": "object",
-          "properties": {
-            "updated": {
-              "id": "https://REPLACE/hardware_profile/updated",
-              "type": "string"
-            },
-            "updated_by": {
-              "id": "https://REPLACE/hardware_profile/updated_by",
-              "type": "string"
-            },
-            "created": {
-              "id": "https://REPLACE/hardware_profile/created",
-              "type": "string"
-            },
-            "hardware_profile_id": {
-              "id": "https://REPLACE/hardware_profile/hardware_profile_id",
-              "type": "integer"
-            },
-            "model": {
-              "id": "https://REPLACE/hardware_profile/model",
-              "type": "string"
-            },
-            "manufacturer": {
-              "id": "https://REPLACE/hardware_profile/manufacturer",
-              "type": "string"
-            }
-          }
-        },
-        "created": {
-          "id": "https://REPLACE/created",
-          "type": "string"
-        },
-        "updated": {
-          "id": "https://REPLACE/updated",
-          "type": "string"
-        },
-        "node_name": {
-          "id": "https://REPLACE/node_name",
-          "type": "string"
-        },
-        "node_id": {
-          "id": "https://REPLACE/node_id",
-          "type": "integer"
-        },
-        "status_id": {
-          "id": "https://REPLACE/status_id",
-          "type": "integer"
-        },
-        "node_groups": {
-          "id": "https://REPLACE/node_groups",
-          "type": "array",
-          "items": [
-            {
-              "id": "https://REPLACE/node_groups/0",
-              "type": "object",
-              "properties": {
-                "updated": {
-                  "id": "https://REPLACE/node_groups/0/updated",
-                  "type": "string"
-                },
-                "node_group_owner": {
-                  "id": "https://REPLACE/node_groups/0/node_group_owner",
-                  "type": "string"
-                },
-                "description": {
-                  "id": "https://REPLACE/node_groups/0/description",
-                  "type": "string"
-                },
-                "tags": {
-                  "id": "https://REPLACE/node_groups/0/tags",
-                  "type": "array",
-                  "items": [
-                    {
-                      "id": "https://REPLACE/node_groups/0/tags/0",
-                      "type": "object",
-                      "properties": {
-                        "updated": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/updated",
-                          "type": "string"
-                        },
-                        "updated_by": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/updated_by",
-                          "type": "string"
-                        },
-                        "created": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/created",
-                          "type": "string"
-                        },
-                        "tag_name": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/tag_name",
-                          "type": "string"
-                        },
-                        "tag_id": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/tag_id",
-                          "type": "integer"
-                        },
-                        "tag_value": {
-                          "id": "https://REPLACE/node_groups/0/tags/0/tag_value",
-                          "type": "string"
-                        }
-                      }
-                    },
-                    {
-                      "id": "https://REPLACE/node_groups/0/tags/1",
-                      "type": "object",
-                      "properties": {
-                        "updated": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/updated",
-                          "type": "string"
-                        },
-                        "updated_by": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/updated_by",
-                          "type": "string"
-                        },
-                        "created": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/created",
-                          "type": "string"
-                        },
-                        "tag_name": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/tag_name",
-                          "type": "string"
-                        },
-                        "tag_id": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/tag_id",
-                          "type": "integer"
-                        },
-                        "tag_value": {
-                          "id": "https://REPLACE/node_groups/0/tags/1/tag_value",
-                          "type": "string"
-                        }
-                      }
-                    }
-                  ]
-                },
-                "created": {
-                  "id": "https://REPLACE/node_groups/0/created",
-                  "type": "string"
-                },
-                "updated_by": {
-                  "id": "https://REPLACE/node_groups/0/updated_by",
-                  "type": "string"
-                },
-                "node_group_id": {
-                  "id": "https://REPLACE/node_groups/0/node_group_id",
-                  "type": "integer"
-                },
-                "node_group_name": {
-                  "id": "https://REPLACE/node_groups/0/node_group_name",
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "id": "https://REPLACE/node_groups/1",
-              "type": "object",
-              "properties": {
-                "updated": {
-                  "id": "https://REPLACE/node_groups/1/updated",
-                  "type": "string"
-                },
-                "node_group_owner": {
-                  "id": "https://REPLACE/node_groups/1/node_group_owner",
-                  "type": "string"
-                },
-                "description": {
-                  "id": "https://REPLACE/node_groups/1/description",
-                  "type": "string"
-                },
-                "tags": {
-                  "id": "https://REPLACE/node_groups/1/tags",
-                  "type": "array",
-                  "items": []
-                },
-                "created": {
-                  "id": "https://REPLACE/node_groups/1/created",
-                  "type": "string"
-                },
-                "updated_by": {
-                  "id": "https://REPLACE/node_groups/1/updated_by",
-                  "type": "string"
-                },
-                "node_group_id": {
-                  "id": "https://REPLACE/node_groups/1/node_group_id",
-                  "type": "integer"
-                },
-                "node_group_name": {
-                  "id": "https://REPLACE/node_groups/1/node_group_name",
-                  "type": "string"
-                }
-              }
-            }
-          ]
-        },
-        "hardware_profile_id": {
-          "id": "https://REPLACE/hardware_profile_id",
-          "type": "integer"
-        },
-        "unique_id": {
-          "id": "https://REPLACE/unique_id",
-          "type": "string"
-        }
-      },
-      "required": [
-        "node_name",
-        "status_id",
-        "unique_id"
-      ]
     }
 
     return node
@@ -385,21 +50,21 @@ def api_node_schema(request):
 
 @view_config(route_name='api_node_r', request_method='GET', renderer='json')
 def api_node_read_attrib(request):
-    """Process read requests for /api/nodes/{id}/{resource} route matches"""
+    """Process read requests for the /api/nodes/{id}/{resource} route."""
 
     return get_api_attribute(request, 'Node')
 
 
 @view_config(route_name='api_node', request_method='GET', renderer='json')
 def api_node_read_id(request):
-    """Process read requests for /api/nodes/{id} route matches"""
+    """Process read requests for the /api/nodes/{id} route."""
 
     return api_read_by_id(request, 'Node')
 
 
 @view_config(route_name='api_nodes', request_method='GET', renderer='json')
 def api_node_read(request):
-    """Process read requests for /api/nodes route match"""
+    """Process read requests for the /api/nodes route."""
 
     perpage = 40
     offset = 0
@@ -426,33 +91,35 @@ def api_node_read(request):
 
                 s+='{0}={1},'.format(k, v)    
                 if exact_get:
-                    log.info('Exact filtering on {0}={1}'.format(k, v))
+                    log.debug('Exact filtering on {0}={1}'.format(k, v))
                     q = q.filter(getattr(Node ,k)==v)
                 else:
-                    log.info('Loose filtering on {0}={1}'.format(k, v))
+                    log.debug('Loose filtering on {0}={1}'.format(k, v))
                     q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
-            log.info('Searching for node with params: {0}'.format(s.rstrip(',')))
+
+            log.debug('Searching for node {0}'.format(s.rstrip(',')))
+
             nodes = q.all()
             return nodes
         else:
-            log.info('Displaying all nodes')
-            q = DBSession.query(Node)
-            nodes = q.limit(perpage).offset(offset).all()
-            return nodes
+
+            log.debug('Displaying all nodes')
+
+            n = DBSession.query(Node)
+            return n.limit(perpage).offset(offset).all()
 
     # FIXME: Should AttributeError return something different?
     except (NoResultFound, AttributeError):
         return Response(content_type='application/json', status_int=404)
 
     except Exception, e:
-        log.error('Error querying api={0},exception={1}'.format(request.url, e))
+        log.error('Error reading from nodes API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node', permission='api_write', request_method='PUT', renderer='json')
 def api_node_write_id(request):
-    """Process write requests for /api/nodes/{id} route match"""
-
+    """Process write requests for the /api/nodes/{id} route."""
 
     au = get_authenticated_user(request)
 
@@ -466,8 +133,9 @@ def api_node_write_id(request):
 
         log.info('Updating node_id: {0} params: {1}'.format(node_id, s.rstrip(',')))
 
-        q = DBSession.query(Node).filter(Node.node_id==node_id)
-        n = q.one()
+        n = DBSession.query(Node)
+        n = n.filter(Node.node_id==node_id)
+        n = n.one()
 
         # FIXME: Do we want to limit anything here? Keys that don't exist will
         # be ignored, keys that can't be set with throw an error. Doesn't
@@ -479,7 +147,7 @@ def api_node_write_id(request):
         DBSession.flush()
 
     except Exception as e:
-        log.error('Error with node API! exception: {0}'.format(e))
+        log.error('Error writing to nodes API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
     return n
@@ -487,7 +155,7 @@ def api_node_write_id(request):
 
 @view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
 def api_node_write(request):
-    """Process write requests for /api/nodes route match"""
+    """Process write requests for the /api/nodes route."""
 
     au = get_authenticated_user(request)
 
@@ -509,13 +177,16 @@ def api_node_write(request):
                 hardware_profile = _api_get(request, uri, data)
 
                 if not hardware_profile:
-                    log.info('hardware_profile not found, creating')
+
+                    log.debug('hardware_profile not found, creating')
+
                     data_j = json.dumps(data, default=lambda o: o.__dict__)
                     _api_put(request, uri, data=data_j)
                     hardware_profile = _api_get(request, uri, data)
 
                 hardware_profile_id = hardware_profile['hardware_profile_id']
-                log.info('hardware_profile is: {0}'.format(hardware_profile))
+                log.debug('hardware_profile is: {0}'.format(hardware_profile))
+
             except Exception as e:
                 log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
                 raise
@@ -537,14 +208,16 @@ def api_node_write(request):
 
                 if not operating_system:
     
-                    log.info('operating_system not found, attempting to create')
+                    log.debug('operating_system not found, attempting to create')
+
                     data_j = json.dumps(data, default=lambda o: o.__dict__)
                     _api_put(request, uri, data=data_j)
                     operating_system = _api_get(request, uri, data)
 
                 operating_system_id = operating_system['operating_system_id']
                 log.info('operating_system is: {0}'.format(operating_system))
-            except Exception, e:
+
+            except Exception as e:
                 log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
                 raise
 
@@ -553,13 +226,15 @@ def api_node_write(request):
                 node_name = payload['node_name']
                 uptime = payload['uptime']
 
-                log.info('Checking for unique_id: {0}'.format(unique_id))
-                q = DBSession.query(Node).filter(Node.unique_id==unique_id)
-                q.one()
-            except NoResultFound, e:
+                log.debug('Searching for node unique_id={0}'.format(unique_id))
+                n = DBSession.query(Node)
+                n = n.filter(Node.unique_id==unique_id)
+                n = n.one()
+            except NoResultFound:
                 try:
-                    log.info('Creating new node: {0}'.format(unique_id))
+                    log.info('Creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
                     utcnow = datetime.utcnow()
+
                     n = Node(unique_id=unique_id,
                              node_name=node_name,
                              hardware_profile_id=hardware_profile_id,
@@ -569,6 +244,7 @@ def api_node_write(request):
                              updated_by=au['user_id'],
                              created=utcnow,
                              updated=utcnow)
+
                     DBSession.add(n)
                     DBSession.flush()
                 except Exception as e:
@@ -577,12 +253,13 @@ def api_node_write(request):
             else:
                 try:
                     log.info('Updating node: {0}'.format(unique_id))
-                    n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
+
                     n.node_name = node_name
                     n.hardware_profile_id = hardware_profile_id
                     n.operating_system_id = operating_system_id
                     n.uptime = uptime
                     n.updated_by=au['user_id']
+
                     DBSession.flush()
                 except Exception as e:
                     log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
@@ -595,20 +272,23 @@ def api_node_write(request):
                 unique_id = payload['unique_id']
                 status_id = payload['node_status_id']
 
-                log.info('Checking for unique_id: {0}'.format(unique_id))
-                q = DBSession.query(Node).filter(Node.unique_id==unique_id)
-                q.one()
-            except NoResultFound, e:
+                log.debug('Searching for node unique_id={0}'.format(unique_id))
+                n = DBSession.query(Node)
+                n = n.filter(Node.unique_id==unique_id)
+                n = n.one()
+            except NoResultFound:
                 try:
 
-                    log.info('Manually creating new node: {0}'.format(node_name))
+                    log.info('Manually creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
                     utcnow = datetime.utcnow()
+
                     n = Node(node_name=node_name,
                              unique_id=unique_id,
                              status_id=status_id,
                              updated_by=au['user_id'],
                              created=utcnow,
                              updated=utcnow)
+
                     DBSession.add(n)
                     DBSession.flush()
                 except Exception as e:
@@ -616,11 +296,12 @@ def api_node_write(request):
                     raise
             else:
                 try:
-                    log.info('Updating node: {0}'.format(unique_id))
-                    n = DBSession.query(Node).filter(Node.unique_id==unique_id).one()
+                    log.info('Updating node node_name={0},unique_id={1}'.format(node_name, unique_id))
+
                     n.node_name = node_name
                     n.status_id = status_id
                     n.updated_by=au['user_id']
+
                     DBSession.flush()
                 except Exception as e:
                     log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
@@ -629,20 +310,20 @@ def api_node_write(request):
         return n
 
     except Exception as e:
-        log.error('Error with node API! exception: {0}'.format(e))
+        log.error('Error writing to nodes API={0},exception={1}'.format(request.url, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
 @view_config(route_name='api_node', permission='api_write', request_method='DELETE', renderer='json')
 def api_nodes_delete_id(request):
-    """Process delete requests for /api/nodes/{id} route match."""
+    """Process delete requests for the /api/nodes/{id} route."""
 
     return api_delete_by_id(request, 'Node')
 
 
 @view_config(route_name='api_nodes', permission='api_write', request_method='DELETE', renderer='json')
 def api_nodes_delete(request):
-    """Process delete requests for /api/nodes route match. Iterates
+    """Process delete requests for the /api/nodes route. Iterates
        over passed parameters."""
 
     return api_delete_by_params(request, 'Node')
