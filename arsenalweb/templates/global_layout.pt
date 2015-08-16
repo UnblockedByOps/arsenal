@@ -22,7 +22,7 @@
   <head profile="http://www.w3.org/2005/10/profile">
     <link rel="icon"
         type="image/png"
-        href="/static/img/favico.png?v=2">
+        href="/static/img/favico.png?v=3">
     <title>Arsenal: ${page_title}</title>
     <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
     <script src="/static/js/jquery-2.1.3.min.js"></script>

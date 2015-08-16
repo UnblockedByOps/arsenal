@@ -104,6 +104,7 @@ def main(global_config, **settings):
     config.add_route('operating_system', '/operating_systems/{id}')
     config.add_route('test', '/test')
     config.add_route('test2', '/test2')
+    config.add_route('test3', '/test3')
     # API Endpoints. Order matters.
     config.add_route('api_nodes', '/api/nodes')
     config.add_route('api_node_r', '/api/nodes/{id}/{resource}')

@@ -98,10 +98,10 @@ def global_groupfinder(userid, request):
 
     groups = None
     try:
-        log.info("Checking local groups for userid: %s" % (userid))
+        log.debug("Checking local groups for userid: %s" % (userid))
         groups = local_groupfinder(userid, request)
         if groups:
-            log.info("Found local groups for userid: %s groups: %s" % (userid, groups))
+            log.debug("Found local groups for userid: %s groups: %s" % (userid, groups))
     except Exception, e:
         log.info("%s (%s)" % (Exception, e))
         pass
@@ -172,7 +172,7 @@ def get_authenticated_user(request):
         groups = local_groupfinder(user_id, request)
         first_last = "%s %s" % (first, last)
         auth = True
-        log.info("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
+        log.debug("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
     except Exception, e:
         log.info("%s (%s)" % (Exception, e))
 

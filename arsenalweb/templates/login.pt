@@ -22,18 +22,19 @@
   <head profile="http://www.w3.org/2005/10/profile">
     <link rel="icon"
         type="image/png"
-        href="/static/img/favico.png?v=1">
+        href="/static/img/favico.png?v=3">
     <title>Arsenal: ${page_title}</title>
     <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 
-    <div class="login_c">
-      <div id="login">
+      <div id="login_t" class="login_t">
           <p class="login">
-          <img src="/static/img/logo-l.png">
+          <img src="/static/img/logo-white-large.png">
           </p>
+      </div>
       
+      <div id="login_b" class="login_b">
           <h2 class="error" tal:condition="error" tal:content="error"/>
   
           <p class="login">
@@ -48,7 +49,6 @@
             </form>
           </p>
       </div>
-    </div>
 
   </body>
 </html>
