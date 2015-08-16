@@ -48,7 +48,7 @@
       top: 0px;
       left: 0px;
       width: 100%;
-      height: 115px;
+      height: 96px;
       position: fixed;
       background: #042e63;
       z-index: -1;
@@ -61,14 +61,15 @@
       min-width: 800px;
       background: #042e63;
     }
+
     .right {
         overflow: hidden;
-        min-height: 50px;
+        min-height: 40px;
     }
     .left {
         float: left;
         width: 160px;
-        min-height: 50px;
+        min-height: 40px;
         margin-left: 10px;
     }
     #logo_container {
@@ -80,7 +81,6 @@
     }
     /* START Search */
     #c {
-        padding: 10px;
         overflow:auto;
         min-width:700px;
         max-width:900px;
