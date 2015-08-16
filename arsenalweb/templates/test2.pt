@@ -44,14 +44,22 @@
         background: #FFFFFF;
     }
 
-    #top1 {
-        display: inline-block;
-        width: 100%;
-        height: 65px;
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        background: #042e63;
+    #top_bg {
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 115px;
+      position: fixed;
+      background: #042e63;
+      z-index: -1;
+    }
+    #top {
+      top: 0px;
+      left: 0px;
+      line-height: 1;
+      width: 100%;
+      min-width: 800px;
+      background: #042e63;
     }
     .right {
         overflow: hidden;
@@ -139,15 +147,11 @@
     }
     /* END Search */
 
+#main_c {
+  margin: 0;
+  padding: 0;
+}
 
-    #top2 {
-        width: 100%;
-        height: 30px;
-        position: fixed;
-        top: 65px;
-        left: 0px;
-        background: #042e63;
-    }
 
     /* START Resizable */
     #panel_c {
@@ -289,7 +293,6 @@
       vertical-align: top;
       white-space: nowrap;
     }
-
     #overlay{
         position: fixed;
         left: 0;
@@ -344,81 +347,83 @@
 
       $( "#main_menu" ).hover(
         function() {
-          overlay();
+          $( '#main_c' ).fadeTo(0, 0.2);
         }, function() {
-          $( '#overlay' ).remove();
+          $( '#main_c' ).fadeTo(0, 1);
         }
       );
 
     });
   </script>
-
-  <div id='top1'>
-    <div class="left">
-      <div id='logo_container'>
-        <a href='/'><img src="/static/img/logo-white-small.png"></a>
+  <div id="top_bg"></div>
+  <div id="top">
+    <div id='top1'>
+      <div class="left">
+        <div id='logo_container'>
+          <a href='/'><img src="/static/img/logo-white-small.png"></a>
+        </div>
       </div>
-    </div>
-
-    <form action="/search">
-    <div class="right">
-      <div id="c">
-        <div id="cc">
-          <div id="x">
-            <div id="search_select_c">
-              <select>
-                <option selected="selected">nodes</option>
-                <option>node groups</option>
-                <option>tags</option>
-                <option>operating_systems</option>
-                <option>hardware_profiles</option>
-              </select>
+  
+      <form action="/search">
+      <div class="right">
+        <div id="c">
+          <div id="cc">
+            <div id="x">
+              <div id="search_select_c">
+                <select>
+                  <option selected="selected">nodes</option>
+                  <option>node groups</option>
+                  <option>tags</option>
+                  <option>operating_systems</option>
+                  <option>hardware_profiles</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div id="y">
-              <input id="search_box" type="text">
-          </div>
-          <div id="z">
-              <input type="submit" id="search_bar_btn" value="" alt="search">
+            <div id="y">
+                <input id="search_box" type="text">
+            </div>
+            <div id="z">
+                <input type="submit" id="search_bar_btn" value="" alt="search">
+            </div>
           </div>
         </div>
       </div>
+      </form>
     </div>
-    </form>
-  </div>
-  <div id='top2'>
-    <div id='main_menu'>
-      <ul class="main_menu">
-        <li class="main_menu">
-          <span id="main_menu_btn">Menu</span>
-          <ul class="main_menu">
-            <li>
-              <div class="menu_group">
-                <h3>Manage</h3>
-                <a href="/nodes">nodes</a><br>
-                <a href="/node_groups">node groups</a><br>
-                <a href="/tags">tags</a><br>
-              </div>
-              <div class="menu_group">
-                <h3>Meta</h3>
-                <a href="/statuses">statuses</a><br>
-                <a href="/hardware_profiles">hardware profiles</a><br>
-                <a href="/operating_systems">operating systems</a><br>
-              </div>
-              <div class="menu_group">
-                <h3>Admin</h3>
-                <a href="/accounts">accounts</a><br>
-                <a href="/account_groups">groups</a><br>
-                <a href="/audits">audits</a>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
+    <div id='top2'>
+      <div id='main_menu'>
+        <ul class="main_menu">
+          <li class="main_menu">
+            <span id="main_menu_btn">Menu</span>
+            <ul class="main_menu">
+              <li>
+                <div class="menu_group">
+                  <h3>Manage</h3>
+                  <a href="/nodes">nodes</a><br>
+                  <a href="/node_groups">node groups</a><br>
+                  <a href="/tags">tags</a><br>
+                </div>
+                <div class="menu_group">
+                  <h3>Meta</h3>
+                  <a href="/statuses">statuses</a><br>
+                  <a href="/hardware_profiles">hardware profiles</a><br>
+                  <a href="/operating_systems">operating systems</a><br>
+                </div>
+                <div class="menu_group">
+                  <h3>Admin</h3>
+                  <a href="/accounts">accounts</a><br>
+                  <a href="/account_groups">groups</a><br>
+                  <a href="/audits">audits</a>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
   
-  <div id="oc">
+  <div id="main_c">
     <div id="panel_c">
       <div class="wrap">
         <div class="resizable resizable1">
