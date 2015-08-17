@@ -407,7 +407,7 @@ table.sar-table th {
   cursor:move;
 }
 
-/* table sorting theme */
+/* START table sorting theme */
 .table_header_c {
   height: 35px;
 }
@@ -455,6 +455,7 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
   color: #fff;
   background-color: #042e63;
 }
+/* END table sorting theme */
 
 /* top nav */
 #top {

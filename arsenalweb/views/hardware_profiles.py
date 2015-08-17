@@ -23,14 +23,16 @@ from arsenalweb.views import (
 
 @view_config(route_name='hardware_profiles', permission='view', renderer='arsenalweb:templates/hardware_profiles.pt')
 def view_hardware_profiles(request):
-    page_title = 'Hardware Profiles'
+    page_title_type = 'objects_'
+    page_title_name = 'Hardware Profiles'
     au = get_authenticated_user(request)
 
     uri = '/api/hardware_profiles'
     hardware_profiles = _api_get(request, uri)
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
             'hardware_profiles': hardware_profiles,
            }

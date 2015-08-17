@@ -40,10 +40,10 @@ body {
     top: 0px;
     left: 0px;
     width: 100%;
-    height: 100px;
+    height: 95px;
     position: fixed;
     background: #042e63;
-    padding-bottom: 2px;
+    padding-bottom: 7px;
     z-index: -1;
 }
 #top {
@@ -72,6 +72,9 @@ body {
     margin: 0 5px 5px 5px;
 }
 /* START Search */
+#search_form {
+    margin-bottom: 5px;
+}
 #search_outer_c {
     overflow:auto;
     min-width:800px;
@@ -116,7 +119,7 @@ body {
     display: inline-block;
     position: relative;
     min-width:500px;
-    height:30px;
+    height:34px;
     padding-left:5px;
     margin:0px;
     background: #fff;
@@ -142,13 +145,6 @@ body {
 #main_c {
     margin: 0;
     padding: 0;
-}
-#main_overlay{
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0);
-    z-index: 100;
 }
 
 /* START Page Title */
@@ -323,3 +319,258 @@ ul.main_menu li.main_menu:hover ul.main_menu {
     z-index: 100;
 }
 /* END MAIN_MENU */
+
+
+/* START HEADING_MENU */
+#heading_text_c {
+    float: left;
+}
+#heading_menu_1_c {
+    float: left;
+    margin-left: 30px;
+}
+#heading_menu_last_c {
+    overflow: hidden;
+}
+/* END HEADING_MENU */
+
+/* START COLUMNS_SELECTOR_MENU */
+#columns_menu_c {
+  margin: 5px;
+  padding: 6px 20px;
+  width: 300px;
+  border-radius: 4px 4px 0 0;
+  color: #fff;
+  font-weight: normal;
+}
+
+#columns_menu_btn {
+  position: relative;
+  font-size: 16px;
+  cursor: pointer;
+  display: table;
+  height: 25px;
+  width: 110px;
+  padding-top: 5px;
+  padding-left: 15px;
+  background: #7bbeeb url('/static/img/select-arrow.png') no-repeat 90% center;
+  border-radius: 4px 4px 0 0;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  z-index: 9980;
+}
+#columns_menu_btn:hover {
+  top: 0;
+  background: #7bbeeb url('/static/img/select-arrow.png') no-repeat 90% center;
+}
+.columns_menu {
+  display:none;
+  z-index: 9997;
+  padding: 10px;
+  position: relative;
+  color: #000;
+  background-color: #f8f8f8;
+  border: 1px solid #f8f8f8;
+  border-radius: 0 4px 4px 4px;
+  -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+  -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+  box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
+
+}
+.columns_menu ul {
+  list-style: none;
+}
+.columns_menu_content:hover {
+  color: #a0aec1;
+}
+/* END COLUMNS_SELECTOR_MENU */
+
+
+
+/* This stuff is on notice */
+
+.centered {
+  display: table;
+  margin: 0 auto;
+}
+
+/* Default button settings */
+input.button {
+    position:center;
+    width: 100px;
+    height: 25px;
+    color: #fff;
+    background: #042e63;
+    border-radius: 5px;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+input.button:hover {
+    background: #7bbeeb;
+}
+input.button:active {
+    background: #dbe8f9;
+}
+
+
+/* START DEFAULT_TABLE settings */
+table {
+  border-collapse:collapse;
+}
+
+th {
+  background: #042e63;
+  color: #fff;
+  white-space: nowrap;
+}
+
+td {
+  border-bottom: 1px solid #CCCCCC;
+}
+
+tbody tr:last-child td {
+  border: none;
+}
+
+td {
+  white-space: nowrap;
+  padding: 0px 10px;
+}
+
+tr:nth-child(even) {
+    background-color: #f6f6f6;
+}
+
+tr:hover td {
+    background-color: #dbe8f9;
+}
+/* END DEFAULT_TABLE settings */
+
+/* START dragtable */
+.dragtable-sortable {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  -moz-user-select: none;
+}
+.dragtable-sortable li {
+  margin: 0;
+  padding: 0;
+  float: left;
+  font-size: 1em;
+  background: white;
+}
+.dragtable-sortable th, .dragtable-sortable td{
+  border-left: 0px;
+}
+.dragtable-sortable li:first-child th,
+.dragtable-sortable li:first-child td {
+  border-left: 1px solid #CCC;
+}
+.ui-sortable-helper {
+  opacity: 0.7;filter: alpha(opacity=70);
+  height: 20px;
+}
+.ui-sortable-placeholder {
+  -moz-box-shadow: 4px 5px 4px #C6C6C6 inset;
+  -webkit-box-shadow: 4px 5px 4px #C6C6C6 inset;
+  box-shadow: 4px 5px 4px #C6C6C6 inset;
+  border-bottom: 1px solid #CCCCCC;
+  border-top: 1px solid #CCCCCC;
+  visibility: visible !important;
+  background: #EFEFEF !important;
+  visibility: visible !important;
+}
+.ui-sortable-placeholder * {
+  opacity: 0.0; visibility: hidden;
+}
+table.sar-table th {
+  background:none repeat scroll 0 0 #042e63;
+  color:#000;
+  font-weight:normal;
+  height:35px;
+  width:100px;
+  cursor:move;
+}
+#searchResultsTable th {
+  cursor:default;
+}
+.drag-handle {
+  position: absolute;
+  z-index: 1;
+  height:35px;
+  width:10px;
+  background: #ccc;
+  background-image: url('/static/img/drag-handle.png');
+  background-repeat: no-repeat;
+  background-position: top left;
+  cursor:move;
+}
+/* END dragtable */
+
+/* START table sorting theme */
+#search_results {
+  padding: 25px;
+  padding-top: 0px;
+}
+.table_header_c {
+  height: 35px;
+}
+.table_header {
+    position: relative;
+    top: 6px;
+    padding: 0px 20px;
+}
+table.tablesorter {
+  margin: 0px;
+  font-size: 10pt;
+  width: 100%;
+  text-align: left;
+}
+table.tablesorter th {
+  margin-top: 10px;
+}
+table.tablesorter td {
+  padding: 8px;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+  background-color: #e6e6e6;
+  font-size: 12pt;
+}
+table.tablesorter thead tr .header {
+  background-image: url(/static/img/sort-ad.png);
+  background-repeat: no-repeat;
+  background-position: center right;
+  cursor: pointer;
+}
+table.tablesorter tbody td {
+  color: #000;
+  vertical-align: top;
+}
+table.tablesorter tbody tr.odd td {
+  background-color: #a0aec1;
+}
+table.tablesorter thead tr .headerSortUp {
+  background-image: url(/static/img/sort-a.png);
+}
+table.tablesorter thead tr .headerSortDown {
+  background-image: url(/static/img/sort-d.png);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+  color: #fff;
+  background-color: #042e63;
+}
+/* END table sorting theme */
+
+/* START LOWER PANE LOADING_IMG */
+#loading_image_c {
+  display:table;
+  margin: 0 auto;
+}
+/* END LOWER PANE LOADING_IMG */
+
+

@@ -23,7 +23,7 @@
     <link rel="icon"
         type="image/png"
         href="/static/img/favico.png?v=3">
-    <title>Arsenal: ${page_title_name}</title>
+    <title>Arsenal: ${page_title}</title>
     <link href="/static/css/arsenal2.css" rel="stylesheet" type="text/css" />
     <script src="/static/js/jquery-2.1.3.min.js"></script>
     <script src="/static/js/jquery-ui.min.js"></script>
@@ -35,25 +35,6 @@
 
     <script>
       $(document).ready(function() {
-        // Table Sorting
-        $("#searchResultsTable").tablesorter({
-            sortList: [[0,0]]
-        });
-
-        // Column dragging
-        $('#searchResultsTable').dragtable({
-            maxMovingRows:1,
-            dragHandle:'.drag-handle',
-            persistState: function(table) {
-              if (!window.sessionStorage) return;
-              var ss = window.sessionStorage;
-              table.el.find('th').each(function(i) {
-                if(this.id != '') {table.sortOrder[this.id]=i;}
-              });
-              ss.setItem('tableorder',JSON.stringify(table.sortOrder));
-            },
-            restoreState: eval('(' + window.sessionStorage.getItem('tableorder') + ')')
-        });
 
         // Main menu overlay
         function overlay() {
@@ -92,7 +73,7 @@
           </div> <!-- logo_container -->
         </div> <!-- top1_left -->
 
-        <form id="search_form" action="/search">
+        <form action="/search">
         <div id="top1_right">
           <div id="search_outer_c">
             <div id="search_inner_c">
@@ -152,31 +133,6 @@
     </div> <!-- top -->
 
     <div id="main_c">
-      <div id='heading_text_c'>
-        <div id='page_title'><span class='page_title_type'>${page_title_type}</span><span class='page_title_name'>${page_title_name}</span></div>
-      </div>
-      <div id='heading_menu_1_c'>
-        <div id="columns_menu_c">
-          <div id="columns_menu_btn">Columns</div>
-          <div class="columns_menu">
-            <p>Select the columns you wish to display</p>
-            <ul>
-              <li class="columns_menu_content">
-                <input type="checkbox" id="cm-status_name" name="cm-status_name" checked="checked"/>
-                <label for="cm-status_name">Status Name</label>
-              </li>
-              <li class="columns_menu_content">
-                <input type="checkbox" id="cm-status_id" name="cm-status_id" checked="checked"/>
-                <label for="cm-status_id">Status ID</label>
-              </li>
-              <li class="columns_menu_content">
-                <input type="checkbox" id="cm-description" name="cm-description" checked="checked"/>
-                <label for="cm-description">Description</label>
-              </li>
-            </ul>
-          </div> <!-- columns_menu -->
-        </div> <!-- columns_menu_c -->
-      </div> <!-- heading_menu_1_c -->
 
       <div metal:define-slot="content"> </div>
 

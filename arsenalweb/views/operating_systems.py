@@ -23,14 +23,16 @@ from arsenalweb.views import (
 
 @view_config(route_name='operating_systems', permission='view', renderer='arsenalweb:templates/operating_systems.pt')
 def view_operating_systems(request):
-    page_title = 'Hardware Profiles'
+    page_title_type = 'object_'
+    page_title_name = 'Hardware Profiles'
     au = get_authenticated_user(request)
 
     uri = '/api/operating_systems'
     operating_systems = _api_get(request, uri)
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
             'operating_systems': operating_systems,
            }

@@ -27,37 +27,14 @@
     <link href="/static/css/arsenal2.css" rel="stylesheet" type="text/css" />
     <script src="/static/js/jquery-2.1.3.min.js"></script>
     <script src="/static/js/jquery-ui.min.js"></script>
+    <script src="/static/js/resizable.js"></script>
 </head>
 <body>
 
   <script>
     $(document).ready(function() {
 
-      $(".resizable1").resizable(
-      {
-          autoHide: false,
-          handles: 's',
-          minHeight: 70,
-          containment: "#panel_c",
-          resize: function(s, ui) 
-          {
-              var parent = ui.element.parent();
-              var remainingSpace = parent.height() - ui.element.outerHeight(),
-                  divTwo = ui.element.next(),
-                  divTwoHeight = (remainingSpace - (divTwo.outerHeight() - divTwo.height()))/parent.height()*100+"%";
-                  divTwo.height(divTwoHeight);
-          },
-          stop: function(s, ui) 
-          {
-              var parent = ui.element.parent();
-              ui.element.css(
-              {
-                  height: ui.element.height()/parent.height()*100+"%",
-              });
-          }
-      });
-
-      // only working in FF
+      // Main menu overlay
       function overlay() {
         var over = '<div id="overlay"></div>';
         $(over).appendTo('body');
@@ -65,8 +42,6 @@
       function no_overlay() {
         $('#overlay').remove();
       }
-
-      // Dim the background. Not working in safari
       $( "#main_menu" ).hover(
         function() {
           overlay();
@@ -74,7 +49,6 @@
           no_overlay();
         }
       );
-
       // Keep the menu button border on sub-menu
       $( "#border_hover" ).hover(
         function() {
@@ -86,14 +60,16 @@
 
     });
   </script>
+
   <div id="top_bg"></div>
+
   <div id="top">
     <div id='top1'>
       <div id="top1_left">
         <div id='logo_container'>
           <a href='/'><img border="0" src="/static/img/logo-white-small.png"></a>
-        </div>
-      </div>
+        </div> <!-- logo_container -->
+      </div> <!-- top1_left -->
   
       <form action="/search">
       <div id="top1_right">
@@ -108,19 +84,19 @@
                   <option>operating_systems</option>
                   <option>hardware_profiles</option>
                 </select>
-              </div>
-            </div>
+              </div> <!-- search_select_c -->
+            </div> <!-- search_left_c -->
             <div id="search_middle_c">
                 <input id="search_box" type="text">
-            </div>
+            </div> <!-- search_middle_c -->
             <div id="search_right_c">
                 <input type="submit" id="search_bar_btn" value="" alt="search">
-            </div>
-          </div>
-        </div>
-      </div>
+            </div> <!-- search_right_c -->
+          </div> <!-- search_inner_c -->
+        </div> <!-- search_outer_c -->
+      </div> <!-- top1_right -->
       </form>
-    </div>
+    </div> <!-- top1 -->
     <div id='top2'>
       <div id='main_menu'>
         <ul class="main_menu">
@@ -149,13 +125,13 @@
               </li>
             </ul>
           </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+        </ul> 
+      </div> <!-- main_menu -->
+    </div> <!-- top2 -->
+  </div> <!-- top -->
   
   <div id="main_c">
-<div id='page_title'><span class='page_title_type'>objects_</span><span class='page_title_name'>Nodes</span></div>
+    <div id='page_title'><span class='page_title_type'>objects_</span><span class='page_title_name'>Nodes</span></div>
     <div id="panel_c">
       <div class="wrap">
         <div class="resizable resizable1">
@@ -174,9 +150,9 @@
               <p> this is some text in div 1</p>
               <p> this is some text in div 1</p>
     
-            </div>
-          </div>
-        </div>
+            </div> <!-- content -->
+          </div> <!-- content_c -->
+        </div> <!-- resizable1 -->
     
         <div class="resizable resizable2">
           <div class="content_c">
@@ -193,11 +169,11 @@
               <p> this is some text in div 2</p>
               <p> this is some text in div 2</p>
               <p> this is some text in div 2</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+            </div> <!-- content -->
+          </div> <!-- content_c -->
+        </div> <!-- resizable2 -->
+      </div> <!-- wrap -->
+    </div> <!-- panel_c -->
+  </div> <!-- main_c -->
 </body>
 </html>

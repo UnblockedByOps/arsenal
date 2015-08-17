@@ -31,7 +31,8 @@ from arsenalweb.models import (
 
 @view_config(route_name='nodes', permission='view', renderer='arsenalweb:templates/nodes.pt')
 def view_nodes(request):
-    page_title = 'Nodes'
+    page_title_type = 'objects_'
+    page_title_name = 'Nodes'
     au = get_authenticated_user(request)
 
     params = {'type': 'vir',
@@ -46,7 +47,8 @@ def view_nodes(request):
     nodes = _api_get(request, uri)
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
             'nodes': nodes,
            }

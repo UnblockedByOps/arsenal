@@ -47,7 +47,8 @@ def _place_response(name, place_id, avg, pa):
 
 @view_config(route_name='home', permission='view', renderer='arsenalweb:templates/home.pt')
 def view_home(request):
-    page_title = 'Home'
+    page_title_type = '_'
+    page_title_name = 'Home'
     au = get_authenticated_user(request)
     results = False
     params = {'type': 'vir',
@@ -83,7 +84,8 @@ def view_home(request):
         vhost = 'vir1prdxen41.prod.cs'
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
             'results': results,
             'type': type,

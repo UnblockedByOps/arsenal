@@ -26,7 +26,7 @@ dbe8f9
 
 html, body {
     height:99%;
-    width:100%;
+    width:99%;
 }
 
 body {
@@ -35,11 +35,6 @@ body {
     font-size: 80%;
     color: #000000;
     background: #FFFFFF;
-}
-
-*{
-    margin: 0;
-    padding: 0;
 }
 
 .mono {
@@ -140,33 +135,11 @@ body {
   animation-duration: 0.5s;
 }
 
-#main {
-  margin: 0;
-  padding: 0;
-}
-#main_c {
-    top:0px;
-    left:0px;
-    margin-top: -40px;
-    margin-left: 250px;
-}
-
 #singleton {
   margin-top: 15px;
-  padding: 0;
 }
 
 #contentFrame {
   width: 900px;
   height: 750px;
 }
-#page_title {
-  left: 220px;
-  margin-left: 20px;
-}
-
-#search_results {
-  padding: 25px;
-  padding-top: 0px;
-}
-

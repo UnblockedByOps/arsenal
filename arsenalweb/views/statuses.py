@@ -23,7 +23,8 @@ from arsenalweb.views import (
 
 @view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
 def view_statuses(request):
-    page_title = 'Statuses'
+    page_title_type = 'objects_'
+    page_title_name = 'Statuses'
     au = get_authenticated_user(request)
 
     params = {'type': 'vir',
@@ -38,7 +39,8 @@ def view_statuses(request):
     statuses = _api_get(request, uri)
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
             'statuses': statuses,
            }
