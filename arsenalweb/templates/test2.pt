@@ -14,8 +14,6 @@
    limitations under the License.
 -->
 <!doctype html>
-<html lang="en">
-<head>
 <html lang="en-US"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
@@ -25,296 +23,10 @@
     <link rel="icon"
         type="image/png"
         href="/static/img/favico.png?v=3">
-  <title>Arsenal Mock</title>
-
-  <style>
-    @import url(http://fonts.googleapis.com/css?family=Roboto);
-    @import url(//fonts.googleapis.com/css?family=Inconsolata); /* Monospace */
-    
-    html, body {
-        height:99%;
-        width:99%;
-    }
-    
-    body {
-        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-weight: 300;
-        font-size: 80%;
-        color: #000000;
-        background: #FFFFFF;
-    }
-
-    #top_bg {
-      top: 0px;
-      left: 0px;
-      width: 100%;
-      height: 96px;
-      position: fixed;
-      background: #042e63;
-      z-index: -1;
-    }
-    #top {
-      top: 0px;
-      left: 0px;
-      line-height: 1;
-      width: 100%;
-      min-width: 800px;
-      background: #042e63;
-    }
-
-    .right {
-        overflow: hidden;
-        min-height: 40px;
-    }
-    .left {
-        float: left;
-        width: 160px;
-        min-height: 40px;
-        margin-left: 10px;
-    }
-    #logo_container {
-        display: inline-block;
-        position: fixed;
-        top: 1px;
-        width: 160px;
-        margin: 5px;
-    }
-    /* START Search */
-    #c {
-        overflow:auto;
-        min-width:700px;
-        max-width:900px;
-        display: table;
-        margin: 0 auto;
-    }
-    #cc {
-        padding: 10px;
-        display: table;
-        margin: 0 auto;
-    }
-    #x {
-        width: auto;
-        display:inline-block;
-        float: left;
-    }
-    #y {
-        width: auto;
-        display:inline-block;
-        float: left;
-    }
-    #z {
-        display:inline-block;
-        float: left;
-    }
-    #search_select_c select {
-      border: 0 !important;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background: #7BBEEB url('/static/img/select-arrow.png') no-repeat 90% center;
-      width: 140px;
-      height: 34px;
-      text-indent: 0.01px;
-      text-overflow: "";
-      color: #FFF;
-      border-radius: 4px 0 0 4px;
-      padding: 8px;
-      cursor:pointer;
-    }
-    #search_box {
-      display: inline-block;
-      position: relative;
-      min-width:400px;
-      height:30px;
-      padding-left:5px;
-      margin:0px;
-      background: #fff;
-      border:1px solid #7BBEEB;
-    }
-    #search_bar_btn {
-      display: inline-block;
-      width: 65px;
-      height: 34px;
-      border: none;
-      background: #7bbeeb url("/static/img/mg.png") no-repeat scroll center center;
-      border-radius: 0 4px 4px 0;
-      padding: 0 20px;
-      vertical-align: middle;
-    }
-    #search_bar_btn:hover  {
-      border:1px solid #7bbeeb;
-      background: #7bbeeb url("/static/img/mg.png") no-repeat scroll center center;
-      cursor:pointer;
-    }
-    /* END Search */
-
-    #main_c {
-      margin: 0;
-      padding: 0;
-    }
-
-    #main_overlay{
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0);
-        z-index: 100;
-    }
-
-    /* START Resizable */
-    #panel_c {
-        position: absolute;
-        top: 145px;
-        bottom: 5px;
-        width: 99%;
-    }
-    .wrap {
-        width: 100%;
-        height: 100%;
-    }
-    .resizable {
-        width: 100%;
-        height: 50%;
-    }
-    .content_c {
-        position : relative;
-        height:100%;
-        overflow: auto;
-        border: 1px solid #c0c0c0;
-    }
-    .content {
-        padding: 10px;
-    }
-    .resizable2 {
-        height: 50%;
-    }
-    .ui-resizable {
-        position: relative;
-    }
-    .ui-resizable-handle {
-        position:absolute;
-        font-size: 0.1px;
-        display: block;
-        -ms-touch-action: none;
-        touch-action: none;
-    }
-    .ui-resizable-s {
-        position:absolute;
-        cursor: ns-resize;
-        height: 8px;
-        width: 100%;
-        bottom: 0;
-        left: 0;
-        background: #f6f6f6 url('/static/img/handle-h.png') no-repeat center center;
-        border-top: 1px solid #c0c0c0;
-    }
-    .ui-resizable-disabled .ui-resizable-handle,
-    .ui-resizable-autohide .ui-resizable-handle {
-        display: none;
-    }
-    /* END Resizable */
-
-    /* START New menu */
-    #main_menu {
-      position: relative;
-      left: 40px;
-      width: 95px;
-    }
-    #main_menu_btn {
-      display: table;
-      width: 95px;
-      height: 25px;
-      font-size: 16px;
-      color: #fff;
-      padding-top: 5px;
-      padding-left: 15px;
-      background: #042e63 url('/static/img/select-arrow.png') no-repeat 90% center;
-      border-radius: 4px 4px 0 0;
-    }
-    #main_menu_btn:hover {
-      color: #fff;
-      border: 1px solid #7bbeeb;
-      border-radius: 4px 4px 0 0;
-    }
-    ul.main_menu {
-        text-align: left;
-        display: inline;
-        margin: 0;
-        padding: 0px 0px 0px 0;
-        list-style: none;
-        z-index: 9999;
-        border-radius: 0 4px 4px 4px;
-    }
-    ul.main_menu li.main_menu {
-        display: inline-block;
-        margin-right: 0px;
-        position: relative;
-        padding: 0px 4px;
-        cursor: pointer;
-        -webkit-transition: all 0.2s;
-        -moz-transition: all 0.2s;
-        -ms-transition: all 0.2s;
-        -o-transition: all 0.2s;
-        transition: all 0.2s;
-        border-radius:0 4px 4px 4px;
-    }
-    ul.main_menu li.main_menu:hover {
-        color: #fff;
-    }
-    /* Sub menu properties */
-    ul.main_menu li.main_menu ul.main_menu {
-        background: #f8f8f8;
-        padding: 0px 0px;
-        position: absolute;
-        top: 30px;
-        left: 4px;
-        width: 400px;
-        height: 400px;
-        padding: 4px 0px;
-        color: #000;
-        -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
-        -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
-        box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.35);
-        display: none;
-        opacity: 0;
-        visibility: hidden;
-        -webkit-transiton: opacity 0.2s;
-        -moz-transition: opacity 0.2s;
-        -ms-transition: opacity 0.2s;
-        -o-transition: opacity 0.2s;
-        -transition: opacity 0.2s;
-    }
-    ul.main_menu li.main_menu ul.main_menu li.main_menu {
-        display: block;
-    }
-    ul.main_menu li.main_menu ul.main_menu li.main_menu:hover {
-        background: #7bbeeb;
-    }
-    ul.main_menu li.main_menu:hover ul.main_menu {
-        display: block;
-        opacity: 1;
-        visibility: visible;
-    }
-    .menu_group {
-      padding: 10px 20px;
-      display: inline-block;
-      vertical-align: top;
-      white-space: nowrap;
-    }
-    #overlay{
-        position: fixed;
-        left: 0;
-        top: 95px;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 100;
-    }
-    /* END New menu */
-
-  </style>
-
-   <script src="/static/js/jquery-2.1.3.min.js"></script>
-   <script src="/static/js/jquery-ui.min.js"></script>
+    <title>Arsenal Mock</title>
+    <link href="/static/css/arsenal2.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/jquery-2.1.3.min.js"></script>
+    <script src="/static/js/jquery-ui.min.js"></script>
 </head>
 <body>
 
@@ -350,13 +62,25 @@
         var over = '<div id="overlay"></div>';
         $(over).appendTo('body');
       }
+      function no_overlay() {
+        $('#overlay').remove();
+      }
 
-
+      // Dim the background. Not working in safari
       $( "#main_menu" ).hover(
         function() {
-          $( '#main_c' ).fadeTo(0, 0.2);
+          overlay();
         }, function() {
-          $( '#main_c' ).fadeTo(0, 1);
+          no_overlay();
+        }
+      );
+
+      // Keep the menu button border on sub-menu
+      $( "#border_hover" ).hover(
+        function() {
+          $( '#main_menu_btn' ).addClass( "main_menu_btn_border" );
+        }, function() {
+          $( '#main_menu_btn' ).removeClass( "main_menu_btn_border" );
         }
       );
 
@@ -365,17 +89,17 @@
   <div id="top_bg"></div>
   <div id="top">
     <div id='top1'>
-      <div class="left">
+      <div id="top1_left">
         <div id='logo_container'>
           <a href='/'><img src="/static/img/logo-white-small.png"></a>
         </div>
       </div>
   
       <form action="/search">
-      <div class="right">
-        <div id="c">
-          <div id="cc">
-            <div id="x">
+      <div id="top1_right">
+        <div id="search_outer_c">
+          <div id="search_inner_c">
+            <div id="search_left_c">
               <div id="search_select_c">
                 <select>
                   <option selected="selected">nodes</option>
@@ -386,10 +110,10 @@
                 </select>
               </div>
             </div>
-            <div id="y">
+            <div id="search_middle_c">
                 <input id="search_box" type="text">
             </div>
-            <div id="z">
+            <div id="search_right_c">
                 <input type="submit" id="search_bar_btn" value="" alt="search">
             </div>
           </div>
@@ -402,7 +126,7 @@
         <ul class="main_menu">
           <li class="main_menu">
             <span id="main_menu_btn">Menu</span>
-            <ul class="main_menu">
+            <ul id='border_hover' class="main_menu">
               <li>
                 <div class="menu_group">
                   <h3>Manage</h3>
@@ -431,7 +155,7 @@
   </div>
   
   <div id="main_c">
-<div><h1> Nodes</h1></div>
+<div id='page_title'><span class='page_title_type'>objects_</span><span class='page_title_name'>Nodes</span></div>
     <div id="panel_c">
       <div class="wrap">
         <div class="resizable resizable1">
