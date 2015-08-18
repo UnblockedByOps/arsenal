@@ -31,7 +31,8 @@ from arsenalweb.models import (
 @view_config(route_name='test2', permission='api_write', request_method='GET', request_param='format=json', renderer='json')
 @view_config(route_name='test2', permission='view', request_param='format=xml', renderer='xml')
 def view_test2(request):
-    page_title = 'test.'
+    page_title_type = 'objects_'
+    page_title_name = 'Statuses'
     au = get_authenticated_user(request)
 
     params = {'format': None,
@@ -66,7 +67,8 @@ def view_test2(request):
         vhost = 'vir1prdxen41.prod.cs'
 
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_type': page_title_type,
+            'page_title_name': page_title_name,
             'au': au,
 #            'results': results,
             'type': type,

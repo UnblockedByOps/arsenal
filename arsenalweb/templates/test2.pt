@@ -13,167 +13,103 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<!doctype html>
-<html lang="en-US"
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:metal="http://xml.zope.org/namespaces/metal"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      metal:define-macro="layout">
-  <head profile="http://www.w3.org/2005/10/profile">
-    <link rel="icon"
-        type="image/png"
-        href="/static/img/favico.png?v=3">
-    <title>Arsenal Mock</title>
-    <link href="/static/css/arsenal2.css" rel="stylesheet" type="text/css" />
-    <script src="/static/js/jquery-2.1.3.min.js"></script>
-    <script src="/static/js/jquery-ui.min.js"></script>
-    <script src="/static/js/resizable.js"></script>
-</head>
-<body>
+<div metal:use-macro="layout">
+    <div metal:fill-slot="content">
 
-  <script>
-    $(document).ready(function() {
+<script type="text/javascript">
+  $(document).ajaxStart(function() {
+    $("#select_object").hide();
+    $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
+  });
+  
+  $(document).ready(function() {
 
-      // Main menu overlay
-      function overlay() {
-        var over = '<div id="overlay"></div>';
-        $(over).appendTo('body');
-      }
-      function no_overlay() {
-        $('#overlay').remove();
-      }
-      $( "#main_menu" ).hover(
-        function() {
-          overlay();
-        }, function() {
-          no_overlay();
-        }
-      );
-      // Keep the menu button border on sub-menu
-      $( "#border_hover" ).hover(
-        function() {
-          $( '#main_menu_btn' ).addClass( "main_menu_btn_border" );
-        }, function() {
-          $( '#main_menu_btn' ).removeClass( "main_menu_btn_border" );
-        }
-      );
-
+    // Menu for selecting columns to show
+    $("#columns_menu_btn").click(function(){
+      $(".columns_menu").slideToggle();
     });
-  </script>
+//    $("#columns_menu_btn").mouseleave(function(){
+//      $(".columns_menu").slideToggle();
+//    });
 
-  <div id="top_bg"></div>
 
-  <div id="top">
-    <div id='top1'>
-      <div id="top1_left">
-        <div id='logo_container'>
-          <a href='/'><img border="0" src="/static/img/logo-white-small.png"></a>
-        </div> <!-- logo_container -->
-      </div> <!-- top1_left -->
+    $('.columns_menu_content :checkbox').change(function(){
+//       var cols = $(this).attr("name").split("_", 2);
+//       $('td:nth-child(' + cols[1] + '),th:nth-child(' + cols[1] + ')').toggle();
+      var cols = $(this).attr("name").split("-", 2);
+      $(".sr-" + cols[1]).toggle('slide', {
+            direction: 'left'
+        }, 500);
+      console.log(".sr_" + cols[1]);
+
+        if ($(this).is(':checked'))
+        {
+            // do something
+//alert( $(this).attr("name") );
+
+        }
+        else
+        {
+            // do something else
+        }
+    });
+
+    $('.lower_pane').click(function(event){
+        event.preventDefault();
+        var url = $(this).attr('href');
+        $.ajax({
+            url: url,
+            success: function(result){
+              $("#content_insert").html(result);
+            },
+            error: function (jXHR, textStatus, errorThrown) {
+              $("#content_insert").html(errorThrown);
+            }
+        });
+    });
+
+  });
+</script>
+
+
+  <div id="panel_c">
+    <div class="wrap">
+      <div class="resizable resizable1">
+        <div class="content_c">
+          <div class="content">
+            <div id="search_results">
+
+              <table id="searchResultsTable" class="tablesorter sar-table">
+                <thead>
+                  <tr>
+                    <th class="sr-status_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status ID</span></div></th>
+                    <th class="sr-status_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status Name</span></div></th>
+                    <th class="sr-description"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Description</span></div></th>
+                    <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
+                    <th class="sr-last_update"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Last Update</span></div></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
   
-      <form action="/search">
-      <div id="top1_right">
-        <div id="search_outer_c">
-          <div id="search_inner_c">
-            <div id="search_left_c">
-              <div id="search_select_c">
-                <select>
-                  <option selected="selected">nodes</option>
-                  <option>node groups</option>
-                  <option>tags</option>
-                  <option>operating_systems</option>
-                  <option>hardware_profiles</option>
-                </select>
-              </div> <!-- search_select_c -->
-            </div> <!-- search_left_c -->
-            <div id="search_middle_c">
-                <input id="search_box" type="text">
-            </div> <!-- search_middle_c -->
-            <div id="search_right_c">
-                <input type="submit" id="search_bar_btn" value="" alt="search">
-            </div> <!-- search_right_c -->
-          </div> <!-- search_inner_c -->
-        </div> <!-- search_outer_c -->
-      </div> <!-- top1_right -->
-      </form>
-    </div> <!-- top1 -->
-    <div id='top2'>
-      <div id='main_menu'>
-        <ul class="main_menu">
-          <li class="main_menu">
-            <span id="main_menu_btn">Menu</span>
-            <ul id='border_hover' class="main_menu">
-              <li>
-                <div class="menu_group">
-                  <h3>Manage</h3>
-                  <a href="/nodes">nodes</a><br>
-                  <a href="/node_groups">node groups</a><br>
-                  <a href="/tags">tags</a><br>
-                </div>
-                <div class="menu_group">
-                  <h3>Meta</h3>
-                  <a href="/statuses">statuses</a><br>
-                  <a href="/hardware_profiles">hardware profiles</a><br>
-                  <a href="/operating_systems">operating systems</a><br>
-                </div>
-                <div class="menu_group">
-                  <h3>Admin</h3>
-                  <a href="/accounts">accounts</a><br>
-                  <a href="/account_groups">groups</a><br>
-                  <a href="/audits">audits</a>
-                </div>
-              </li>
-            </ul>
-          </li>
-        </ul> 
-      </div> <!-- main_menu -->
-    </div> <!-- top2 -->
-  </div> <!-- top -->
+            </div> <!-- search_results -->
+          </div> <!-- content -->
+        </div> <!-- content_c -->
+      </div> <!-- resizable1 -->
   
-  <div id="main_c">
-    <div id='page_title'><span class='page_title_type'>objects_</span><span class='page_title_name'>Nodes</span></div>
-    <div id="panel_c">
-      <div class="wrap">
-        <div class="resizable resizable1">
-          <div class="content_c">
-            <div class="content">
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-              <p> this is some text in div 1</p>
-    
-            </div> <!-- content -->
-          </div> <!-- content_c -->
-        </div> <!-- resizable1 -->
-    
-        <div class="resizable resizable2">
-          <div class="content_c">
-            <div class="content">
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-              <p> this is some text in div 2</p>
-            </div> <!-- content -->
-          </div> <!-- content_c -->
-        </div> <!-- resizable2 -->
-      </div> <!-- wrap -->
-    </div> <!-- panel_c -->
-  </div> <!-- main_c -->
-</body>
-</html>
+      <div class="resizable resizable2">
+        <div class="content_c">
+          <div class="content">
+      
+            <div id="content_insert">
+              <h3 id="select_object">Select an object above</h3>
+            </div> <!-- content_insert -->
+          </div> <!-- content -->
+        </div> <!-- content_c -->
+      </div> <!-- resizable2 -->
+    </div> <!-- wrap -->
+  </div> <!-- panel_c -->
+
+  </div> <!-- metal -->
+</div> <!-- metal -->

@@ -156,9 +156,9 @@
         <div id='page_title'><span class='page_title_type'>${page_title_type}</span><span class='page_title_name'>${page_title_name}</span></div>
       </div>
       <div id='heading_menu_1_c'>
-        <div id="columns_menu_c">
-          <div id="columns_menu_btn">Columns</div>
-          <div class="columns_menu">
+        <div class="columns_menu_p slide_menu_c" id="columns_menu_c">
+          <div id="columns_menu_btn" class="slide_menu_btn">Columns</div>
+          <div class="columns_menu slide_menu">
             <p>Select the columns you wish to display</p>
             <ul>
               <li class="columns_menu_content">
@@ -177,6 +177,31 @@
           </div> <!-- columns_menu -->
         </div> <!-- columns_menu_c -->
       </div> <!-- heading_menu_1_c -->
+
+
+      <div id='heading_menu_2_c'>
+        <div class="other_menu_p slide_menu_c" id="other_menu_c">
+          <div id="other_menu_btn" class="slide_menu_btn">Other</div>
+          <div class="other_menu slide_menu">
+            <p>Select somesing</p>
+            <ul>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-one" name="cm-one" checked="checked"/>
+                <label for="cm-one">One</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-two" name="cm-two" checked="checked"/>
+                <label for="cm-two">Two</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-three" name="cm-three" checked="checked"/>
+                <label for="cm-three">Three</label>
+              </li>
+            </ul>
+          </div> <!-- columns_menu -->
+        </div> <!-- columns_menu_c -->
+      </div> <!-- heading_menu_1_c -->
+
 
       <div metal:define-slot="content"> </div>
 

@@ -34,7 +34,7 @@
   <script>
     $(document).ready(function() {
 
-      // only working in FF
+      // Main menu overlay
       function overlay() {
         var over = '<div id="overlay"></div>';
         $(over).appendTo('body');
@@ -42,8 +42,6 @@
       function no_overlay() {
         $('#overlay').remove();
       }
-
-      // Dim the background. Not working in safari
       $( "#main_menu" ).hover(
         function() {
           overlay();
@@ -51,7 +49,6 @@
           no_overlay();
         }
       );
-
       // Keep the menu button border on sub-menu
       $( "#border_hover" ).hover(
         function() {

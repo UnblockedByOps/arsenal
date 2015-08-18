@@ -24,14 +24,35 @@
   
   $(document).ready(function() {
 
+function SlideMenu(menu_name) {
+    this.menu_name = menu_name;
+
+    function _overlay() {
+      var over = '<div id="overlay_sub"></div>';
+      if($("#overlay_sub").length == 0) {
+        $(over).appendTo('body');
+      } else {
+        $('#overlay_sub').remove();
+      }
+    }
+    function _no_overlay() {
+      $('#overlay_sub').remove();
+    }
+
     // Menu for selecting columns to show
-    $("#columns_menu_btn").click(function(){
-      $(".columns_menu").slideToggle();
+    $('#' + menu_name + '_btn').click(function(){
+      $('.' + menu_name).slideToggle();
+      $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-up.png)', 'border-radius': '4px 4px 0 0', 'border-bottom': '0' });
+      _overlay();
+    });
+    $('.' + menu_name + '_p').mouseleave(function(){
+      $('.' + menu_name).slideUp('slow');
+      $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-down.png)', 'border-radius': '4px', 'border': '1px solid' });
+      _no_overlay();
     });
 
-    $('.columns_menu_content :checkbox').change(function(){
-//       var cols = $(this).attr("name").split("_", 2);
-//       $('td:nth-child(' + cols[1] + '),th:nth-child(' + cols[1] + ')').toggle();
+    // Maybe this shouldbe outside the function?
+    $('.' + menu_name + '_content :checkbox').change(function(){
       var cols = $(this).attr("name").split("-", 2);
       $(".sr-" + cols[1]).toggle('slide', {
             direction: 'left'
@@ -49,6 +70,42 @@
             // do something else
         }
     });
+
+}
+
+new SlideMenu("columns_menu");
+new SlideMenu("other_menu");
+
+//     // Menu for selecting columns to show
+//     $("#columns_menu_btn").click(function(){
+//       $(".columns_menu").slideToggle();
+//       $('#columns_menu_btn').css('background-image', 'url(/static/img/select-arrow-up.png)');
+//     });
+//     $(".columns_menu_p").mouseleave(function(){
+//       $(".columns_menu").slideUp('slow');
+//       $('#columns_menu_btn').css('background-image', 'url(/static/img/select-arrow-down.png)');
+//     });
+// 
+//     $('.columns_menu_content :checkbox').change(function(){
+// //       var cols = $(this).attr("name").split("_", 2);
+// //       $('td:nth-child(' + cols[1] + '),th:nth-child(' + cols[1] + ')').toggle();
+//       var cols = $(this).attr("name").split("-", 2);
+//       $(".sr-" + cols[1]).toggle('slide', {
+//             direction: 'left'
+//         }, 500);
+//       console.log(".sr_" + cols[1]);
+// 
+//         if ($(this).is(':checked'))
+//         {
+//             // do something
+// //alert( $(this).attr("name") );
+// 
+//         }
+//         else
+//         {
+//             // do something else
+//         }
+//     });
 
     $('.lower_pane').click(function(event){
         event.preventDefault();
@@ -90,7 +147,7 @@
                     <td class="sr-status_id ta_right" tal:content="item.status_id">0</td>
                     <td class="sr-status_name"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status_id)" tal:content="item.status_name">initializing</a></td>
                     <td class="sr-description" tal:content="item.description">Description.</td>
-                    <td class="ta_right" tal:content="item.updated_by">2015/04/23 21:02:15</td>
+                    <td tal:content="item.updated_by">Admin</td>
                     <td class="ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
                   </tr>
                 </tbody>
