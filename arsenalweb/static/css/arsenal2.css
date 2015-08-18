@@ -110,7 +110,7 @@ body {
     height: 34px;
     text-indent: 0.01px;
     text-overflow: "";
-    color: #FFF;
+    color: #042E63;
     border-radius: 4px 0 0 4px;
     padding: 8px;
     cursor:pointer;
@@ -340,7 +340,7 @@ ul.main_menu li.main_menu:hover ul.main_menu {
   padding: 6px 20px;
   width: 300px;
   border-radius: 4px 4px 0 0;
-  color: #fff;
+  color: #042E63;
   font-weight: normal;
 }
 
@@ -547,6 +547,9 @@ table.sar-table th {
     top: 6px;
     padding: 0px 20px;
 }
+.ta_right {
+    text-align: right;
+}
 table.tablesorter {
   margin: 0px;
   font-size: 10pt;
@@ -582,7 +585,7 @@ table.tablesorter thead tr .headerSortDown {
   background-image: url(/static/img/sort-d.png);
 }
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
-  color: #fff;
+  color: #042E63;
   background-color: #7BBEEB;
 }
 /* END table sorting theme */
