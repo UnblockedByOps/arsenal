@@ -13,14 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-@import url(http://fonts.googleapis.com/css?family=Roboto);
-@import url(http://fonts.googleapis.com/css?family=Audiowide);
+@import url(//fonts.googleapis.com/css?family=Roboto);
+@import url(//fonts.googleapis.com/css?family=Audiowide);
 @import url(//fonts.googleapis.com/css?family=Inconsolata); /* Monospace */
 
 /*
 Dark to light
-042e63
-7bbeeb
+042E63
+7BBEEB
 a0aec1
 dbe8f9
 */
@@ -137,7 +137,7 @@ body {
 }
 #search_bar_btn:hover  {
     border:1px solid #7bbeeb;
-    background: #7bbeeb url("/static/img/mg.png") no-repeat scroll center center;
+    background: rgba(123, 190, 235, 0.3) url("/static/img/mg.png") no-repeat scroll center center;
     cursor:pointer;
 }
 /* END Search */
@@ -396,6 +396,27 @@ ul.main_menu li.main_menu:hover ul.main_menu {
   margin: 0 auto;
 }
 
+/* START DEFAULT_LINK */
+a {
+  color: #042e63;
+  font-weight: 600;
+}
+a:link {
+  text-decoration: none;
+}
+a:visited {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+a:active {
+  color: #7bbeeb;
+}
+/* END DEFAULT_LINK */
+
+
 /* Default button settings */
 input.button {
     position:center;
@@ -442,7 +463,7 @@ td {
 }
 
 tr:nth-child(even) {
-    background-color: #f6f6f6;
+    background-color: #f8f8f8;
 }
 
 tr:hover td {
@@ -489,22 +510,22 @@ tr:hover td {
   opacity: 0.0; visibility: hidden;
 }
 table.sar-table th {
-  background:none repeat scroll 0 0 #042e63;
+  background:none;
   color:#000;
   font-weight:normal;
-  height:35px;
+  height:25px;
   width:100px;
   cursor:move;
 }
 #searchResultsTable th {
-  cursor:default;
+  cursor: pointer;
 }
 .drag-handle {
   position: absolute;
   z-index: 1;
-  height:35px;
+  height:25px;
   width:10px;
-  background: #ccc;
+  background: #F0F0F0;
   background-image: url('/static/img/drag-handle.png');
   background-repeat: no-repeat;
   background-position: top left;
@@ -518,7 +539,8 @@ table.sar-table th {
   padding-top: 0px;
 }
 .table_header_c {
-  height: 35px;
+  height: 25px;
+  border-bottom: 1px solid #E6E6E6;
 }
 .table_header {
     position: relative;
@@ -535,11 +557,10 @@ table.tablesorter th {
   margin-top: 10px;
 }
 table.tablesorter td {
-  padding: 8px;
+  padding: 4px 15px;
 }
 table.tablesorter thead tr th, table.tablesorter tfoot tr th {
-  background-color: #e6e6e6;
-  font-size: 12pt;
+  font-size: 10pt;
 }
 table.tablesorter thead tr .header {
   background-image: url(/static/img/sort-ad.png);
@@ -562,7 +583,7 @@ table.tablesorter thead tr .headerSortDown {
 }
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
   color: #fff;
-  background-color: #042e63;
+  background-color: #7BBEEB;
 }
 /* END table sorting theme */
 
