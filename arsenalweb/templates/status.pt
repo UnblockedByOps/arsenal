@@ -15,20 +15,30 @@
 -->
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
-<div id="title">
-<span class="title_type">STATUS</span><span class="title_name">${status.status_name}</span>
+<div tal:condition="status">
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/status/</span> <span class="page_title_name_s">${status.status_name}</span>
+  </div>
+  
+  <ul class="tabs">
+    <li>
+      <input type="radio" checked name="tabs" id="tab1">
+      <label for="tab1">Status</label>
+      <div id="tab-content1" class="tab-content">
+        Status Name: <span class="mono">${status.status_name}</span><br>
+        Status ID: <span class="mono">${status.status_id}</span><br>
+        Description: <span class="mono">${status.description}</span><br>
+        Created At: <span class="mono">${status.created}</span><br>
+        Updated At: <span class="mono">${status.updated}</span><br>
+        Updated By: <span class="mono">${status.updated_by}</span><br>
+      </div>
+    </li>
+  </ul>
 </div>
 
-<ul class="tabs">
-  <li>
-    <input type="radio" checked name="tabs" id="tab1">
-    <label for="tab1">Status</label>
-    <div id="tab-content1" class="tab-content">
-      Status ID: <span class="mono">${status.status_id}</span><br>
-      Description: <span class="mono">${status.description}</span><br>
-      Created At: <span class="mono">${status.created}</span><br>
-      Updated At: <span class="mono">${status.updated}</span><br>
-      Updated By: <span class="mono">${status.updated_by}</span><br>
-    </div>
-  </li>
-</ul>
+<div tal:condition="not status">
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/status/</span> <span class="page_title_name_s">Not Found</span>
+  </div>
+</div>
+

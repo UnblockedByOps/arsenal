@@ -15,111 +15,121 @@
 -->
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
-<div id="title">
-<span class="title_type">NODE</span> <span class="title_name">${node.node_name}</span>
+<div tal:condition="node">
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">${node.node_name}</span>
+  </div>
+  
+  <ul class="tabs">
+    <li>
+      <input type="radio" checked name="tabs" id="tab1">
+      <label for="tab1">Node</label>
+      <div id="tab-content1" class="tab-content">
+        Node Name: <span class="mono">${node.node_name}</span><br>
+        Unique ID: <span class="mono">${node.unique_id}</span><br>
+        Status: <span class="mono">${node.status.status_name}</span><br>
+        Uptime: <span class="mono">${node.uptime}</span><br>
+        Created At: <span class="mono">${node.created}</span><br>
+        Updated At: <span class="mono">${node.updated}</span><br>
+      </div>
+    </li>
+    <li tal:condition="(not type == 'rds')">
+      <input type="radio" name="tabs" id="tab2">
+      <label for="tab2">Node Groups</label>
+      <div id="tab-content2" class="tab-content">
+        <span tal:repeat="item node.node_groups" class="mono">${item.node_group_name}</span><br>
+        <span tal:condition="not node.node_groups" class="mono">no node_groups assigned</span><br>
+      </div>
+    </li>
+    <li tal:condition="type == 'ec2'">
+      <input type="radio" name="tabs" id="tab3">
+      <label for="tab3">EC2</label>
+      <div id="tab-content3" class="tab-content">
+        Ec2 Instance: <span class="mono">i-303a6c4a</span><br>
+        Ec2 Ami: <span class="mono">ami-793f9410</span><br>
+        Ec2 Instance Type: <span class="mono">m1.medium</span><br>
+        Ec2 Security Groups: <span class="mono">prdtcw</span><br>
+        Ec2 Private Hostname: <span class="mono">ip-10-72-254-115.ec2.internal</span><br>
+        Ec2 Public Hostname: <span class="mono">ec2-184-72-210-48.compute-1.amazonaws.com</span><br>
+        Ec2 Placement Availability Zone: <span class="mono">us-east-1d</span><br>
+      </div>
+    </li>
+    <li tal:condition="type == 'rds'">
+      <input type="radio" name="tabs" id="tab3">
+      <label for="tab3">RDS</label>
+      <div id="tab-content3" class="tab-content">
+        tab 2 content
+      </div>
+    </li>
+    <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
+      <input type="radio" name="tabs" id="tab3">
+      <label for="tab3">Hardware</label>
+      <div id="tab-content3" class="tab-content">
+         Diskspace Used: <span class="mono">4873 MB (25%)</span><br>
+         Diskspace Avail : <span class="mono">14261 MB (74%)</span><br>
+         (Disk space info only reflects "/" and "/home")<br>
+         Serial Number:<br>
+         Asset Tag:<br>
+         Processor Manufacturer: <span class="mono">Intel</span><br>
+         Processor Model: Xeon(R) <span class="mono">CPU E5507</span><br>
+         Processor Speed: <span class="mono">2.27GHz</span><br>
+         Processor Socket Count:<span class="mono"></span><br>
+         Processor Count: <span class="mono">1</span><br>
+         Processor Core Count: <span class="mono">0</span><br>
+         Os Processor Count: <span class="mono">1</span><br>
+         Os Virtual Processor Count:<br>
+         Physical Memory:<br>
+         Physical Memory Sizes:<br>
+         Os Memory: <span class="mono">3.67 GB</span><br>
+         Swap: <span class="mono">0.00 MB</span><br>
+         Power Supply Count:<br>
+         Console Type: <br>
+      </div>
+    </li>
+    <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
+      <input type="radio" name="tabs" id="tab4">
+      <label for="tab4">Tags</label>
+      <div id="tab-content4" class="tab-content">
+        BusinessUnit: <span class="mono">CityGrid</span><br>
+        Team: <span class="mono">Operations</span><br>
+        Env: <span class="mono">qat</span><br>
+        Project: <span class="mono">Something</span><br>
+        Component: <span class="mono">centos7 testing</span><br>
+      </div>
+    </li>
+    <li>
+      <input type="radio" name="tabs" id="tab5">
+      <label for="tab5">Software</label>
+      <div id="tab-content5" class="tab-content">
+        Operating System: <span class="mono">CentOS (Final) 6.2 x86_64</span><br>
+        Preferred Operating System:<br>
+        Kernel Version: <span class="mono">2.6.32-220.el6.x86_64</span><br>
+      </div>
+    </li>
+    <li>
+      <input type="radio" name="tabs" id="tab6">
+      <label for="tab6">Network</label>
+      <div id="tab-content6" class="tab-content">
+        eth0: <span class="mono">123.45.6.7</span><br>
+      </div>
+    </li>
+    <li>
+      <input type="radio" name="tabs" id="tab7">
+      <label for="tab7">Virtualization</label>
+      <div id="tab-content7" class="tab-content">
+        Virtual Architecture: <span class="mono">Xen</span><br>
+        Virtual Mode: <span class="mono">Guest</span><br>
+        Virtual Host: <span class="mono">vhost</span><br>
+        VM Image Size: <span class="mono">0 MB</span><br>
+        VM Space Used: <span class="mono">0 MB</span><br>
+      </div>
+    </li>
+  </ul>
 </div>
 
-<ul class="tabs">
-  <li>
-    <input type="radio" checked name="tabs" id="tab1">
-    <label for="tab1">Node</label>
-    <div id="tab-content1" class="tab-content">
-      Unique ID: <span class="mono">${node.unique_id}</span><br>
-      Status: <span class="mono">${node.status.status_name}</span><br>
-      Uptime: <span class="mono">${node.uptime}</span><br>
-      Created At: <span class="mono">${node.created}</span><br>
-      Updated At: <span class="mono">${node.updated}</span><br>
-    </div>
-  </li>
-  <li tal:condition="(not type == 'rds')">
-    <input type="radio" name="tabs" id="tab2">
-    <label for="tab2">Node Groups</label>
-    <div id="tab-content2" class="tab-content">
-      <span class="mono">default_install</span><br>
-      <span class="mono">something_else</span><br>
-    </div>
-  </li>
-  <li tal:condition="type == 'ec2'">
-    <input type="radio" name="tabs" id="tab3">
-    <label for="tab3">EC2</label>
-    <div id="tab-content3" class="tab-content">
-      Ec2 Instance: <span class="mono">i-303a6c4a</span><br>
-      Ec2 Ami: <span class="mono">ami-793f9410</span><br>
-      Ec2 Instance Type: <span class="mono">m1.medium</span><br>
-      Ec2 Security Groups: <span class="mono">prdtcw</span><br>
-      Ec2 Private Hostname: <span class="mono">ip-10-72-254-115.ec2.internal</span><br>
-      Ec2 Public Hostname: <span class="mono">ec2-184-72-210-48.compute-1.amazonaws.com</span><br>
-      Ec2 Placement Availability Zone: <span class="mono">us-east-1d</span><br>
-    </div>
-  </li>
-  <li tal:condition="type == 'rds'">
-    <input type="radio" name="tabs" id="tab3">
-    <label for="tab3">RDS</label>
-    <div id="tab-content3" class="tab-content">
-      tab 2 content
-    </div>
-  </li>
-  <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
-    <input type="radio" name="tabs" id="tab3">
-    <label for="tab3">Hardware</label>
-    <div id="tab-content3" class="tab-content">
-       Diskspace Used: <span class="mono">4873 MB (25%)</span><br>
-       Diskspace Avail : <span class="mono">14261 MB (74%)</span><br>
-       (Disk space info only reflects "/" and "/home")<br>
-       Serial Number:<br>
-       Asset Tag:<br>
-       Processor Manufacturer: <span class="mono">Intel</span><br>
-       Processor Model: Xeon(R) <span class="mono">CPU E5507</span><br>
-       Processor Speed: <span class="mono">2.27GHz</span><br>
-       Processor Socket Count:<span class="mono"></span><br>
-       Processor Count: <span class="mono">1</span><br>
-       Processor Core Count: <span class="mono">0</span><br>
-       Os Processor Count: <span class="mono">1</span><br>
-       Os Virtual Processor Count:<br>
-       Physical Memory:<br>
-       Physical Memory Sizes:<br>
-       Os Memory: <span class="mono">3.67 GB</span><br>
-       Swap: <span class="mono">0.00 MB</span><br>
-       Power Supply Count:<br>
-       Console Type: <br>
-    </div>
-  </li>
-  <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
-    <input type="radio" name="tabs" id="tab4">
-    <label for="tab4">Tags</label>
-    <div id="tab-content4" class="tab-content">
-      BusinessUnit: <span class="mono">CityGrid</span><br>
-      Team: <span class="mono">Operations</span><br>
-      Env: <span class="mono">qat</span><br>
-      Project: <span class="mono">Something</span><br>
-      Component: <span class="mono">centos7 testing</span><br>
-    </div>
-  </li>
-  <li>
-    <input type="radio" name="tabs" id="tab5">
-    <label for="tab5">Software</label>
-    <div id="tab-content5" class="tab-content">
-      Operating System: <span class="mono">CentOS (Final) 6.2 x86_64</span><br>
-      Preferred Operating System:<br>
-      Kernel Version: <span class="mono">2.6.32-220.el6.x86_64</span><br>
-    </div>
-  </li>
-  <li>
-    <input type="radio" name="tabs" id="tab6">
-    <label for="tab6">Network</label>
-    <div id="tab-content6" class="tab-content">
-      eth0: <span class="mono">123.45.6.7</span><br>
-    </div>
-  </li>
-  <li>
-    <input type="radio" name="tabs" id="tab7">
-    <label for="tab7">Virtualization</label>
-    <div id="tab-content7" class="tab-content">
-      Virtual Architecture: <span class="mono">Xen</span><br>
-      Virtual Mode: <span class="mono">Guest</span><br>
-      Virtual Host: <span class="mono">vhost</span><br>
-      VM Image Size: <span class="mono">0 MB</span><br>
-      VM Space Used: <span class="mono">0 MB</span><br>
-    </div>
-  </li>
-</ul>
+<div tal:condition="not node">
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">Not Found</span>
+  </div>
+</div>
+

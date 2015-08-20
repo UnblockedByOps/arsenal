@@ -321,6 +321,8 @@ def gen_help(help_type):
         ],
         'tags_search': [ 'tag_id', 'tag_name', 'tag_value',
         ],
+        'hypervisor_vm_assignments_search': [ 'parent_id', 'child_id',
+        ],
     }
 
     return '[ {0} ]'.format(', '.join(sorted(terms[help_type])))
@@ -534,7 +536,7 @@ def search_nodes(args):
         if results:
             r_names = []
             for n in results:
-                r_names.append(n['node_name'])
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
                 _set_status(args, results)
     if args.set_node_groups:
@@ -542,7 +544,7 @@ def search_nodes(args):
         if results:
             r_names = []
             for n in results:
-                r_names.append(n['node_name'])
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
                 _manage_node_group_assignments(args, results)
     if args.del_node_groups:
@@ -550,15 +552,34 @@ def search_nodes(args):
         if results:
             r_names = []
             for n in results:
-                r_names.append(n['node_name'])
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
             if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
                 _manage_node_group_assignments(args, results)
+    if args.set_hypervisor:
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _manage_hypervisor_assignments(args, results)
+    if args.del_hypervisor:
+        results = _search(args)
+        if results:
+            r_names = []
+            for n in results:
+                r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
+            if ask_yes_no("We are ready to update the following nodes: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                _manage_hypervisor_assignments(args, results)
+
 
     if not any((args.set_tags,
                 args.del_tags,
                 args.set_status,
                 args.set_node_groups,
-                args.del_node_groups)):
+                args.del_node_groups,
+                args.set_hypervisor,
+                args.del_hypervisor)):
 
         results = _search(args)
 
@@ -661,6 +682,33 @@ def _manage_node_group_assignments(args, nodes):
             api_submit('/api/node_group_assignments', data, method=api_action)
 
 
+def _manage_hypervisor_assignments(args, nodes):
+    """Assign or De-assign a hypervisor to one or more nodes."""
+
+    log.info('action_command is: {0}'.format(args.action_command))
+    log.info('object_type is: {0}'.format(args.object_type))
+
+    if args.del_hypervisor:
+        hypervisor = args.del_hypervisor
+        api_action = 'delete'
+        log_action = 'Deleting'
+    else:
+        hypervisor = args.set_hypervisor
+        api_action = 'put'
+        log_action = 'Assigning'
+
+    data = {'node_name': hypervisor}
+    r = api_submit('/api/nodes', data, method='get_params')
+    if r:
+        hypervisor = r[0]
+
+    for n in nodes:
+        log.info('{0} hypervisor={1},node={2}'.format(log_action, hypervisor['node_name'], n['node_name']))
+        data = {'parent_node_id': hypervisor['node_id'],
+                'child_node_id': n['node_id']}
+        api_submit('/api/hypervisor_vm_assignments', data, method=api_action)
+
+
 def create_nodes(args):
     """Create a new node."""
 
@@ -671,7 +719,9 @@ def create_nodes(args):
     # Check if the node exists (by checking unique_id) first
     # so it can ask if you want to update the existing entry, which
     # essentially would just be changing either the node_name or status_id.
-    data = { 'unique_id': args.unique_id, }
+    # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
+    data = { 'unique_id': args.unique_id,
+             'exact_get': True, }
     r = api_submit('/api/nodes', data, method='get_params')
 
     data = {'register': False,
@@ -681,7 +731,7 @@ def create_nodes(args):
            }
 
     if r:
-        if ask_yes_no('Entry already exists: {0}: {1}\n Would you like to update it?'.format(args.node_name, args.unique_id), args.answer_yes):
+        if ask_yes_no('Entry already exists: {0}: {1}\n Would you like to update it?'.format(r[0]['node_name'], r[0]['unique_id']), args.answer_yes):
             log.info('Updating node node_name={0},unique_id={1},status_id={2}'.format(args.node_name, args.unique_id, args.status_id))
             api_submit('/api/{0}'.format(args.object_type), data, method='put')
 
@@ -862,7 +912,7 @@ def search_tags(args):
                         if f == 'tag_name':
                             continue
                         print '    {0}: {1}'.format(f, r[f])
-        # Default to returning just the node_group name
+        # Default to returning just the tag name
         else:
             for r in results:
                 print r['tag_name']
@@ -993,8 +1043,7 @@ def _parse_args():
                     help='answer yes to prompts.')
     
 
-    # FIXME: Really need a generator for all this. Perhaps one that can take json
-    # as an input?
+    # FIXME: Really need a generator for all this. Perhaps one that can take json as an input?
     otsp = mp.add_subparsers(title="Object Type",
                              dest="object_type")
 
@@ -1055,6 +1104,12 @@ def _parse_args():
     ansag.add_argument('--del_node_groups',
                        dest="del_node_groups",
                        help='Comma separated list of node_groups to un-assign from the search results.')
+    ansag.add_argument('--hypervisor',
+                       dest="set_hypervisor",
+                       help='FQDN of the hypervisor that you wish to assign to the search results.')
+    ansag.add_argument('--del_hypervisor',
+                       dest="del_hypervisor",
+                       help='FQDN of the hypervisor that you wish to un-assign from the search results.')
     nssc.add_argument('search',
                       default=None,
                       metavar='search_terms',
@@ -1152,7 +1207,7 @@ def _parse_args():
                              help="Create node_group objects.",
                              parents=[pp])
 
-    # required node_group greate argument group (rngcag)
+    # required node_group create argument group (rngcag)
     rngcag = ngcsc.add_argument_group('required arguments')
 
     rngcag.add_argument('--name', '-n',
@@ -1228,7 +1283,7 @@ def _parse_args():
                            help="Create tag objects.",
                            parents=[pp])
 
-    # required tag greate argument group (rtcag)
+    # required tag create argument group (rtcag)
     rtcag = tcsc.add_argument_group('required arguments')
 
     rtcag.add_argument('--name', '-n',

@@ -42,6 +42,24 @@ body {
     font-family: "Inconsolata", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* START Page Title */
+#page_title_s {
+    display: table;
+    margin: 0 auto;
+    padding: 10px 0 0 20px;
+}
+.page_title_name_s {
+    font-family: "Audiowide", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 150%;
+    color: #042e63;
+}
+.page_title_type_s {
+    font-family: "Inconsolata", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 150%;
+    color: #7bbeeb;
+}
+/* END Page Title */
+
 /* START Title */
 #title {
   display: table;

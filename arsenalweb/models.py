@@ -83,37 +83,62 @@ class Node(Base):
                 tags.append(a.tags.__json__(self))
         return tags
 
-    # FIXME: seems like there should be a nicer way to do this.
     @hybrid_property
     def guest_vms(self):
         guest_vms = []
         try:
-            q = DBSession.query(HypervisorVmAssignment)
-            q = q.filter(HypervisorVmAssignment.parent_node_id == self.node_id)
-            q = q.all()
-            # FIXME: What to return here? prehaps just the name and node_id ok?
-            for r in q:
-                guest_vms.append({r.child_node.node_name: r.child_node.node_id})
+            for c in self.hva_parent:
+                guest_vms.append({c.child_node.node_name: c.child_node.node_id})
+        # FIXME: Test if this is still needed
         except NoResultFound:
             pass
         return guest_vms
 
-    # FIXME: seems like there should be a nicer way to do this.
     @hybrid_property
     def hypervisor(self):
         hypervisor = []
         try:
-            q = DBSession.query(HypervisorVmAssignment)
-            q = q.filter(HypervisorVmAssignment.child_node_id == self.node_id)
-            q = q.one()
-            # FIXME: Is this the best way to handle the hypervisor having been deleted?
-            try:
-                hypervisor.append({q.parent_node.node_name: q.parent_node.node_id})
-            except AttributeError:
-                pass
+            for c in self.hva_child:
+                hypervisor.append({c.parent_node.node_name: c.parent_node.node_id})
+        # FIXME: Test if this is still needed
+        except AttributeError:
+            pass
         except NoResultFound:
             pass
         return hypervisor
+
+
+#    # FIXME: seems like there should be a nicer way to do this.
+#    @hybrid_property
+#    def guest_vms(self):
+#        guest_vms = []
+#        try:
+#            q = DBSession.query(HypervisorVmAssignment)
+#            q = q.filter(HypervisorVmAssignment.parent_node_id == self.node_id)
+#            q = q.all()
+#            # FIXME: What to return here? prehaps just the name and node_id ok?
+#            for r in q:
+#                guest_vms.append({r.child_node.node_name: r.child_node.node_id})
+#        except NoResultFound:
+#            pass
+#        return guest_vms
+#
+#    # FIXME: seems like there should be a nicer way to do this.
+#    @hybrid_property
+#    def hypervisor(self):
+#        hypervisor = []
+#        try:
+#            q = DBSession.query(HypervisorVmAssignment)
+#            q = q.filter(HypervisorVmAssignment.child_node_id == self.node_id)
+#            q = q.one()
+#            # FIXME: Is this the best way to handle the hypervisor having been deleted?
+#            try:
+#                hypervisor.append({q.parent_node.node_name: q.parent_node.node_id})
+#            except AttributeError:
+#                pass
+#        except NoResultFound:
+#            pass
+#        return hypervisor
 
 
     def __json__(self, request):
@@ -379,8 +404,10 @@ class HypervisorVmAssignment(Base):
 
     # FIXME: Can't get this to work with backref, so have to do shenanigans
     # in the Node class.
-    parent_node = relationship("Node", foreign_keys=[parent_node_id])
-    child_node = relationship("Node", foreign_keys=[child_node_id])
+    parent_node = relationship("Node", foreign_keys=[parent_node_id], backref='hva_parent')
+    child_node = relationship("Node", foreign_keys=[child_node_id], backref='hva_child')
+    #parent_node = relationship("Node", foreign_keys=[parent_node_id], backref=backref('hva_parent'))
+    #child_node = relationship("Node", foreign_keys=[child_node_id], backref=backref('hva_child'))
 
     def __json__(self, request):
 

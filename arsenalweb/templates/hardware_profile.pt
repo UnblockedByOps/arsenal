@@ -16,8 +16,8 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div tal:condition="hardware_profile">
-  <div id="title">
-  <span class="title_type">HARDWARE PROFILE</span><span class="title_name">${hardware_profile.manufacturer} ${hardware_profile.model}</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/hardware_profile/</span> <span class="page_title_name_s">${hardware_profile.manufacturer} ${hardware_profile.model}</span>
   </div>
 
   <ul class="tabs">
@@ -25,6 +25,7 @@
       <input type="radio" checked name="tabs" id="tab1">
       <label for="tab1">Hardware Profile</label>
       <div id="tab-content1" class="tab-content">
+        Hardware Profile Name: <span class="mono">${hardware_profile.manufacturer} ${hardware_profile.model}</span><br>
         Hardware Profile ID: <span class="mono">${hardware_profile.hardware_profile_id}</span><br>
         Manufacturer: <span class="mono">${hardware_profile.manufacturer}</span><br>
         Model: <span class="mono">${hardware_profile.model}</span><br>
@@ -37,7 +38,7 @@
 </div>
 
 <div tal:condition="not hardware_profile">
-  <div id="title">
-  <span class="title_type">HARDWARE PROFILE</span><span class="title_name">Not Found</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/hardware_profile/</span> <span class="page_title_name_s">Not Found</span>
   </div>
 </div>

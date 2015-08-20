@@ -562,7 +562,7 @@ table.sar-table th {
 }
 .ta_right {
     text-align: right;
-    padding-right: 25px;
+    padding-right: 27px;
 }
 .ta_right_th {
     text-align: right;
@@ -580,7 +580,7 @@ table.tablesorter th {
 table.tablesorter td {
   padding-top: 4px;
   padding-bottom: 4px;
-  padding-left: 21px;
+  padding-left: 22px;
 }
 table.tablesorter thead tr th, table.tablesorter tfoot tr th {
   font-size: 10pt;

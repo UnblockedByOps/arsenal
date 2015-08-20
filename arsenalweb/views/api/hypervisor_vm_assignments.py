@@ -122,16 +122,15 @@ def api_hypervisor_vm_assignments_write(request):
         parent_node_id = payload['parent_node_id']
         child_node_id = payload['child_node_id']
 
-        log.debug('Checking for hypervisor_vm_assignment parent_node_id={0},child_node_id={1}'.format(parent_node_id, child_node_id))
+        log.info('Checking for hypervisor_vm_assignment child_node_id={0}'.format(child_node_id))
 
         try:
             hva = DBSession.query(HypervisorVmAssignment)
-            hva = hva.filter(HypervisorVmAssignment.parent_node_id==parent_node_id)
             hva = hva.filter(HypervisorVmAssignment.child_node_id==child_node_id)
             hva = hva.one()
         except NoResultFound:
             try:
-                log.debug('Creating new hypervisor_vm_assignment parent_node_id={0},child_node_id={1}'.format(parent_node_id, child_node_id))
+                log.info('Creating new hypervisor_vm_assignment parent_node_id={0},child_node_id={1}'.format(parent_node_id, child_node_id))
                 utcnow = datetime.utcnow()
 
                 hva = HypervisorVmAssignment(parent_node_id=parent_node_id,
@@ -150,7 +149,7 @@ def api_hypervisor_vm_assignments_write(request):
                 log.info('Updating hypervisor_vm_assignment parent_node_id={0},child_node_id={1}'.format(parent_node_id, child_node_id))
 
                 hva.parent_node_id = parent_node_id
-                hva.parent_node_id = parent_node_id
+                hva.child_node_id = child_node_id
                 hva.updated_by=au['user_id']
 
                 DBSession.flush()

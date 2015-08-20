@@ -30,6 +30,7 @@ from arsenalweb.models import (
     TagNodeGroupAssignment,
     HardwareProfile,
     OperatingSystem,
+    HypervisorVmAssignment,
     )
 
 
@@ -52,7 +53,7 @@ def get_api_attribute(request, model_type):
 
     resource_id = request.matchdict['id']
     resource = request.matchdict['resource']
-    log.info('Querying for attribute={0},url={1}'.format(resource, request.url))
+    log.debug('Querying for attribute={0},url={1}'.format(resource, request.url))
 
     try:
         # FIXME: Something better here than globals?
@@ -76,7 +77,7 @@ def api_read_by_id(request, model_type):
     c_id = c + '_id'
 
     try:
-        log.info('Displaying single {0} {1}={2}'.format(c, c_id, resource_id))
+        log.debug('Displaying single {0} {1}={2}'.format(c, c_id, resource_id))
 
         # FIXME: Something better here than globals?
         q = DBSession.query(globals()[model_type])
@@ -107,7 +108,7 @@ def api_delete_by_id(request, model_type):
     c_name = c + '_name'
 
     try:
-        log.info('Checking for {0}={1}'.format(c_id, resource_id))
+        log.debug('Checking for {0}={1}'.format(c_id, resource_id))
 
         # FIXME: Something better here than globals?
         q = DBSession.query(globals()[model_type])
@@ -128,7 +129,7 @@ def api_delete_by_id(request, model_type):
         return Response(content_type='application/json', status_int=404)
 
     except Exception as e:
-        log.info('Error deleting {0}={1},exception={2}'.format(c_id, resource_id, e))
+        log.error('Error deleting {0}={1},exception={2}'.format(c_id, resource_id, e))
         return Response(str(e), content_type='application/json', status_int=500)
 
 
@@ -162,12 +163,12 @@ def api_delete_by_params(request, model_type):
 
             s+='{0}={1},'.format(k, v)
             if exact_get:
-                log.info('Exact filtering on {0}={1}'.format(k, v))
+                log.debug('Exact filtering on {0}={1}'.format(k, v))
                 q = q.filter(getattr(globals()[model_type] ,k)==v)
             else:
-                log.info('Loose filtering on {0}={1}'.format(k, v))
+                log.debug('Loose filtering on {0}={1}'.format(k, v))
                 q = q.filter(getattr(globals()[model_type] ,k).like('%{0}%'.format(v)))
-        log.info('Searching for {0} with params: {1}'.format(c, s.rstrip(',')))
+        log.debug('Searching for {0} with params: {1}'.format(c, s.rstrip(',')))
 
         q = q.one()
 

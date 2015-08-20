@@ -16,8 +16,8 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div tal:condition="tag">
-  <div id="title">
-  <span class="title_type">TAG</span><span class="title_name">${tag.tag_name}</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/tag/</span> <span class="page_title_name_s">${tag.tag_name}</span>
   </div>
 
   <ul class="tabs">
@@ -37,7 +37,7 @@
 </div>
 
 <div tal:condition="not tag">
-  <div id="title">
-  <span class="title_type">TAG</span><span class="title_name">Not Found</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/tag/</span> <span class="page_title_name_s">Not Found</span>
   </div>
 </div>

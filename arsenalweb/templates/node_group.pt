@@ -16,8 +16,8 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div tal:condition="node_group">
-  <div id="title">
-  <span class="title_type">NODE GROUP</span><span class="title_name">${node_group.node_group_name}</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/node_group/</span> <span class="page_title_name_s">${node_group.node_group_name}</span>
   </div>
 
   <ul class="tabs">
@@ -38,7 +38,7 @@
 </div>
 
 <div tal:condition="not node_group">
-  <div id="title">
-  <span class="title_type">NODE GROUP</span><span class="title_name">Not Found</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/node_group/</span> <span class="page_title_name_s">Not Found</span>
   </div>
 </div>

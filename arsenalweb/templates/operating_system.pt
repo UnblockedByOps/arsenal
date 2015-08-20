@@ -16,8 +16,8 @@
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
 <div tal:condition="operating_system">
-  <div id="title">
-  <span class="title_type">OPERATING SYSTEM</span><span class="title_name">${operating_system.variant} ${operating_system.version_number}</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/operating_system/</span> <span class="page_title_name_s">${operating_system.variant} ${operating_system.version_number}</span>
   </div>
 
   <ul class="tabs">
@@ -25,6 +25,7 @@
       <input type="radio" checked name="tabs" id="tab1">
       <label for="tab1">Operating System</label>
       <div id="tab-content1" class="tab-content">
+        Operating System Name: <span class="mono">${operating_system.variant} ${operating_system.version_number}</span><br>
         Operating System ID: <span class="mono">${operating_system.operating_system_id}</span><br>
         Variant: <span class="mono">${operating_system.variant}</span><br>
         Version Number: <span class="mono">${operating_system.version_number}</span><br>
@@ -39,7 +40,7 @@
 </div>
 
 <div tal:condition="not operating_system">
-  <div id="title">
-  <span class="title_type">OPERATING SYSTEM</span><span class="title_name">Not Found</span>
+  <div id="page_title_s">
+    <span class="page_title_type_s">objects/operating_system/</span> <span class="page_title_name_s">Not Found</span>
   </div>
 </div>
