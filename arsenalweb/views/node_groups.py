@@ -21,27 +21,20 @@ from arsenalweb.views import (
     )
 
 
-@view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
-def view_statuses(request):
+@view_config(route_name='node_groups', permission='view', renderer='arsenalweb:templates/node_groups.pt')
+def view_node_groups(request):
     page_title_type = 'objects/'
-    page_title_name = 'statuses'
+    page_title_name = 'node_groups'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
-
-    uri = '/api/statuses'
-    statuses = _api_get(request, uri)
+    uri = '/api/node_groups'
+    node_groups = _api_get(request, uri)
 
     # Used by the columns menu to determine what to show/hide.
-    column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },
-                         {'name': 'status_name', 'pretty_name': 'Status Name' },
-                         {'name': 'description', 'pretty_name': 'Description' },
+    column_selectors = [ {'name': 'node_group_id', 'pretty_name': 'Node Group ID' },
+                         {'name': 'node_group_name', 'pretty_name': 'Node Group Name' },
+                         {'name': 'description', 'pretty_name': 'Node Group Description' },
+                         {'name': 'owner', 'pretty_name': 'Node Group Owner' },
                          {'name': 'updated_by', 'pretty_name': 'Updated By' },
                          {'name': 'updated', 'pretty_name': 'Date Updated' },
                          {'name': 'created', 'pretty_name': 'Date Created' },
@@ -52,5 +45,5 @@ def view_statuses(request):
             'page_title_name': page_title_name,
             'au': au,
             'column_selectors': column_selectors,
-            'statuses': statuses,
+            'node_groups': node_groups,
            }

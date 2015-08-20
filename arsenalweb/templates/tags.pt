@@ -26,26 +26,20 @@
 
               <table id="searchResultsTable" class="tablesorter sar-table">
                 <thead>
-                  <tr> 
-                    <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <th class="sr-operating_system_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Operating System ID</span></div></th>
-                    <th class="sr-variant"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Variant</span></div></th>
-                    <th class="sr-version_number"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Version Number</span></div></th>
-                    <th class="sr-architecture"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Architecture</span></div></th>
-                    <th class="sr-description"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Description</span></div></th>
+                  <tr>
+                    <th class="sr-tag_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Tag ID</span></div></th>
+                    <th class="sr-tag_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Tag Name</span></div></th>
+                    <th class="sr-tag_value"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Tag Value</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
                     <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
                     <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr tal:repeat="item operating_systems">
-                    <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <td class="sr-operating_system_id ta_right" tal:content="item.operating_system_id">0</td>
-                    <td class="sr-variant"><a class="lower_pane" tal:attributes="href '/operating_systems/{0}'.format(item.operating_system_id)" tal:content="item.variant">Something</a></td>
-                    <td class="sr-version_number"><a class="lower_pane" tal:attributes="href '/operating_systems/{0}'.format(item.operating_system_id)" tal:content="item.version_number">0</a></td>
-                    <td class="sr-architecture" tal:content="item.architecture">0</td>
-                    <td class="sr-description" tal:content="item.description">Something</td>
+                  <tr tal:repeat="item tags">
+                    <td class="sr-tag_id ta_right"><a class="lower_pane" tal:attributes="href '/tags/{0}'.format(item.tag_id)" tal:content="item.tag_id">0</a></td>
+                    <td class="sr-tag_name"><a class="lower_pane" tal:attributes="href '/tags/{0}'.format(item.tag_id)" tal:content="item.tag_name">myTag</a></td>
+                    <td class="sr-tag_value"><a class="lower_pane" tal:attributes="href '/tags/{0}'.format(item.tag_id)" tal:content="item.tag_value">myValue</a></td>
                     <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
                     <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
                     <td class="sr-created ta_right" tal:content="item.created">2015/04/23 21:02:15</td>

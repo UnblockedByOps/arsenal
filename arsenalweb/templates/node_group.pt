@@ -1,0 +1,44 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
+
+<div tal:condition="node_group">
+  <div id="title">
+  <span class="title_type">NODE GROUP</span><span class="title_name">${node_group.node_group_name}</span>
+  </div>
+
+  <ul class="tabs">
+    <li>
+      <input type="radio" checked name="tabs" id="tab1">
+      <label for="tab1">Node Group</label>
+      <div id="tab-content1" class="tab-content">
+        Node Group Name: <span class="mono">${node_group.node_group_name}</span><br>
+        Node Group ID: <span class="mono">${node_group.node_group_id}</span><br>
+        Description: <span class="mono">${node_group.description}</span><br>
+        Owner: <span class="mono">${node_group.node_group_owner}</span><br>
+        Created At: <span class="mono">${node_group.created}</span><br>
+        Updated At: <span class="mono">${node_group.updated}</span><br>
+        Updated By: <span class="mono">${node_group.updated_by}</span><br>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div tal:condition="not node_group">
+  <div id="title">
+  <span class="title_type">NODE GROUP</span><span class="title_name">Not Found</span>
+  </div>
+</div>

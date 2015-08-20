@@ -23,19 +23,20 @@ from arsenalweb.views import (
 
 @view_config(route_name='hardware_profiles', permission='view', renderer='arsenalweb:templates/hardware_profiles.pt')
 def view_hardware_profiles(request):
-    page_title_type = 'objects_'
-    page_title_name = 'Hardware Profiles'
+    page_title_type = 'objects/'
+    page_title_name = 'hardware_profiles'
     au = get_authenticated_user(request)
 
     uri = '/api/hardware_profiles'
     hardware_profiles = _api_get(request, uri)
 
     # Used by the columns menu to determine what to show/hide.
-    column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },
-                         {'name': 'status_name', 'pretty_name': 'Status Name' },
-                         {'name': 'description', 'pretty_name': 'Description' },
+    column_selectors = [ {'name': 'hardware_profile_id', 'pretty_name': 'Hardware Profile ID' },
+                         {'name': 'manufacturer', 'pretty_name': 'Manufacturer' },
+                         {'name': 'model', 'pretty_name': 'Model' },
                          {'name': 'updated_by', 'pretty_name': 'Updated By' },
-                         {'name': 'last_update', 'pretty_name': 'Last Update' },
+                         {'name': 'updated', 'pretty_name': 'Date Updated' },
+                         {'name': 'created', 'pretty_name': 'Date Created' },
     ]
 
     return {'layout': site_layout('max'),
@@ -45,4 +46,3 @@ def view_hardware_profiles(request):
             'column_selectors': column_selectors,
             'hardware_profiles': hardware_profiles,
            }
-

@@ -222,7 +222,7 @@
       <div id='heading_text_c'>
         <div id='page_title'><span class='page_title_type'>${page_title_type}</span><span class='page_title_name'>${page_title_name}</span></div>
       </div>
-      <div id='heading_menu_1_c'>
+      <div tal:condition="not (page_title_name == 'Home')" id='heading_menu_1_c'>
         <div class="columns_menu_p slide_menu_c" id="columns_menu_c">
           <div id="columns_menu_btn" class="slide_menu_btn">Columns</div>
           <div class="columns_menu slide_menu">

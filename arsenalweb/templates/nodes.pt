@@ -16,45 +16,6 @@
 <div metal:use-macro="layout">
     <div metal:fill-slot="content">
 
-<script type="text/javascript">
-  $(document).ajaxStart(function() {
-    $("#select_object").hide();
-    $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
-  });
-  
-  $(document).ready(function() {
-
-    // Menu for selecting columns to show
-    $("#columns_menu_btn").click(function(){
-      $(".columns_menu").slideToggle();
-    });
-
-    $('.columns_menu_content :checkbox').change(function(){
-      var cols = $(this).attr("name").split("-", 2);
-      $(".sr-" + cols[1]).toggle('slide', {
-            direction: 'left'
-        }, 500);
-      console.log(".sr_" + cols[1]);
-    });
-
-    // Loading objects into the lower window
-    $('.lower_pane').click(function(event){
-        event.preventDefault();
-        var url = $(this).attr('href');
-        $.ajax({
-            url: url,
-            success: function(result){
-              $("#content_insert").html(result);
-            },
-            error: function (jXHR, textStatus, errorThrown) {
-              $("#content_insert").html(errorThrown);
-            }
-        });
-    });
-
-  });
-</script>
-
 
   <div id="panel_c">
     <div class="wrap">
@@ -63,42 +24,29 @@
           <div class="content">
             <div id="search_results">
 
-              <div id="columns_menu_c">
-                <div id="columns_menu_btn">
-                 Columns
-                </div>
-                <div class="columns_menu">
-                  <p>Select the columns you wish to display</p>
-                  <ul>
-                    <li tal:repeat="item sorted(nodes[0].iterkeys())" class="columns_menu_content">
-                      <input type="checkbox" id="cm-${item}" name="cm-${item}" checked="checked"/>
-                      <label for="cm-${item}">${item}</label>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-  
               <table id="searchResultsTable" class="tablesorter sar-table">
                 <thead>
                   <tr>
+                    <th class="sr-node_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node ID</span></div></th>
                     <th class="sr-node_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Name</span></div></th>
                     <th class="sr-unique_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Unique ID</span></div></th>
                     <th class="sr-status"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status</span></div></th>
                     <th class="sr-node_groups"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">node groups</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
-                    <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated</span></div></th>
-                    <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Created</span></div></th>
+                    <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
+                    <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr tal:repeat="item nodes">
+                    <td class="sr-node_id ta_right"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.node_id">0</a></td>
                     <td class="sr-node_name"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.node_id)" tal:content="item.node_name">server.dc.domain.com</a></td>
-                    <td class="sr-uniq_id" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
+                    <td class="sr-uniq_id ta_right" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
                     <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.status_id)" tal:content="item.status.status_name">initializing</a></td>
-                    <td>default_install</td>
-                    <td class="sr-updated_by" tal:content="item.updated_by">2015/04/23 21:02:15</td>
-                    <td class="sr-updated" tal:content="item.updated">2015/04/23 21:02:15</td>
-                    <td class="sr-created" tal:content="item.created">2015/04/23 21:02:15</td>
+                    <td class="sr-node_groups">default_install</td>
+                    <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
+                    <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
+                    <td class="sr-created ta_right" tal:content="item.created">2015/04/23 21:02:15</td>
                   </tr>
                 </tbody>
               </table>

@@ -41,7 +41,7 @@ def _api_get(request, uri, payload=None):
     r = requests.get(api_url, verify=verify_ssl, params=payload)
 
     if r.status_code == requests.codes.ok:
-        log.info('Response data: %s' % r.json())
+        log.debug('Response data: %s' % r.json())
         return r.json()
     elif r.status_code == requests.codes.not_found:
         log.warn('404: Object not found.')
@@ -67,7 +67,7 @@ def _api_put(request, uri, data=None):
     r = requests.put(api_url, verify=verify_ssl, headers=headers, data=data)
 
     if r.status_code == requests.codes.ok:
-        log.info('Response data: %s' % r.json())
+        log.debug('Response data: %s' % r.json())
         return r.json()
     else:
         log.error('There was an error querying the API: '

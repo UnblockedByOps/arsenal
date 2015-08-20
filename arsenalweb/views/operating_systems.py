@@ -23,17 +23,28 @@ from arsenalweb.views import (
 
 @view_config(route_name='operating_systems', permission='view', renderer='arsenalweb:templates/operating_systems.pt')
 def view_operating_systems(request):
-    page_title_type = 'object_'
-    page_title_name = 'Hardware Profiles'
+    page_title_type = 'object/'
+    page_title_name = 'operating_systems'
     au = get_authenticated_user(request)
 
     uri = '/api/operating_systems'
     operating_systems = _api_get(request, uri)
 
+    # Used by the columns menu to determine what to show/hide.
+    column_selectors = [ {'name': 'operating_system_id', 'pretty_name': 'Operating system ID' },
+                         {'name': 'variant', 'pretty_name': 'Variant' },
+                         {'name': 'version_number', 'pretty_name': 'Version Number' },
+                         {'name': 'architecture', 'pretty_name': 'Architecture' },
+                         {'name': 'description', 'pretty_name': 'Description' },
+                         {'name': 'updated_by', 'pretty_name': 'Updated By' },
+                         {'name': 'updated', 'pretty_name': 'Date Updated' },
+                         {'name': 'created', 'pretty_name': 'Date Created' },
+    ]
+
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
             'au': au,
+            'column_selectors': column_selectors,
             'operating_systems': operating_systems,
            }
-

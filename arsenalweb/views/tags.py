@@ -21,27 +21,19 @@ from arsenalweb.views import (
     )
 
 
-@view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
-def view_statuses(request):
+@view_config(route_name='tags', permission='view', renderer='arsenalweb:templates/tags.pt')
+def view_tags(request):
     page_title_type = 'objects/'
-    page_title_name = 'statuses'
+    page_title_name = 'tags'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
-
-    uri = '/api/statuses'
-    statuses = _api_get(request, uri)
+    uri = '/api/tags'
+    tags = _api_get(request, uri)
 
     # Used by the columns menu to determine what to show/hide.
-    column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },
-                         {'name': 'status_name', 'pretty_name': 'Status Name' },
-                         {'name': 'description', 'pretty_name': 'Description' },
+    column_selectors = [ {'name': 'tag_id', 'pretty_name': 'Tag ID' },
+                         {'name': 'tag_name', 'pretty_name': 'Tag Name' },
+                         {'name': 'tag_value', 'pretty_name': 'Tag Value' },
                          {'name': 'updated_by', 'pretty_name': 'Updated By' },
                          {'name': 'updated', 'pretty_name': 'Date Updated' },
                          {'name': 'created', 'pretty_name': 'Date Created' },
@@ -52,5 +44,5 @@ def view_statuses(request):
             'page_title_name': page_title_name,
             'au': au,
             'column_selectors': column_selectors,
-            'statuses': statuses,
+            'tags': tags,
            }

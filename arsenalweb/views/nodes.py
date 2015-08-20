@@ -31,8 +31,8 @@ from arsenalweb.models import (
 
 @view_config(route_name='nodes', permission='view', renderer='arsenalweb:templates/nodes.pt')
 def view_nodes(request):
-    page_title_type = 'objects_'
-    page_title_name = 'Nodes'
+    page_title_type = 'objects/'
+    page_title_name = 'nodes'
     au = get_authenticated_user(request)
 
     params = {'type': 'vir',
@@ -46,9 +46,21 @@ def view_nodes(request):
     uri = '/api/nodes'
     nodes = _api_get(request, uri)
 
+    # Used by the columns menu to determine what to show/hide.
+    column_selectors = [ {'name': 'node_id', 'pretty_name': 'Node ID' },
+                         {'name': 'node_name', 'pretty_name': 'Node Name' },
+                         {'name': 'unique_id', 'pretty_name': 'Unique Id' },
+                         {'name': 'status', 'pretty_name': 'Status' },
+                         {'name': 'node_groups', 'pretty_name': 'Node Groups' },
+                         {'name': 'updated_by', 'pretty_name': 'Updated By' },
+                         {'name': 'updated', 'pretty_name': 'Date Updated' },
+                         {'name': 'created', 'pretty_name': 'Date Created' },
+    ]
+
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
             'au': au,
+            'column_selectors': column_selectors,
             'nodes': nodes,
            }

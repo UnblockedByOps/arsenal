@@ -17,31 +17,7 @@
     <div metal:fill-slot="content">
 
 <script src="/static/js/Chart.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
 
-    $('#srf_btn').click(function() {
-      if($(this).css("margin-left") == "0px")
-      {
-          $('.srf').animate({"margin-left": '-=200'},600);
-          $('#main_c').animate({"margin-left": '-=200'},600);
-          $('#srf_btn').animate({"margin-left": '-=200'},600);
-          $('#srf_btn').switchClass( "srf_btn_in", "srf_btn_out");
-      }
-      else
-      {
-          $('.srf').animate({"margin-left": '+=200'},600);
-          $('#main_c').animate({"margin-left": '+=200'},600);
-          $('#srf_btn').animate({"margin-left": '+=200'},600);
-          $('#srf_btn').switchClass( "srf_btn_out", "srf_btn_in");
-      }
-    });
-
-  });
-</script>
-
-
-<div id="main_c">
   <div id="panel_c">
         <div class="content_c">
           <div class="content">
@@ -153,7 +129,6 @@
         </div> <!-- content_c -->
   
   </div> <!-- panel_c -->
-</div> <!-- main_c -->
 
   </div> <!-- metal -->
 </div> <!-- metal -->
