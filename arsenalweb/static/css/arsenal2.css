@@ -413,7 +413,6 @@ ul.main_menu li.main_menu:hover ul.main_menu {
 /* START DEFAULT_LINK */
 a {
   color: #042e63;
-  font-weight: 600;
 }
 a:link {
   text-decoration: none;
@@ -563,6 +562,11 @@ table.sar-table th {
 }
 .ta_right {
     text-align: right;
+    padding-right: 25px;
+}
+.ta_right_th {
+    text-align: right;
+    padding-right: 5px;
 }
 table.tablesorter {
   margin: 0px;
@@ -574,7 +578,9 @@ table.tablesorter th {
   margin-top: 10px;
 }
 table.tablesorter td {
-  padding: 4px 15px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 21px;
 }
 table.tablesorter thead tr th, table.tablesorter tfoot tr th {
   font-size: 10pt;

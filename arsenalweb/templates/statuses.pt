@@ -26,12 +26,12 @@
               <table id="searchResultsTable" class="tablesorter sar-table">
                 <thead>
                   <tr>
-                    <th class="sr-status_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status ID</span></div></th>
+                    <th class="sr-status_id"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Status ID</span></div></th>
                     <th class="sr-status_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status Name</span></div></th>
                     <th class="sr-description"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Description</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
-                    <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
-                    <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
+                    <th class="sr-updated"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
+                    <th class="sr-created"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>

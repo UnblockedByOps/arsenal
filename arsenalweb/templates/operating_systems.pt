@@ -28,20 +28,20 @@
                 <thead>
                   <tr> 
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <th class="sr-operating_system_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Operating System ID</span></div></th>
+                    <th class="sr-operating_system_id"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Operating System ID</span></div></th>
                     <th class="sr-variant"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Variant</span></div></th>
                     <th class="sr-version_number"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Version Number</span></div></th>
                     <th class="sr-architecture"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Architecture</span></div></th>
                     <th class="sr-description"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Description</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
-                    <th class="sr-updated"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
-                    <th class="sr-created"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
+                    <th class="sr-updated"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
+                    <th class="sr-created"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr tal:repeat="item operating_systems">
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <td class="sr-operating_system_id ta_right" tal:content="item.operating_system_id">0</td>
+                    <td class="ta_right sr-operating_system_id" tal:content="item.operating_system_id">0</td>
                     <td class="sr-variant"><a class="lower_pane" tal:attributes="href '/operating_systems/{0}'.format(item.operating_system_id)" tal:content="item.variant">Something</a></td>
                     <td class="sr-version_number"><a class="lower_pane" tal:attributes="href '/operating_systems/{0}'.format(item.operating_system_id)" tal:content="item.version_number">0</a></td>
                     <td class="sr-architecture" tal:content="item.architecture">0</td>
