@@ -38,10 +38,19 @@ def view_statuses(request):
     uri = '/api/statuses'
     statuses = _api_get(request, uri)
 
+    # Used by the columns menu to determine what to show/hide.
+    column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },
+                         {'name': 'status_name', 'pretty_name': 'Status Name' },
+                         {'name': 'description', 'pretty_name': 'Description' },
+                         {'name': 'updated_by', 'pretty_name': 'Updated By' },
+                         {'name': 'last_update', 'pretty_name': 'Last Update' },
+    ]
+
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
             'au': au,
+            'column_selectors': column_selectors,
             'statuses': statuses,
            }
 

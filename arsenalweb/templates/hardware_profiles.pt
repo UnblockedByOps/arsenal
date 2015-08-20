@@ -16,46 +16,6 @@
 <div metal:use-macro="layout">
     <div metal:fill-slot="content">
 
-<script type="text/javascript">
-  $(document).ajaxStart(function() {
-    $("#select_object").hide();
-    $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
-  });
-  
-  $(document).ready(function() {
-
-    // Menu for selecting columns to show
-    $("#columns_menu_btn").click(function(){
-      $(".columns_menu").slideToggle();
-    });
-
-    $('.columns_menu_content :checkbox').change(function(){
-      var cols = $(this).attr("name").split("-", 2);
-      $(".sr-" + cols[1]).toggle('slide', {
-            direction: 'left'
-        }, 500);
-      console.log(".sr_" + cols[1]);
-    });
-
-    $('.lower_pane').click(function(event){
-        event.preventDefault();
-        var url = $(this).attr('href');
-        $.ajax({
-            url: url,
-            success: function(result){
-              $("#content_insert").html(result);
-            },
-            error: function (jXHR, textStatus, errorThrown) {
-              $("#content_insert").html(errorThrown);
-            }
-        });
-    });
-
-  });
-</script>
-
-
-<div id="main_c">
   <div id="panel_c">
     <div class="wrap">
       <div class="resizable resizable1">
@@ -105,7 +65,6 @@
       </div> <!-- resizable2 -->
     </div> <!-- wrap -->
   </div> <!-- panel_c -->
-</div> <!-- main_c -->
 
   </div> <!-- metal -->
 </div> <!-- metal -->

@@ -23,7 +23,9 @@ from sqlalchemy import (
     TIMESTAMP,
     ForeignKey,
     )
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
@@ -60,6 +62,7 @@ class Node(Base):
     hardware_profile         = relationship("HardwareProfile", backref=backref('nodes'))
     operating_system         = relationship("OperatingSystem", backref=backref('nodes'))
 
+
     @hybrid_property
     def node_groups(self):
         ngs = []
@@ -80,6 +83,38 @@ class Node(Base):
                 tags.append(a.tags.__json__(self))
         return tags
 
+    # FIXME: seems like there should be a nicer way to do this.
+    @hybrid_property
+    def guest_vms(self):
+        guest_vms = []
+        try:
+            q = DBSession.query(HypervisorVmAssignment)
+            q = q.filter(HypervisorVmAssignment.parent_node_id == self.node_id)
+            q = q.all()
+            # FIXME: What to return here? prehaps just the name and node_id ok?
+            for r in q:
+                guest_vms.append({r.child_node.node_name: r.child_node.node_id})
+        except NoResultFound:
+            pass
+        return guest_vms
+
+    # FIXME: seems like there should be a nicer way to do this.
+    @hybrid_property
+    def hypervisor(self):
+        hypervisor = []
+        try:
+            q = DBSession.query(HypervisorVmAssignment)
+            q = q.filter(HypervisorVmAssignment.child_node_id == self.node_id)
+            q = q.one()
+            # FIXME: Is this the best way to handle the hypervisor having been deleted?
+            try:
+                hypervisor.append({q.parent_node.node_name: q.parent_node.node_id})
+            except AttributeError:
+                pass
+        except NoResultFound:
+            pass
+        return hypervisor
+
 
     def __json__(self, request):
         return dict(
@@ -95,6 +130,8 @@ class Node(Base):
             uptime=self.uptime,
             node_groups=self.node_groups,
             tags=self.tags,
+            guest_vms=self.guest_vms,
+            hypervisor=self.hypervisor,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
             updated_by=self.updated_by,
@@ -327,6 +364,40 @@ class Status(Base):
             updated=_localize_date(self.updated),
 #            created=self.created.isoformat(),
 #            updated=self.updated.isoformat(),
+            updated_by=self.updated_by,
+            )
+
+
+class HypervisorVmAssignment(Base):
+    __tablename__                   = 'hypervisor_vm_assignments'
+    hypervisor_vm_assignment_id     = Column(Integer, primary_key=True, nullable=False)
+    parent_node_id                  = Column(Integer, ForeignKey('nodes.node_id'), nullable=False)
+    child_node_id                   = Column(Integer, ForeignKey('nodes.node_id'), nullable=False)
+    updated_by                      = Column(Text, nullable=False)
+    created                         = Column(TIMESTAMP, nullable=False)
+    updated                         = Column(TIMESTAMP, nullable=False)
+
+    # FIXME: Can't get this to work with backref, so have to do shenanigans
+    # in the Node class.
+    parent_node = relationship("Node", foreign_keys=[parent_node_id])
+    child_node = relationship("Node", foreign_keys=[child_node_id])
+
+    def __json__(self, request):
+
+        # FIXME: Is this the best way to handle the hypervisor having been deleted?
+        try:
+            hypervisor_name = self.parent_node.node_name
+        except AttributeError:
+            hypervisor_name = 'hypervisor_deleted'
+
+        return dict(
+            hypervisor_vm_assignment_id=self.hypervisor_vm_assignment_id,
+            parent_node_id=self.parent_node_id,
+            parent_node_name=hypervisor_name,
+            child_node_id=self.child_node_id,
+            child_node_name=self.child_node.node_name,
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
             updated_by=self.updated_by,
             )
 

@@ -255,22 +255,25 @@ CREATE TABLE `operating_systems` (
 CREATE UNIQUE INDEX idx_operating_systems_uniq on operating_systems (variant,version_number,architecture);
 
 ###
-### TABLE: virtual_assignments
-###   The virtual_assignments table. This table maps VMs to
+### TABLE: hypervisor_vm_assignments
+###   The hypervisor_vm_assignments table. This table maps VMs to
 ###   their hypervisor.
 ###
-DROP TABLE IF EXISTS `virtual_assignments`;
-CREATE TABLE `virtual_assignments` (
-  `virtual_assignment_id`  int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `parent_node_id`         int(11) UNSIGNED NOT NULL,
-  `child_node_id`          int(11) UNSIGNED NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+DROP TABLE IF EXISTS `hypervisor_vm_assignments`;
+CREATE TABLE `hypervisor_vm_assignments` (
+  `hypervisor_vm_assignment_id`  int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `parent_node_id`                int(11) UNSIGNED NOT NULL,
+  `child_node_id`                 int(11) UNSIGNED NOT NULL,
+  `updated_by`                    varchar(200) COLLATE utf8_bin NOT NULL,
+  `created`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_virtual_assignment_id on virtual_assignments (virtual_assignment_id);
+CREATE INDEX idx_hypervisor_vm_assignment_id on hypervisor_vm_assignments (hypervisor_vm_assignment_id);
+CREATE UNIQUE INDEX idx_hypervisor_vm_assignments_uniq on hypervisor_vm_assignments (child_node_id);
 
 
 
+### User and groups tables
 
 
 ###

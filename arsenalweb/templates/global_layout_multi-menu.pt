@@ -79,73 +79,6 @@
           }
         );
 
-        // lower pane ajax loader
-        $('.lower_pane').click(function(event){
-            event.preventDefault();
-            var url = $(this).attr('href');
-            $.ajax({
-                url: url,
-                success: function(result){
-                  $("#content_insert").html(result);
-                },
-                error: function (jXHR, textStatus, errorThrown) {
-                  $("#content_insert").html(errorThrown);
-                }
-            });
-        });
-        $(document).ajaxStart(function() {
-          $("#select_object").hide();
-          $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
-        });
-
-        // Sliding menus
-        function SlideMenu(menu_name) {
-            this.menu_name = menu_name;
-        
-            function _overlay() {
-              var over = '<div id="overlay_sub"></div>';
-              if($("#overlay_sub").length == 0) {
-                $(over).appendTo('body');
-              } else {
-                $('#overlay_sub').remove();
-              }
-            }
-            function _no_overlay() {
-              $('#overlay_sub').remove();
-            }
-        
-            // Menu for selecting columns to show
-            $('#' + menu_name + '_btn').click(function(){
-              $('.' + menu_name).slideToggle();
-              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-up.png)', 'border-radius': '4px 4px 0 0', 'border-bottom': '0' });
-              _overlay();
-            });
-            $('.' + menu_name + '_p').mouseleave(function(){
-              $('.' + menu_name).slideUp('slow');
-              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-down.png)', 'border-radius': '4px', 'border': '1px solid' });
-              _no_overlay();
-            });
-        
-            // Maybe this shouldbe outside the function?
-            $('.' + menu_name + '_content :checkbox').change(function(){
-              var cols = $(this).attr("name").split("-", 2);
-              $(".sr-" + cols[1]).toggle('slide', {
-                    direction: 'left'
-                }, 500);
-              console.log(".sr_" + cols[1]);
-        
-                if ($(this).is(':checked')) {
-                    // do something
-                    // alert( $(this).attr("name") );
-                } else {
-                    // do something else
-                }
-            });
-        
-        }
-        
-        new SlideMenu("columns_menu");
-
       });
     </script>
 
@@ -226,16 +159,49 @@
         <div class="columns_menu_p slide_menu_c" id="columns_menu_c">
           <div id="columns_menu_btn" class="slide_menu_btn">Columns</div>
           <div class="columns_menu slide_menu">
-            <p>Select the columns you wish to display:</p>
+            <p>Select the columns you wish to display</p>
             <ul>
-              <li tal:repeat="item column_selectors" class="columns_menu_content">
-                <input type="checkbox" id="cm-${item['name']}" name="cm-${item['name']}" checked="checked"/>
-                <label for="cm-${item['name']}">${item['pretty_name']}</label>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-status_name" name="cm-status_name" checked="checked"/>
+                <label for="cm-status_name">Status Name</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-status_id" name="cm-status_id" checked="checked"/>
+                <label for="cm-status_id">Status ID</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-description" name="cm-description" checked="checked"/>
+                <label for="cm-description">Description</label>
               </li>
             </ul>
           </div> <!-- columns_menu -->
         </div> <!-- columns_menu_c -->
       </div> <!-- heading_menu_1_c -->
+
+
+      <div id='heading_menu_2_c'>
+        <div class="other_menu_p slide_menu_c" id="other_menu_c">
+          <div id="other_menu_btn" class="slide_menu_btn">Other</div>
+          <div class="other_menu slide_menu">
+            <p>Select somesing</p>
+            <ul>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-one" name="cm-one" checked="checked"/>
+                <label for="cm-one">One</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-two" name="cm-two" checked="checked"/>
+                <label for="cm-two">Two</label>
+              </li>
+              <li class="columns_menu_content">
+                <input type="checkbox" id="cm-three" name="cm-three" checked="checked"/>
+                <label for="cm-three">Three</label>
+              </li>
+            </ul>
+          </div> <!-- columns_menu -->
+        </div> <!-- columns_menu_c -->
+      </div> <!-- heading_menu_1_c -->
+
 
       <div metal:define-slot="content"> </div>
 

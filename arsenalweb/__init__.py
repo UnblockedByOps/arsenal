@@ -133,6 +133,9 @@ def main(global_config, **settings):
     config.add_route('api_node_group_assignments', '/api/node_group_assignments')
     config.add_route('api_node_group_assignment_r', '/api/node_group_assignments/{id}/{resource}')
     config.add_route('api_node_group_assignment', '/api/node_group_assignments/{id}')
+    config.add_route('api_hypervisor_vm_assignments', '/api/hypervisor_vm_assignments')
+    config.add_route('api_hypervisor_vm_assignment_r', '/api/hypervisor_vm_assignments/{id}/{resource}')
+    config.add_route('api_hypervisor_vm_assignment', '/api/hypervisor_vm_assignments/{id}')
 
     config.add_renderer('json', JSON(indent=2))
     config.add_renderer('xml', XML())
