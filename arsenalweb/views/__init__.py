@@ -102,18 +102,18 @@ def global_groupfinder(userid, request):
         groups = local_groupfinder(userid, request)
         if groups:
             log.debug("Found local groups for userid: %s groups: %s" % (userid, groups))
-    except Exception, e:
-        log.info("%s (%s)" % (Exception, e))
+    except Exception as e:
+        log.error("%s (%s)" % (Exception, e))
         pass
 
     if request.registry.settings['arsenal.use_ldap'] and not groups:
         try:
-            log.info("Checking ldap groups for userid: %s" % (userid))
+            log.debug("Checking ldap groups for userid: %s" % (userid))
             groups = ldap_groupfinder(userid, request)
             if groups:
-                log.info("Found ldap groups for userid: %s groups: %s" % (userid, groups))
-        except Exception, e:
-            log.info("%s (%s)" % (Exception, e))
+                log.debug("Found ldap groups for userid: %s groups: %s" % (userid, groups))
+        except Exception as e:
+            log.error("%s (%s)" % (Exception, e))
             pass
 
     return groups
@@ -128,8 +128,8 @@ def local_groupfinder(userid, request):
     try:
         user = DBSession.query(User).filter(User.user_name==userid).one()
         groups = user.get_all_assignments()
-    except Exception, e:
-        log.info("%s (%s)" % (Exception, e))
+    except Exception as e:
+        log.error("%s (%s)" % (Exception, e))
         pass
 
     return groups
@@ -143,7 +143,7 @@ def local_authenticate(login, password):
         q = DBSession.query(User)
         q = q.filter(User.user_name == login)
         db_user = q.one()
-    except Exception, e:
+    except Exception as e:
         log.debug("%s (%s)" % (Exception, e))
         # Should return invalid username here somehow
         return None
@@ -151,8 +151,8 @@ def local_authenticate(login, password):
     try: 
         if sha512_crypt.verify(password, db_user.password):
             return [login]
-    except Exception, e:
-        log.info("%s (%s)" % (Exception, e))
+    except Exception as e:
+        log.error("%s (%s)" % (Exception, e))
         pass
 
     return None
@@ -173,8 +173,8 @@ def get_authenticated_user(request):
         first_last = "%s %s" % (first, last)
         auth = True
         log.debug("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
-    except Exception, e:
-        log.info("%s (%s)" % (Exception, e))
+    except Exception as e:
+        log.error("%s (%s)" % (Exception, e))
 
     if request.registry.settings['arsenal.use_ldap'] and not groups:
         try:
@@ -182,7 +182,7 @@ def get_authenticated_user(request):
             groups = ldap_groupfinder(user_id, request)
             first_last = "%s %s" % (first, last)
             auth = True
-        except Exception, e:
+        except Exception as e:
             log.error("%s (%s)" % (Exception, e))
 
     try:

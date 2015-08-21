@@ -13,10 +13,7 @@
 #  limitations under the License.
 #
 from pyramid.view import view_config
-from pyramid.response import Response
-from datetime import datetime
-from datetime import timedelta
-import arrow
+from pyramid.httpexceptions import HTTPFound
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
@@ -24,48 +21,22 @@ from arsenalweb.views import (
     )
 from arsenalweb.models import (
     DBSession,
-    User,
     )
 
 
 @view_config(route_name='search', permission='view', renderer='arsenalweb:templates/search.pt')
 def view_home(request):
-    page_title = 'Search Results'
+
     au = get_authenticated_user(request)
-    results = False
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
 
-    type = params['type']
-    if type == 'ec2':
-        host = 'aws1prdtcw1.opsprod.ctgrd.com'
-        uniq_id = 'i-303a6c4a'
-        ng = 'tcw'
-        vhost = 'aws1'
-    elif type == 'rds':
-        host = 'aws1devcpd1.csqa.ctgrd.com'
-        uniq_id = 'aws1devcpd1.cltftmkcg4dd.us-east-1.rds.amazonaws.com'
-        ng = 'none'
-        vhost = 'aws1'
-    else:
-        host = 'vir1prdpaw1.prod.cs'
-        uniq_id = '6A:37:2A:68:E1:B0'
-        ng = 'paw'
-        vhost = 'vir1prdxen41.prod.cs'
+    for key, value in request.POST.iteritems():
+        print '{0}: {1}'.format(key,value)
 
-    return {'layout': site_layout('max'),
-            'page_title': page_title,
-            'au': au,
-            'results': results,
-            'type': type,
-            'host': host,
-            'uniq_id': uniq_id,
-            'ng': ng,
-            'vhost': vhost,
-           }
+    url_base = '/{0}?'.format(request.POST.get('object_type'))
+    url_suffix = 'node_name={0}'.format(request.POST.get('search_terms'))
+    return_url = '{0}{1}'.format(url_base, url_suffix)
 
+    log.info('Search url is: {0}'.format(return_url))
+
+    # return HTTPFound('/statuses', headers=headers)
+    return HTTPFound(return_url)

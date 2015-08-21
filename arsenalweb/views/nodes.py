@@ -13,10 +13,6 @@
 #  limitations under the License.
 #
 from pyramid.view import view_config
-from pyramid.response import Response
-from datetime import datetime
-from datetime import timedelta
-import arrow
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
@@ -25,7 +21,6 @@ from arsenalweb.views import (
     )
 from arsenalweb.models import (
     DBSession,
-    User,
     )
 
 
@@ -35,7 +30,7 @@ def view_nodes(request):
     page_title_name = 'nodes'
     au = get_authenticated_user(request)
 
-    params = {'type': 'vir',
+    params = {'node_name': None,
              }
     for p in params:
         try:
@@ -43,7 +38,12 @@ def view_nodes(request):
         except:
             pass
 
-    uri = '/api/nodes'
+    terms = params['node_name']
+
+    if terms:
+        uri = '/api/nodes?node_name={0}'.format(terms)
+    else:
+        uri = '/api/nodes'
     nodes = _api_get(request, uri)
 
     # Used by the columns menu to determine what to show/hide.

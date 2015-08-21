@@ -165,7 +165,7 @@
             <div id="search_inner_c">
               <div id="search_left_c">
                 <div id="search_select_c">
-                  <select>
+                  <select name="object_type">
                     <option selected="selected">nodes</option>
                     <option>node groups</option>
                     <option>tags</option>
@@ -175,7 +175,7 @@
                 </div> <!-- search_select_c -->
               </div> <!-- search_left_c -->
               <div id="search_middle_c">
-                  <input id="search_box" type="text">
+                  <input id="search_box" type="text" name="search_terms">
               </div> <!-- search_middle_c -->
               <div id="search_right_c">
                   <input type="submit" id="search_bar_btn" value="" alt="search">
