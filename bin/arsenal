@@ -697,6 +697,7 @@ def _manage_hypervisor_assignments(args, nodes):
         api_action = 'put'
         log_action = 'Assigning'
 
+    # FIXME: this does not guarantee uniqueness.
     data = {'node_name': hypervisor}
     r = api_submit('/api/nodes', data, method='get_params')
     if r:

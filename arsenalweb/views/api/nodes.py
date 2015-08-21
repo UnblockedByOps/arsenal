@@ -88,7 +88,6 @@ def api_node_read(request):
                 # pre-define everything.
                 if k == 'unique_id':
                     v = v.lower()
-                    print "V Is: ", v
                 if k == 'exact_get':
                     continue
 
