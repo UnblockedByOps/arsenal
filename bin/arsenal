@@ -143,7 +143,7 @@ def get_cookie_auth():
         return cookies
 
     except Exception, e:
-        logging.error('Failed: %s' % e)
+        log.error('Failed: %s' % e)
 
 
 def read_cookie():
@@ -173,8 +173,8 @@ def write_cookie(cookies):
 
         return True
     except Exception as e:
-        logging.error('Unable to write cookie: %s' % cookie_file)
-        logging.error('Exception: %s' % e)
+        log.error('Unable to write cookie: %s' % cookie_file)
+        log.error('Exception: %s' % e)
 
 
 def authenticate():
@@ -207,14 +207,14 @@ def authenticate():
                 write_cookie(cookies)
                 return cookies
             except Exception, e:
-                logging.error('Exception: %s' % e)
+                log.error('Exception: %s' % e)
 
         else:
             log.error('Authentication failed')
             sys.exit(1)
 
     except Exception, e:
-        logging.error('Exception: %s' % e)
+        log.error('Exception: %s' % e)
         log.error('Authentication failed')
         sys.exit(1)
 
@@ -293,13 +293,13 @@ def api_submit(request, data=None, method='get'):
 def _search(args):
     """Main serach function to query the API."""
 
-    log.info('Searching for {0}'.format(args.object_type))
-    log.info('action_command is: {0}'.format(args.action_command))
+    log.debug('Searching for {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
 
     search_terms = list(args.search.split(","))
     data = dict(u.split("=") for u in search_terms)
     data['exact_get'] = args.exact_get
-    log.info('data is: {0}'.format(data))
+    log.debug('data is: {0}'.format(data))
 
     api_endpoint = '/api/{0}'.format(args.object_type)
     r = api_submit(api_endpoint, data, method='get_params')
@@ -331,24 +331,24 @@ def gen_help(help_type):
 def get_unique_id(**facts):
     """Determines the unique_id of a node"""
 
-    log.info('determining unique_id...')
+    log.debug('determining unique_id...')
     if facts['kernel'] == 'Linux' or facts['kernel'] == 'FreeBSD':
         if 'ec2_instance_id' in facts:
             unique_id = facts['ec2_instance_id']
-            log.info('unique_id is from ec2_instance_id: {0}'.format(unique_id))
+            log.debug('unique_id is from ec2_instance_id: {0}'.format(unique_id))
         elif os.path.isfile('/usr/sbin/dmidecode'):
             unique_id = get_uuid()
             if unique_id:
-                log.info('unique_id is from dmidecode: {0}'.format(unique_id))
+                log.debug('unique_id is from dmidecode: {0}'.format(unique_id))
             else:
                 unique_id = facts['macaddress']
-                log.info('unique_id is from mac address: {0}'.format(unique_id))
+                log.debug('unique_id is from mac address: {0}'.format(unique_id))
         else:
             unique_id = facts['macaddress']
-            log.info('unique_id is from mac address: {0}'.format(unique_id))
+            log.debug('unique_id is from mac address: {0}'.format(unique_id))
     else:
         unique_id = facts['macaddress']
-        log.info('unique_id is from mac address: {0}'.format(unique_id))
+        log.debug('unique_id is from mac address: {0}'.format(unique_id))
     return unique_id
 
 
@@ -368,19 +368,19 @@ def get_uuid():
 def get_hardware_profile(facts):
     """Collets hardware_profile details of a node."""
 
-    log.info('Collecting hardware profile data.')
+    log.debug('Collecting hardware profile data.')
     hardware_profile = HardwareProfile()
     try:
         hardware_profile.manufacturer = facts['manufacturer']
         hardware_profile.model = facts['productname']
-        log.info('Hardware profile from dmidecode.')
+        log.debug('Hardware profile from dmidecode.')
     except KeyError:
         try:
             xen_match = "xen"
             if re.match(xen_match, facts['virtual']) and facts['is_virtual'] == 'true':
                 hardware_profile.manufacturer = 'Citrix'
                 hardware_profile.model = 'Xen Guest'
-                log.info('Hardware profile is virtual.')
+                log.debug('Hardware profile is virtual.')
         except KeyError:
             log.error('Unable to determine hardware profile.')
     return hardware_profile
@@ -389,7 +389,7 @@ def get_hardware_profile(facts):
 def get_operating_system(facts):
     """Collets operating_system details of a node."""
 
-    log.info('Collecting operating_system data.')
+    log.debug('Collecting operating_system data.')
     operating_system = OperatingSystem()
     try:
         operating_system.variant = facts['operatingsystem']
@@ -405,7 +405,7 @@ def get_operating_system(facts):
 def collect_data():
     """Main data collection function use to register a node."""
 
-    log.info('Collecting data for node.')
+    log.debug('Collecting data for node.')
     data = Node()
     facts = facter()
     unique_id = get_unique_id(**facts)
@@ -496,7 +496,7 @@ def _register(args):
         data = collect_data()
         data.register = True
 
-        log.info('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
+        log.debug('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
         api_submit('/api/nodes', data, method='put')
 
 
@@ -504,8 +504,8 @@ def search_nodes(args):
     """Search for nodes and perform optional assignment
        actions."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     # FIXME: Ths is going to get ugly real fast
 #    actions = ['set_tags', 'set_status', 'set_node_groups', 'del_node_groups']
@@ -639,8 +639,8 @@ def convert(data):
 def _set_status(args, nodes):
     """Set the status of one or more nodes."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     data = {'status_name': args.set_status}
     status = api_submit('/api/statuses', data, method='get_params')
@@ -655,8 +655,8 @@ def _set_status(args, nodes):
 def _manage_node_group_assignments(args, nodes):
     """Assign or De-assign node_groups to one or more nodes."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     if args.del_node_groups:
         node_groups_list = args.del_node_groups
@@ -685,8 +685,8 @@ def _manage_node_group_assignments(args, nodes):
 def _manage_hypervisor_assignments(args, nodes):
     """Assign or De-assign a hypervisor to one or more nodes."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     if args.del_hypervisor:
         hypervisor = args.del_hypervisor
@@ -713,8 +713,8 @@ def create_nodes(args):
     """Create a new node."""
 
     # FIXME: Support hardware_profile, and operating_system?
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     # Check if the node exists (by checking unique_id) first
     # so it can ask if you want to update the existing entry, which
@@ -743,8 +743,8 @@ def create_nodes(args):
 def delete_nodes(args):
     """Delete an existing node."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     if args.node_id:
         # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
@@ -789,8 +789,8 @@ def search_node_groups(args):
     """Search for node groups and perform optional assignment
        actions."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     if (args.set_tags or args.del_tags):
         results = _search(args)
@@ -844,8 +844,8 @@ def search_node_groups(args):
 def create_node_groups(args):
     """Create a new node_group."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     data = {'node_group_name': args.node_group_name,
             'node_group_owner': args.node_group_owner,
@@ -860,8 +860,8 @@ def delete_node_groups(args):
     """Delete an existing node_group."""
 
     # FIXME: Support name and id or ?
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     args.search = 'node_group_name={0}'.format(args.node_group_name)
     # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
@@ -888,8 +888,8 @@ def search_tags(args):
     """Search for tags and perform optional assignment
        actions."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     if args.set_tags:
         set_tag(args)
@@ -921,8 +921,8 @@ def search_tags(args):
 def _manage_tag_assignments(args, objects, action_object, api_action = 'set'):
     """Assign or De-assign tags to one or more objects (nodes or node_groups)."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     o_id = action_object + '_id'
     o_name = action_object + '_name'
@@ -959,8 +959,8 @@ def _manage_tag_assignments(args, objects, action_object, api_action = 'set'):
 def create_tags(args):
     """Create a new tag."""
 
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     data = {'tag_name': args.tag_name,
             'tag_value': args.tag_value,
@@ -974,8 +974,8 @@ def delete_tags(args):
     """Delete an existing tag."""
 
     # FIXME: Support name and id or ?
-    log.info('action_command is: {0}'.format(args.action_command))
-    log.info('object_type is: {0}'.format(args.object_type))
+    log.debug('action_command is: {0}'.format(args.action_command))
+    log.debug('object_type is: {0}'.format(args.object_type))
 
     args.search = 'tag_name={0},tag_value={1}'.format(args.tag_name, args.tag_value)
     # FIXME: do we want exact_get to be optional on delete? i.e. put it in argparse?
@@ -1024,7 +1024,7 @@ def _parse_args():
                    default='/app/secrets/arsenal.conf')
     mp.add_argument('--server',
                    dest='api_host',
-                   help='arsenal server to use. Overrides config file (FIXME: not yet)',
+                   help='arsenal server to use. Overrides the setting in the config file.',
                    default=None)
     mp.add_argument('--quiet',
                    '-q',
@@ -1034,7 +1034,12 @@ def _parse_args():
     mp.add_argument('--verbose',
                    '-v',
                    action='store_true',
-                   help='Log debug messages to the log file',
+                   help='Increased logging verbosity',
+                   default=None)
+    mp.add_argument('--write_log',
+                   '-w',
+                   action='store_true',
+                   help='Log messages to the log file',
                    default=None)
     mp.add_argument('--yes',
                     '-y',
@@ -1363,17 +1368,23 @@ def main():
         log_level = logging.INFO
 
     # Set up logging to file
-    logging.basicConfig(level=log_level,
-                        format='%(asctime)s %(levelname)-8s- %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S',
-                        filename=log_file,
-                        filemode='a')
+    if args.write_log:
+        print "boo"
 
-    console = logging.StreamHandler()
+        logging.basicConfig(level=log_level,
+                            format='%(asctime)s %(levelname)-8s- %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S',
+                            filename=log_file,
+                            filemode='a')
+
+    root = logging.getLogger()
+    root.setLevel(log_level)
+
+    console = logging.StreamHandler(sys.stdout)
     console.setLevel(log_level)
     formatter = logging.Formatter('%(levelname)-8s- %(message)s')
     console.setFormatter(formatter)
-    logging.getLogger('').addHandler(console)
+    root.addHandler(console)
 
     if args.verbose:
         log.info('Debug messages are being written to the log file : %s'

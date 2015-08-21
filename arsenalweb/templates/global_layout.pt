@@ -159,7 +159,7 @@
           </div> <!-- logo_container -->
         </div> <!-- top1_left -->
 
-        <form id="search_form" action="/search">
+        <form id="search_form" action="/search" method="POST">
         <div id="top1_right">
           <div id="search_outer_c">
             <div id="search_inner_c">
@@ -167,7 +167,7 @@
                 <div id="search_select_c">
                   <select name="object_type">
                     <option selected="selected">nodes</option>
-                    <option>node groups</option>
+                    <option>node_groups</option>
                     <option>tags</option>
                     <option>operating_systems</option>
                     <option>hardware_profiles</option>

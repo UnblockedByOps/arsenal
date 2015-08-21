@@ -17,6 +17,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.session import signed_deserialize
 from pyramid_ldap import groupfinder as ldap_groupfinder
 from pyramid.response import Response
+from sqlalchemy.orm.exc import NoResultFound
 import logging
 import requests
 from passlib.hash import sha512_crypt
@@ -99,6 +100,7 @@ def global_groupfinder(userid, request):
     groups = None
     try:
         log.debug("Checking local groups for userid: %s" % (userid))
+        # FIXME: Getting called twice
         groups = local_groupfinder(userid, request)
         if groups:
             log.debug("Found local groups for userid: %s groups: %s" % (userid, groups))
@@ -128,9 +130,10 @@ def local_groupfinder(userid, request):
     try:
         user = DBSession.query(User).filter(User.user_name==userid).one()
         groups = user.get_all_assignments()
+    except NoResultFound:
+        log.debug('No local groups for: {0}'.format(userid))
     except Exception as e:
         log.error("%s (%s)" % (Exception, e))
-        pass
 
     return groups
 
@@ -169,10 +172,13 @@ def get_authenticated_user(request):
         user = DBSession.query(User).filter(User.user_name==user_id).one()
         first = user.first_name
         last = user.last_name
+        # FIXME: Getting called twice
         groups = local_groupfinder(user_id, request)
         first_last = "%s %s" % (first, last)
         auth = True
         log.debug("first: {0} last: {1} first_last: {2} auth: {3} groups: {4}".format(first, last, first_last, auth, groups))
+    except NoResultFound:
+        log.debug('No local user for: {0}'.format(user_id))
     except Exception as e:
         log.error("%s (%s)" % (Exception, e))
 

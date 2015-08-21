@@ -86,6 +86,9 @@ def api_node_read(request):
                 # FIXME: This is sub-par. Need a better way to distinguish 
                 # meta params from search params without having to
                 # pre-define everything.
+                if k == 'unique_id':
+                    v = v.lower()
+                    print "V Is: ", v
                 if k == 'exact_get':
                     continue
 
@@ -222,7 +225,7 @@ def api_node_write(request):
                 raise
 
             try:
-                unique_id = payload['unique_id']
+                unique_id = payload['unique_id'].lower()
                 node_name = payload['node_name']
                 uptime = payload['uptime']
 
@@ -269,7 +272,7 @@ def api_node_write(request):
             # Manually created node via the client.
             try:
                 node_name = payload['node_name']
-                unique_id = payload['unique_id']
+                unique_id = payload['unique_id'].lower()
                 status_id = payload['node_status_id']
 
                 log.debug('Searching for node unique_id={0}'.format(unique_id))
