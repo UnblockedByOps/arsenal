@@ -355,12 +355,22 @@ def get_unique_id(**facts):
 def get_uuid():
     """Gets the uuid of a node from dmidecode if available."""
 
-    p = subprocess.Popen( ['/usr/sbin/dmidecode', '-s', 'system-uuid'], stdout=subprocess.PIPE )
+    FNULL = open(os.devnull, 'w')
+    p = subprocess.Popen( ['/usr/sbin/dmidecode', '-s', 'system-uuid'], stdout=subprocess.PIPE, stderr=FNULL )
     p.wait()
     uuid = p.stdout.readlines()
     # FIXME: Need some validation here
     if uuid:
         return uuid[0].rstrip()
+    else:
+        # Support older versions of dmidecode
+        p = subprocess.Popen( ['/usr/sbin/dmidecode', '-t', '1'], stdout=subprocess.PIPE )
+        p.wait()
+        dmidecode_out = p.stdout.readlines()
+        xen_match = "\tUUID: "
+        for line in dmidecode_out:
+            if re.match(xen_match, line):
+                return line[7:]
 
     return None
 
@@ -697,8 +707,7 @@ def _manage_hypervisor_assignments(args, nodes):
         api_action = 'put'
         log_action = 'Assigning'
 
-    # FIXME: this does not guarantee uniqueness.
-    data = {'node_name': hypervisor}
+    data = {'unique_id': hypervisor}
     r = api_submit('/api/nodes', data, method='get_params')
     if r:
         hypervisor = r[0]
@@ -1112,10 +1121,10 @@ def _parse_args():
                        help='Comma separated list of node_groups to un-assign from the search results.')
     ansag.add_argument('--hypervisor',
                        dest="set_hypervisor",
-                       help='FQDN of the hypervisor that you wish to assign to the search results.')
+                       help='The unique_id of the hypervisor that you wish to assign to the search results.')
     ansag.add_argument('--del_hypervisor',
                        dest="del_hypervisor",
-                       help='FQDN of the hypervisor that you wish to un-assign from the search results.')
+                       help='The unique_id of the hypervisor that you wish to de-assign from the search results.')
     nssc.add_argument('search',
                       default=None,
                       metavar='search_terms',
