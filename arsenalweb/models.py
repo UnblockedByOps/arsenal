@@ -88,7 +88,7 @@ class Node(Base):
         guest_vms = []
         try:
             for c in self.hva_parent:
-                guest_vms.append({c.child_node.node_name: c.child_node.node_id})
+                guest_vms.append({'guest': {'node_id': c.child_node.node_id, 'node_name': c.child_node.node_name}})
         # FIXME: Test if this is still needed
         except NoResultFound:
             pass
@@ -96,50 +96,16 @@ class Node(Base):
 
     @hybrid_property
     def hypervisor(self):
-        hypervisor = []
+        hypervisor = { }
         try:
             for c in self.hva_child:
-                hypervisor.append({c.parent_node.node_name: c.parent_node.node_id})
+                hypervisor = {'node_id': c.parent_node.node_id, 'node_name': c.parent_node.node_name}
         # FIXME: Test if this is still needed
         except AttributeError:
             pass
         except NoResultFound:
             pass
         return hypervisor
-
-
-#    # FIXME: seems like there should be a nicer way to do this.
-#    @hybrid_property
-#    def guest_vms(self):
-#        guest_vms = []
-#        try:
-#            q = DBSession.query(HypervisorVmAssignment)
-#            q = q.filter(HypervisorVmAssignment.parent_node_id == self.node_id)
-#            q = q.all()
-#            # FIXME: What to return here? prehaps just the name and node_id ok?
-#            for r in q:
-#                guest_vms.append({r.child_node.node_name: r.child_node.node_id})
-#        except NoResultFound:
-#            pass
-#        return guest_vms
-#
-#    # FIXME: seems like there should be a nicer way to do this.
-#    @hybrid_property
-#    def hypervisor(self):
-#        hypervisor = []
-#        try:
-#            q = DBSession.query(HypervisorVmAssignment)
-#            q = q.filter(HypervisorVmAssignment.child_node_id == self.node_id)
-#            q = q.one()
-#            # FIXME: Is this the best way to handle the hypervisor having been deleted?
-#            try:
-#                hypervisor.append({q.parent_node.node_name: q.parent_node.node_id})
-#            except AttributeError:
-#                pass
-#        except NoResultFound:
-#            pass
-#        return hypervisor
-
 
     def __json__(self, request):
         return dict(

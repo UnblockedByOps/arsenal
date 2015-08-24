@@ -183,9 +183,13 @@ def authenticate():
 
     log.info('Authenticating login: %s' % (login))
     if login == 'kaboom':
-        password = kaboom_password
+        password = 'password'
+    elif login == 'hvm':
+        password = hvm_password
     else:
         password = getpass.getpass('password: ')
+
+    print "PASSWORD IS: ", password
 
     try:
         payload = {'form.submitted': True,
@@ -513,7 +517,7 @@ def _register(args):
         data.register = True
 
         log.debug('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
-        api_submit('/api/nodes', data, method='put')
+        api_submit('/api/nodes_reg', data, method='put')
 
 
 def search_nodes(args):
@@ -1330,6 +1334,13 @@ def _parse_args():
     return args
 
 
+def check_root():
+    """Check and see if we're running as root"""
+    if not os.geteuid() == 0:
+        log.error('Login {0} must run as root.'.format(login))
+        sys.exit(1)
+
+
 def main():
     """The earth-shattering kaboom"""
 
@@ -1339,8 +1350,6 @@ def main():
     # Get the config
     config = ConfigParser.ConfigParser()
     config.read(args.config_file)
-    secrets_config = ConfigParser.ConfigParser()
-    secrets_config.read(args.secrets_config_file)
     # Globalizing these. Otherwise will be passing them all over the
     # place for no reason.
     global api_host
@@ -1349,7 +1358,7 @@ def main():
     global ca_bundle_file
     global login
     global cookie_file
-    global kaboom_password
+    global hvm_password
     # command line first, config file second.
     api_host = args.api_host if args.api_host else config.get('main', 'api.host')
     api_protocol = config.get('main', 'api.protocol')
@@ -1358,7 +1367,13 @@ def main():
     log_file = config.get('main', 'log.file')
     login = args.login
     cookie_file = args.cookie_file
-    kaboom_password = secrets_config.get('main', 'kaboom.password')
+    # This will only be present on hypervisors
+    try:
+        secrets_config = ConfigParser.ConfigParser()
+        secrets_config.read(args.secrets_config_file)
+        hvm_password = secrets_config.get('main', 'hvm.password')
+    except:
+        pass
 
     # FIXME: Should we write to the log file at INFO even when console is ERROR?
     # FIXME: Should we write to a log at all for regular users? Perhaps only if they ask for it i.e another option?
@@ -1395,17 +1410,17 @@ def main():
                  % api_host)
 
     if login == 'kaboom':
-    
-        if not os.geteuid() == 0:
-            log.error('Login {0} must run as root.'.format(login))
-            sys.exit(1)
-
+        check_root()
         # FIXME: Will need os checking here
-        cookie_file = '/root/.arsenal_cookie'
+        cookie_file = '/root/.arsenal_kaboom_cookie'
+
+    if login == 'hvm':
+        check_root()
+        # FIXME: Will need os checking here
+        cookie_file = '/root/.arsenal_hvm_cookie'
 
     # call whatever function was selected
     args.func(args)
-
 
 if __name__ == '__main__':
     main()

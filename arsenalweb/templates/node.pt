@@ -15,6 +15,28 @@
 -->
 <link href="/static/css/singleton.css" rel="stylesheet" type="text/css" />
 
+<script>
+  $(document).ready(function() {
+
+    // lower pane ajax loader
+    $('.lower_pane').click(function(event){
+        event.preventDefault();
+        var url = $(this).attr('href');
+        $.ajax({
+            url: url,
+            success: function(result){
+              $("#content_insert").html(result);
+            },
+            error: function (jXHR, textStatus, errorThrown) {
+              $("#content_insert").html(errorThrown);
+            }
+        });
+    });
+
+  });
+</script>
+
+
 <div tal:condition="node">
   <div id="page_title_s">
     <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">${node.node_name}</span>
@@ -113,15 +135,26 @@
         eth0: <span class="mono">123.45.6.7</span><br>
       </div>
     </li>
-    <li>
+    <li tal:condition="node.guest_vms">
       <input type="radio" name="tabs" id="tab7">
-      <label for="tab7">Virtualization</label>
+      <label for="tab7">Guest VMs</label>
       <div id="tab-content7" class="tab-content">
-        Virtual Architecture: <span class="mono">Xen</span><br>
-        Virtual Mode: <span class="mono">Guest</span><br>
-        Virtual Host: <span class="mono">vhost</span><br>
-        VM Image Size: <span class="mono">0 MB</span><br>
-        VM Space Used: <span class="mono">0 MB</span><br>
+        <div tal:repeat="item node.guest_vms"> 
+          <div>
+            <a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.guest.node_id)" tal:content="item.guest.node_name">server1.mycompany.com</a>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li tal:condition="node.hypervisor">
+      <input type="radio" name="tabs" id="tab7">
+      <label for="tab7">Hypervisor</label>
+      <div id="tab-content7" class="tab-content">
+        <div>
+          <div>
+            <a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(node.hypervisor.node_id)" tal:content="node.hypervisor.node_name">server1.mycompany.com</a>
+          </div>
+        </div>
       </div>
     </li>
   </ul>

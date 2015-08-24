@@ -29,8 +29,12 @@ from arsenalweb.models import (
 def view_user(request):
 
     au = get_authenticated_user(request)
-    page_title = 'User Data'
+    page_title_type = 'user/'
+    page_title_name = 'User Data'
     change_pw = False
+    perpage = 1
+    offset = 1
+    total = 1
 
     if 'user.submitted' in request.POST:
         email_address = request.POST['email_address']
@@ -72,9 +76,16 @@ def view_user(request):
     au = get_authenticated_user(request)
     subtitle = au['first_last']
 
+    column_selectors = []
+
     return {'layout': site_layout('max'),
-            'page_title': page_title,
+            'page_title_name': page_title_name,
+            'page_title_type': page_title_type,
             'au': au,
+            'perpage': perpage,
+            'offset': offset,
+            'total': total,
+            'column_selectors': column_selectors,
             'subtitle': subtitle,
             'change_pw': change_pw,
            }

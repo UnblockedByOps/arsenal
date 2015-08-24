@@ -41,7 +41,7 @@ def login(request):
 
     # Need to send the client a 401 so it can send a user/pass to auth. Need a second condition to check for authenticated user
     if request.path_info.split('/')[1][:3] == 'api':
-        print "request came from the api"
+        logging.debug('request came from the api, sending request to re-auth')
         return HTTPUnauthorized()
 
     if request.referer and referer_host == request.host and request.referer.split('/')[3][:6] != 'logout':

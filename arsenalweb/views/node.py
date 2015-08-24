@@ -13,19 +13,11 @@
 #  limitations under the License.
 #
 from pyramid.view import view_config
-from pyramid.response import Response
-from sqlalchemy.sql import func
-from sqlalchemy import or_
-from sqlalchemy import desc
-from sqlalchemy.sql import label
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
     log,
     _api_get,
-    )
-from arsenalweb.models import (
-    DBSession,
     )
 
 @view_config(route_name='node', permission='view', renderer='arsenalweb:templates/node.pt')

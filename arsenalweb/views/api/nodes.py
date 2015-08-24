@@ -105,6 +105,123 @@ def api_node_write_id(request):
     return n
 
 
+@view_config(route_name='api_nodes_reg', permission='api_register', request_method='PUT', renderer='json')
+def api_node_register(request):
+    """Process registration requests for the /api/nodes_reg route."""
+
+    au = get_authenticated_user(request)
+
+    log.info('Registering new node')
+    try:
+        payload = request.json_body
+
+        # Get the hardware_profile_id or create if it doesn't exist.
+        try:
+            manufacturer = payload['hardware_profile']['manufacturer']
+            model = payload['hardware_profile']['model']
+
+            uri = '/api/hardware_profiles'
+            data = {'manufacturer': manufacturer,
+                    'model': model
+            }
+            hardware_profile = _api_get(request, uri, data)
+
+            if not hardware_profile:
+
+                log.debug('hardware_profile not found, creating')
+
+                data_j = json.dumps(data, default=lambda o: o.__dict__)
+                _api_put(request, uri, data=data_j)
+                hardware_profile = _api_get(request, uri, data)
+
+            hardware_profile_id = hardware_profile['results'][0]['hardware_profile_id']
+            log.debug('hardware_profile is: {0}'.format(hardware_profile))
+
+        except Exception as e:
+            log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+            raise
+
+        # Get the operating_system_id or create if it doesn't exist.
+        try:
+            variant = payload['operating_system']['variant']
+            version_number = payload['operating_system']['version_number']
+            architecture = payload['operating_system']['architecture']
+            description = payload['operating_system']['description']
+
+            uri = '/api/operating_systems'
+            data = {'variant': variant,
+                    'version_number': version_number,
+                    'architecture': architecture,
+                    'description': description
+            }
+            operating_system = _api_get(request, uri, data)
+
+            if not operating_system:
+
+                log.debug('operating_system not found, attempting to create')
+
+                data_j = json.dumps(data, default=lambda o: o.__dict__)
+                _api_put(request, uri, data=data_j)
+                operating_system = _api_get(request, uri, data)
+
+            operating_system_id = operating_system['results'][0]['operating_system_id']
+            log.info('operating_system is: {0}'.format(operating_system))
+
+        except Exception as e:
+            log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+            raise
+
+        try:
+            unique_id = payload['unique_id'].lower()
+            node_name = payload['node_name']
+            uptime = payload['uptime']
+
+            log.debug('Searching for node unique_id={0}'.format(unique_id))
+            n = DBSession.query(Node)
+            n = n.filter(Node.unique_id==unique_id)
+            n = n.one()
+        except NoResultFound:
+            try:
+                log.info('Creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
+                utcnow = datetime.utcnow()
+
+                n = Node(unique_id=unique_id,
+                         node_name=node_name,
+                         hardware_profile_id=hardware_profile_id,
+                         operating_system_id=operating_system_id,
+                         uptime=uptime,
+                         status_id=2,
+                         updated_by=au['user_id'],
+                         created=utcnow,
+                         updated=utcnow)
+
+                DBSession.add(n)
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error creating new node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
+                raise
+        else:
+            try:
+                log.info('Updating node: {0}'.format(unique_id))
+
+                n.node_name = node_name
+                n.hardware_profile_id = hardware_profile_id
+                n.operating_system_id = operating_system_id
+                n.uptime = uptime
+                n.updated_by=au['user_id']
+
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
+                raise
+
+        return n
+
+    except Exception as e:
+        log.error('Error registering new node API={0},exception={1}'.format(request.url, e))
+        return Response(str(e), content_type='application/json', status_int=500)
+
+
 @view_config(route_name='api_nodes', permission='api_write', request_method='PUT', renderer='json')
 def api_node_write(request):
     """Process write requests for the /api/nodes route."""
@@ -114,150 +231,46 @@ def api_node_write(request):
     try:
         payload = request.json_body
 
-        # FIXME: right now /api/nodes expects all paramters to be passed, no piecemeal updates. Also no support for bulk updates
-        if payload['register']:
+        # Manually created node via the client.
+        try:
+            node_name = payload['node_name']
+            unique_id = payload['unique_id'].lower()
+            status_id = payload['node_status_id']
 
-            # Get the hardware_profile_id or create if it doesn't exist.
+            log.debug('Searching for node unique_id={0}'.format(unique_id))
+            n = DBSession.query(Node)
+            n = n.filter(Node.unique_id==unique_id)
+            n = n.one()
+        except NoResultFound:
             try:
-                manufacturer = payload['hardware_profile']['manufacturer']
-                model = payload['hardware_profile']['model']
 
-                uri = '/api/hardware_profiles'
-                data = {'manufacturer': manufacturer,
-                        'model': model
-                }
-                hardware_profile = _api_get(request, uri, data)
+                log.info('Manually creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
+                utcnow = datetime.utcnow()
 
-                if not hardware_profile:
+                n = Node(node_name=node_name,
+                         unique_id=unique_id,
+                         status_id=status_id,
+                         updated_by=au['user_id'],
+                         created=utcnow,
+                         updated=utcnow)
 
-                    log.debug('hardware_profile not found, creating')
-
-                    data_j = json.dumps(data, default=lambda o: o.__dict__)
-                    _api_put(request, uri, data=data_j)
-                    hardware_profile = _api_get(request, uri, data)
-
-                hardware_profile_id = hardware_profile['results'][0]['hardware_profile_id']
-                log.debug('hardware_profile is: {0}'.format(hardware_profile))
-
+                DBSession.add(n)
+                DBSession.flush()
             except Exception as e:
-                log.error('Unable to determine hardware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+                log.error('Error creating new node node_name={0}unique_id={1},status_id={2},exception={3}'.format(node_name, unique_id, status_id, e))
                 raise
-
-            # Get the operating_system_id or create if it doesn't exist.
-            try:
-                variant = payload['operating_system']['variant']
-                version_number = payload['operating_system']['version_number']
-                architecture = payload['operating_system']['architecture']
-                description = payload['operating_system']['description']
-
-                uri = '/api/operating_systems'
-                data = {'variant': variant,
-                        'version_number': version_number,
-                        'architecture': architecture,
-                        'description': description
-                }
-                operating_system = _api_get(request, uri, data)
-
-                if not operating_system:
-    
-                    log.debug('operating_system not found, attempting to create')
-
-                    data_j = json.dumps(data, default=lambda o: o.__dict__)
-                    _api_put(request, uri, data=data_j)
-                    operating_system = _api_get(request, uri, data)
-
-                operating_system_id = operating_system['results'][0]['operating_system_id']
-                log.info('operating_system is: {0}'.format(operating_system))
-
-            except Exception as e:
-                log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
-                raise
-
-            try:
-                unique_id = payload['unique_id'].lower()
-                node_name = payload['node_name']
-                uptime = payload['uptime']
-
-                log.debug('Searching for node unique_id={0}'.format(unique_id))
-                n = DBSession.query(Node)
-                n = n.filter(Node.unique_id==unique_id)
-                n = n.one()
-            except NoResultFound:
-                try:
-                    log.info('Creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
-                    utcnow = datetime.utcnow()
-
-                    n = Node(unique_id=unique_id,
-                             node_name=node_name,
-                             hardware_profile_id=hardware_profile_id,
-                             operating_system_id=operating_system_id,
-                             uptime=uptime,
-                             status_id=2,
-                             updated_by=au['user_id'],
-                             created=utcnow,
-                             updated=utcnow)
-
-                    DBSession.add(n)
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error creating new node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
-                    raise
-            else:
-                try:
-                    log.info('Updating node: {0}'.format(unique_id))
-
-                    n.node_name = node_name
-                    n.hardware_profile_id = hardware_profile_id
-                    n.operating_system_id = operating_system_id
-                    n.uptime = uptime
-                    n.updated_by=au['user_id']
-
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
-                    raise
         else:
-
-            # Manually created node via the client.
             try:
-                node_name = payload['node_name']
-                unique_id = payload['unique_id'].lower()
-                status_id = payload['node_status_id']
+                log.info('Updating node node_name={0},unique_id={1}'.format(node_name, unique_id))
 
-                log.debug('Searching for node unique_id={0}'.format(unique_id))
-                n = DBSession.query(Node)
-                n = n.filter(Node.unique_id==unique_id)
-                n = n.one()
-            except NoResultFound:
-                try:
+                n.node_name = node_name
+                n.status_id = status_id
+                n.updated_by=au['user_id']
 
-                    log.info('Manually creating new node node_name={0},unique_id={1}'.format(node_name, unique_id))
-                    utcnow = datetime.utcnow()
-
-                    n = Node(node_name=node_name,
-                             unique_id=unique_id,
-                             status_id=status_id,
-                             updated_by=au['user_id'],
-                             created=utcnow,
-                             updated=utcnow)
-
-                    DBSession.add(n)
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error creating new node node_name={0}unique_id={1},status_id={2},exception={3}'.format(node_name, unique_id, status_id, e))
-                    raise
-            else:
-                try:
-                    log.info('Updating node node_name={0},unique_id={1}'.format(node_name, unique_id))
-
-                    n.node_name = node_name
-                    n.status_id = status_id
-                    n.updated_by=au['user_id']
-
-                    DBSession.flush()
-                except Exception as e:
-                    log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
-                    raise
+                DBSession.flush()
+            except Exception as e:
+                log.error('Error updating node node_name={0},unique_id={1},exception={2}'.format(node_name, unique_id, e))
+                raise
 
         return n
 
