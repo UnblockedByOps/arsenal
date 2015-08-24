@@ -305,12 +305,12 @@ def _search(args):
     results = api_submit(api_endpoint, data, method='get_params')
 
     # The client doesn't need metadata
-    try:
+    if not results['results']:
+        log.info('No results found for search.')
+        return None
+    else:
         r = results['results']
-    except KeyError:
-        pass
-
-    return r
+        return r
 
 
 def gen_help(help_type):
@@ -376,7 +376,7 @@ def get_uuid():
         xen_match = "\tUUID: "
         for line in dmidecode_out:
             if re.match(xen_match, line):
-                return line[7:]
+                return line[7:].rstrip()
 
     return None
 
@@ -599,10 +599,7 @@ def search_nodes(args):
 
         results = _search(args)
 
-        if not results:
-            log.info('No results found')
-        else:
-
+        if results:
             # FIXME: Doesn't work beyond the top level for individual fields
             if args.fields:
                 for r in results:
@@ -716,7 +713,7 @@ def _manage_hypervisor_assignments(args, nodes):
     data = {'unique_id': hypervisor}
     r = api_submit('/api/nodes', data, method='get_params')
     if r:
-        hypervisor = r[0]
+        hypervisor = r['results'][0]
 
     for n in nodes:
         log.info('{0} hypervisor={1},node={2}'.format(log_action, hypervisor['node_name'], n['node_name']))
@@ -786,9 +783,7 @@ def delete_nodes(args):
         args.exact_get = True
         results = _search(args)
 
-    if not results:
-        log.info('No results found')
-    else:
+    if results:
         r_names = []
         for n in results:
             r_names.append('{0}: {1}'.format(n['node_name'], n['unique_id']))
@@ -810,9 +805,7 @@ def search_node_groups(args):
 
     if (args.set_tags or args.del_tags):
         results = _search(args)
-        if not results:
-            log.info('No results found')
-        else:
+        if results:
             r_names = []
             for ng in results:
                 r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
@@ -826,10 +819,7 @@ def search_node_groups(args):
 
         results = _search(args)
 
-        if not results:
-            log.info('No results found')
-        else:
-
+        if results:
             if args.fields:
                 for r in results:
                     print '- {0}'.format(r['node_group_name'])
@@ -884,9 +874,7 @@ def delete_node_groups(args):
     args.exact_get = True
     results = _search(args)
 
-    if not results:
-        log.info('No results found')
-    else:
+    if results:
         r_names = []
         for n in results:
             r_names.append(n['node_group_name'])
@@ -1009,8 +997,6 @@ def delete_tags(args):
                 data = {'tag_id': n['tag_id']}
                 # FIXME: name? id? both?
                 api_submit('/api/{0}/{1}'.format(args.object_type, n['tag_id']), data, method='delete')
-    else:
-        log.info('No results found')
 
 
 def _parse_args():

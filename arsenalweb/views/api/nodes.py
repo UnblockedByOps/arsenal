@@ -136,7 +136,7 @@ def api_node_write(request):
                     _api_put(request, uri, data=data_j)
                     hardware_profile = _api_get(request, uri, data)
 
-                hardware_profile_id = hardware_profile['hardware_profile_id']
+                hardware_profile_id = hardware_profile['results'][0]['hardware_profile_id']
                 log.debug('hardware_profile is: {0}'.format(hardware_profile))
 
             except Exception as e:
@@ -166,7 +166,7 @@ def api_node_write(request):
                     _api_put(request, uri, data=data_j)
                     operating_system = _api_get(request, uri, data)
 
-                operating_system_id = operating_system['operating_system_id']
+                operating_system_id = operating_system['results'][0]['operating_system_id']
                 log.info('operating_system is: {0}'.format(operating_system))
 
             except Exception as e:
