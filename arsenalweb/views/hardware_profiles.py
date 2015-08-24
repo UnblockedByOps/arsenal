@@ -16,6 +16,7 @@ from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
+    get_pag_params,
     log,
     _api_get,
     )
@@ -26,9 +27,12 @@ def view_hardware_profiles(request):
     page_title_type = 'objects/'
     page_title_name = 'hardware_profiles'
     au = get_authenticated_user(request)
+    (perpage, offset) = get_pag_params(request)
 
     uri = '/api/hardware_profiles'
-    hardware_profiles = _api_get(request, uri)
+    r = _api_get(request, uri)
+    total = r['meta']['total']
+    hardware_profiles = r['results']
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'hardware_profile_id', 'pretty_name': 'Hardware Profile ID' },
@@ -42,6 +46,9 @@ def view_hardware_profiles(request):
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
+            'perpage': perpage,
+            'offset': offset,
+            'total': total,
             'au': au,
             'column_selectors': column_selectors,
             'hardware_profiles': hardware_profiles,

@@ -21,8 +21,8 @@
 Dark to light
 042E63
 7BBEEB
-a0aec1
-dbe8f9
+A0AEC1
+DBE8F9
 */
     
 html, body {
@@ -617,4 +617,66 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 }
 /* END LOWER PANE LOADING_IMG */
 
+/* START PAGE_NAV */
+#pag_container {
+    text-align:right;
+    padding-top:16px;
+}
+#pag_hist_container {
+  position: relative;
+  top: 135px;
+  text-align: right;
+  z-index: 9999;
+}
+.pag_content {
+    display:inline-block;
+}
+.pag_buttons {
+    display:inline-block;
+    padding: 3px 5px;
+    border-radius: 3px;
+    border: #7BBEEB 1px solid;
+    background: #7BBEEB;
+}
+.pag_buttons_c {
+    padding: 3px 5px;
+}
+.pag_buttons:hover {
+    text-decoration: none;
+    background: #A0AEC1;
+    border: #042E63 1px solid;
+}
+.pag_buttons:active {
+    background: #DBE8F9;
+    border: #042E63 1px solid;
+}
+.pag_buttons a {
+    height: 15px;
+    width: 20px;
+    text-decoration: none;
+    font-size: 0.9em;
+    border-radius:3px;
+    background: none;
+}
+.pag_buttons a:link, a:visited {
+    text-decoration: none;
+}
+.pag_buttons a:hover {
+    text-decoration: none;
+    background: #A0AEC1;
 
+}
+.pag_buttons a:active {
+    color: #DBE8F9;
+}
+.disable {
+  background: #e0e0e0 !important;
+  color: #e0e0e0 !important;
+  pointer-events: none;
+  cursor: default;
+  border: #e0e0e0 1px solid;
+}
+.disable a {
+  background: #e0e0e0;
+}
+/* END PAGE_NAV */

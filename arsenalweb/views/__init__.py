@@ -232,6 +232,7 @@ def format_user(user):
     last = last.strip('CN=')
     return(first,last)
 
+
 def format_groups(groups):
 
     formatted = []
@@ -239,6 +240,7 @@ def format_groups(groups):
         formatted.append(find_between(groups[g], 'CN=', ',OU='))
     return formatted
 
+ 
 def find_between(s, first, last):
     try:
         start = s.index( first ) + len( first )
@@ -247,9 +249,23 @@ def find_between(s, first, last):
     except ValueError:
         return ""
 
+
 def validate_username_cookie(cookieval, cookie_token):
     """ Returns the username if it validates. Otherwise throws
     an exception"""
 
     return signed_deserialize(cookieval, cookie_token)
+
+
+def get_pag_params(request):
+    """Parse and return page params"""
+
+    perpage = 40
+
+    try:
+        offset = int(request.GET.getone("start"))
+    except KeyError:
+        offset = 0
+
+    return (perpage, offset)
 

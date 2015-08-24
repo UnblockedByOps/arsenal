@@ -237,6 +237,30 @@
         </div> <!-- columns_menu_c -->
       </div> <!-- heading_menu_1_c -->
 
+      <div tal:condition="not (page_title_name == 'Home')" id='heading_menu_last_c'>
+        <!!-- Results navigation -->
+        <div id="pag_container">
+          <a tal:attributes="class 'pag_buttons disable' if offset == 0 else 'pag_buttons' ; href '?start=0'">
+            <div class="pag_buttons_c"><img src='/static/img/nav-le.gif' border='0'></div>
+          </a>
+
+          <a tal:attributes="class 'pag_buttons disable' if offset == 0 else 'pag_buttons' ;href '?start=%d' % (offset-perpage)">
+            <div class="pag_buttons_c"><img src='/static/img/nav-l.gif' border='0'></div>
+          </a>
+          <div class="pag_content">
+            <span tal:content="'%d-%d of %d' % (offset+1, min((offset+perpage),total), total)">
+              11-20 of 123
+            </span>
+          </div>
+          <a tal:attributes="class 'pag_buttons disable' if (offset+perpage) &gt;= total else 'pag_buttons' ; href '?start=%d' % (offset+perpage)">
+            <div class="pag_buttons_c"><img src='/static/img/nav-r.gif' border='0'></div>
+          </a>
+          <a tal:attributes="class 'pag_buttons disable' if (offset+perpage) &gt;= total else 'pag_buttons'; href '?start=%d' % ((total-1)/perpage*perpage)">
+            <div class="pag_buttons_c"><img src='/static/img/nav-re.gif' border='0'></div>
+          </a>
+        </div>
+      </div> <!-- heading_menu_last_c -->
+
       <div metal:define-slot="content"> </div>
 
     </div> <!-- main_c -->

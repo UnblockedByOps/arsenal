@@ -16,6 +16,7 @@ from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
+    get_pag_params,
     log,
     _api_get,
     )
@@ -27,6 +28,8 @@ def view_statuses(request):
     page_title_name = 'statuses'
     au = get_authenticated_user(request)
 
+    (perpage, offset) = get_pag_params(request)
+
     params = {'type': 'vir',
              }
     for p in params:
@@ -37,6 +40,7 @@ def view_statuses(request):
 
     uri = '/api/statuses'
     statuses = _api_get(request, uri)
+    total = len(statuses)
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },
@@ -50,6 +54,9 @@ def view_statuses(request):
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
+            'offset': offset,
+            'perpage': perpage,
+            'total': total,
             'au': au,
             'column_selectors': column_selectors,
             'statuses': statuses,

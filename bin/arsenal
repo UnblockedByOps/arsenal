@@ -302,7 +302,13 @@ def _search(args):
     log.debug('data is: {0}'.format(data))
 
     api_endpoint = '/api/{0}'.format(args.object_type)
-    r = api_submit(api_endpoint, data, method='get_params')
+    results = api_submit(api_endpoint, data, method='get_params')
+
+    # The client doesn't need metadata
+    try:
+        r = results['results']
+    except KeyError:
+        pass
 
     return r
 

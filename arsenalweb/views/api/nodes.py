@@ -22,6 +22,7 @@ from arsenalweb.views import (
     log,
     _api_get,
     _api_put,
+    get_pag_params,
     )
 from arsenalweb.views.api import (
     get_api_attribute,
@@ -66,13 +67,7 @@ def api_node_read_id(request):
 def api_node_read(request):
     """Process read requests for the /api/nodes route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone("start"))
-    except:
-        pass
+    (perpage, offset) = get_pag_params(request)
 
     try:
         exact_get =  request.GET.get("exact_get", None)
@@ -90,6 +85,8 @@ def api_node_read(request):
                     v = v.lower()
                 if k == 'exact_get':
                     continue
+                if k == 'start':
+                    continue
 
                 s+='{0}={1},'.format(k, v)    
                 if exact_get:
@@ -101,14 +98,19 @@ def api_node_read(request):
 
             log.debug('Searching for node {0}'.format(s.rstrip(',')))
 
-            nodes = q.all()
-            return nodes
+            total = q.count()
+            nodes = q.limit(perpage).offset(offset).all()
+            results = {'meta': {'total': total}, 'results': nodes}
+            return results
         else:
 
             log.debug('Displaying all nodes')
 
-            n = DBSession.query(Node)
-            return n.limit(perpage).offset(offset).all()
+            q = DBSession.query(Node)
+            total = q.count()
+            nodes =  q.limit(perpage).offset(offset).all()
+            results = {'meta': {'total': total}, 'results': nodes}
+            return results
 
     # FIXME: Should AttributeError return something different?
     except (NoResultFound, AttributeError):

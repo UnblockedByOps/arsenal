@@ -16,6 +16,7 @@ from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
+    get_pag_params,
     log,
     _api_get,
     )
@@ -30,6 +31,8 @@ def view_nodes(request):
     page_title_name = 'nodes'
     au = get_authenticated_user(request)
 
+    (perpage, offset) = get_pag_params(request)
+
     params = {'node_name': None,
              }
     for p in params:
@@ -40,11 +43,13 @@ def view_nodes(request):
 
     terms = params['node_name']
 
+    uri = '/api/nodes?start={0}'.format(offset)
     if terms:
-        uri = '/api/nodes?node_name={0}'.format(terms)
-    else:
-        uri = '/api/nodes'
-    nodes = _api_get(request, uri)
+        uri = '{0}&node_name={1}'.format(uri, terms)
+
+    r = _api_get(request, uri)
+    total = r['meta']['total']
+    nodes = r['results']
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'node_id', 'pretty_name': 'Node ID' },
@@ -60,6 +65,9 @@ def view_nodes(request):
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
+            'perpage': perpage,
+            'offset': offset,
+            'total': total,
             'au': au,
             'column_selectors': column_selectors,
             'nodes': nodes,

@@ -19,6 +19,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views import (
     get_authenticated_user,
     log,
+    get_pag_params,
     )
 from arsenalweb.views.api import (
     get_api_attribute,
@@ -60,25 +61,23 @@ def api_hardware_profile_read_id(request):
 def api_hardware_profile_read(request):
     """Process read requests for the /api/hardware_profiles route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
+    (perpage, offset) = get_pag_params(request)
 
     try:
         model = request.params.get('model')
         manufacturer = request.params.get('manufacturer')
 
+        # FIXME: This needs to be more dynamic
         if model:
             log.debug('Searching for hardware_profile: {0}'.format(request.url))
             try:
                 hp = DBSession.query(HardwareProfile)
                 hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
                 hp = hp.filter(HardwareProfile.model==model)
-                return hp.one()
+                total = hp.count()
+                hardware_profile = hp.limit(perpage).offset(offset).all()
+                results = {'meta': {'total': total}, 'results': hardware_profile}
+                return results
             except Exception as e:
                 log.error('Error querying hardware_profile={0},exception={1}'.format(request.url, e))
                 raise
@@ -86,7 +85,10 @@ def api_hardware_profile_read(request):
             log.debug('Displaying all hardware profiles')
             try:
                 hp = DBSession.query(HardwareProfile)
-                return hp.limit(perpage).offset(offset).all()
+                total = hp.count()
+                hardware_profiles = hp.limit(perpage).offset(offset).all()
+                results = {'meta': {'total': total}, 'results': hardware_profiles}
+                return results
             except Exception as e:
                 log.error('Error reading all hardware_profiles exception={0}'.format(e))
                 raise
