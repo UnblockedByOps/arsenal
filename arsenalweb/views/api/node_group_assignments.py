@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -60,54 +61,7 @@ def api_node_group_assignment_read_id(request):
 def api_node_group_assignment_read(request):
     """Process read requests for the /api/node_group_assignments route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
-
-    try:
-        node_id = request.params.get('node_id')
-        node_group_id = request.params.get('node_group_id')
-        exact_get =  request.GET.get("exact_get", None)
-
-        s = ''
-        nga = DBSession.query(NodeGroupAssignment)
-        if any((node_id, node_group_id)):
-
-            # FIXME: this is starting to get replicated. Can it be a function?
-            for k,v in request.GET.items():
-                # FIXME: This is sub-par. Need a better way to distinguish
-                # meta params from search params without having to
-                # pre-define everything.
-                if k == 'exact_get':
-                    continue
-
-                s+='{0}={1},'.format(k, v)
-                if exact_get:
-                    log.debug('Exact filtering on {0}={1}'.format(k, v))
-                    nga = nga.filter(getattr(NodeGroupAssignment ,k)==v)
-                else:
-                    log.debug('Loose filtering on {0}={1}'.format(k, v))
-                    nga = nga.filter(getattr(NodeGroupAssignment ,k).like('%{0}%'.format(v)))
-
-            log.debug('Searching for node_group_assignments with params: {0}'.format(s.rstrip(',')))
-
-        else:
-            log.debug('Displaying all node_group_assignments')
-
-        nga = nga.limit(perpage).offset(offset).all()
-
-        return nga
-
-    except NoResultFound:
-            return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from node_group_assignments API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_params(request, 'NodeGroupAssignment')
 
 
 @view_config(route_name='api_node_group_assignments', permission='api_write', request_method='PUT', renderer='json')

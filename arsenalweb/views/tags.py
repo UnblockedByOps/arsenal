@@ -16,6 +16,7 @@ from pyramid.view import view_config
 from arsenalweb.views import (
     get_authenticated_user,
     site_layout,
+    get_pag_params,
     log,
     _api_get,
     )
@@ -23,12 +24,30 @@ from arsenalweb.views import (
 
 @view_config(route_name='tags', permission='view', renderer='arsenalweb:templates/tags.pt')
 def view_tags(request):
+
     page_title_type = 'objects/'
     page_title_name = 'tags'
     au = get_authenticated_user(request)
+    (perpage, offset) = get_pag_params(request)
+
+    payload = {}
+    for k in request.GET:
+        payload[k] = request.GET[k]
 
     uri = '/api/tags'
-    tags = _api_get(request, uri)
+    log.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
+
+    if payload:
+        r = _api_get(request, uri, payload)
+    else:
+        r = _api_get(request, uri)
+
+    if r:
+        total = r['meta']['total']
+        tags = r['results']
+    else:
+        total = 0
+        tags = []
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'tag_id', 'pretty_name': 'Tag ID' },
@@ -42,6 +61,9 @@ def view_tags(request):
     return {'layout': site_layout('max'),
             'page_title_type': page_title_type,
             'page_title_name': page_title_name,
+            'perpage': perpage,
+            'offset': offset,
+            'total': total,
             'au': au,
             'column_selectors': column_selectors,
             'tags': tags,

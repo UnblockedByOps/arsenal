@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -60,42 +61,7 @@ def api_status_read_id(request):
 def api_status_read(request):
     """Process read requests for the /api/statuses route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone("start"))
-    except:
-        pass
-
-    try:
-        status_name = request.params.get('status_name')
-
-        if status_name:
-            log.debug('Searching for status: {0}'.format(request.url))
-            try:
-                s = DBSession.query(Status)
-                s = s.filter(Status.status_name==status_name)
-                return s.one()
-            except Exception as e:
-                log.error('Error reading status status_name={0},exception={2}'.format(status_name, e))
-                raise
-        else:
-            log.debug('Displaying all statuses')
-            try:
-                s = DBSession.query(Status)
-                s = s.limit(perpage).offset(offset).all()
-                return s
-            except Exception as e:
-                log.error('Error reading status status_name={0},exception={2}'.format(status_name, e))
-                raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from statuses API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='text/plain', status_int=500)
+    return api_read_by_params(request, 'Status')
 
 
 @view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json')

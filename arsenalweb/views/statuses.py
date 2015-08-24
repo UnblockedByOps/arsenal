@@ -24,23 +24,30 @@ from arsenalweb.views import (
 
 @view_config(route_name='statuses', permission='view', renderer='arsenalweb:templates/statuses.pt')
 def view_statuses(request):
+
     page_title_type = 'objects/'
     page_title_name = 'statuses'
     au = get_authenticated_user(request)
-
     (perpage, offset) = get_pag_params(request)
 
-    params = {'type': 'vir',
-             }
-    for p in params:
-        try:
-            params[p] = request.params[p]
-        except:
-            pass
+    payload = {}
+    for k in request.GET:
+        payload[k] = request.GET[k]
 
     uri = '/api/statuses'
-    statuses = _api_get(request, uri)
-    total = len(statuses)
+    log.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
+
+    if payload:
+        r = _api_get(request, uri, payload)
+    else:
+        r = _api_get(request, uri)
+
+    if r:
+        total = r['meta']['total']
+        statuses = r['results']
+    else:
+        total = 0
+        statuses = []
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'status_id', 'pretty_name': 'Status ID' },

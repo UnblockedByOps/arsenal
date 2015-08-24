@@ -24,15 +24,30 @@ from arsenalweb.views import (
 
 @view_config(route_name='hardware_profiles', permission='view', renderer='arsenalweb:templates/hardware_profiles.pt')
 def view_hardware_profiles(request):
+
     page_title_type = 'objects/'
     page_title_name = 'hardware_profiles'
     au = get_authenticated_user(request)
     (perpage, offset) = get_pag_params(request)
 
+    payload = {}
+    for k in request.GET:
+        payload[k] = request.GET[k]
+
     uri = '/api/hardware_profiles'
-    r = _api_get(request, uri)
-    total = r['meta']['total']
-    hardware_profiles = r['results']
+    log.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
+
+    if payload:
+        r = _api_get(request, uri, payload)
+    else:
+        r = _api_get(request, uri)
+
+    if r:
+        total = r['meta']['total']
+        hardware_profiles = r['results']
+    else:
+        total = 0
+        hardware_profiles = []
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [ {'name': 'hardware_profile_id', 'pretty_name': 'Hardware Profile ID' },

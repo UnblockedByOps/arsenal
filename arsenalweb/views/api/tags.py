@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -40,6 +41,7 @@ def api_tag_schema(request):
     }
 
     return tag
+
 
 @view_config(route_name='api_tag_r', request_method='GET', renderer='json')
 def api_tag_read_attrib(request):
@@ -59,59 +61,7 @@ def api_tag_read_id(request):
 def api_tag_read(request):
     """Process read requests for the /api/tags route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
-
-    try:
-        exact_get =  request.GET.get("exact_get", None)
-        tag_name = request.params.get('tag_name')
-        tag_value = request.params.get('tag_value')
-
-        if any((tag_name, tag_value)):
-            log.debug('Searching for tag_name: {0}'.format(request.url))
-            s = ""
-            try:
-                t = DBSession.query(Tag)
-                for k,v in request.GET.items():
-                    # FIXME: This is sub-par. Need a better way to distinguish
-                    # meta params from search params without having to
-                    # pre-define everything.
-                    if k == 'exact_get':
-                        continue
-    
-                    s+='{0}={1},'.format(k, v)
-                    if exact_get:
-                        log.debug('Exact filtering on {0}={1}'.format(k, v))
-                        t = t.filter(getattr(Tag ,k)==v)
-                    else:
-                        log.debug('Loose filtering on {0}={1}'.format(k, v))
-                        t = t.filter(getattr(Tag ,k).like('%{0}%'.format(v)))
-
-                log.debug('Searching for tags {0}'.format(s.rstrip(',')))
-                return t.all()
-            except Exception as e:
-                log.error('Error reading tag tag_name={0},exception={1}'.format(request.url, e))
-                raise
-        else:
-            log.info('Displaying all tags')
-            try:
-                ts = DBSession.query(Tag)
-                return ts.limit(perpage).offset(offset).all()
-            except Exception as e:
-                log.error('Error reading all tags exception={0}'.format(e))
-                raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from tags API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_params(request, 'Tag')
 
 
 @view_config(route_name='api_tags', permission='api_write', request_method='PUT', renderer='json')

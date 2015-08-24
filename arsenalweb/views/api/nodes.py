@@ -22,18 +22,17 @@ from arsenalweb.views import (
     log,
     _api_get,
     _api_put,
-    get_pag_params,
     )
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
 from arsenalweb.models import (
     DBSession,
     Node,
-    Status,
     )
 
 
@@ -67,58 +66,7 @@ def api_node_read_id(request):
 def api_node_read(request):
     """Process read requests for the /api/nodes route."""
 
-    (perpage, offset) = get_pag_params(request)
-
-    try:
-        exact_get =  request.GET.get("exact_get", None)
-
-        if request.params:
-            s = ''
-            # Filter on all the passed in terms
-            q = DBSession.query(Node)
-
-            for k,v in request.GET.items():
-                # FIXME: This is sub-par. Need a better way to distinguish 
-                # meta params from search params without having to
-                # pre-define everything.
-                if k == 'unique_id':
-                    v = v.lower()
-                if k == 'exact_get':
-                    continue
-                if k == 'start':
-                    continue
-
-                s+='{0}={1},'.format(k, v)    
-                if exact_get:
-                    log.debug('Exact filtering on {0}={1}'.format(k, v))
-                    q = q.filter(getattr(Node ,k)==v)
-                else:
-                    log.debug('Loose filtering on {0}={1}'.format(k, v))
-                    q = q.filter(getattr(Node ,k).like('%{0}%'.format(v)))
-
-            log.debug('Searching for node {0}'.format(s.rstrip(',')))
-
-            total = q.count()
-            nodes = q.limit(perpage).offset(offset).all()
-            results = {'meta': {'total': total}, 'results': nodes}
-            return results
-        else:
-
-            log.debug('Displaying all nodes')
-
-            q = DBSession.query(Node)
-            total = q.count()
-            nodes =  q.limit(perpage).offset(offset).all()
-            results = {'meta': {'total': total}, 'results': nodes}
-            return results
-
-    # FIXME: Should AttributeError return something different?
-    except (NoResultFound, AttributeError):
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception, e:
-        log.error('Error reading from nodes API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_params(request, 'Node')
 
 
 @view_config(route_name='api_node', permission='api_write', request_method='PUT', renderer='json')

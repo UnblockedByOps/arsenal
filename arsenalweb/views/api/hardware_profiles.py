@@ -24,6 +24,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -61,44 +62,7 @@ def api_hardware_profile_read_id(request):
 def api_hardware_profile_read(request):
     """Process read requests for the /api/hardware_profiles route."""
 
-    (perpage, offset) = get_pag_params(request)
-
-    try:
-        model = request.params.get('model')
-        manufacturer = request.params.get('manufacturer')
-
-        # FIXME: This needs to be more dynamic
-        if model:
-            log.debug('Searching for hardware_profile: {0}'.format(request.url))
-            try:
-                hp = DBSession.query(HardwareProfile)
-                hp = hp.filter(HardwareProfile.manufacturer==manufacturer)
-                hp = hp.filter(HardwareProfile.model==model)
-                total = hp.count()
-                hardware_profile = hp.limit(perpage).offset(offset).all()
-                results = {'meta': {'total': total}, 'results': hardware_profile}
-                return results
-            except Exception as e:
-                log.error('Error querying hardware_profile={0},exception={1}'.format(request.url, e))
-                raise
-        else:
-            log.debug('Displaying all hardware profiles')
-            try:
-                hp = DBSession.query(HardwareProfile)
-                total = hp.count()
-                hardware_profiles = hp.limit(perpage).offset(offset).all()
-                results = {'meta': {'total': total}, 'results': hardware_profiles}
-                return results
-            except Exception as e:
-                log.error('Error reading all hardware_profiles exception={0}'.format(e))
-                raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from hardware_profiles API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='text/plain', status_int=500)
+    return api_read_by_params(request, 'HardwareProfile')
 
 
 @view_config(route_name='api_hardware_profiles', permission='api_write', request_method='PUT', renderer='json')

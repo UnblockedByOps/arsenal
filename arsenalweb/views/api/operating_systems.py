@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -58,45 +59,7 @@ def api_operating_system_read_id(request):
 @view_config(route_name='api_operating_systems', request_method='GET', renderer='json')
 def api_operating_system_read(request):
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
-
-    try:
-        variant = request.params.get('variant')
-        version_number = request.params.get('version_number')
-        architecture = request.params.get('architecture')
-
-        if variant:
-            log.debug('Searching for operating_system: {0}'.format(request.url))
-            try:
-                os = DBSession.query(OperatingSystem)
-                os = os.filter(OperatingSystem.variant==variant)
-                os = os.filter(OperatingSystem.version_number==version_number)
-                os = os.filter(OperatingSystem.architecture==architecture)
-                return os.one()
-            except Exception as e:
-                log.error('Error querying operating_system={0},exception={1}'.format(request.url, e))
-                raise
-        else:
-            log.info('Displaying all operating systems')
-            try:
-                os = DBSession.query(OperatingSystem)
-                return os.limit(perpage).offset(offset).all()
-            except Exception as e:
-                log.error('Error reading all operating_systems exception={0}'.format(e))
-                raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from api_operating_systems API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='text/plain', status_int=500)
+    return api_read_by_params(request, 'OperatingSystem')
 
 
 @view_config(route_name='api_operating_systems', permission='api_write', request_method='PUT', renderer='json')

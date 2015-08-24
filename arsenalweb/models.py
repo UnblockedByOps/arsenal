@@ -411,18 +411,23 @@ class HypervisorVmAssignment(Base):
 
     def __json__(self, request):
 
-        # FIXME: Is this the best way to handle the hypervisor having been deleted?
+        # FIXME: The DB should be cleaning these up.
         try:
             hypervisor_name = self.parent_node.node_name
         except AttributeError:
             hypervisor_name = 'hypervisor_deleted'
+
+        try:
+            vm_name = self.child_node.node_name
+        except AttributeError:
+            vm_name = 'vm_deleted'
 
         return dict(
             hypervisor_vm_assignment_id=self.hypervisor_vm_assignment_id,
             parent_node_id=self.parent_node_id,
             parent_node_name=hypervisor_name,
             child_node_id=self.child_node_id,
-            child_node_name=self.child_node.node_name,
+            child_node_name=vm_name,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
             updated_by=self.updated_by,

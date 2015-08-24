@@ -33,10 +33,9 @@ def view_home(request):
         print '{0}: {1}'.format(key,value)
 
     url_base = '/{0}?'.format(request.POST.get('object_type'))
-    url_suffix = 'node_name={0}'.format(request.POST.get('search_terms'))
+    url_suffix = request.POST.get('search_terms')
     return_url = '{0}{1}'.format(url_base, url_suffix)
 
     log.info('Search url is: {0}'.format(return_url))
 
-    # return HTTPFound('/statuses', headers=headers)
     return HTTPFound(return_url)

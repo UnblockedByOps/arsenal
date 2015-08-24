@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -60,54 +61,7 @@ def api_hypervisor_vm_assignment_read_id(request):
 def api_hypervisor_vm_assignment_read(request):
     """Process read requests for the /api/hypervisor_vm_assignments route."""
 
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
-
-    try:
-        parent_node_id = request.params.get('parent_node_id')
-        child_node_id = request.params.get('child_node_id')
-        exact_get =  request.GET.get("exact_get", None)
-
-        s = ''
-        hva = DBSession.query(HypervisorVmAssignment)
-        if any((parent_node_id, child_node_id)):
-
-            # FIXME: this is starting to get replicated. Can it be a function?
-            for k,v in request.GET.items():
-                # FIXME: This is sub-par. Need a better way to distinguish
-                # meta params from search params without having to
-                # pre-define everything.
-                if k == 'exact_get':
-                    continue
-
-                s+='{0}={1},'.format(k, v)
-                if exact_get:
-                    log.debug('Exact filtering on {0}={1}'.format(k, v))
-                    hva = hva.filter(getattr(HypervisorVmAssignment ,k)==v)
-                else:
-                    log.debug('Loose filtering on {0}={1}'.format(k, v))
-                    hva = hva.filter(getattr(HypervisorVmAssignment ,k).like('%{0}%'.format(v)))
-
-            log.debug('Searching for hypervisor_vm_assignments with params: {0}'.format(s.rstrip(',')))
-
-        else:
-            log.debug('Displaying all hypervisor_vm_assignments')
-
-        hva = hva.limit(perpage).offset(offset).all()
-
-        return hva
-
-    except NoResultFound:
-            return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from hypervisor_vm_assignments API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    return api_read_by_params(request, 'HypervisorVmAssignment')
 
 
 @view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='PUT', renderer='json')

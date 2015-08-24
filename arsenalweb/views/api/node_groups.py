@@ -23,6 +23,7 @@ from arsenalweb.views import (
 from arsenalweb.views.api import (
     get_api_attribute,
     api_read_by_id,
+    api_read_by_params,
     api_delete_by_id,
     api_delete_by_params,
     )
@@ -59,42 +60,8 @@ def api_node_group_read_id(request):
 @view_config(route_name='api_node_groups', request_method='GET', renderer='json')
 def api_node_group_read(request):
     """Process read requests for the /api/node_groups route."""
-
-    perpage = 40
-    offset = 0
-
-    try:
-        offset = int(request.GET.getone('start'))
-    except:
-        pass
-
-    try:
-        node_group_name = request.params.get('node_group_name')
-
-        if node_group_name:
-            log.debug('Searching for node_group: {0}'.format(request.url))
-            try:
-                ng = DBSession.query(NodeGroup)
-                ng = ng.filter(NodeGroup.node_group_name==node_group_name)
-                return ng.all()
-            except Exception as e:
-                log.error('Error reading node_group node_group_name={0},exception={1}'.format(node_group_name, e))
-                raise
-        else:
-            log.debug('Displaying all node_groups')
-            try:
-                ngs = DBSession.query(NodeGroup)
-                return ngs.limit(perpage).offset(offset).all()
-            except Exception as e:
-                log.error('Error reading all node_groups exception={0}'.format(e))
-                raise
-
-    except NoResultFound:
-        return Response(content_type='application/json', status_int=404)
-
-    except Exception as e:
-        log.error('Error reading from node_groups API={0},exception={1}'.format(request.url, e))
-        return Response(str(e), content_type='application/json', status_int=500)
+    
+    return api_read_by_params(request, 'NodeGroup')
 
 
 @view_config(route_name='api_node_groups', permission='api_write', request_method='PUT', renderer='json')
