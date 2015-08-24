@@ -189,8 +189,6 @@ def authenticate():
     else:
         password = getpass.getpass('password: ')
 
-    print "PASSWORD IS: ", password
-
     try:
         payload = {'form.submitted': True,
                    'api.client': True,
