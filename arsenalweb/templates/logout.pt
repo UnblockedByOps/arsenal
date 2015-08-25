@@ -24,7 +24,7 @@
         type="image/png"
         href="/static/img/favico.png?v=3">
     <title>Arsenal: ${page_title}</title>
-    <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
+    <link href="/static/css/login.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 

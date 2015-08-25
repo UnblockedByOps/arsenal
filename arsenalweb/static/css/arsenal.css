@@ -484,6 +484,41 @@ tr:hover td {
 }
 /* END DEFAULT_TABLE settings */
 
+/* START LOGIN */
+#login_t,
+#logout_t,
+#error_t {
+  position: relative;
+  top: 0px;
+  width: 100%;
+  padding-top: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #042E63;
+}
+#login_b,
+#logout_b,
+#error_b {
+  position: relative;
+  margin-top: 30px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  background: #fff;
+}
+
+.logout, .error {
+  text-align: center;
+  padding: 25px;
+  color: #F70000;
+}
+.login {
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+/* END LOGIN */
+
 /* START dragtable */
 .dragtable-sortable {
   list-style-type: none;
