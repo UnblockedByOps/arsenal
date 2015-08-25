@@ -34,6 +34,27 @@ from arsenalweb.models import (
     )
 
 
+def create_hardware_profile(manufacturer, model, user_id):
+    """Create a new hardware_profile."""
+
+    try:
+        log.info('Creating new hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
+        utcnow = datetime.utcnow()
+
+        hp = HardwareProfile(manufacturer = manufacturer,
+                             model = model,
+                             updated_by = user_id,
+                             created = utcnow,
+                             updated = utcnow)
+
+        DBSession.add(hp)
+        DBSession.flush()
+        return hp
+    except Exception as e:
+        log.error('Error creating new harware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
+        raise
+
+
 @view_config(route_name='api_hardware_profiles', request_method='GET', request_param='schema=true', renderer='json')
 def api_hardware_profiles_schema(request):
     """Schema document for the hardware_profiles API."""
@@ -85,21 +106,7 @@ def api_hardware_profile_write(request):
             hp = hp.filter(HardwareProfile.model==model)
             hp = hp.one()
         except NoResultFound:
-            try:
-                log.info('Creating new hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))
-                utcnow = datetime.utcnow()
-
-                hp = HardwareProfile(manufacturer = manufacturer,
-                                     model = model,
-                                     updated_by = au['user_id'],
-                                     created = utcnow,
-                                     updated = utcnow)
-
-                DBSession.add(hp)
-                DBSession.flush()
-            except Exception as e:
-                log.error('Error creating new harware_profile manufacturer={0},model={1},exception={2}'.format(manufacturer, model, e))
-                raise
+            hp = create_hardware_profile(manufacturer, model, au['user_id'])
         else:
             try:
                 log.info('Updating hardware_profile manufacturer={0},model={1}'.format(manufacturer, model))

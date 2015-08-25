@@ -30,6 +30,12 @@ from arsenalweb.views.api import (
     api_delete_by_id,
     api_delete_by_params,
     )
+from arsenalweb.views.api.hardware_profiles import (
+    create_hardware_profile,
+    )
+from arsenalweb.views.api.operating_systems import (
+    create_operating_system,
+    )
 from arsenalweb.models import (
     DBSession,
     Node,
@@ -120,21 +126,23 @@ def api_node_register(request):
             manufacturer = payload['hardware_profile']['manufacturer']
             model = payload['hardware_profile']['model']
 
+            # FIXME: remove the http call
             uri = '/api/hardware_profiles'
             data = {'manufacturer': manufacturer,
                     'model': model
             }
             hardware_profile = _api_get(request, uri, data)
 
-            if not hardware_profile['results']:
+            try:
+                hardware_profile_id = hardware_profile['results'][0]['hardware_profile_id']
+
+            except IndexError:
 
                 log.debug('hardware_profile not found, creating')
 
-                data_j = json.dumps(data, default=lambda o: o.__dict__)
-                _api_put(request, uri, data=data_j)
-                hardware_profile = _api_get(request, uri, data)
+                hardware_profile = create_hardware_profile(manufacturer, model, au['user_id'])
+                hardware_profile_id = hardware_profile.hardware_profile_id
 
-            hardware_profile_id = hardware_profile['results'][0]['hardware_profile_id']
             log.debug('hardware_profile is: {0}'.format(hardware_profile))
 
         except Exception as e:
@@ -148,6 +156,7 @@ def api_node_register(request):
             architecture = payload['operating_system']['architecture']
             description = payload['operating_system']['description']
 
+            # FIXME: remove the http call
             uri = '/api/operating_systems'
             data = {'variant': variant,
                     'version_number': version_number,
@@ -156,15 +165,15 @@ def api_node_register(request):
             }
             operating_system = _api_get(request, uri, data)
 
-            if not operating_system['results']:
+            try:
+                operating_system_id = operating_system['results'][0]['operating_system_id']
+
+            except IndexError:
 
                 log.debug('operating_system not found, attempting to create')
 
-                data_j = json.dumps(data, default=lambda o: o.__dict__)
-                _api_put(request, uri, data=data_j)
-                operating_system = _api_get(request, uri, data)
-
-            operating_system_id = operating_system['results'][0]['operating_system_id']
+                operating_system = create_operating_system(variant, version_number, architecture, description, au['user_id'])
+                operating_system_id = operating_system.operating_system_id
             log.info('operating_system is: {0}'.format(operating_system))
 
         except Exception as e:

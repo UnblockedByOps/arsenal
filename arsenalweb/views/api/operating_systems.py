@@ -32,6 +32,28 @@ from arsenalweb.models import (
     OperatingSystem,
     )
 
+def create_operating_system(variant, version_number, architecture, description, user_id):
+    """ """
+    try:
+        log.info('Creating new operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
+        utcnow = datetime.utcnow()
+
+        os = OperatingSystem(variant=variant,
+                             version_number=version_number,
+                             architecture=architecture,
+                             description=description,
+                             updated_by=user_id,
+                             created=utcnow,
+                             updated=utcnow)
+
+        DBSession.add(os)
+        DBSession.flush()
+        return os
+    except Exception as e:
+        log.error('Error creating new operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
+        raise
+
+
 @view_config(route_name='api_operating_systems', request_method='GET', request_param='schema=true', renderer='json')
 def api_operating_systems_schema(request):
     """Schema document for the operating_systems API."""
@@ -84,23 +106,7 @@ def api_operating_system_write(request):
             os = os.filter(OperatingSystem.architecture==architecture)
             os = os.one()
         except NoResultFound:
-            try:
-                log.info('Creating new operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
-                utcnow = datetime.utcnow()
-
-                os = OperatingSystem(variant=variant,
-                                     version_number=version_number,
-                                     architecture=architecture,
-                                     description=description,
-                                     updated_by=au['user_id'],
-                                     created=utcnow,
-                                     updated=utcnow)
-
-                DBSession.add(os)
-                DBSession.flush()
-            except Exception as e:
-                log.error('Error creating new operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
-                raise
+            os = create_operating_system(variant, version_number, architecture, description, au['user_id'])
         else:
             try:
                 log.info('Updating operating_system variant={0},version_number={1},architecture={2},description={3}'.format(variant, version_number, architecture, description))
