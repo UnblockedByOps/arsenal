@@ -106,10 +106,10 @@ def main(global_config, **settings):
     config.add_route('test2', '/test2')
     config.add_route('test3', '/test3')
     # API Endpoints. Order matters.
-    # FIXME: api_nodes_reg is a special endpoint in order to use pyramid 
-    # secirty to control access to registrations. Don't like it
+    # FIXME: api_register is a special endpoint in order to use pyramid 
+    # secirty to control access to node registrations. Don't like it
     # but can't use request_param on a put request.
-    config.add_route('api_nodes_reg', '/api/nodes_reg')
+    config.add_route('api_register', '/api/register')
     config.add_route('api_nodes', '/api/nodes')
     config.add_route('api_node_r', '/api/nodes/{id}/{resource}')
     config.add_route('api_node', '/api/nodes/{id}')

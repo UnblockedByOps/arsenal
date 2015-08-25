@@ -204,7 +204,7 @@ def authenticate():
         if r.status_code == requests.codes.ok:
 
             cookies = session.cookies.get_dict()
-            log.info('Cookies are: %s' %(cookies))
+            log.debug('Cookies are: %s' %(cookies))
             try:
                 write_cookie(cookies)
                 return cookies
@@ -515,7 +515,7 @@ def _register(args):
         data.register = True
 
         log.debug('data is: {0}'.format(json.dumps(data, default=lambda o: o.__dict__)))
-        api_submit('/api/nodes_reg', data, method='put')
+        api_submit('/api/register', data, method='put')
 
 
 def search_nodes(args):

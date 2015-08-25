@@ -105,9 +105,9 @@ def api_node_write_id(request):
     return n
 
 
-@view_config(route_name='api_nodes_reg', permission='api_register', request_method='PUT', renderer='json')
+@view_config(route_name='api_register', permission='api_register', request_method='PUT', renderer='json')
 def api_node_register(request):
-    """Process registration requests for the /api/nodes_reg route."""
+    """Process registration requests for the /api/register route."""
 
     au = get_authenticated_user(request)
 

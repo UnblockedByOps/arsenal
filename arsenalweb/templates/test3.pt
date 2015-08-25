@@ -24,7 +24,7 @@
         type="image/png"
         href="/static/img/favico.png?v=3">
     <title>Arsenal Mock</title>
-    <link href="/static/css/arsenal2.css" rel="stylesheet" type="text/css" />
+    <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
     <script src="/static/js/jquery-2.1.3.min.js"></script>
     <script src="/static/js/jquery-ui.min.js"></script>
     <script src="/static/js/resizable.js"></script>

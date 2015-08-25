@@ -30,7 +30,7 @@ def view_home(request):
     au = get_authenticated_user(request)
 
     for key, value in request.POST.iteritems():
-        print '{0}: {1}'.format(key,value)
+        log.info('{0}: {1}'.format(key,value))
 
     url_base = '/{0}?'.format(request.POST.get('object_type'))
     url_suffix = request.POST.get('search_terms')
