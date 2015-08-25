@@ -126,7 +126,7 @@ def api_node_register(request):
             }
             hardware_profile = _api_get(request, uri, data)
 
-            if not hardware_profile:
+            if not hardware_profile['results']:
 
                 log.debug('hardware_profile not found, creating')
 
@@ -156,7 +156,7 @@ def api_node_register(request):
             }
             operating_system = _api_get(request, uri, data)
 
-            if not operating_system:
+            if not operating_system['results']:
 
                 log.debug('operating_system not found, attempting to create')
 
