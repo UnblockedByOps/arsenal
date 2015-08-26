@@ -174,7 +174,7 @@ def api_node_register(request):
 
                 operating_system = create_operating_system(variant, version_number, architecture, description, au['user_id'])
                 operating_system_id = operating_system.operating_system_id
-            log.info('operating_system is: {0}'.format(operating_system))
+            log.debug('operating_system is: {0}'.format(operating_system))
 
         except Exception as e:
             log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
