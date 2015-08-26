@@ -46,24 +46,28 @@ class ArsenalClient(object):
         self.secrets_file = secrets_file
         self.args = args
         self.log = logging.getLogger(__name__)
+        print "BOO"
 
         # FIXME: Should we write to the log file at INFO even when console is ERROR?
         # FIXME: Should we write to a log at all for regular users? Perhaps only if they ask for it i.e another option?
-        if args.verbose:
-            log_level = logging.DEBUG
-        elif args.quiet:
-            log_level = logging.ERROR
-        else:
-            log_level = logging.INFO
+        log_level = logging.INFO
+        if args:
+            if args.verbose:
+                log_level = logging.DEBUG
+            elif args.quiet:
+                log_level = logging.ERROR
 
-        # Set up logging to file
-        if args.write_log:
-
-            logging.basicConfig(level=log_level,
-                                format='%(asctime)s %(levelname)-8s- %(message)s',
-                                datefmt='%Y-%m-%d %H:%M:%S',
-                                filename=self.log_file,
-                                filemode='a')
+            # Set up logging to file
+            if args.write_log:
+    
+                logging.basicConfig(level=log_level,
+                                    format='%(asctime)s %(levelname)-8s- %(message)s',
+                                    datefmt='%Y-%m-%d %H:%M:%S',
+                                    filename=self.log_file,
+                                    filemode='a')
+            if args.verbose:
+                log.info('Debug messages are being written to the log file : %s'
+                         % self.log_file)
 
         root = logging.getLogger()
         root.setLevel(log_level)
@@ -73,10 +77,6 @@ class ArsenalClient(object):
         formatter = logging.Formatter('%(levelname)-8s- %(message)s')
         console.setFormatter(formatter)
         root.addHandler(console)
-
-        if args.verbose:
-            log.info('Debug messages are being written to the log file : %s'
-                     % self.log_file)
 
         log.info('Using server: {0}'.format(self.api_host))
 
@@ -129,7 +129,6 @@ class ArsenalClient(object):
             except:
 #                log.error('Secrets file missing or malformed!')
                 sys.exit(1)
-
 
 
     def get_cookie_auth(self):
