@@ -48,38 +48,6 @@ class ArsenalClient(object):
         self.log = logging.getLogger(__name__)
         print "BOO"
 
-        # FIXME: Should we write to the log file at INFO even when console is ERROR?
-        # FIXME: Should we write to a log at all for regular users? Perhaps only if they ask for it i.e another option?
-        log_level = logging.INFO
-        if args:
-            if args.verbose:
-                log_level = logging.DEBUG
-            elif args.quiet:
-                log_level = logging.ERROR
-
-            # Set up logging to file
-            if args.write_log:
-    
-                logging.basicConfig(level=log_level,
-                                    format='%(asctime)s %(levelname)-8s- %(message)s',
-                                    datefmt='%Y-%m-%d %H:%M:%S',
-                                    filename=self.log_file,
-                                    filemode='a')
-            if args.verbose:
-                log.info('Debug messages are being written to the log file : %s'
-                         % self.log_file)
-
-        root = logging.getLogger()
-        root.setLevel(log_level)
-
-        console = logging.StreamHandler(sys.stdout)
-        console.setLevel(log_level)
-        formatter = logging.Formatter('%(levelname)-8s- %(message)s')
-        console.setFormatter(formatter)
-        root.addHandler(console)
-
-        log.info('Using server: {0}'.format(self.api_host))
-
 
     @classmethod
     def set_config(cls, config_file, secrets_config_file = None, args = None):
@@ -119,6 +87,38 @@ class ArsenalClient(object):
             # FIXME: Will need os checking here
             cls.cookie_file = '/root/.arsenal_hvm_cookie'
 
+        # FIXME: Should we write to the log file at INFO even when console is ERROR?
+        log_level = logging.INFO
+        if args:
+            if args.verbose:
+                log_level = logging.DEBUG
+            elif args.quiet:
+                log_level = logging.ERROR
+
+            # Set up logging to file
+            if args.write_log:
+
+                logging.basicConfig(level=log_level,
+                                    format='%(asctime)s %(levelname)-8s- %(message)s',
+                                    datefmt='%Y-%m-%d %H:%M:%S',
+                                    filename=cls.log_file,
+                                    filemode='a')
+            if args.verbose:
+                log.info('Debug messages are being written to the log file : %s'
+                         % cls.log_file)
+
+        root = logging.getLogger()
+        root.setLevel(log_level)
+
+        console = logging.StreamHandler(sys.stdout)
+        console.setLevel(log_level)
+        formatter = logging.Formatter('%(levelname)-8s- %(message)s')
+        console.setFormatter(formatter)
+        root.addHandler(console)
+
+        log.info('Using server: {0}'.format(cls.api_host))
+
+
         # This is only needed on hypervisors
         if secrets_config_file:
             try:
@@ -127,7 +127,7 @@ class ArsenalClient(object):
                 # FIXME: should be in passwords section
                 cls.hvm_password = secrets_config.get('main', 'hvm.password')
             except:
-#                log.error('Secrets file missing or malformed!')
+                log.error('Secrets file missing or malformed!')
                 sys.exit(1)
 
 
