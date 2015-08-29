@@ -25,17 +25,21 @@ import collections
 from arsenalclientlib import Arsenal
 from arsenalclientlib.node import Node
 from arsenalclientlib.node_group import NodeGroup
+from arsenalclientlib.tag import Tag
 
 log = logging.getLogger(__name__)
 
 
 def _register(args):
+    """Register a node."""
 
     node = Node()
     node.register()
 
 
 def _search_nodes(args):
+    """Search for nodes and perform optional assignment
+       actions."""
 
     node = Node()
     results = node.search_nodes(args)
@@ -107,41 +111,127 @@ def _search_nodes(args):
 
 
 def _create_node(args):
+    """Create a node."""
 
     node = Node()
     node.create_node(args)
 
 
 def _delete_nodes(args):
+    """Delete a node."""
 
     node = Node()
     node.delete_nodes(args)
 
 
 def _search_node_groups(args):
+    """Search for node_groups and perform optional assignment
+       actions."""
 
     node_group = NodeGroup()
-    node_group.search_node_groups(args)
+    results = node_group.search_node_groups(args)
+
+    if results:
+
+        if any((args.set_tags,
+            args.del_tags)):
+            r_names = []
+
+            for ng in results:
+                r_names.append('node_group_name={0},node_group_id={1}'.format(ng['node_group_name'], ng['node_group_id']))
+            if ask_yes_no("We are ready to update the following node_groups: \n{0}\n Continue?".format("\n".join(r_names)), args.answer_yes):
+                api_action = 'set'
+                if args.del_tags:
+                    api_action = 'delete'
+                node_group.manage_tag_assignments(args, results, 'node_group', api_action)
+
+        else:
+            if args.fields:
+                for r in results:
+                    print '- {0}'.format(r['node_group_name'])
+                    #FIXME: gross output, duplicate code
+                    if args.fields == 'all':
+                        for f in r.keys():
+                            if f == 'node_group_name':
+                                continue
+                            if type(r[f]) is types.ListType:
+                                print '{0}: \n{1}'.format(f, yaml.safe_dump(r[f], encoding='utf-8', allow_unicode=True))
+                            else:
+                                print '    {0}: {1}'.format(f, r[f])
+                    else:
+                        for f in list(args.fields.split(",")):
+                            if f == 'node_group_name':
+                                continue
+                            if type(r[f]) is types.ListType:
+                                print '{0}: \n{1}'.format(f, yaml.safe_dump(r[f], encoding='utf-8', allow_unicode=True))
+                            else:
+                                print '    {0}: {1}'.format(f, r[f])
+
+            # Default to returning just the node_group name
+            else:
+                for r in results:
+                    print r['node_group_name']
 
 
-def _create_node_groups():
-    print "not yet"
+def _create_node_groups(args):
+    """Create a node_group"""
+
+    node_group = NodeGroup()
+    node_group.create_node_groups(args)
 
 
-def _delete_node_groups():
-    print "not yet"
+def _delete_node_groups(args):
+    """Delete a node_group"""
+
+    node_group = NodeGroup()
+    node_group.delete_node_groups(args)
 
 
-def _search_tags():
-    print "not yet"
+def _search_tags(args):
+    """Search for tags"""
+
+    tag = Tag()
+    results = tag.search_tags(args)
+
+    if results:
+
+        # FIXME: this doesn't exist yet. Would need to do a reverse search on nodes and node groups. Is it worth it, or do we just tag things from their respective object type?
+        if args.set_tags:
+            set_tag(args)
+
+        else:
+
+            if args.fields:
+                for r in results:
+                    print '- {0}'.format(r['tag_name'])
+                    if args.fields == 'all':
+                        for f in r.keys():
+                            if f == 'tag_name':
+                                continue
+                            print '    {0}: {1}'.format(f, r[f])
+                    else:
+                        for f in list(args.fields.split(",")):
+                            if f == 'tag_name':
+                                continue
+                            print '    {0}: {1}'.format(f, r[f])
+            # Default to returning just the tag name
+            else:
+                for r in results:
+                    print '{0}={1}'.format(r['tag_name'], r['tag_value'])
 
 
-def _create_tags():
-    print "not yet"
+def _create_tags(args):
+    """Create a tag"""
+
+    tag = Tag()
+    tag.create_tags(args)
 
 
-def _delete_tags():
-    print "not yet"
+def _delete_tags(args):
+    """Delete a tag"""
+
+    tag = Tag()
+    tag.delete_tags(args)
 
 
 def gen_help(help_type):
@@ -202,15 +292,15 @@ def ask_yes_no(question, answer_yes=None, default='no'):
                              "(or 'y' or 'n').\n")
 
 
-def convert(self, data):
+def convert(data):
     """Helper method to format output. (might not be final solution)"""
 
     if isinstance(data, basestring):
         return str(data)
     elif isinstance(data, collections.Mapping):
-        return dict(map(self.convert, data.iteritems()))
+        return dict(map(convert, data.iteritems()))
     elif isinstance(data, collections.Iterable):
-        return type(data)(map(self.convert, data))
+        return type(data)(map(convert, data))
     else:
         return data
 
@@ -487,8 +577,7 @@ def _parse_args():
                       default=None,
                       help='Exact match search terms.')
 
-# FIXME: do we want to 'reverse' tag? i.e. select a tag and
-# assign it many nodes or nodegroups?
+    # FIXME: do we want to 'reverse' tag? i.e. select a tag and assign it many nodes or nodegroups?
     # tags assignment action argument group (atsag)
     atsag = tssc.add_argument_group('Assignment Actions')
 
