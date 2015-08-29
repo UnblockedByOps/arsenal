@@ -202,10 +202,8 @@ def api_delete_by_params(request, model_type):
     # Will be used for auditing
     au = get_authenticated_user(request)
 
-    # FIXME: Should we allow this, or hard code it to true, requiring an
-    # exact match? Might make sense since there is no confirmation, it
-    # just deletes.
-    exact_get =  request.GET.get("exact_get", None)
+    # FIXME: Should we allow this to be set on the client, or hard code it to true, requiring an # exact match? Might make sense since there is no confirmation, it just deletes.
+    exact_get = True
     c = camel_to_underscore(model_type)
 
     try:
