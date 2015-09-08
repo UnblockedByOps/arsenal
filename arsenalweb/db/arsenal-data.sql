@@ -15,9 +15,9 @@
 use arsenal;
 
 # Initial Admin password is 'password'
-INSERT INTO users VALUES (1, 'admin@yourcompany.com', 'Nope', 'Nope', '$6$Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
+INSERT INTO users VALUES (1, 'admin@yourcompany.com', 'Nope', 'Nope', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 # Initial kaboom password is 'password'
-INSERT INTO users VALUES (2, 'kaboom', 'Register', 'Bot', '$6$Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
+INSERT INTO users VALUES (2, 'kaboom', 'Register', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 # Initial hvm password is 'test'
 INSERT INTO users VALUES (3, 'hvm', 'Hypervisor Vm', 'Bot', 'MRM/VA0wb3zbpkOq', '$6$rounds=656000$MRM/VA0wb3zbpkOq$i5GhDFjIFj9IgRmhEgxWvmt0U6VOUQp5K6XGCn/ExuieuJu8xA7Oxqc6.SVUaM0wjXgyQBw188L3ZVxolC6/m1', 'Admin', NOW(),NOW());
 INSERT INTO users VALUES (4, 'aaron.bandt@citygridmedia.com', 'Aaron', 'Bandt', '$6$Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
@@ -48,6 +48,8 @@ INSERT INTO statuses VALUES (3, 'inservice', 'Hardware and OS functional, applic
 INSERT INTO statuses VALUES (4, 'hibernating', 'Instances that have been spun down that will be spun up on demand.', 'Admin', NOW(),NOW());
 INSERT INTO statuses VALUES (5, 'decom', 'Nodes that are dead and gone.', 'Admin', NOW(),NOW());
 
-ALTER TABLE places ADD cs_id bigint(1) COLLATE utf8_bin NOT NULL AFTER place_id;
+INSERT INTO node_groups VALUES (1, 'default_install', 'Default node gorup for all nodes.', 'admin@yourcompany.com', NOW(), NOW(), 'Admin');
+
+# ALTER TABLE places ADD cs_id bigint(1) COLLATE utf8_bin NOT NULL AFTER place_id;
 
 

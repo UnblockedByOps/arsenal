@@ -209,7 +209,6 @@ CREATE TABLE `ec2` (
   `ec2_local_ipv4`                    varchar(255) DEFAULT NULL,
   `ec2_placement_availability_zone`   varchar(255) DEFAULT NULL,
   `ec2_profile`                       varchar(255) DEFAULT NULL,
-  `ec2_local_ipv4`                    varchar(255) DEFAULT NULL,
   `ec2_public_hostname`               varchar(255) DEFAULT NULL,
   `ec2_public_ipv4`                   varchar(255) DEFAULT NULL,
   `ec2_reservation_id`                varchar(255) DEFAULT NULL,
