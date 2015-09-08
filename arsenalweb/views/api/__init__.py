@@ -15,6 +15,7 @@
 import re
 from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import or_
 from arsenalweb.views import (
     get_authenticated_user,
     log,
@@ -124,10 +125,20 @@ def api_read_by_params(request, model_type):
                 s+='{0}={1},'.format(k, v)
                 if exact_get:
                     log.debug('Exact filtering on {0}={1}'.format(k, v))
-                    q = q.filter(getattr(globals()[model_type] ,k)==v)
+                    if ',' in v:
+                        q = q.filter(or_(getattr(globals()[model_type] ,k) == t for t in v.split(',')))
+                    else:
+                        q = q.filter(getattr(globals()[model_type] ,k)==v)
                 else:
                     log.debug('Loose filtering on {0}={1}'.format(k, v))
-                    q = q.filter(getattr(globals()[model_type] ,k).like('%{0}%'.format(v)))
+                    if ',' in v:
+                        log.info('Multiple values for key {0}={1}'.format(k, v))
+                        multior = []
+                        for t in v.split(','):
+                            multior.append(((getattr(globals()[model_type] ,k).like(('%{0}%'.format(t))))))
+                        q = q.filter(or_(*multior))
+                    else:
+                        q = q.filter(getattr(globals()[model_type] ,k).like('%{0}%'.format(v)))
 
             log.debug('Searching for {0} {1}'.format(c, s.rstrip(',')))
 

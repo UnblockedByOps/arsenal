@@ -49,7 +49,3 @@ INSERT INTO statuses VALUES (4, 'hibernating', 'Instances that have been spun do
 INSERT INTO statuses VALUES (5, 'decom', 'Nodes that are dead and gone.', 'Admin', NOW(),NOW());
 
 INSERT INTO node_groups VALUES (1, 'default_install', 'Default node gorup for all nodes.', 'admin@yourcompany.com', NOW(), NOW(), 'Admin');
-
-# ALTER TABLE places ADD cs_id bigint(1) COLLATE utf8_bin NOT NULL AFTER place_id;
-
-
