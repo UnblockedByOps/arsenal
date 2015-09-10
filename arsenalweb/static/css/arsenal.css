@@ -236,11 +236,12 @@ body {
     padding-left: 15px;
     background: #042e63 url('/static/img/select-arrow-down.png') no-repeat 90% center;
     border-radius: 4px 4px 0 0;
+    border: 1px solid #042E63;
 }
 #main_menu_btn:hover {
     color: #fff;
     border: 1px solid #7bbeeb;
-    border-radius: 4px 4px 0 0;
+    border-radius: 4px;
 }
 .main_menu_btn_border {
     border: 1px solid #7bbeeb;
@@ -297,13 +298,8 @@ ul.main_menu li.main_menu ul.main_menu {
 ul.main_menu li.main_menu ul.main_menu li.main_menu {
     display: block;
 }
-ul.main_menu li.main_menu ul.main_menu li.main_menu:hover {
-    background: #7bbeeb;
-}
 ul.main_menu li.main_menu:hover ul.main_menu {
     display: block;
-    opacity: 1;
-    visibility: visible;
 }
 .menu_group {
   padding: 10px 20px;
@@ -318,16 +314,7 @@ ul.main_menu li.main_menu:hover ul.main_menu {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
-    z-index: 100;
-}
-#overlay_sub{
-    position: fixed;
-    left: 0;
-    top: 136px;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 100;
+    z-index: 500;
 }
 /* END MAIN_MENU */
 
@@ -373,7 +360,7 @@ ul.main_menu li.main_menu:hover ul.main_menu {
   -moz-transition: all 0.2s ease-in-out;
   -o-transition: all 0.2s ease-in-out;
   transition: all 0.2s ease-in-out;
-  z-index: 9980;
+  z-index: 480;
 }
 .slide_menu_btn:hover {
   background: #7bbeeb url('/static/img/select-arrow-down.png') no-repeat 90% center;
@@ -381,7 +368,7 @@ ul.main_menu li.main_menu:hover ul.main_menu {
 }
 .slide_menu {
   display:none;
-  z-index: 9997;
+  z-index: 497;
   padding: 10px;
   position: relative;
   color: #000;
@@ -398,6 +385,15 @@ ul.main_menu li.main_menu:hover ul.main_menu {
 }
 .slide_menu_content:hover {
   color: #a0aec1;
+}
+#overlay_sub{
+    position: fixed;
+    left: 0;
+    top: 139px;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 450;
 }
 /* END SLIDE_MENU */
 

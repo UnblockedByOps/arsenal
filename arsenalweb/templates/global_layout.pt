@@ -58,18 +58,24 @@
         // Main menu overlay
         function overlay() {
           var over = '<div id="overlay"></div>';
-          $(over).appendTo('body');
+          if($("#overlay").length == 0) {
+            $(over).appendTo('body');
+          }
         }
         function no_overlay() {
           $('#overlay').remove();
         }
-        $( "#main_menu" ).hover(
-          function() {
-            overlay();
-          }, function() {
-            no_overlay();
-          }
-        );
+
+            $('#main_menu_btn').click(function(){
+              $('ul.main_menu li.main_menu:hover ul.main_menu').css( { 'opacity': '1', 'visibility': 'visible' });
+              overlay();
+            });
+            $('#main_menu').mouseleave(function(){
+              $('ul.main_menu ul.main_menu').css( { 'opacity': '0', 'visibility': 'hidden' });
+              no_overlay();
+            });
+
+        
         // Keep the menu button border on sub-menu
         $( "#border_hover" ).hover(
           function() {
@@ -122,7 +128,7 @@
             });
             $('.' + menu_name + '_p').mouseleave(function(){
               $('.' + menu_name).slideUp('slow');
-              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-down.png)', 'border-radius': '4px', 'border': '1px solid' });
+              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-down.png)', 'border-radius': '4px', 'border': '1px solid #7BBEEB' });
               _no_overlay();
             });
         
