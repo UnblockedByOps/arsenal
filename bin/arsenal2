@@ -269,7 +269,7 @@ def _delete_node(args):
 
 
 ## NODE_GROUPS
-def search_node_groups(args):
+def _search_node_groups(args):
     """Search for node_groups and perform optional assignment
        actions."""
 
@@ -353,7 +353,7 @@ def _delete_node_group(args):
 
 
 ## TAGS
-def search_tags(args):
+def _search_tags(args):
     """Search for tags and perform optional assignment
        actions."""
 
@@ -436,6 +436,7 @@ def _parse_args():
                    default=os.environ['HOME'] + '/.arsenal_cookie')
     mp.add_argument('--login',
                    '-l',
+                   dest='user_login',
                    help='Login name making the request.',
                    default=os.environ['USER'])
     mp.add_argument('--secrets',
@@ -626,7 +627,7 @@ def _parse_args():
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search for.\n {0}'.format(gen_help('node_groups_search')))
-    ngssc.set_defaults(func=search_node_groups)
+    ngssc.set_defaults(func=_search_node_groups)
 
     # node_groups create subcommand (ngcsc)
     ngcsc = ngasp.add_parser("create",
@@ -702,7 +703,7 @@ def _parse_args():
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search for.\n {0}'.format(gen_help('tags_search')))
-    atsag.set_defaults(func=search_tags)
+    atsag.set_defaults(func=_search_tags)
 
     # tags create subcommand (tcsc)
     tcsc = tasp.add_parser("create",
