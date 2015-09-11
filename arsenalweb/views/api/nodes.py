@@ -36,9 +36,13 @@ from arsenalweb.views.api.hardware_profiles import (
 from arsenalweb.views.api.operating_systems import (
     create_operating_system,
     )
+from arsenalweb.views.api.ec2_objects import (
+    api_ec2_object_write,
+    )
 from arsenalweb.models import (
     DBSession,
     Node,
+    Ec2,
     )
 
 
@@ -180,6 +184,16 @@ def api_node_register(request):
             log.error('Unable to determine operating_system variant={0},version_number={1},architecture={2},description={3},exception={4}'.format(variant, version_number, architecture, description, e))
             raise
 
+        # if sent, Get the ec2_object or create if it doesn't exist.
+        ec2_id = None
+        if payload['ec2']:
+            try:
+                ec2 = api_ec2_object_write(request)
+                ec2_id = ec2.ec2_id
+            except Exception as e:
+                log.error('Unable to determine ec2_object ec2_instance_id={0},exception={1}'.format(payload['ec2']['ec2_instance_id'], e))
+                raise
+
         try:
             unique_id = payload['unique_id'].lower()
             node_name = payload['node_name']
@@ -200,6 +214,7 @@ def api_node_register(request):
                          operating_system_id=operating_system_id,
                          uptime=uptime,
                          status_id=2,
+                         ec2_id=ec2_id,
                          updated_by=au['user_id'],
                          created=utcnow,
                          updated=utcnow)
@@ -216,6 +231,7 @@ def api_node_register(request):
                 n.node_name = node_name
                 n.hardware_profile_id = hardware_profile_id
                 n.operating_system_id = operating_system_id
+                n.ec2_id = ec2_id
                 n.uptime = uptime
                 n.updated_by=au['user_id']
 

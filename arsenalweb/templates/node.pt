@@ -63,7 +63,7 @@
         <span tal:condition="not node.node_groups" class="mono">no node_groups assigned</span><br>
       </div>
     </li>
-    <li tal:condition="type == 'ec2'">
+    <li tal:condition="node['ec2']">
       <input type="radio" name="tabs" id="tab3">
       <label for="tab3">EC2</label>
       <div id="tab-content3" class="tab-content">
@@ -87,25 +87,11 @@
       <input type="radio" name="tabs" id="tab3">
       <label for="tab3">Hardware</label>
       <div id="tab-content3" class="tab-content">
-         Diskspace Used: <span class="mono">4873 MB (25%)</span><br>
-         Diskspace Avail : <span class="mono">14261 MB (74%)</span><br>
-         (Disk space info only reflects "/" and "/home")<br>
-         Serial Number:<br>
-         Asset Tag:<br>
-         Processor Manufacturer: <span class="mono">Intel</span><br>
-         Processor Model: Xeon(R) <span class="mono">CPU E5507</span><br>
-         Processor Speed: <span class="mono">2.27GHz</span><br>
-         Processor Socket Count:<span class="mono"></span><br>
-         Processor Count: <span class="mono">1</span><br>
-         Processor Core Count: <span class="mono">0</span><br>
-         Os Processor Count: <span class="mono">1</span><br>
-         Os Virtual Processor Count:<br>
-         Physical Memory:<br>
-         Physical Memory Sizes:<br>
-         Os Memory: <span class="mono">3.67 GB</span><br>
-         Swap: <span class="mono">0.00 MB</span><br>
-         Power Supply Count:<br>
-         Console Type: <br>
+        Hardware Manufacturer: <span class="mono">${node.hardware_profile['manufacturer']}</span><br>
+        Hardware Model: <span class="mono">${node.hardware_profile['model']}</span><br>
+        Created: <span class="mono">${node.hardware_profile['created']}</span><br>
+        Updated: <span class="mono">${node.hardware_profile['updated']}</span><br>
+        Updated By: <span class="mono">${node.hardware_profile['updated_by']}</span><br>
       </div>
     </li>
     <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
@@ -123,9 +109,13 @@
       <input type="radio" name="tabs" id="tab5">
       <label for="tab5">Software</label>
       <div id="tab-content5" class="tab-content">
-        Operating System: <span class="mono">CentOS (Final) 6.2 x86_64</span><br>
-        Preferred Operating System:<br>
-        Kernel Version: <span class="mono">2.6.32-220.el6.x86_64</span><br>
+        Operating System: <span class="mono">${node.operating_system['description']}</span><br>
+        Variant: <span class="mono">${node.operating_system['variant']}</span><br>
+        Version: <span class="mono">${node.operating_system['version_number']}</span><br>
+        Architecture: <span class="mono">${node.operating_system['architecture']}</span><br>
+        Created: <span class="mono">${node.operating_system['created']}</span><br>
+        Updated: <span class="mono">${node.operating_system['updated']}</span><br>
+        Updated By: <span class="mono">${node.operating_system['updated_by']}</span><br>
       </div>
     </li>
     <li>

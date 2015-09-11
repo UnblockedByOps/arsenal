@@ -33,6 +33,7 @@ from arsenalweb.models import (
     HardwareProfile,
     OperatingSystem,
     HypervisorVmAssignment,
+    Ec2,
     )
 
 

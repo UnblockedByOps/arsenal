@@ -54,6 +54,7 @@ class Node(Base):
     status_id                = Column(Integer, ForeignKey('statuses.status_id'), nullable=False)
     hardware_profile_id      = Column(Integer, ForeignKey('hardware_profiles.hardware_profile_id'), nullable=False)
     operating_system_id      = Column(Integer, ForeignKey('operating_systems.operating_system_id'), nullable=False)
+    ec2_id                   = Column(Integer, ForeignKey('ec2.ec2_id'))
     uptime                   = Column(Text, nullable=False)
     created                  = Column(TIMESTAMP, nullable=False)
     updated                  = Column(TIMESTAMP, nullable=False)
@@ -61,6 +62,7 @@ class Node(Base):
     status                   = relationship("Status", backref=backref('nodes'))
     hardware_profile         = relationship("HardwareProfile", backref=backref('nodes'))
     operating_system         = relationship("OperatingSystem", backref=backref('nodes'))
+    ec2                      = relationship("Ec2", backref=backref('nodes'))
 
 
     @hybrid_property
@@ -118,11 +120,43 @@ class Node(Base):
             hardware_profile=self.hardware_profile,
             operating_system_id=self.operating_system_id,
             operating_system=self.operating_system,
+            ec2_id=self.ec2_id,
+            ec2=self.ec2,
             uptime=self.uptime,
             node_groups=self.node_groups,
             tags=self.tags,
             guest_vms=self.guest_vms,
             hypervisor=self.hypervisor,
+            created=_localize_date(self.created),
+            updated=_localize_date(self.updated),
+            updated_by=self.updated_by,
+            )
+
+
+class Ec2(Base):
+    __tablename__ = 'ec2'
+    ec2_id                            = Column(Integer, primary_key=True, nullable=False)
+    ec2_instance_id                   = Column(Text, nullable=False) 
+    ec2_ami_id                        = Column(Text, nullable=False)
+    ec2_hostname                      = Column(Text, nullable=False)
+    ec2_public_hostname               = Column(Text, nullable=False)
+    ec2_instance_type                 = Column(Text, nullable=False)
+    ec2_security_groups               = Column(Text, nullable=False)
+    ec2_placement_availability_zone   = Column(Text, nullable=False)
+    created                           = Column(TIMESTAMP, nullable=False)
+    updated                           = Column(TIMESTAMP, nullable=False)
+    updated_by                        = Column(Text, nullable=False)
+
+    def __json__(self, request):
+        return dict(
+            ec2_id=self.ec2_id,
+            ec2_instance_id=self.ec2_instance_id,
+            ec2_ami_id=self.ec2_ami_id,
+            ec2_hostname=self.ec2_hostname,
+            ec2_public_hostname=self.ec2_public_hostname,
+            ec2_instance_type=self.ec2_instance_type,
+            ec2_security_groups=self.ec2_security_groups,
+            ec2_placement_availability_zone=self.ec2_placement_availability_zone,
             created=_localize_date(self.created),
             updated=_localize_date(self.updated),
             updated_by=self.updated_by,

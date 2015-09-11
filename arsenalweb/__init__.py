@@ -107,7 +107,7 @@ def main(global_config, **settings):
     config.add_route('test3', '/test3')
     # API Endpoints. Order matters.
     # FIXME: api_register is a special endpoint in order to use pyramid 
-    # secirty to control access to node registrations. Don't like it
+    # secirty to control access to node registrations. Don't love it
     # but can't use request_param on a put request.
     config.add_route('api_register', '/api/register')
     config.add_route('api_nodes', '/api/nodes')
@@ -140,6 +140,9 @@ def main(global_config, **settings):
     config.add_route('api_hypervisor_vm_assignments', '/api/hypervisor_vm_assignments')
     config.add_route('api_hypervisor_vm_assignment_r', '/api/hypervisor_vm_assignments/{id}/{resource}')
     config.add_route('api_hypervisor_vm_assignment', '/api/hypervisor_vm_assignments/{id}')
+    config.add_route('api_ec2_objects', '/api/ec2_objects')
+    config.add_route('api_ec2_object_r', '/api/ec2_objects/{id}/{resource}')
+    config.add_route('api_ec2_object', '/api/ec2_objects/{id}')
 
     config.add_renderer('json', JSON(indent=2))
     config.add_renderer('xml', XML())

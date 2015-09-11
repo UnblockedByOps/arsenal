@@ -215,7 +215,8 @@ CREATE TABLE `ec2` (
   `ec2_reservation_id`                varchar(255) DEFAULT NULL,
   `ec2_security_groups`               varchar(255) DEFAULT NULL,
   `created`                           timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                           timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated`                           timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`                        varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_ec2_id on ec2 (ec2_id);
 
