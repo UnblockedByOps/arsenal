@@ -37,7 +37,7 @@ from arsenalweb.views.api.operating_systems import (
     create_operating_system,
     )
 from arsenalweb.views.api.ec2_objects import (
-    api_ec2_object_write,
+    create_ec2_object,
     )
 from arsenalweb.models import (
     DBSession,
@@ -188,8 +188,39 @@ def api_node_register(request):
         ec2_id = None
         if payload['ec2']:
             try:
-                ec2 = api_ec2_object_write(request)
-                ec2_id = ec2.ec2_id
+                ec2_instance_id = payload['ec2']['ec2_instance_id']
+                ec2_ami_id = payload['ec2']['ec2_ami_id']
+                ec2_hostname = payload['ec2']['ec2_hostname']
+                ec2_public_hostname = payload['ec2']['ec2_public_hostname']
+                ec2_instance_type = payload['ec2']['ec2_instance_type']
+                ec2_security_groups = payload['ec2']['ec2_security_groups']
+                ec2_placement_availability_zone = payload['ec2']['ec2_placement_availability_zone']
+    
+                # FIXME: remove the http call
+                uri = '/api/ec2_objects'
+                data = {'ec2_instance_id': ec2_instance_id,
+                        'exact_get': True,
+                }
+                ec2 = _api_get(request, uri, data)
+
+                try:
+                    ec2_id = ec2['results'][0]['ec2_id']
+
+                except IndexError:
+
+                    log.debug('ec2_object not found, attempting to create')
+
+                    ec2 = create_ec2_object(ec2_instance_id,
+                                            ec2_ami_id,
+                                            ec2_hostname,
+                                            ec2_public_hostname,
+                                            ec2_instance_type,
+                                            ec2_security_groups,
+                                            ec2_placement_availability_zone,
+                                            au['user_id'])
+                    ec2_id = ec2.ec2_id
+                log.debug('ec2_object is: {0}'.format(ec2))
+
             except Exception as e:
                 log.error('Unable to determine ec2_object ec2_instance_id={0},exception={1}'.format(payload['ec2']['ec2_instance_id'], e))
                 raise

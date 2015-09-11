@@ -209,7 +209,6 @@ CREATE TABLE `ec2` (
   `ec2_local_ipv4`                    varchar(255) DEFAULT NULL,
   `ec2_placement_availability_zone`   varchar(255) DEFAULT NULL,
   `ec2_profile`                       varchar(255) DEFAULT NULL,
-  `ec2_local_ipv4`                    varchar(255) DEFAULT NULL,
   `ec2_public_hostname`               varchar(255) DEFAULT NULL,
   `ec2_public_ipv4`                   varchar(255) DEFAULT NULL,
   `ec2_reservation_id`                varchar(255) DEFAULT NULL,
@@ -219,6 +218,7 @@ CREATE TABLE `ec2` (
   `updated_by`                        varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_ec2_id on ec2 (ec2_id);
+CREATE UNIQUE INDEX idx_ec2_instance_id on ec2 (ec2_instance_id);
 
 ###
 ### TABLE: statuses
