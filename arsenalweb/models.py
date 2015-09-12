@@ -36,6 +36,22 @@ from zope.sqlalchemy import ZopeTransactionExtension
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
+
+# FIXME: Is this right? Should it just be null?
+def check_null_id(obj):
+    if not obj:
+        return ''
+    else:
+        return obj
+
+
+def check_null_dict(obj):
+    if not obj:
+        return {}
+    else:
+        return obj
+
+
 def _localize_date(obj):
     try:
         utc = arrow.get(obj)
@@ -120,8 +136,8 @@ class Node(Base):
             hardware_profile=self.hardware_profile,
             operating_system_id=self.operating_system_id,
             operating_system=self.operating_system,
-            ec2_id=self.ec2_id,
-            ec2=self.ec2,
+            ec2_id=check_null_id(self.ec2_id),
+            ec2=check_null_dict(self.ec2),
             uptime=self.uptime,
             node_groups=self.node_groups,
             tags=self.tags,

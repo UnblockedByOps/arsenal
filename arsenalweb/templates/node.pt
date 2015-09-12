@@ -67,13 +67,16 @@
       <input type="radio" name="tabs" id="tab3">
       <label for="tab3">EC2</label>
       <div id="tab-content3" class="tab-content">
-        Ec2 Instance: <span class="mono">i-303a6c4a</span><br>
-        Ec2 Ami: <span class="mono">ami-793f9410</span><br>
-        Ec2 Instance Type: <span class="mono">m1.medium</span><br>
-        Ec2 Security Groups: <span class="mono">prdtcw</span><br>
-        Ec2 Private Hostname: <span class="mono">ip-10-72-254-115.ec2.internal</span><br>
-        Ec2 Public Hostname: <span class="mono">ec2-184-72-210-48.compute-1.amazonaws.com</span><br>
-        Ec2 Placement Availability Zone: <span class="mono">us-east-1d</span><br>
+        Ec2 Instance: <span class="mono">${node.ec2['ec2_instance_id']}</span><br>
+        Ec2 Ami: <span class="mono">${node.ec2['ec2_ami_id']}</span><br>
+        Ec2 Instance Type: <span class="mono">${node.ec2['ec2_instance_type']}</span><br>
+        Ec2 Security Groups: <span class="mono">${node.ec2['ec2_security_groups']}</span><br>
+        Ec2 Private Hostname: <span class="mono">${node.ec2['ec2_hostname']}</span><br>
+        Ec2 Public Hostname: <span class="mono">${node.ec2['ec2_public_hostname']}</span><br>
+        Ec2 Placement Availability Zone: <span class="mono">${node.ec2['ec2_placement_availability_zone']}</span><br>
+        Created: <span class="mono">${node.ec2['created']}</span><br>
+        Updated: <span class="mono">${node.ec2['updated']}</span><br>
+        Updated By: <span class="mono">${node.ec2['updated_by']}</span><br>
       </div>
     </li>
     <li tal:condition="type == 'rds'">
@@ -98,11 +101,12 @@
       <input type="radio" name="tabs" id="tab4">
       <label for="tab4">Tags</label>
       <div id="tab-content4" class="tab-content">
-        BusinessUnit: <span class="mono">CityGrid</span><br>
-        Team: <span class="mono">Operations</span><br>
-        Env: <span class="mono">qat</span><br>
-        Project: <span class="mono">Something</span><br>
-        Component: <span class="mono">centos7 testing</span><br>
+        <div tal:repeat="tag node.tags">
+            ${tag['tag_name']}: <span class="mono">${tag['tag_value']}</span><br>
+        </div>
+        <div tal:condition="not node.tags">
+            <p>No tags for node.
+        </div>
       </div>
     </li>
     <li>
