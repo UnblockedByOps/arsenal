@@ -14,3 +14,8 @@
 * Too much javascript for the menus, not elegant.
 * Search form should default to searching by name if no key=value is present. 
 * Still places where dummy data is being displayed. 
+* Need localstorage solution for saving what columns a user has chosen to show/hide on each page.
+
+### CLI
+
+* formatting of output needs a lot of help.
