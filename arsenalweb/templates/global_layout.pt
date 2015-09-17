@@ -143,10 +143,23 @@
                 if ($(this).is(':checked')) {
                     // do something
                     // alert( $(this).attr("name") );
+                    localStorage[".sr-" + cols[1]] = false;
                 } else {
+                    localStorage[".sr-" + cols[1]] = true;
                     // do something else
                 }
             });
+            // alert( ${column_selectors}[0]['name'] );
+            var arrayLength = ${column_selectors}.length;
+            for (var i = 0; i < arrayLength; i++) {
+                //console.log(${column_selectors}[i]['name']);
+                var mycheck = localStorage[".sr-" + ${column_selectors}[i]['name']]
+                if (mycheck) {
+                  console.log(${column_selectors}[i]['name']);
+                } else {
+                  console.log('nope' + ${column_selectors}[i]['name']);
+                }
+            }
         
         }
         

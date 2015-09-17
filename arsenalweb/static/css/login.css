@@ -66,18 +66,20 @@ input.button {
     width: 100px;
     height: 25px;
     color: #fff;
-    background: #042e63;
+    background: #7BBEEB;
     border-radius: 5px;
-    border: none;
+    border: 1px solid #7BBEEB;
     box-shadow: none;
     cursor: pointer;
 }
 
 input.button:hover {
-    background: #7bbeeb;
+    background: #A0AEC1;
+    border: #042E63 1px solid;
 }
 input.button:active {
-    background: #dbe8f9;
+    background: #DBE8F9;
+    border: #042E63 1px solid;
 }
 
 
@@ -150,5 +152,7 @@ tr:hover td {
 input[type=text],
 input[type=password] {
     width: 300px;
+    height: 30px;
+    padding-left: 10px;
 }
 /* END LOGIN */
