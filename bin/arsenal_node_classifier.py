@@ -29,13 +29,9 @@ class Args:
 
 def main():
 
-    # FIXME: Fix the client so this stuff isn't required
     a = {
-         'verbose': False,
          'quiet': True,
          'write_log': False,
-         'log_file': '',
-         'user_login': 'test',
     }
     args = Args(**a)
 
@@ -47,7 +43,7 @@ def main():
 
     client.main('/app/arsenal/conf/arsenal.ini', args = args)
 
-    log.info('Searching for node: node_name={0}'.format(node_args.node_name))
+    log.debug('Searching for node: node_name={0}'.format(node_args.node_name))
 
     output = {}
     output['classes'] = []
