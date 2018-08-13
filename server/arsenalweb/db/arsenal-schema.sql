@@ -1,0 +1,1 @@
+../../tests/regression/docker/mysql_init/create.sql

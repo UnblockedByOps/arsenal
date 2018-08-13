@@ -1,0 +1,5 @@
+[vsphere_server]
+hostname = <fqdn of vsphere server>
+port = 443
+username = USER
+password = PASS

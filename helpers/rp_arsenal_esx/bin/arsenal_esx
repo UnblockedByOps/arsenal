@@ -1,0 +1,295 @@
+#!/usr/bin/env python
+'''Connect to vsphere, retrieve all the esx servers and their guests, and
+register them with arsenal.'''
+#
+#  Copyright 2015 CityGrid Media, LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+import sys
+import re
+import logging
+import argparse
+import ssl
+from ConfigParser import SafeConfigParser
+
+import requests
+from pyVim.connect import SmartConnect
+from pyVmomi import vim
+
+try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+except (ImportError, AttributeError):
+    pass
+# requests is chatty
+logging.getLogger("requests").setLevel(logging.WARNING)
+try:
+    requests.packages.urllib3.disable_warnings()
+except AttributeError:
+    pass
+
+LOG = logging.getLogger(__name__)
+
+def parse_args():
+    '''Parse all the command line arguments.'''
+
+    help_desc = '''
+    Connect to vsphere, retrieve all the esx servers and their guests, and
+    register them with arsenal.
+
+    >>> arsenal_esx
+    Provisioning...
+    '''
+
+    pap = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+                                  description=help_desc)
+    pap.add_argument('-a',
+                     '--arsenal-server',
+                     help='Arsenal server to use.',
+                     default='https://arsenal')
+    pap.add_argument('-d',
+                     '--debug',
+                     action='store_true',
+                     help='Enable debugging.')
+    pap.add_argument('-D',
+                     '--dry-run',
+                     dest='dry_run',
+                     action='store_true',
+                     help='Dry run. Do not actually change anything, just print out '
+                     'what we would have done.')
+    pap.add_argument('-r',
+                     '--regex-pattern',
+                     help='The regex pattern to validate esx hostnames against.  ' \
+                     'Needed to ensure we do not try to register names that are ' \
+                     'IP addresses in vsphere.',
+                     default='.*')
+    pap.add_argument('-s',
+                     '--secrets',
+                     help='Secret config file to use.',
+                     default='/app/arsenal/conf/vsphere.ini')
+    pap.add_argument('-S',
+                     '--ssl',
+                     dest='ssl_verify',
+                     help='Whether or not the server is using ssl. Can be True, False, '
+                     'or path to ca cert',
+                     default=False)
+
+    return pap.parse_args()
+
+def configure_logging(args):
+    '''Set up logging.'''
+
+    if args.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    root = logging.getLogger()
+    root.setLevel(log_level)
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(log_level)
+    if args.dry_run:
+        formatter = logging.Formatter('%(levelname)-8s- DRY RUN: %(message)s')
+    else:
+        formatter = logging.Formatter('%(levelname)-8s- %(message)s')
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
+def check_req_params(args):
+    '''Make sure we have required args.'''
+
+    required = [
+        'secrets',
+    ]
+
+    for req in required:
+        if not args.__dict__[req]:
+            LOG.error('Required option is missing: {0}\n'.format(req))
+            sys.exit(2)
+
+def arsenal_login(server, username, password):
+    '''Guess what this does'''
+
+    payload = {
+        'login': username,
+        'password': password,
+        'form.submitted': True,
+        'api.client': True,
+        'return_url': '/api',
+    }
+
+    session = requests.Session()
+    session.post('{0}/login'.format(server), data=payload, verify=False)
+    return session
+
+def register_esx_servers(server, all_esx_data, regex_pattern):
+    '''Register esx servers with arsenal.'''
+
+    headers = {'Content-Type': 'application/json'}
+    url = '{0}/api/register'.format(server)
+
+    session = arsenal_login(server, 'kaboom', 'password')
+
+    LOG.info('Registering all esx servers with arsenal...')
+    count = 1
+    total = len(all_esx_data)
+    for esx_server in all_esx_data:
+        LOG.info('  Working on esx server ({0} of {1}): {2}'.format(count,
+                                                                    total,
+                                                                    esx_server['name']))
+        if validate_hostname(esx_server['name'], regex_pattern):
+            LOG.info('    Registering {0} with arsenal...'.format(esx_server['name']))
+            if esx_server['guest_vms']:
+                LOG.info('      Guest vms:')
+            for guest in esx_server['guest_vms']:
+                try:
+                    LOG.info('        - name: {0} unique_id: {1}'.format(guest['name'],
+                                                                         guest['unique_id']))
+                except UnicodeEncodeError:
+                    LOG.warn('        Guest with unicode characters found!')
+                    LOG.warn('        - {0}'.format(guest))
+            resp = session.put(url, headers=headers, json=esx_server, verify=False)
+            if resp.status_code != 200:
+                LOG.error('      There was an error registering with arsenal! http status: {0} '
+                          'data: {1}'.format(resp.status_code, esx_server))
+            else:
+                LOG.info('    Success.')
+        count += 1
+
+def get_esx_data(vsphere_instance):
+    '''Collect all the info about the esx servers and their guests. Returns a
+    list of dictionaries that can then be used to register with arsenal.'''
+
+    LOG.info('Retrieving data from vSphere...')
+    content = vsphere_instance.RetrieveContent()
+
+    # Get all ESX nodes in the cluster
+    objview = content.viewManager.CreateContainerView(content.rootFolder,
+                                                      [vim.HostSystem],
+                                                      True)
+    esx_hosts = objview.view
+    objview.Destroy()
+
+    all_esx_data = []
+    for host in esx_hosts:
+        try:
+            data = {}
+            serial_number = ''
+            for other_info in host.hardware.systemInfo.otherIdentifyingInfo:
+                if other_info.identifierType.key == 'ServiceTag':
+                    serial_number = other_info.identifierValue
+            data['serial_number'] = serial_number
+            data['processor_count'] = host.hardware.cpuInfo.numCpuPackages
+            data['uptime'] = '{0} Seconds'.format(host.summary.quickStats.uptime)
+            data['ec2'] = {}
+            data['operating_system'] = {}
+            data['hardware_profile'] = {}
+            data['network_interfaces'] = []
+            data['guest_vms'] = []
+            data['name'] = host.name
+            data['unique_id'] = host.hardware.systemInfo.uuid.lower()
+            data['status_id'] = 3
+            os_version = '{0}-{1}'.format(host.config.product.version,
+                                          host.config.product.build)
+            data['operating_system']['version_number'] = os_version
+            os_description = '{0} {1}'.format(host.config.product.vendor,
+                                              host.config.product.fullName)
+            data['operating_system']['description'] = os_description
+            data['operating_system']['variant'] = host.config.product.name
+            data['operating_system']['architecture'] = host.config.product.osType
+            data['operating_system']['name'] = host.config.product.fullName
+            data['hardware_profile']['model'] = host.hardware.systemInfo.model
+            data['hardware_profile']['manufacturer'] = host.hardware.systemInfo.vendor
+            hw_name = '{0} {1}'.format(host.hardware.systemInfo.vendor,
+                                       host.hardware.systemInfo.model)
+            data['hardware_profile']['name'] = hw_name
+            # Guests
+            for my_vm in host.vm:
+                guest = {}
+                guest['name'] = my_vm.name
+                guest['unique_id'] = my_vm.config.uuid.lower()
+                data['guest_vms'].append(guest)
+
+            all_esx_data.append(data)
+
+        except Exception as ex:
+            LOG.error('Unable to retrieve esx data for host: {0} '
+                      'exception: {1}'.format(host, ex))
+
+    LOG.info('Done.')
+    return all_esx_data
+
+def validate_hostname(host, regex_pattern):
+    '''Validate the host matches our naming convention. Returns
+       True if match, False otherwise.'''
+
+    LOG.info('    Checking to ensure hostname matches our convention: '
+             '{0}'.format(host))
+    comp = re.compile(r'{0}'.format(regex_pattern))
+    if re.match(comp, host):
+        LOG.debug('    Match.')
+        return True
+    LOG.warn('      Hostname does not match, skipping.')
+    return False
+
+def vsphere_connect(vsphere_host, vsphere_username, vsphere_password, vpshere_port):
+    '''Returns a vsphere connection object.'''
+
+    try:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+        context.verify_mode = ssl.CERT_NONE
+
+        vsphere_instance = SmartConnect(host=vsphere_host,
+                                        user=vsphere_username,
+                                        pwd=vsphere_password,
+                                        port=int(vpshere_port),
+                                        sslContext=context)
+    except AttributeError:
+        # no SSL verify_mode support in older python
+        vsphere_instance = SmartConnect(host=vsphere_host,
+                                        user=vsphere_username,
+                                        pwd=vsphere_password,
+                                        port=int(vpshere_port))
+    return vsphere_instance
+
+def main():
+    '''Do All the things.'''
+
+    args = parse_args()
+    configure_logging(args)
+    check_req_params(args)
+
+    # Get authentication credentials and other connection details from the config
+    parser = SafeConfigParser()
+    parser.read(args.secrets)
+
+    vsphere_host = parser.get('vsphere_server', 'hostname')
+    vsphere_username = parser.get('vsphere_server', 'username')
+    vsphere_password = parser.get('vsphere_server', 'password')
+    vpshere_port = parser.get('vsphere_server', 'port')
+
+    LOG.info('BEGIN gathering esx information and registering with arsenal...')
+
+    vsphere_instance = vsphere_connect(vsphere_host,
+                                       vsphere_username,
+                                       vsphere_password,
+                                       vpshere_port)
+    all_esx_data = get_esx_data(vsphere_instance)
+    register_esx_servers(args.arsenal_server, all_esx_data, args.regex_pattern)
+
+    LOG.info('END gathering esx information and registering with arsenal.')
+
+if __name__ == '__main__':
+    main()
