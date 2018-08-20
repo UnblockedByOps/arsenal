@@ -63,7 +63,12 @@ def process_tags(tags, tag_type):
         elif tag.value == 'False':
             results[tag.name] = bool('')
         else:
-            results[tag.name] = tag.value
+            try:
+                my_value = tag.value
+                my_value = int(my_value)
+            except ValueError:
+                pass
+            results[tag.name] = my_value
 
     return results
 

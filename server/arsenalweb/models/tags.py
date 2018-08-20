@@ -48,6 +48,11 @@ class Tag(Base):
             fields = request.params['fields']
 
             if fields == 'all':
+                try:
+                    self.value = int(self.value)
+                except ValueError:
+                    pass
+
                 # Everything.
                 all_fields = dict(
                     id=self.id,
@@ -77,6 +82,10 @@ class Tag(Base):
 
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
+                try:
+                    resp['value'] = int(resp['value'])
+                except ValueError:
+                    pass
 
                 return jsonify(resp)
 
