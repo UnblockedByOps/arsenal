@@ -148,9 +148,15 @@ def jsonify(obj):
         if param.startswith('_'):
             continue
         try:
-            p_type = getattr(obj, param)
+            try:
+                p_type = int(getattr(obj, param))
+            except (ValueError, TypeError):
+                p_type = getattr(obj, param)
         except AttributeError:
-            p_type = obj.get(param)
+            try:
+                p_type = int(obj.get(param))
+            except (ValueError, TypeError):
+                p_type = obj.get(param)
 
         # Handle datetime objects
         if isinstance(p_type, datetime):
@@ -210,7 +216,14 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
             item[key] = getattr(obj, key)
         if extra_keys:
             for key in extra_keys:
-                item[key] = getattr(obj, key)
+                # Preserve integers in tag values.
+                if key == 'value':
+                    try:
+                        item[key] = int(getattr(obj, key))
+                    except ValueError:
+                        item[key] = getattr(obj, key)
+                else:
+                    item[key] = getattr(obj, key)
 
         resp.append(jsonify(item))
 

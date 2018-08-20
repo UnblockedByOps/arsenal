@@ -229,6 +229,10 @@ def api_tags_write(request):
         payload = request.json_body
         tag_name = payload['name'].rstrip()
         tag_value = payload['value'].rstrip()
+        try:
+            tag_value = int(tag_value)
+        except ValueError:
+            pass
 
         LOG.info('Searching for tag name={0}'.format(tag_name))
 
