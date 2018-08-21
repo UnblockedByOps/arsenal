@@ -715,16 +715,7 @@ class Client(object):
             >>> client.node_set_status('inservice', <object_search results>)
             <Response [200]>
         '''
-        data = {
-            'name': status_name,
-            'exact_get': True,
-        }
-        try:
-            resp = self.api_conn('/api/statuses', data, method='get_params', log_success=False)
-            status = resp['results'][0]
-        except IndexError:
-            LOG.warn('Status not found: {0}'.format(status_name))
-            return None
+        status = self.status_find_by_name(status_name)
 
         node_ids = []
         for node in nodes:
@@ -912,6 +903,21 @@ class Client(object):
         kwargs['name'] = name
 
         return self.api_conn('/api/statuses', kwargs, method='put')
+
+    def status_find_by_name(self, status_name):
+        '''Find a status on the server by name. Returns a dict of the status if
+        found, None otherwise.'''
+
+        data = {
+            'name': status_name,
+            'exact_get': True,
+        }
+        try:
+            resp = self.api_conn('/api/statuses', data, method='get_params', log_success=False)
+            return resp['results'][0]
+        except IndexError:
+            LOG.warn('Status not found: {0}'.format(status_name))
+            return None
 
     ## TAGS
     def tag_create(self, tag_name, tag_value):
@@ -1109,6 +1115,11 @@ class Client(object):
         '''
 
         LOG.info('Submitting data_center: {0}'.format(name))
+
+        if 'status' in kwargs:
+            status = self.status_find_by_name(kwargs['status'])
+            del kwargs['status']
+            kwargs['status_id'] = status['id']
 
         try:
             kwargs['name'] = name
