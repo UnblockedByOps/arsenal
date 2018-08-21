@@ -77,13 +77,19 @@ def create_data_center(name=None, updated_by=None, **kwargs):
     country     : A string that is teh country.
     postal_code : A string that is the postal code.
     contact_name: A string that is the contat name of the data center.
-    phone_number: A string that is the phone mumbe rof the data center.
+    phone_number: A string that is the phone number of the data center.
+    status_id   : An integer representing the status_id from the statuses table.
+                  If not sent, the data_center will be set to status_id 2.
     '''
 
     try:
         LOG.info('Creating new data_center name: {0}'.format(name))
 
         utcnow = datetime.utcnow()
+
+        # Set status to setup if the client doesn't send it.
+        if 'status_id' not in kwargs:
+            kwargs['status_id'] = 2
 
         data_center = DataCenter(name=name,
                                  updated_by=updated_by,
@@ -128,7 +134,8 @@ def update_data_center(data_center, **kwargs):
     country     : A string that is teh country.
     postal_code : A string that is the postal code.
     contact_name: A string that is the contat name of the data center.
-    phone_number: A string that is the phone mumbe rof the data center.
+    phone_number: A string that is the phone number of the data center.
+    status_id   : An integer representing the status_id from the statuses table.
     '''
 
     try:
@@ -209,15 +216,16 @@ def api_data_centers_write(request):
             'name',
         ]
         opt_params = [
-            'provider',
             'address_1',
             'address_2',
-            'city',
             'admin_area',
-            'country',
-            'postal_code',
+            'city',
             'contact_name',
+            'country',
             'phone_number',
+            'postal_code',
+            'provider',
+            'status_id',
         ]
         params = collect_params(request, req_params, opt_params)
 
