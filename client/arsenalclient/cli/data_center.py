@@ -40,6 +40,7 @@ UPDATE_FIELDS = [
     'data_center_phone_number',
     'data_center_postal_code',
     'data_center_provider',
+    'data_center_status',
 ]
 TAG_FIELDS = [
     'set_tags',

@@ -72,6 +72,7 @@ DROP TABLE IF EXISTS `data_centers`;
 CREATE TABLE `data_centers` (
   `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
+  `status_id`              int(11) NOT NULL,
   `provider`               text,
   `address_1`              text,
   `address_2`              text,

@@ -16,6 +16,7 @@
 import logging
 from sqlalchemy import (
     Column,
+    ForeignKey,
     Integer,
     TIMESTAMP,
     Text,
@@ -38,6 +39,8 @@ class DataCenter(Base):
     __tablename__ = 'data_centers'
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
+    status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
+    status = relationship('Status', backref='data_centers', lazy='joined')
     provider = Column(Text, nullable=True)
     address_1 = Column(Text, nullable=True)
     address_2 = Column(Text, nullable=True)
@@ -65,6 +68,7 @@ class DataCenter(Base):
                 all_fields = dict(
                     id=self.id,
                     name=self.name,
+                    status=get_name_id_dict([self.status]),
                     provider=self.provider,
                     address_1=self.address_1,
                     address_2=self.address_2,

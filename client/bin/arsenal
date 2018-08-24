@@ -687,6 +687,9 @@ def _parse_args():
                         '--state',
                         dest='data_center_admin_area',
                         help='Update data_center state.')
+    dcuaag.add_argument('--status',
+                        dest="data_center_status",
+                        help='status to assign to the search results.')
     dcuaag.add_argument('-n',
                         '--contact-name',
                         dest='data_center_contact_name',
@@ -738,6 +741,10 @@ def _parse_args():
                         required=True,
                         dest='data_center_name',
                         help='data_center_name to create.')
+    rdccag.add_argument('--status', '-s',
+                        dest='data_center_status',
+                        help='data_center_status to set the new data_center to. ' \
+                        'If not specified will be set to setup.')
     rdccag.set_defaults(func=create_data_center)
 
     # data_centers delete subcommand (dcdsc)
