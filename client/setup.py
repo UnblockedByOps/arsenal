@@ -25,6 +25,11 @@ with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
 with open('arsenalclient/version.py') as fd:
     exec(fd.read())
 
+REQUIRES = [
+    'requests>=2.6.0',
+]
+
+
 setup(name='arsenalclient',
       version=__version__,
       description='Arsenal command line client',
@@ -40,6 +45,7 @@ setup(name='arsenalclient',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
+      install_requires=REQUIRES,
       test_suite='arsenal-client',
       scripts=['bin/arsenal']
      )
