@@ -29,7 +29,6 @@ REQUIRES = [
     'requests>=2.6.0',
 ]
 
-
 setup(name='arsenalclient',
       version=__version__,
       description='Arsenal command line client',
