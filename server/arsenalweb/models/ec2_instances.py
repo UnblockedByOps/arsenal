@@ -82,7 +82,7 @@ class Ec2Instance(Base):
 
                 return jsonify(resp)
 
-        # Default to returning only name and id.
+        # Default to returning only instance_id and id.
         except KeyError:
             resp = get_name_id_dict([self], default_keys=['id', 'instance_id'])
 
