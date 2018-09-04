@@ -32,12 +32,12 @@
     <script src="/static/js/resizable.js"></script>
   </head>
   <body>
-    
+
     <div tal:condition="node">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">${node.name}</span>
       </div>
-      
+
       <ul class="tabs">
         <li>
           <input type="radio" checked name="tabs" id="tab1">
@@ -92,40 +92,37 @@
             <span tal:condition="not node.node_groups" class="mono">no node_groups assigned</span><br>
           </div>
         </li>
-        <li tal:condition="node['ec2']">
+        <li tal:condition="node['ec2_instance']">
           <input type="radio" name="tabs" id="tab3">
           <label for="tab3">EC2</label>
           <div id="tab-content3" class="tab-content">
               <table>
                   <tr>
-                      <td>Ec2 Instance</td><td> <span class="mono">${node.ec2['ec2_instance_id']}</span></td>
+                      <td>Ec2 Instance</td><td> <span class="mono">${node.ec2_instance['instance_id']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Ami</td><td> <span class="mono">${node.ec2['ec2_ami_id']}</span></td>
+                      <td>Ec2 Ami</td><td> <span class="mono">${node.ec2_instance['ami_id']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Instance Type</td><td> <span class="mono">${node.ec2['ec2_instance_type']}</span></td>
+                      <td>Ec2 Instance Type</td><td> <span class="mono">${node.ec2_instance['instance_type']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Security Groups</td><td> <span class="mono">${node.ec2['ec2_security_groups']}</span></td>
+                      <td>Ec2 Security Groups</td><td> <span class="mono">${node.ec2_instance['security_groups']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Private Hostname</td><td> <span class="mono">${node.ec2['ec2_hostname']}</span></td>
+                      <td>Ec2 Private Hostname</td><td> <span class="mono">${node.ec2_instance['hostname']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Public Hostname</td><td> <span class="mono">${node.ec2['ec2_public_hostname']}</span></td>
+                      <td>Ec2 Placement Availability Zone</td><td> <span class="mono">${node.ec2_instance['availability_zone']}</span></td>
                   </tr>
                   <tr>
-                      <td>Ec2 Placement Availability Zone</td><td> <span class="mono">${node.ec2['ec2_placement_availability_zone']}</span></td>
+                      <td>Created</td><td> <span class="mono">${node.ec2_instance['created']}</span></td>
                   </tr>
                   <tr>
-                      <td>Created</td><td> <span class="mono">${node.ec2['created']}</span></td>
+                      <td>Updated</td><td> <span class="mono">${node.ec2_instance['updated']}</span></td>
                   </tr>
                   <tr>
-                      <td>Updated</td><td> <span class="mono">${node.ec2['updated']}</span></td>
-                  </tr>
-                  <tr>
-                      <td>Updated By</td><td> <span class="mono">${node.ec2['updated_by']}</span></td>
+                      <td>Updated By</td><td> <span class="mono">${node.ec2_instance['updated_by']}</span></td>
                   </tr>
               </table>
           </div>
@@ -137,7 +134,7 @@
             tab 2 content
           </div>
         </li>
-        <li tal:condition="(not (type == 'ec2' or type == 'rds'))">
+        <li tal:condition="(not (type == 'ec2_instance' or type == 'rds'))">
           <input type="radio" name="tabs" id="tab4">
           <label for="tab4">Tags</label>
           <div id="tab-content4" class="tab-content">
@@ -156,7 +153,7 @@
           <label for="tab6">Network</label>
           <div id="tab-content6" class="tab-content">
 
-              <div tal:repeat="net_if node.network_interfaces">  
+              <div tal:repeat="net_if node.network_interfaces">
                   <h4 style="border-bottom: 1px solid #CCCCCC;">${net_if['name']}</h4>
                   <table>
                       <tr>
@@ -190,7 +187,7 @@
                   <span class="mono">No Network interfaces found for node.</span>
               </div>
 
-            
+
           </div>
         </li>
         <li tal:condition="node.guest_vms">
@@ -228,7 +225,7 @@
         </li>
       </ul>
     </div>
-    
+
     <div tal:condition="not node">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">Not Found</span>
@@ -237,7 +234,7 @@
 
     <script>
       $(document).ready(function() {
-    
+
         // History tab ajax loader
         $('.show_history').click(function(event){
             event.preventDefault();
@@ -255,10 +252,10 @@
         $(document).ajaxStart(function() {
           $("#history_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
         });
-    
+
       });
     </script>
-    
+
   </body>
 </html>
 
