@@ -47,7 +47,7 @@ class Node(Base):
     status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
     hardware_profile_id = Column(Integer, ForeignKey('hardware_profiles.id'), nullable=False)
     operating_system_id = Column(Integer, ForeignKey('operating_systems.id'), nullable=False)
-    ec2_id = Column(Integer, ForeignKey('ec2.id'))
+    ec2_id = Column(Integer, ForeignKey('ec2_instances.id'))
     data_center_id = Column(Integer, ForeignKey('data_centers.id'))
     uptime = Column(Text, nullable=False)
     serial_number = Column(Text)
@@ -59,7 +59,7 @@ class Node(Base):
     status = relationship('Status', backref='nodes', lazy='joined')
     hardware_profile = relationship('HardwareProfile', backref=backref('nodes'), lazy='joined')
     operating_system = relationship('OperatingSystem', backref=backref('nodes'), lazy='joined')
-    ec2 = relationship('Ec2', backref=backref('nodes'), lazy='joined')
+    ec2_instance = relationship('Ec2Instance', backref=backref('nodes'), lazy='joined')
     data_center = relationship('DataCenter', backref=backref('nodes'), lazy='joined')
     node_groups = relationship('NodeGroup',
                                secondary='node_group_assignments',
@@ -93,7 +93,7 @@ class Node(Base):
                     status=get_name_id_dict([self.status]),
                     hardware_profile=get_name_id_dict([self.hardware_profile]),
                     operating_system=get_name_id_dict([self.operating_system]),
-                    ec2=check_null_dict(self.ec2),
+                    ec2_instance=check_null_dict(self.ec2_instance),
                     data_center=get_name_id_dict([self.data_center]),
                     uptime=check_null_string(self.uptime),
                     serial_number=check_null_string(self.serial_number),

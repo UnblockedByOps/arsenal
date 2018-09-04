@@ -14,7 +14,7 @@
 #
 use arsenal;
 
-### 
+###
 ### TABLE: tags
 ###   This contains definitions of tags which are key/value pairs that
 ###   are associated with a node, nodegroup or other object (examples?),
@@ -224,33 +224,28 @@ CREATE INDEX idx_node_name on nodes (name);
 CREATE UNIQUE INDEX idx_node_ec2_id on nodes (ec2_id);
 
 ###
-### TABLE: ec2
-###   The ec2 table. This contains alll the ec2 facts for a given
+### TABLE: ec2_instances
+###   The ec2_instances table. This contains alll the ec2 facts for a given
 ###   node. In the future there could be more tables for various
 ###   cloud providers.
 ###
-DROP TABLE IF EXISTS `ec2`;
-CREATE TABLE `ec2` (
+DROP TABLE IF EXISTS `ec2_instances`;
+CREATE TABLE `ec2_instances` (
   `id`                            int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `ami_id`                        varchar(255) DEFAULT NULL,
-  `hostname`                      varchar(255) DEFAULT NULL,
-  `instance_id`                   varchar(255) DEFAULT NULL,
-  `instance_type`                 varchar(255) DEFAULT NULL,
-  `kernel_id`                     varchar(255) DEFAULT NULL,
-  `local_hostname`                varchar(255) DEFAULT NULL,
-  `local_ipv4`                    varchar(255) DEFAULT NULL,
-  `placement_availability_zone`   varchar(255) DEFAULT NULL,
+  `ami_id`                        varchar(255) NOT NULL,
+  `hostname`                      varchar(255) NOT NULL,
+  `instance_id`                   varchar(255) NOT NULL,
+  `instance_type`                 varchar(255) NOT NULL,
+  `availability_zone`             varchar(255) DEFAULT NULL,
   `profile`                       varchar(255) DEFAULT NULL,
-  `public_hostname`               varchar(255) DEFAULT NULL,
-  `public_ipv4`                   varchar(255) DEFAULT NULL,
   `reservation_id`                varchar(255) DEFAULT NULL,
   `security_groups`               varchar(255) DEFAULT NULL,
   `created`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_by`                    varchar(200) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_ec2_id on ec2 (id);
-CREATE UNIQUE INDEX idx_ec2_instance_id on ec2 (instance_id);
+CREATE INDEX idx_ec2_id on ec2_instances (id);
+CREATE UNIQUE INDEX idx_ec2_instance_id on ec2_instances (instance_id);
 
 ###
 ### TABLE: statuses
@@ -386,6 +381,21 @@ CREATE TABLE `group_perm_assignments` (
 ###
 DROP TABLE IF EXISTS `data_centers_audit`;
 CREATE TABLE `data_centers_audit` (
+      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `object_id`              int(11) UNSIGNED NOT NULL,
+      `field`                  varchar(255) NOT NULL,
+      `old_value`              varchar(255) NOT NULL,
+      `new_value`              varchar(255) NOT NULL,
+      `updated_by`             varchar(255) NOT NULL,
+      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+###
+### TABLE: ec2_instances_audit
+###   This table tracks additions, changes and deletions to the ec2_instances table.
+###
+DROP TABLE IF EXISTS `ec2_instances_audit`;
+CREATE TABLE `ec2_instances_audit` (
       `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
       `object_id`              int(11) UNSIGNED NOT NULL,
       `field`                  varchar(255) NOT NULL,

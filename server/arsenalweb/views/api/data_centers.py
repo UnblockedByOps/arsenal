@@ -121,7 +121,7 @@ def update_data_center(data_center, **kwargs):
 
     Required params:
 
-    data_center: A string that is the user making the update.
+    data_center: A string that is the name of the data_center.
     updated_by : A string that is the user making the update.
 
     Optional kwargs:
