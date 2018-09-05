@@ -198,6 +198,7 @@ class ArsenalFacts(object):
             self.facts['ec2']['instance_type'] = resp['ec2_metadata']['instance-type']
             self.facts['ec2']['availability_zone'] = resp['ec2_metadata']['placement']['availability-zone']
             self.facts['ec2']['security_groups'] = resp['ec2_metadata']['security-groups']
+            self.facts['ec2']['reservation_id'] = resp['ec2_metadata']['reservation-id']
         except KeyError:
             LOG.debug('ec2 facts not found, nothing to do.')
         self._map_network_interfaces(resp)
