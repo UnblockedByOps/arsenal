@@ -320,7 +320,7 @@ def process_ec2(payload, user):
                                   security_groups=security_groups,
                                   updated_by=user)
 
-    except (TypeError, KeyError):
+    except (TypeError, KeyError, AttributeError):
         LOG.debug('ec2_instance data not present in payload.')
         return None
 
