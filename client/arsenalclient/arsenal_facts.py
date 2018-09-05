@@ -57,13 +57,14 @@ class ArsenalFacts(object):
                 'name': None,
             },
             'ec2': {
-                'instance_id': None,
-                'hostname': None,
                 'ami_id': None,
-                'public_hostname': None,
-                'instance_type': None,
-                'security_groups': None,
                 'availability_zone': None,
+                'hostname': None,
+                'instance_id': None,
+                'instance_type': None,
+                'profile': None,
+                'reservation_id': None,
+                'security_groups': None,
             },
             'hardware': {
                 'manufacturer': None,
@@ -196,7 +197,7 @@ class ArsenalFacts(object):
             self.facts['ec2']['hostname'] = resp['ec2_metadata']['hostname']
             self.facts['ec2']['instance_type'] = resp['ec2_metadata']['instance-type']
             self.facts['ec2']['availability_zone'] = resp['ec2_metadata']['placement']['availability-zone']
-            self.facts['ec2']['security_groups'] = resp['ec2_metadata']['security_groups']
+            self.facts['ec2']['security_groups'] = resp['ec2_metadata']['security-groups']
         except KeyError:
             LOG.debug('ec2 facts not found, nothing to do.')
         self._map_network_interfaces(resp)
