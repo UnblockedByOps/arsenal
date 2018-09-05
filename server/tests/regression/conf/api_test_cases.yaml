@@ -521,3 +521,5 @@ tests:
         url: '/api/register'
       - test_data: 'multi_interface_no_bond'
         url: '/api/register'
+      - test_data: 'single_interface_ec2'
+        url: '/api/register'
