@@ -116,14 +116,14 @@ REGISTER_TEST_CASES = {
     },
     'single_interface_ec2': {
         'ec2': {
-            'ec2_ami_id': 'ami-e3415983',
-            'ec2_hostname': 'ip-10-60-3-114.usw1.fanops.net',
-            'ec2_instance_id': 'i-129485tu8549',
-            'ec2_instance_type': 'm5.xlarge',
-            'ec2_availability_zone': 'us-east-1',
-            'ec2_profile': 'hvm',
-            'ec2_reservation_id': '12345',
-            'ec2_security_groups': 'default',
+            'ami_id': 'ami-e3415983',
+            'hostname': 'ip-10-60-3-114.usw1.fanops.net',
+            'instance_id': 'i-129485tu8549',
+            'instance_type': 'm5.xlarge',
+            'availability_zone': 'us-east-1',
+            'profile': 'hvm',
+            'reservation_id': '12345',
+            'security_groups': 'default',
         },
         'guest_vms': [],
         'hardware_profile': {

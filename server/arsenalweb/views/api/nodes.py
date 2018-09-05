@@ -288,14 +288,14 @@ def process_ec2(payload, user):
     exist. Returns ec2.id, or None if not present in the payload.'''
 
     try:
-        ami_id = payload['ec2']['ec2_ami_id'].rstrip()
-        hostname = payload['ec2']['ec2_hostname'].rstrip()
-        instance_id = payload['ec2']['ec2_instance_id'].rstrip()
-        instance_type = payload['ec2']['ec2_instance_type'].rstrip()
-        availability_zone = payload['ec2']['ec2_availability_zone'].rstrip()
-        profile = payload['ec2']['ec2_profile'].rstrip()
-        reservation_id = payload['ec2']['ec2_reservation_id'].rstrip()
-        security_groups = payload['ec2']['ec2_security_groups'].rstrip()
+        ami_id = payload['ec2']['ami_id'].rstrip()
+        hostname = payload['ec2']['hostname'].rstrip()
+        instance_id = payload['ec2']['instance_id'].rstrip()
+        instance_type = payload['ec2']['instance_type'].rstrip()
+        availability_zone = payload['ec2']['availability_zone'].rstrip()
+        profile = payload['ec2']['profile'].rstrip()
+        reservation_id = payload['ec2']['reservation_id'].rstrip()
+        security_groups = payload['ec2']['security_groups'].rstrip()
 
         ec2 = find_ec2_instance_by_id(instance_id)
         ec2 = update_ec2_instance(ec2,
