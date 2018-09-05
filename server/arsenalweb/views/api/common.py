@@ -30,8 +30,9 @@ from arsenalweb.models.data_centers import (
     DataCenter,
     DataCenterAudit,
     )
-from arsenalweb.models.ec2 import (
-    Ec2,
+from arsenalweb.models.ec2_instances import (
+    Ec2Instance,
+    Ec2InstanceAudit,
     )
 from arsenalweb.models.hardware_profiles import (
     HardwareProfile,
@@ -406,9 +407,12 @@ def model_matcher(route_name):
         'api_data_center_r': 'DataCenter',
         'api_data_centers': 'DataCenter',
         'api_data_centers_audit': 'DataCenterAudit',
-        'api_ec2_object': 'Ec2',
-        'api_ec2_object_r': 'Ec2',
-        'api_ec2_objects': 'Ec2',
+        'api_ec2_instance': 'Ec2Instance',
+        'api_ec2_instance_audit': 'Ec2InstanceAudit',
+        'api_ec2_instance_audit_r': 'Ec2InstanceAudit',
+        'api_ec2_instance_r': 'Ec2Instance',
+        'api_ec2_instances': 'Ec2Instance',
+        'api_ec2_instances_audit': 'Ec2InstanceAudit',
         'api_hardware_profile': 'HardwareProfile',
         'api_hardware_profile_audit': 'HardwareProfileAudit',
         'api_hardware_profile_audit_r': 'HardwareProfileAudit',
@@ -547,7 +551,8 @@ def validate_tag_perm(request, auth_user, tag_name):
 
 @view_config(route_name='api_data_center_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_data_center_r', request_method='GET', renderer='json')
-@view_config(route_name='api_ec2_object_r', request_method='GET', renderer='json')
+@view_config(route_name='api_ec2_instance_r', request_method='GET', renderer='json')
+@view_config(route_name='api_ec2_instance_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment_r', request_method='GET', renderer='json')
@@ -613,7 +618,7 @@ def get_api_attribute(request):
         return api_500(msg=repr(ex))
 
 @view_config(route_name='api_data_center', request_method='GET', renderer='json')
-@view_config(route_name='api_ec2_object', request_method='GET', renderer='json')
+@view_config(route_name='api_ec2_instance', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment', request_method='GET', renderer='json')
 @view_config(route_name='api_ip_address', request_method='GET', renderer='json')
@@ -692,7 +697,8 @@ def api_read_audit_by_id(request):
 
 @view_config(route_name='api_data_centers', request_method='GET', renderer='json')
 @view_config(route_name='api_data_centers_audit', request_method='GET', renderer='json')
-@view_config(route_name='api_ec2_objects', request_method='GET', renderer='json')
+@view_config(route_name='api_ec2_instances', request_method='GET', renderer='json')
+@view_config(route_name='api_ec2_instances_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignments', request_method='GET', renderer='json')
@@ -780,7 +786,7 @@ def api_read_by_params(request):
         return api_500(msg=repr(ex))
 
 @view_config(route_name='api_data_center', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ec2_object', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_ec2_instance', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_hardware_profile', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_ip_address', permission='api_write', request_method='DELETE', renderer='json')
@@ -868,7 +874,7 @@ def api_delete_by_id(request):
         return api_500(msg=msg)
 
 @view_config(route_name='api_data_centers', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ec2_objects', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_ec2_instances', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_hardware_profiles', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_ip_addresses', permission='api_write', request_method='DELETE', renderer='json')

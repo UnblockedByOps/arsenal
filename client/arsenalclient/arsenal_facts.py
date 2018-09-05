@@ -57,13 +57,14 @@ class ArsenalFacts(object):
                 'name': None,
             },
             'ec2': {
-                'instance_id': None,
-                'hostname': None,
                 'ami_id': None,
-                'public_hostname': None,
-                'instance_type': None,
-                'security_groups': None,
                 'availability_zone': None,
+                'hostname': None,
+                'instance_id': None,
+                'instance_type': None,
+                'profile': None,
+                'reservation_id': None,
+                'security_groups': None,
             },
             'hardware': {
                 'manufacturer': None,
@@ -190,16 +191,15 @@ class ArsenalFacts(object):
         except KeyError:
             LOG.error('Unable to determine operating system.')
         self.facts['processors']['count'] = resp['processors']['count']
-        # Won't know what these map to until we have ec2 instances. Letting
-        # Them default to None for now.
         try:
+            self.facts['ec2']['ami_id'] = resp['ec2_metadata']['ami-id']
+            self.facts['ec2']['availability_zone'] = resp['ec2_metadata']['placement']['availability-zone']
+            self.facts['ec2']['hostname'] = resp['ec2_metadata']['hostname']
             self.facts['ec2']['instance_id'] = resp['ec2_metadata']['instance-id']
-            # self.facts['ec2']['hostname'] = resp['']
-            # self.facts['ec2']['ami_id'] = resp['']
-            # self.facts['ec2']['public_hostname'] = resp['']
-            # self.facts['ec2']['instance_type'] = resp['']
-            # self.facts['ec2']['security_groups'] = resp['']
-            # self.facts['ec2']['availability_zone'] = resp['']
+            self.facts['ec2']['instance_type'] = resp['ec2_metadata']['instance-type']
+            self.facts['ec2']['profile'] = resp['ec2_metadata']['profile']
+            self.facts['ec2']['reservation_id'] = resp['ec2_metadata']['reservation-id']
+            self.facts['ec2']['security_groups'] = resp['ec2_metadata']['security-groups']
         except KeyError:
             LOG.debug('ec2 facts not found, nothing to do.')
         self._map_network_interfaces(resp)

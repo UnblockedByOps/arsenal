@@ -57,9 +57,10 @@ from arsenalweb.views.api.operating_systems import (
     get_operating_system,
     create_operating_system,
     )
-from arsenalweb.views.api.ec2_objects import (
-    get_ec2_object,
-    create_ec2_object,
+from arsenalweb.views.api.ec2_instances import (
+    create_ec2_instance,
+    find_ec2_instance_by_id,
+    update_ec2_instance,
     )
 from arsenalweb.views.api.network_interfaces import (
     find_net_if_by_unique_id,
@@ -287,36 +288,47 @@ def process_ec2(payload, user):
     exist. Returns ec2.id, or None if not present in the payload.'''
 
     try:
-        ec2_instance_id = payload['ec2']['ec2_instance_id'].rstrip()
-        ec2_ami_id = payload['ec2']['ec2_ami_id'].rstrip()
-        ec2_hostname = payload['ec2']['ec2_hostname'].rstrip()
-        ec2_public_hostname = payload['ec2']['ec2_public_hostname'].rstrip()
-        ec2_instance_type = payload['ec2']['ec2_instance_type'].rstrip()
-        ec2_security_groups = payload['ec2']['ec2_security_groups'].rstrip()
-        ec2_placement_availability_zone = payload['ec2']['ec2_placement_availability_zone'].rstrip()
+        ami_id = payload['ec2']['ami_id'].rstrip()
+        hostname = payload['ec2']['hostname'].rstrip()
+        instance_id = payload['ec2']['instance_id'].rstrip()
+        instance_type = payload['ec2']['instance_type'].rstrip()
+        availability_zone = payload['ec2']['availability_zone'].rstrip()
+        profile = payload['ec2']['profile'].rstrip()
+        reservation_id = payload['ec2']['reservation_id'].rstrip()
+        security_groups = payload['ec2']['security_groups'].rstrip()
 
-        ec2 = get_ec2_object(ec2_instance_id)
+        ec2 = find_ec2_instance_by_id(instance_id)
+        ec2 = update_ec2_instance(ec2,
+                                  ami_id=ami_id,
+                                  hostname=hostname,
+                                  instance_id=instance_id,
+                                  instance_type=instance_type,
+                                  availability_zone=availability_zone,
+                                  profile=profile,
+                                  reservation_id=reservation_id,
+                                  security_groups=security_groups,
+                                  updated_by=user)
 
     except NoResultFound:
-        LOG.debug('ec2 data not found, creating...')
-        ec2 = create_ec2_object(ec2_instance_id,
-                                ec2_ami_id,
-                                ec2_hostname,
-                                ec2_public_hostname,
-                                ec2_instance_type,
-                                ec2_security_groups,
-                                ec2_placement_availability_zone,
-                                user)
+        ec2 = create_ec2_instance(ami_id=ami_id,
+                                  hostname=hostname,
+                                  instance_id=instance_id,
+                                  instance_type=instance_type,
+                                  availability_zone=availability_zone,
+                                  profile=profile,
+                                  reservation_id=reservation_id,
+                                  security_groups=security_groups,
+                                  updated_by=user)
 
-    except (TypeError, KeyError):
-        LOG.debug('ec2 data not present in payload.')
+    except (TypeError, KeyError, AttributeError):
+        LOG.debug('ec2_instance data not present in payload.')
         return None
 
     except Exception as ex:
-        LOG.error('Unable to determine ec2_object! exception: {0}'.format(repr(ex)))
+        LOG.error('Unable to determine ec2_instance! exception: {0}'.format(repr(ex)))
         raise
 
-    LOG.debug('ec2_object is: {0}'.format(ec2.__dict__))
+    LOG.debug('ec2_instance is: {0}'.format(ec2.__dict__))
     return ec2.id
 
 def process_data_center(payload, user):

@@ -113,5 +113,42 @@ REGISTER_TEST_CASES = {
         'serial_number': '987654321-2',
         'unique_id': '123456789-2',
         'uptime': '1 day'
+    },
+    'single_interface_ec2': {
+        'ec2': {
+            'ami_id': 'ami-e3415983',
+            'hostname': 'ip-10-60-3-114.usw1.fanops.net',
+            'instance_id': 'i-129485tu8549',
+            'instance_type': 'm5.xlarge',
+            'availability_zone': 'us-east-1',
+            'profile': 'hvm',
+            'reservation_id': '12345',
+            'security_groups': 'default',
+        },
+        'guest_vms': [],
+        'hardware_profile': {
+            'manufacturer': 'Amazon EC2',
+            'model': 'm5.xlarge',
+            'name': 'Amazon EC2 m5.xlarge'
+        },
+        'name': 'server0003.internal',
+        'network_interfaces': [
+            {
+                'ip_address': '10.1.1.23',
+                'name': 'eth0',
+                'unique_id': '00:50:56:bf:4b:aa'
+            }
+        ],
+        'operating_system': {
+            'architecture': 'x86_64',
+            'description': 'CentOS Linux release 7.4.1708 (Core)',
+            'name': 'CentOS 7.4.1708 x86_64',
+            'variant': 'CentOS',
+            'version_number': '7.4.1708'
+        },
+        'processor_count': 2,
+        'serial_number': '987654321-1',
+        'unique_id': 'i-0c1abf92f3b6c33b1',
+        'uptime': '1 day'
     }
 }

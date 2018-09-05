@@ -38,10 +38,6 @@ from arsenalweb.views.api.operating_systems import (
     get_operating_system,
     create_operating_system,
     )
-from arsenalweb.views.api.ec2_objects import (
-    get_ec2_object,
-    create_ec2_object,
-    )
 from arsenalweb.views.api.tags import (
     manage_tags,
     )

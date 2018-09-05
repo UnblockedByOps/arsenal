@@ -573,8 +573,9 @@ class Client(object):
 
         resp['data_center']['name'] = facts['data_center']['name']
 
-        if facts['ec2']['instance_id']:
-            LOG.info('Ec2 data collection not yet implemented.')
+        if facts['ec2']:
+            LOG.debug('This is an Ec2 instance.')
+            resp['ec2'] = facts['ec2']
 
         resp['uptime'] = facts['uptime']
 
