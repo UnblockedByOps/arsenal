@@ -27,6 +27,7 @@ with open('arsenalclient/version.py') as fd:
 
 REQUIRES = [
     'requests>=2.6.0',
+    'PyYAML>=3.0',
 ]
 
 setup(name='arsenalclient',
