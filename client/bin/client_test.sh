@@ -75,9 +75,9 @@ overall_ret=0
 test_num=0
 FAILED_TESTS=()
 arsenal_cmd="python2.7 bin/arsenal"
-ro_conf="/app/arsenal/conf/arsenal-jenkins-readonly.ini"
+ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
 ro_cookie="/var/lib/jenkins/.arsenal_cookie_readonly"
-rw_conf="/app/arsenal/conf/arsenal-jenkins.ini"
+rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
 
 # Parse options
 while getopts "hs:" OPTION; do
