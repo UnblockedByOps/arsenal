@@ -191,7 +191,7 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 
 #
 # TESTING DATA
-
+#
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (1, 'hypervisor1', 1, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (2, 'hypervisor2', 2, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (3, 'hypervisor3', 3, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
@@ -202,6 +202,7 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 # done
 #
 # Generates this:
+#
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (4, 'guest_vm4', 4, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (5, 'guest_vm5', 5, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (6, 'guest_vm6', 6, 2, 1, 1,'Admin', NOW(),NOW(),NOW());
@@ -220,9 +221,9 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (19, 'guest_vm19', 19, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (20, 'guest_vm20', 20, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
 #
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,4,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,5,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,6,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,7,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (2,8,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (2,9,'Admin',NOW(),NOW());
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,4);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,5);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,6);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,7);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (2,8);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (2,9);
