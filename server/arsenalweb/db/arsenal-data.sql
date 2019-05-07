@@ -50,6 +50,8 @@ INSERT INTO groups VALUES (13,'data_center_delete','Admin',NOW(),NOW());
 # This is a special local group that is not assigned any permissions via route, but 
 # members of this group will be able to write secure tags.
 INSERT INTO groups VALUES (14,'secure_tags','Admin',NOW(),NOW());
+# Site specific groups should be above id 100
+INSERT INTO groups VALUES (100,'rp_noc','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -101,6 +103,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (6,4,'Ad
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (7,5,'Admin');
 #  node_group_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (8,6,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (100,6,'Admin');
 #  node_group_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (9,7,'Admin');
 #  tag_write
@@ -121,7 +124,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'
 # Adding db users to db groups.
 ###########################################################################
 ### Becasue we need to allow kaboom to update status, any user added 
-### to the api_write group also needs ot be added to the api_register group.
+### to the api_write group also needs to be added to the api_register group.
 # admin           = 1
 # kaboom          = 2
 # hvm             = 3

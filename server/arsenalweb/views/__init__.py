@@ -152,12 +152,20 @@ def pam_groupfinder(request, userid):
     '''Queries pam for a list of groups the user belongs to. Returns either a list of
     groups (empty if no groups) or None if the user doesn't exist.'''
 
-    admin_group = request.registry.settings['arsenal.pam_admin_group']
+    allowed_groups = [g for g in request.registry.settings['arsenal.pam_allowed_groups'].splitlines() if g]
+    LOG.debug('Allowed groups: {0}'.format(allowed_groups))
     groups = []
     try:
-        this_group = grp.getgrnam(admin_group)
-        if userid in this_group.gr_mem:
-            groups.append(this_group.gr_name)
+        for group in allowed_groups:
+            LOG.debug('Checking for memebership in group: {0}'.format(group))
+            try:
+                this_group = grp.getgrnam(group)
+                if userid in this_group.gr_mem:
+                    groups.append(this_group.gr_name)
+            except Exception as ex:
+                LOG.warn('There is a problem locating this group: {0} '
+                         'Exception: {1}'.format(group,
+                                               ex))
         # Also add the user's default group
         gid = pwd.getpwnam(userid).pw_gid
         groups.append(grp.getgrgid(gid).gr_name)
