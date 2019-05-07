@@ -243,6 +243,8 @@ def get_authenticated_user(request):
     }
 
     user_id = request.authenticated_userid
+    first = ''
+    last = ''
     groups = []
 
     try:
@@ -275,7 +277,6 @@ def get_authenticated_user(request):
                 (first, last) = pwd.getpwnam(user_id).pw_gecos.split()
             except ValueError:
                 first = user_id
-                last = ''
             groups = pam_groupfinder(request, user_id)
             first_last = '{0} {1}'.format(first, last)
             auth = True
