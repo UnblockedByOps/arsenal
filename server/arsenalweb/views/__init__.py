@@ -139,7 +139,7 @@ def global_groupfinder(userid, request):
     if request.registry.settings['arsenal.use_pam'] and not groups:
         try:
             LOG.debug('Checking pam groups for userid: {0}'.format(userid))
-            groups = pam_groupfinder(request, userid)
+            groups = pam_groupfinder(userid)
             if groups:
                 LOG.debug('Found pam groups for userid: {0} groups: {1}'.format(userid,
                                                                                 groups))
@@ -148,24 +148,13 @@ def global_groupfinder(userid, request):
 
     return groups
 
-def pam_groupfinder(request, userid):
+def pam_groupfinder(userid):
     '''Queries pam for a list of groups the user belongs to. Returns either a list of
     groups (empty if no groups) or None if the user doesn't exist.'''
 
-    allowed_groups = [g for g in request.registry.settings['arsenal.pam_allowed_groups'].splitlines() if g]
-    LOG.debug('Allowed groups: {0}'.format(allowed_groups))
     groups = []
     try:
-        for group in allowed_groups:
-            LOG.debug('Checking for memebership in group: {0}'.format(group))
-            try:
-                this_group = grp.getgrnam(group)
-                if userid in this_group.gr_mem:
-                    groups.append(this_group.gr_name)
-            except Exception as ex:
-                LOG.warn('There is a problem locating this group: {0} '
-                         'Exception: {1}'.format(group,
-                                               ex))
+        groups = [g.gr_name for g in grp.getgrall() if userid in g.gr_mem]
         # Also add the user's default group
         gid = pwd.getpwnam(userid).pw_gid
         groups.append(grp.getgrgid(gid).gr_name)
@@ -277,7 +266,7 @@ def get_authenticated_user(request):
                 (first, last) = pwd.getpwnam(user_id).pw_gecos.split()
             except ValueError:
                 first = user_id
-            groups = pam_groupfinder(request, user_id)
+            groups = pam_groupfinder(user_id)
             first_last = '{0} {1}'.format(first, last)
             auth = True
         except Exception as ex:
