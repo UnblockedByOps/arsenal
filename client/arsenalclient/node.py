@@ -78,7 +78,10 @@ class Node(object):
         LOG.debug('determining unique_id...')
 
         if facts['os']['kernel'] == 'Linux' or facts['os']['kernel'] == 'FreeBSD':
-            if facts['ec2']['instance_id']:
+            if facts['virtual'] == 'kvm':
+                self.unique_id = facts['networking']['mac_address']
+                LOG.debug('unique_id is from mac address: {0}'.format(self.unique_id))
+            elif facts['ec2']['instance_id']:
                 self.unique_id = facts['ec2']['instance_id']
                 LOG.debug('unique_id is from ec2 instance_id: {0}'.format(self.unique_id))
             elif os.path.isfile('/usr/sbin/dmidecode'):
