@@ -492,7 +492,7 @@ class Client(object):
         facts = self.arsenal_facts.facts
 
         if facts['os']['kernel'] == 'Linux' or facts['os']['kernel'] == 'FreeBSD':
-            if facts['virtual'] == 'kvm':
+            if facts['hardware']['virtual'] == 'kvm':
                 unique_id = facts['networking']['mac_address']
                 LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
             elif facts['ec2']['instance_id']:
