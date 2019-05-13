@@ -576,7 +576,7 @@ class Client(object):
 
         resp['data_center']['name'] = facts['data_center']['name']
 
-        if facts['ec2']:
+        if facts['ec2']['instance_id']:
             LOG.debug('This is an Ec2 instance.')
             resp['ec2'] = facts['ec2']
 
