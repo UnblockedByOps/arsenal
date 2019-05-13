@@ -492,12 +492,12 @@ class Client(object):
         facts = self.arsenal_facts.facts
 
         if facts['os']['kernel'] == 'Linux' or facts['os']['kernel'] == 'FreeBSD':
-            if facts['hardware']['virtual'] == 'kvm':
-                unique_id = facts['networking']['mac_address']
-                LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
-            elif facts['ec2']['instance_id']:
+            if facts['ec2']['instance_id']:
                 unique_id = facts['ec2']['instance_id']
                 LOG.debug('unique_id is from ec2 instance_id: {0}'.format(unique_id))
+            elif facts['hardware']['name'] == 'Red Hat KVM':
+                unique_id = facts['networking']['mac_address']
+                LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
             elif os.path.isfile('/usr/sbin/dmidecode'):
                 unique_id = self.node_get_uuid()
                 if unique_id:
