@@ -231,9 +231,12 @@ class ArsenalFacts(object):
             domains = conn.listAllDomains(0)
             if len(domains) != 0:
                 for domain in domains:
+                    mac_addresses = re.search(r"<mac address='([A-Z0-9:]+)'",
+                                              domain.XMLDesc(),
+                                              re.IGNORECASE).groups()
                     this_guest = {
                         'name': domain.name(),
-                        'unique_id': domain.UUIDString()
+                        'unique_id': mac_addresses[0]
                     }
                     self.facts['guest_vms'].append(this_guest)
         except:
