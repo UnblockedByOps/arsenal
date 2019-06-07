@@ -73,15 +73,6 @@ CREATE TABLE `data_centers` (
   `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
   `status_id`              int(11) NOT NULL,
-  `provider`               text,
-  `address_1`              text,
-  `address_2`              text,
-  `city`                   text,
-  `admin_area`             text,
-  `country`                text,
-  `postal_code`            text,
-  `contact_name`           text,
-  `phone_number`           text,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
@@ -246,6 +237,83 @@ CREATE TABLE `ec2_instances` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_ec2_id on ec2_instances (id);
 CREATE UNIQUE INDEX idx_ec2_instance_id on ec2_instances (instance_id);
+
+###
+### TABLE: physical_locations
+###   The physical_locations table.
+###
+DROP TABLE IF EXISTS `physical_locations`;
+CREATE TABLE `physical_locations` (
+  `id`              int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name`            varchar(255) COLLATE utf8_bin NOT NULL,
+  `provider`        text,
+  `address_1`       text,
+  `address_2`       text,
+  `city`            text,
+  `admin_area`      text,
+  `country`         text,
+  `postal_code`     text,
+  `contact_name`    text,
+  `phone_number`    text,
+  `updated_by`      varchar(200) COLLATE utf8_bin NOT NULL,
+  `created`         timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`         timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_physical_location_id on physical_locations (id);
+CREATE UNIQUE INDEX idx_physical_location_name on physical_locations (name);
+
+###
+### TABLE: physical_racks
+###   The physical_racks table.
+###
+DROP TABLE IF EXISTS `physical_racks`;
+CREATE TABLE `physical_racks` (
+  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name`                    varchar(255) NOT NULL,
+  `physical_location_id`    int(11) NOT NULL,
+  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
+  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_physical_rack_id on physical_racks (id);
+CREATE UNIQUE INDEX idx_physical_rack_location on physical_racks (name, physical_location_id);
+
+###
+### TABLE: physical_elevation
+###   The physical_elevation table.
+###
+DROP TABLE IF EXISTS `physical_elevations`;
+CREATE TABLE `physical_elevations` (
+  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `elevation`               int(11) NOT NULL,
+  `physical_rack_id`        int(11) NOT NULL,
+  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
+  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_physical_elevation_id on physical_elevations (id);
+CREATE UNIQUE INDEX idx_physical_elevation_location on physical_elevations (elevation, physical_rack_id);
+
+###
+### TABLE: physical_devices
+###   The physical_devices table.
+###
+DROP TABLE IF EXISTS `physical_devices`;
+CREATE TABLE `physical_devices` (
+  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `serial_number`           varchar(255) NOT NULL,
+  `physical_elevation_id`   int(11) NOT NULL,
+  `physical_location_id`    int(10) NOT NULL,
+  `physical_rack_id`        int(10) NOT NULL,
+  `hardware_profile_id`     int(11) DEFAULT NULL,
+  `rack_name`               varchar(255) DEFAULT NULL,
+  `rack_position`           int(11) DEFAULT NULL,
+  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
+  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_physical_device_id on physical_devices (id);
+CREATE UNIQUE INDEX idx_physical_device_serial_number on physical_devices (serial_number);
 
 ###
 ### TABLE: statuses
@@ -525,3 +593,62 @@ CREATE TABLE `network_interfaces_audit` (
       `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+###
+### TABLE: physical_locations_audit
+###   This table tracks additions, changes and deletions to the physical_locations table.
+###
+DROP TABLE IF EXISTS `physical_locations_audit`;
+CREATE TABLE `physical_locations_audit` (
+      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `object_id`              int(11) UNSIGNED NOT NULL,
+      `field`                  varchar(255) NOT NULL,
+      `old_value`              varchar(255) NOT NULL,
+      `new_value`              varchar(255) NOT NULL,
+      `updated_by`             varchar(255) NOT NULL,
+      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+###
+### TABLE: physical_racks_audit
+###   This table tracks additions, changes and deletions to the physical_racks table.
+###
+DROP TABLE IF EXISTS `physical_racks_audit`;
+CREATE TABLE `physical_racks_audit` (
+      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `object_id`              int(11) UNSIGNED NOT NULL,
+      `field`                  varchar(255) NOT NULL,
+      `old_value`              varchar(255) NOT NULL,
+      `new_value`              varchar(255) NOT NULL,
+      `updated_by`             varchar(255) NOT NULL,
+      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+###
+### TABLE: physical_elevations_audit
+###   This table tracks additions, changes and deletions to the physical_elevations table.
+###
+DROP TABLE IF EXISTS `physical_elevations_audit`;
+CREATE TABLE `physical_elevations_audit` (
+      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `object_id`              int(11) UNSIGNED NOT NULL,
+      `field`                  varchar(255) NOT NULL,
+      `old_value`              varchar(255) NOT NULL,
+      `new_value`              varchar(255) NOT NULL,
+      `updated_by`             varchar(255) NOT NULL,
+      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+###
+### TABLE: physical_devices_audit
+###   This table tracks additions, changes and deletions to the physical_devices table.
+###
+DROP TABLE IF EXISTS `physical_devices_audit`;
+CREATE TABLE `physical_devices_audit` (
+      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `object_id`              int(11) UNSIGNED NOT NULL,
+      `field`                  varchar(255) NOT NULL,
+      `old_value`              varchar(255) NOT NULL,
+      `new_value`              varchar(255) NOT NULL,
+      `updated_by`             varchar(255) NOT NULL,
+      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
