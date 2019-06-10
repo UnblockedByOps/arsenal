@@ -57,13 +57,19 @@ class PhysicalDevice(Base):
     physical_elevation = relationship('PhysicalElevation',
                                       backref='physical_devices',
                                       lazy='joined')
-
     hardware_profile_id = Column(Integer,
                                  ForeignKey('hardware_profiles.id'),
                                  nullable=True)
     hardware_profile = relationship('HardwareProfile',
                                     backref=backref('physical_devices'),
                                     lazy='joined')
+    oob_node_id = Column(Integer, ForeignKey('nodes.id'), nullable=True)
+    oob_node = relationship('Node',
+                            backref='physical_devices',
+                            lazy='joined',
+                            foreign_keys=[oob_node_id])
+
+
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -85,6 +91,7 @@ class PhysicalDevice(Base):
                     physical_elevation=self.physical_elevation,
                     hardware_profile=get_name_id_dict([self.hardware_profile]),
                     node=get_name_id_dict(self.nodes),
+                    oob_node=get_name_id_dict([self.oob_node]),
                     serial_number=check_null_string(self.serial_number),
                     created=self.created,
                     updated=self.updated,

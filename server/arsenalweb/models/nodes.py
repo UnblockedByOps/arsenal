@@ -61,7 +61,10 @@ class Node(Base):
     operating_system = relationship('OperatingSystem', backref=backref('nodes'), lazy='joined')
     ec2_instance = relationship('Ec2Instance', backref=backref('nodes'), lazy='joined')
     data_center = relationship('DataCenter', backref=backref('nodes'), lazy='joined')
-    physical_device = relationship('PhysicalDevice', backref=backref('nodes'), lazy='joined')
+    physical_device = relationship('PhysicalDevice',
+                                   backref=backref('nodes'),
+                                   lazy='joined',
+                                   foreign_keys=[serial_number])
     node_groups = relationship('NodeGroup',
                                secondary='node_group_assignments',
                                backref='nodes',
