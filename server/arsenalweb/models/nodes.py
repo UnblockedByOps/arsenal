@@ -110,14 +110,7 @@ class Node(Base):
                                                         ]),
                     guest_vms=get_name_id_list(self.guest_vms),
                     hypervisor=get_name_id_list(self.hypervisor),
-                    physical_device=get_name_id_dict([self.physical_device],
-                                                     default_keys=[
-                                                         'id',
-                                                         'serial_number',
-                                                         'physical_location',
-                                                         'physical_rack',
-                                                         'physical_elevation',
-                                                     ]),
+                    physical_device=self.physical_device,
                     last_registered=self.last_registered,
                     created=self.created,
                     updated=self.updated,
@@ -163,17 +156,6 @@ class Node(Base):
 
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
-
-                # FIXME: Why does this have to go after?
-                if 'physical_device' in my_fields:
-                    resp['physical_device'] = get_name_id_dict([self.physical_device],
-                                                               default_keys=[
-                                                                   'id',
-                                                                   'serial_number',
-                                                                   'physical_location',
-                                                                   'physical_rack',
-                                                                   'physical_elevation',
-                                                               ])
 
                 return jsonify(resp)
 

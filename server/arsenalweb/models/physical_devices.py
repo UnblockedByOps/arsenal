@@ -69,7 +69,6 @@ class PhysicalDevice(Base):
                             lazy='joined',
                             foreign_keys=[oob_node_id])
 
-
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -105,6 +104,8 @@ class PhysicalDevice(Base):
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
                                                               'serial_number',
+                                                              'physical_location',
+                                                              'physical_rack',
                                                               'physical_elevation',
                                                              ])
 
@@ -121,7 +122,13 @@ class PhysicalDevice(Base):
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
-                                                          'serial_number'])
+                                                          'serial_number',
+                                                          'physical_location',
+                                                          'physical_rack',
+                                                          'physical_elevation',
+                                                         ])
+            resp['oob_node'] = get_name_id_dict([self.oob_node],
+                                                default_keys=['id', 'name'])
 
             return resp
 
