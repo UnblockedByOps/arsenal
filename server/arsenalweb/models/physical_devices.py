@@ -63,11 +63,8 @@ class PhysicalDevice(Base):
     hardware_profile = relationship('HardwareProfile',
                                     backref=backref('physical_devices'),
                                     lazy='joined')
-    oob_node_id = Column(Integer, ForeignKey('nodes.id'), nullable=True)
-    oob_node = relationship('Node',
-                            backref='physical_devices',
-                            lazy='joined',
-                            foreign_keys=[oob_node_id])
+    oob_ip_address = Column(Text, nullable=True)
+    oob_mac_address = Column(Text, nullable=True)
 
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
@@ -90,7 +87,8 @@ class PhysicalDevice(Base):
                     physical_elevation=self.physical_elevation,
                     hardware_profile=get_name_id_dict([self.hardware_profile]),
                     node=get_name_id_dict(self.nodes),
-                    oob_node=get_name_id_dict([self.oob_node]),
+                    oob_ip_address=self.oob_ip_address,
+                    oob_mac_address=self.oob_mac_address,
                     serial_number=check_null_string(self.serial_number),
                     created=self.created,
                     updated=self.updated,
@@ -104,6 +102,8 @@ class PhysicalDevice(Base):
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
                                                               'serial_number',
+                                                              'oob_ip_address',
+                                                              'oob_mac_address',
                                                               'physical_location',
                                                               'physical_rack',
                                                               'physical_elevation',
@@ -123,12 +123,12 @@ class PhysicalDevice(Base):
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
                                                           'serial_number',
+                                                          'oob_ip_address',
+                                                          'oob_mac_address',
                                                           'physical_location',
                                                           'physical_rack',
                                                           'physical_elevation',
                                                          ])
-            resp['oob_node'] = get_name_id_dict([self.oob_node],
-                                                default_keys=['id', 'name'])
 
             return resp
 
