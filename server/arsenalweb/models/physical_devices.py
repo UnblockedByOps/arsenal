@@ -57,13 +57,15 @@ class PhysicalDevice(Base):
     physical_elevation = relationship('PhysicalElevation',
                                       backref='physical_devices',
                                       lazy='joined')
-
     hardware_profile_id = Column(Integer,
                                  ForeignKey('hardware_profiles.id'),
                                  nullable=True)
     hardware_profile = relationship('HardwareProfile',
                                     backref=backref('physical_devices'),
                                     lazy='joined')
+    oob_ip_address = Column(Text, nullable=True)
+    oob_mac_address = Column(Text, nullable=True)
+
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -85,6 +87,8 @@ class PhysicalDevice(Base):
                     physical_elevation=self.physical_elevation,
                     hardware_profile=get_name_id_dict([self.hardware_profile]),
                     node=get_name_id_dict(self.nodes),
+                    oob_ip_address=self.oob_ip_address,
+                    oob_mac_address=self.oob_mac_address,
                     serial_number=check_null_string(self.serial_number),
                     created=self.created,
                     updated=self.updated,
@@ -98,6 +102,10 @@ class PhysicalDevice(Base):
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
                                                               'serial_number',
+                                                              'oob_ip_address',
+                                                              'oob_mac_address',
+                                                              'physical_location',
+                                                              'physical_rack',
                                                               'physical_elevation',
                                                              ])
 
@@ -114,7 +122,13 @@ class PhysicalDevice(Base):
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
-                                                          'serial_number'])
+                                                          'serial_number',
+                                                          'oob_ip_address',
+                                                          'oob_mac_address',
+                                                          'physical_location',
+                                                          'physical_rack',
+                                                          'physical_elevation',
+                                                         ])
 
             return resp
 

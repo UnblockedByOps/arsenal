@@ -306,6 +306,8 @@ CREATE TABLE `physical_devices` (
   `physical_location_id`    int(10) NOT NULL,
   `physical_rack_id`        int(10) NOT NULL,
   `hardware_profile_id`     int(11) DEFAULT NULL,
+  `oob_ip_address`          varchar(255) DEFAULT NULL,
+  `oob_mac_address`         varchar(255) DEFAULT NULL,
   `rack_name`               varchar(255) DEFAULT NULL,
   `rack_position`           int(11) DEFAULT NULL,
   `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,

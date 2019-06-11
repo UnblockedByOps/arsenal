@@ -510,18 +510,30 @@ def process_registration_payload(payload, user_id):
     '''Process the payload of a node registration and return a dictionary for
     updating or creating a node.'''
 
-    processed = {}
-    processed['user_id'] = user_id
-    processed['unique_id'] = payload['unique_id'].lower().rstrip()
-    processed['name'] = payload['name'].rstrip()
-    processed['serial_number'] = payload['serial_number'].rstrip()
-    processed['processor_count'] = int(payload['processor_count'])
-    processed['uptime'] = payload['uptime'].rstrip()
+    LOG.debug('Processing registration payload...')
 
-    processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
-    processed['operating_system_id'] = process_operating_system(payload, user_id)
-    processed['data_center_id'] = process_data_center(payload, user_id)
-    processed['ec2_id'] = process_ec2(payload, user_id)
+    try:
+        processed = {}
+        processed['user_id'] = user_id
+        processed['unique_id'] = payload['unique_id'].lower().rstrip()
+        processed['name'] = payload['name'].rstrip()
+        processed['serial_number'] = payload['serial_number'].rstrip()
+        processed['processor_count'] = int(payload['processor_count'])
+        processed['uptime'] = payload['uptime'].rstrip()
+
+        processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
+        processed['operating_system_id'] = process_operating_system(payload, user_id)
+        processed['data_center_id'] = process_data_center(payload, user_id)
+        processed['ec2_id'] = process_ec2(payload, user_id)
+    except KeyError as ex:
+        LOG.error('Required data missing from playload: {0}'.format(repr(ex)))
+        raise
+    except (TypeError, ValueError) as ex:
+        LOG.error('Incorrect data type for payload item: {0}'.format(repr(ex)))
+        raise
+    except Exception as ex:
+        LOG.error('Unhandled data problem for payload item: {0}'.format(repr(ex)))
+        raise
     try:
         processed['guest_vms'] = payload['guest_vms']
     except KeyError:
