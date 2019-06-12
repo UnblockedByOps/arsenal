@@ -154,11 +154,7 @@ def update_physical_device(physical_device, **kwargs):
     '''
 
     try:
-        # Convert everything that is defined to a string.
         my_attribs = kwargs.copy()
-        for my_attr in my_attribs:
-            if my_attribs.get(my_attr):
-                my_attribs[my_attr] = str(my_attribs[my_attr])
 
         LOG.info('Updating physical_device: {0}'.format(physical_device.serial_number))
 
@@ -208,6 +204,7 @@ def convert_names_to_ids(params):
             try:
                 hardware_profile = get_hardware_profile(params['hardware_profile'])
                 params['hardware_profile_id'] = hardware_profile.id
+                del params['hardware_profile']
             except AttributeError:
                 msg = 'hardware_profile not found: {0}'.format(params['hardware_profile'])
                 LOG.error(msg)
