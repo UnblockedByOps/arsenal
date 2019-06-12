@@ -82,10 +82,10 @@ class PhysicalDevice(Base):
 
                 all_fields = dict(
                     id=self.id,
+                    hardware_profile=self.hardware_profile,
                     physical_location=self.physical_location,
                     physical_rack=self.physical_rack,
                     physical_elevation=self.physical_elevation,
-                    hardware_profile=get_name_id_dict([self.hardware_profile]),
                     node=get_name_id_dict(self.nodes),
                     oob_ip_address=self.oob_ip_address,
                     oob_mac_address=self.oob_mac_address,

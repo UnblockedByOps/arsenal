@@ -38,7 +38,7 @@ class PhysicalElevation(Base):
 
     __tablename__ = 'physical_elevations'
     id = Column(Integer, primary_key=True, nullable=False)
-    elevation = Column(Text, nullable=False)
+    elevation = Column(Integer, nullable=False)
     physical_rack_id = Column(Integer, ForeignKey('physical_racks.id'), nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
@@ -58,7 +58,10 @@ class PhysicalElevation(Base):
                 all_fields = dict(
                     id=self.id,
                     elevation=self.elevation,
-                    physical_rack=get_name_id_dict([self.physical_rack]),
+                    physical_rack=get_name_id_dict([self.physical_rack],
+                                                   default_keys=['id',
+                                                                 'name',
+                                                                 'physical_location']),
                     created=self.created,
                     updated=self.updated,
                     updated_by=self.updated_by,
