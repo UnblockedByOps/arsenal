@@ -101,6 +101,7 @@ class PhysicalDevice(Base):
                 # Always return these fields, then return whatever additional fields
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
+                                                              'hardware_profile',
                                                               'serial_number',
                                                               'oob_ip_address',
                                                               'oob_mac_address',
@@ -122,6 +123,7 @@ class PhysicalDevice(Base):
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
+                                                          'hardware_profile',
                                                           'serial_number',
                                                           'oob_ip_address',
                                                           'oob_mac_address',

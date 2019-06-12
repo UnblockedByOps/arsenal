@@ -205,10 +205,13 @@ def convert_names_to_ids(params):
 
     try:
         if params['hardware_profile']:
-            params['hardware_profile_id'] = get_hardware_profile(params['hardware_profile'])
-            if not params['hardware_profile_id']:
-                params['hardware_profile_id'] = 1
-            del params['hardware_profile']
+            try:
+                hardware_profile = get_hardware_profile(params['hardware_profile'])
+                params['hardware_profile_id'] = hardware_profile.id
+            except AttributeError:
+                msg = 'hardware_profile not found: {0}'.format(params['hardware_profile'])
+                LOG.error(msg)
+                raise NoResultFound(msg)
         if params['physical_location']:
             try:
                 physical_location = find_physical_location_by_name(params['physical_location'])
@@ -275,7 +278,7 @@ def api_physical_devices_write(request):
 
         try:
             physical_device = find_physical_device_by_serial(params['serial_number'])
-            update_physical_device(physical_device, **params)
+            physical_device = update_physical_device(physical_device, **params)
         except NoResultFound:
             physical_device = create_physical_device(**params)
 
