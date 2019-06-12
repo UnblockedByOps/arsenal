@@ -58,7 +58,6 @@ class PhysicalElevation(Base):
                 all_fields = dict(
                     id=self.id,
                     elevation=self.elevation,
-#                    physical_device=self.physical_device,
                     physical_rack=get_name_id_dict([self.physical_rack],
                                                    default_keys=['id',
                                                                  'name',
