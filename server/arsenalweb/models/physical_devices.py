@@ -82,10 +82,10 @@ class PhysicalDevice(Base):
 
                 all_fields = dict(
                     id=self.id,
+                    hardware_profile=self.hardware_profile,
                     physical_location=self.physical_location,
                     physical_rack=self.physical_rack,
                     physical_elevation=self.physical_elevation,
-                    hardware_profile=get_name_id_dict([self.hardware_profile]),
                     node=get_name_id_dict(self.nodes),
                     oob_ip_address=self.oob_ip_address,
                     oob_mac_address=self.oob_mac_address,
@@ -101,6 +101,7 @@ class PhysicalDevice(Base):
                 # Always return these fields, then return whatever additional fields
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
+                                                              'hardware_profile',
                                                               'serial_number',
                                                               'oob_ip_address',
                                                               'oob_mac_address',
@@ -122,6 +123,7 @@ class PhysicalDevice(Base):
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
+                                                          'hardware_profile',
                                                           'serial_number',
                                                           'oob_ip_address',
                                                           'oob_mac_address',
