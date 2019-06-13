@@ -49,15 +49,14 @@ INSERT INTO arsenal.groups VALUES (13,'data_center_delete','Admin',NOW(),NOW());
 # This is a special local group that is not assigned any permissions via route, but
 # members of this group will be able to write secure tags.
 INSERT INTO arsenal.groups VALUES (14,'secure_tags','Admin',NOW(),NOW());
-INSERT INTO arsenal.groups VALUES (14,'physical_device_write','Admin',NOW(),NOW());
-INSERT INTO arsenal.groups VALUES (15,'physical_device_delete','Admin',NOW(),NOW());
+INSERT INTO arsenal.groups VALUES (15,'physical_device_write','Admin',NOW(),NOW());
+INSERT INTO arsenal.groups VALUES (16,'physical_device_delete','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (17,'physical_location_write','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (18,'physical_location_delete','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (19,'physical_rack_write','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (20,'physical_rack_delete','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (21,'physical_elevation_write','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
-
 
 # Group permissions that can be assigned to groups
 ###########################################################################
