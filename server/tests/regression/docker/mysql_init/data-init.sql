@@ -49,6 +49,15 @@ INSERT INTO arsenal.groups VALUES (13,'data_center_delete','Admin',NOW(),NOW());
 # This is a special local group that is not assigned any permissions via route, but
 # members of this group will be able to write secure tags.
 INSERT INTO arsenal.groups VALUES (14,'secure_tags','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (15,'physical_device_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (16,'physical_device_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (17,'physical_location_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (18,'physical_location_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (19,'physical_rack_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (20,'physical_rack_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (21,'physical_elevation_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
+
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -63,6 +72,14 @@ INSERT INTO group_perms VALUES (8,'tag_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (9,'tag_delete',NOW(),NOW());
 INSERT INTO group_perms VALUES (10,'data_center_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (11,'data_center_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (12,'physical_device_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (13,'physical_device_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (14,'physical_location_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (15,'physical_location_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (16,'physical_rack_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (17,'physical_rack_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (18,'physical_elevation_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (19,'physical_elevation_delete',NOW(),NOW());
 
 # Assigning group permissions to groups
 ###########################################################################
@@ -78,6 +95,14 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,8,'Ad
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,9,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,10,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,11,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,19,'Admin');
 #  api_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (2,2,'Admin');
 #  api_register
@@ -94,6 +119,15 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,8,'Ad
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,9,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,10,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,11,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,19,'Admin');
+
 #  node_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (6,4,'Admin');
 #  node_delete
@@ -110,6 +144,23 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (11,9,'A
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (12,10,'Admin');
 #  data_center_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'Admin');
+#  physical_device_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (15,12,'Admin');
+#  physical_device_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (16,13,'Admin');
+#  physical_location_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (17,14,'Admin');
+#  physical_location_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (18,15,'Admin');
+#  physical_rack_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (19,16,'Admin');
+#  physical_rack_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (20,17,'Admin');
+#  physical_elevation_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (21,18,'Admin');
+#  physical_elevation_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'Admin');
+
 
 
 # For devel on mac
