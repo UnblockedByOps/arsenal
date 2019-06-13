@@ -49,8 +49,6 @@ class PhysicalRack(Base):
 
     def __json__(self, request):
         try:
-            # FIXME: Not sure if this constraint is going to cause
-            # other problems.
             if request.path_info.startswith('/api/physical_racks'):
                 fields = request.params['fields']
 
@@ -85,8 +83,6 @@ class PhysicalRack(Base):
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self])
-#                                                          'name',
-#                                                          'physical_location'])
 
             return resp
 

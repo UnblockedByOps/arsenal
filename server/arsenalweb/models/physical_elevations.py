@@ -45,11 +45,12 @@ class PhysicalElevation(Base):
     updated_by = Column(Text, nullable=False)
 
     physical_rack = relationship('PhysicalRack', backref='physical_elevations', lazy='joined')
+    physical_device = relationship('PhysicalDevice',
+                                   primaryjoin='PhysicalElevation.id==PhysicalDevice.physical_elevation_id',
+                                   backref='physical_elevation')
 
     def __json__(self, request):
         try:
-            # FIXME: Not sure if this constraint is going to cause
-            # other problems.
             if request.path_info.startswith('/api/physical_elevations'):
                 fields = request.params['fields']
 
@@ -58,6 +59,10 @@ class PhysicalElevation(Base):
                 all_fields = dict(
                     id=self.id,
                     elevation=self.elevation,
+                    physical_device=get_name_id_dict(self.physical_device,
+                                                     default_keys=['id',
+                                                                   'serial_number',
+                                                                   'hardware_profile']),
                     physical_rack=get_name_id_dict([self.physical_rack],
                                                    default_keys=['id',
                                                                  'name',
@@ -85,6 +90,11 @@ class PhysicalElevation(Base):
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
                                                           'elevation',])
+            resp['physical_device'] = get_name_id_dict(self.physical_device,
+                                                       default_keys=['id',
+                                                                     'serial_number',
+                                                                     'hardware_profile'])
+
 
             return resp
 
