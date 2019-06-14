@@ -30,9 +30,9 @@ INSERT INTO operating_systems VALUES (5, 'CentOS 7.2.1511 x86_64', 'CentOS', '7.
 INSERT INTO operating_systems VALUES (6, 'CentOS 7.3.1611 x86_64', 'CentOS', '7.3.1611', 'x86_64', 'CentOS Linux release 7.3.1611 (Core)', 'Admin', NOW(), NOW());
 # Test data_centers
 #----------------------------------------------
-INSERT INTO data_centers (id,name,created,status_id,updated,updated_by) VALUES (1, 'test_data_center_1', 3, NOW(), NOW(), 'Admin');
-INSERT INTO data_centers (id,name,created,status_id,updated,updated_by) VALUES (2, 'test_data_center_2', 3, NOW(), NOW(), 'Admin');
-INSERT INTO data_centers (id,name,created,status_id,updated,updated_by) VALUES (3, 'other_test_data_center_1', 3, NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (1, 'test_data_center_1', NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (2, 'test_data_center_2', NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (3, 'other_test_data_center_1', NOW(), NOW(), 'Admin');
 INSERT INTO data_centers_audit VALUES (1, 1, 'name', 'created', 'test_data_center_1', 'Admin', NOW());
 INSERT INTO data_centers_audit VALUES (2, 2, 'name', 'created', 'test_data_center_2', 'Admin', NOW());
 INSERT INTO data_centers_audit VALUES (3, 3, 'name', 'created', 'other_test_data_center_1', 'Admin', NOW());
