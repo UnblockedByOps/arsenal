@@ -21,7 +21,7 @@ def parser_register(top_parser, otsp):
     it's not an object type. Putting it at the top level since it is the
     primary command.'''
 
-    r_help = ('Register this node to the server.\n\n')
+    r_help = 'Register this node to the server.\n\n'
     rotp = otsp.add_parser('register',
                            description=r_help,
                            help=r_help,

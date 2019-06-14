@@ -20,7 +20,7 @@ def parser_uid(top_parser, otsp):
     '''Add the UID parser.  This is a bit of a cheat since technically it's
     not an object type. Print out the unique_id of the current node.'''
 
-    u_help = ('Print out the unique_id of the current node.\n\n')
+    u_help = 'Print out the unique_id of the current node.\n\n'
     uidotp = otsp.add_parser('uid',
                              description=u_help,
                              help=u_help,
