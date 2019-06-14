@@ -10,4 +10,4 @@ Thumbs.db
 *.swp
 *.pyc
 *.swp
-arsenalweb.egg-info
+*.egg-info
