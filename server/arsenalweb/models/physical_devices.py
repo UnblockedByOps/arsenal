@@ -54,9 +54,6 @@ class PhysicalDevice(Base):
     physical_elevation_id = Column(Integer,
                                    ForeignKey('physical_elevations.id'),
                                    nullable=False)
-    physical_elevation = relationship('PhysicalElevation',
-                                      backref='physical_devices',
-                                      lazy='joined')
     hardware_profile_id = Column(Integer,
                                  ForeignKey('hardware_profiles.id'),
                                  nullable=True)
@@ -73,8 +70,6 @@ class PhysicalDevice(Base):
 
     def __json__(self, request):
         try:
-            # FIXME: Not sure if this constraint is going to cause
-            # other problems.
             if request.path_info.startswith('/api/physical_devices'):
                 fields = request.params['fields']
 
@@ -82,7 +77,9 @@ class PhysicalDevice(Base):
 
                 all_fields = dict(
                     id=self.id,
-                    hardware_profile=self.hardware_profile,
+                    hardware_profile=get_name_id_dict([self.hardware_profile],
+                                                      default_keys=['id',
+                                                                    'name']),
                     physical_location=self.physical_location,
                     physical_rack=self.physical_rack,
                     physical_elevation=self.physical_elevation,

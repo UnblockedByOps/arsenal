@@ -55,8 +55,6 @@ class PhysicalLocation(Base):
 
     def __json__(self, request):
         try:
-            # FIXME: Not sure if this constraint is going to cause
-            # other problems.
             if request.path_info.startswith('/api/physical_locations'):
                 fields = request.params['fields']
 
