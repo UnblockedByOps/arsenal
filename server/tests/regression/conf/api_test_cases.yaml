@@ -437,7 +437,7 @@ tests:
           - name: 'test_data_center_1'
           - name: 'test_data_center_2'
       - description: 'DATA_CENTER - REGEX Multi parameter search, single value'
-        url: '/api/data_centers?name=^test_data_center&provider=Amazon'
+        url: '/api/data_centers?name=^test_data_center&status=setup'
         result_count: 1
         expected_responses:
           - name: 'test_data_center_1'
@@ -449,7 +449,7 @@ tests:
           - name: 'test_data_center_2'
           - name: 'other_test_data_center_1'
       - description: 'DATA_CENTER - REGEX Multi parameter search, multi/single value'
-        url: '/api/data_centers?name=^test_data_ce.*,other_test&country=USA'
+        url: '/api/data_centers?name=^test_data_ce.*,other_test&status=setup'
         result_count: 2
         expected_responses:
           - name: 'test_data_center_1'
