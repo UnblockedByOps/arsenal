@@ -1,4 +1,4 @@
-'''Arsenal client version'''
+'''Arsenal client UID command line parser'''
 #
 #  Copyright 2015 CityGrid Media, LLC
 #
@@ -14,4 +14,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-__version__ = '7.0'
+from arsenalclient.cli.node import unique_id
+
+def parser_uid(top_parser, otsp):
+    '''Add the UID parser.  This is a bit of a cheat since technically it's
+    not an object type. Print out the unique_id of the current node.'''
+
+    u_help = 'Print out the unique_id of the current node.\n\n'
+    uidotp = otsp.add_parser('uid',
+                             description=u_help,
+                             help=u_help,
+                             parents=[top_parser])
+    uidotp.set_defaults(func=unique_id)
+
+    return top_parser, otsp
