@@ -63,45 +63,9 @@ def parser_data_centers(top_parser, otsp):
     # data_centers update action argument group (dcuaag)
     dcuaag = dcssc.add_argument_group('Update Actions')
 
-    dcuaag.add_argument('-a1',
-                        '--address-1',
-                        dest='data_center_address_1',
-                        help='Update data_center address 1.')
-    dcuaag.add_argument('-a2',
-                        '--address-2',
-                        dest='data_center_address_2',
-                        help='Update data_center address 2.')
-    dcuaag.add_argument('-c',
-                        '--city',
-                        dest='data_center_city',
-                        help='Update data_center city.')
-    dcuaag.add_argument('-s',
-                        '--state',
-                        dest='data_center_admin_area',
-                        help='Update data_center state.')
     dcuaag.add_argument('--status',
                         dest='data_center_status',
                         help='status to assign to the search results.')
-    dcuaag.add_argument('-n',
-                        '--contact-name',
-                        dest='data_center_contact_name',
-                        help='Update data_center contact name.')
-    dcuaag.add_argument('-C',
-                        '--country',
-                        dest='data_center_country',
-                        help='Update data_center country.')
-    dcuaag.add_argument('-P',
-                        '--phone-number',
-                        dest='data_center_phone_number',
-                        help='Update data_center contact phone number.')
-    dcuaag.add_argument('-p',
-                        '--postal-code',
-                        dest='data_center_postal_code',
-                        help='Update data_center postal code.')
-    dcuaag.add_argument('-r',
-                        '--provider',
-                        dest='data_center_provider',
-                        help='Update data_center provider.')
 
     # data_centers assignment action argument group (dcaag)
     dcaag = dcssc.add_argument_group('Assignment Actions')

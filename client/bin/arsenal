@@ -29,6 +29,7 @@ from arsenalclient.parser.tags import parser_tags
 from arsenalclient.parser.network_interfaces import parser_network_interfaces
 from arsenalclient.parser.ip_addresses import parser_ip_addresses
 from arsenalclient.parser.data_centers import parser_data_centers
+from arsenalclient.parser.physical_locations import parser_physical_locations
 
 from arsenalclient.client import Client
 from arsenalclient.version import __version__
@@ -135,6 +136,7 @@ def _parse_args():
     top_parser, otsp = parser_network_interfaces(top_parser, otsp)
     top_parser, otsp = parser_ip_addresses(top_parser, otsp)
     top_parser, otsp = parser_data_centers(top_parser, otsp)
+    top_parser, otsp = parser_physical_locations(top_parser, otsp)
 
     args = main_parser.parse_args()
 

@@ -43,15 +43,8 @@ def gen_help(help_type):
     terms = {
         'data_centers_search': [
             'id',
-            'provider',
-            'address_1',
-            'address_2',
-            'city',
-            'admin_area',
-            'country',
-            'postal_code',
-            'contact_name',
-            'phone_number',
+            'name',
+            'status',
         ],
         'ip_addresses_search': [
             'id',
@@ -90,6 +83,19 @@ def gen_help(help_type):
             'node_group_owner',
             'description',
             'notes_url',
+        ],
+        'physical_locations_search': [
+            'id',
+            'name',
+            'provider',
+            'address_1',
+            'address_2',
+            'city',
+            'admin_area',
+            'country',
+            'postal_code',
+            'contact_name',
+            'phone_number',
         ],
         'statuses_search': [
             'id',
