@@ -1099,16 +1099,8 @@ class Client(object):
 
         Optional args:
 
-            address_1   : A string that is address line 1.
-            address_2   : A string that is address line 2.
-            admin_area  : A string that is the address state/province.
-            city        : A string that is the address city.
-            contact_name: A string that is the data center contact name.
-            country     : A string that is the address country.
-            phone_number: A string that is data center contact phone number.
-            postal_code : A string that is the address postal (zip) code.
-            provider    : A string that is the name of the data center
-                provider (ex: SoftLayer, Switch, EC2, GCP, etc.)
+            status   : A string that is the name of the status you wish to set
+                for the data_center.
 
         Usage:
 
@@ -1154,3 +1146,65 @@ class Client(object):
                                                                  data_center['id']))
 
         return self.api_conn('/api/data_centers/{0}'.format(data_center['id']), method='delete')
+
+    ## PHYSICAL_LOCATIONS
+    def physical_location_create(self, name=None, **kwargs):
+        '''Create a new physical_location or update an existing one.
+
+        Required args:
+
+            name: A string that is name of the physical_location you
+                wish to create.
+
+        Optional args:
+
+            address_1   : A string that is address line 1.
+            address_2   : A string that is address line 2.
+            admin_area  : A string that is the address state/province.
+            city        : A string that is the address city.
+            contact_name: A string that is the data center contact name.
+            country     : A string that is the address country.
+            phone_number: A string that is data center contact phone number.
+            postal_code : A string that is the address postal (zip) code.
+            provider    : A string that is the name of the data center
+                provider (ex: SoftLayer, Switch, EC2, GCP, etc.)
+
+        Usage:
+
+            >>> data = {'provider': 'Ec2'}
+            >>> client.physical_location_create(name='usw1',
+            ...                                 **data)
+            <Response [200]>
+        '''
+
+        LOG.info('Submitting physical_location: {0}'.format(name))
+
+        try:
+            kwargs['name'] = name
+            physical_location = self.api_conn('/api/physical_locations',
+                                              kwargs,
+                                              method='put')
+        except Exception as ex:
+            LOG.error('Command failed: {0}'.format(repr(ex)))
+            raise
+
+        return physical_location
+
+    def physical_location_delete(self, physical_location):
+        '''Delete an existing physical_locations.
+
+        Args:
+
+            physical_location: A physical_location dictionary to delete. Must contain the
+                physical_location name and id.
+
+        Usage:
+
+          >>> client.physical_location_delete(<physical_location_dictionary>)
+          <Response [200]>
+        '''
+
+        LOG.info('Deleting physical_location name: {0} id: {1}'.format(physical_location['name'],
+                                                                       physical_location['id']))
+
+        return self.api_conn('/api/physical_locations/{0}'.format(physical_location['id']), method='delete')

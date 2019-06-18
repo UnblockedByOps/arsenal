@@ -1,4 +1,4 @@
-'''Arsenal client data_center command line helpers.
+'''Arsenal client physical_location command line helpers.
 
 These functions are called directly by args.func() to invoke the
 appropriate action. They also handle output formatting to the commmand
@@ -31,7 +31,15 @@ from arsenalclient.cli.common import (
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
-    'data_center_status',
+    'physical_location_address_1',
+    'physical_location_address_2',
+    'physical_location_admin_area',
+    'physical_location_city',
+    'physical_location_contact_name',
+    'physical_location_country',
+    'physical_location_phone_number',
+    'physical_location_postal_code',
+    'physical_location_provider',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -39,8 +47,8 @@ TAG_FIELDS = [
 ]
 
 
-def search_data_centers(args, client):
-    '''Search for data_centers and perform optional assignment
+def search_physical_locations(args, client):
+    '''Search for physical_locations and perform optional assignment
        actions.'''
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
@@ -64,75 +72,75 @@ def search_data_centers(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'data_centers')
+        results = client.get_audit_history(results, 'physical_locations')
 
     if not any(getattr(args, key) for key in action_fields):
         print_results(args, results)
     else:
         r_names = []
 
-        for data_center in results:
-            r_names.append('name={0},id={1}'.format(data_center['name'],
-                                                    data_center['id']))
+        for physical_location in results:
+            r_names.append('name={0},id={1}'.format(physical_location['name'],
+                                                    physical_location['id']))
 
-        msg = 'We are ready to update the following data_center: \n  ' \
+        msg = 'We are ready to update the following physical_location: \n  ' \
               '{0}\nContinue?'.format('\n '.join(r_names))
 
         if any(getattr(args, key) for key in UPDATE_FIELDS) and ask_yes_no(msg, args.answer_yes):
-            for data_center in results:
+            for physical_location in results:
                 dc_update = update_object_fields(args,
-                                                 'data_center',
-                                                 data_center,
+                                                 'physical_location',
+                                                 physical_location,
                                                  UPDATE_FIELDS)
 
-                client.data_center_create(**dc_update)
+                client.physical_location_create(**dc_update)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'put')
+            resp = client.tag_assignments(tags, 'physical_locations', results, 'put')
 
         if args.del_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'delete')
+            resp = client.tag_assignments(tags, 'physical_locations', results, 'delete')
 
     if resp:
         check_resp(resp)
     LOG.debug('Complete.')
 
-def create_data_center(args, client):
-    '''Create a new data_center.'''
+def create_physical_location(args, client):
+    '''Create a new physical_location.'''
 
-    LOG.info('Checking if data_center name exists: {0}'.format(args.data_center_name))
+    LOG.info('Checking if physical_location name exists: {0}'.format(args.physical_location_name))
 
     resp = client.object_search(args.object_type,
-                                'name={0}'.format(args.data_center_name),
+                                'name={0}'.format(args.physical_location_name),
                                 exact_get=True)
 
     results = resp['results']
 
     dc_fields = update_object_fields(args,
-                                     'data_center',
+                                     'physical_location',
                                      vars(args),
                                      UPDATE_FIELDS)
     if results:
-        if ask_yes_no('Entry already exists for data_center name: {0}\n Would you ' \
+        if ask_yes_no('Entry already exists for physical_location name: {0}\n Would you ' \
                       'like to update it?'.format(results[0]['name']),
                       args.answer_yes):
 
-            client.data_center_create(name=args.data_center_name,
+            client.physical_location_create(name=args.physical_location_name,
                                       **dc_fields)
 
     else:
-        client.data_center_create(name=args.data_center_name,
+        client.physical_location_create(name=args.physical_location_name,
                                   **dc_fields)
 
-def delete_data_center(args, client):
-    '''Delete an existing data_center.'''
+def delete_physical_location(args, client):
+    '''Delete an existing physical_location.'''
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    search = 'name={0}'.format(args.data_center_name)
+    search = 'name={0}'.format(args.physical_location_name)
     resp = client.object_search(args.object_type,
                                 search,
                                 exact_get=True)
@@ -141,13 +149,13 @@ def delete_data_center(args, client):
 
     if results:
         r_names = []
-        for data_centers in results:
-            r_names.append(data_centers['name'])
+        for physical_locations in results:
+            r_names.append(physical_locations['name'])
 
         msg = 'We are ready to delete the following {0}: ' \
               '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
             for datacenter in results:
-                resp = client.data_center_delete(datacenter)
+                resp = client.physical_location_delete(datacenter)
                 check_resp(resp)
