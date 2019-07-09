@@ -5,7 +5,6 @@ import subprocess
 import logging
 from arsenalclient.authorization import check_root
 from arsenalclient.interface.arsenal_interface import ArsenalInterface
-from arsenalclient.exceptions import NoResultFound
 from arsenalclient.arsenal_facts import ArsenalFacts
 
 
@@ -310,12 +309,14 @@ class Nodes(ArsenalInterface):
         LOG.debug('Determining unique_id...')
         facts = self.arsenal_facts.facts
 
+        unique_id = facts['networking']['mac_address']
+
         if facts['os']['kernel'] == 'Linux' or facts['os']['kernel'] == 'FreeBSD':
+
             if facts['ec2']['instance_id']:
                 unique_id = facts['ec2']['instance_id']
                 LOG.debug('unique_id is from ec2 instance_id: {0}'.format(unique_id))
             elif facts['hardware']['name'] == 'Red Hat KVM':
-                unique_id = facts['networking']['mac_address']
                 LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
             elif os.path.isfile('/usr/sbin/dmidecode'):
                 unique_id = self.get_uuid_from_dmidecode()
@@ -325,10 +326,8 @@ class Nodes(ArsenalInterface):
                     unique_id = facts['networking']['mac_address']
                     LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
             else:
-                unique_id = facts['networking']['mac_address']
                 LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
         else:
-            unique_id = facts['networking']['mac_address']
             LOG.debug('unique_id is from mac address: {0}'.format(unique_id))
 
         return unique_id
