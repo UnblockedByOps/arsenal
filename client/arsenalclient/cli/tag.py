@@ -25,6 +25,7 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
+    parse_cli_args,
     print_results,
     )
 
@@ -38,11 +39,9 @@ def search_tags(args, client):
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
     resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=args.fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+
+    params = parse_cli_args(args.search, args.fields, args.exact_get, args.exclude)
+    resp = client.tags.search(params)
 
     if not resp.get('results'):
         return resp
@@ -50,7 +49,7 @@ def search_tags(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'tags')
+        results = client.tags.get_audit_history(results)
 
     # switch to any if there's more than one
     if not args.set_tags:
@@ -71,15 +70,26 @@ def search_tags(args, client):
 def create_tag(args, client):
     '''Create a new tag.'''
 
-    client.tag_create(args.tag_name, args.tag_value)
+    params = {
+        'name': args.tag_name,
+        'value': args.tag_value,
+    }
+
+    client.tags.create(params)
 
 def delete_tag(args, client):
-    '''Delete an existing tag.'''
+    '''Delete an existing tag. Requires a tag name and value.'''
 
-    search = 'name={0},value={1}'.format(args.tag_name, args.tag_value)
-    resp = client.object_search(args.object_type,
-                                search,
-                                exact_get=True)
+    LOG.debug('action_command is: {0}'.format(args.action_command))
+    LOG.debug('object_type is: {0}'.format(args.object_type))
+
+    search = {
+        'name': args.tag_name,
+        'value': args.tag_value,
+        'exact_get': True,
+    }
+
+    resp = client.tags.search(search)
 
     results = resp['results']
 
@@ -89,7 +99,9 @@ def delete_tag(args, client):
             r_names.append('{0}={1}'.format(tag['name'], tag['value']))
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n'.join(r_names))
+              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
-            client.tag_delete(results)
+            for tag in results:
+                resp = client.tags.delete(tag)
+                check_resp(resp)
