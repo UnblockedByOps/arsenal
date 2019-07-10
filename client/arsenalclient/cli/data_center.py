@@ -25,6 +25,7 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
+    parse_cli_args,
     print_results,
     update_object_fields,
     )
@@ -46,17 +47,15 @@ def search_data_centers(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
+    resp = None
+
     action_fields = UPDATE_FIELDS + TAG_FIELDS
     search_fields = args.fields
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         search_fields = 'all'
 
-    resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=search_fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
+    resp = client.data_centers.search(params)
 
     if not resp.get('results'):
         return resp
@@ -64,7 +63,7 @@ def search_data_centers(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'data_centers')
+        results = client.data_centers.get_audit_history(results)
 
     if not any(getattr(args, key) for key in action_fields):
         print_results(args, results)
@@ -85,15 +84,19 @@ def search_data_centers(args, client):
                                                  data_center,
                                                  UPDATE_FIELDS)
 
-                client.data_center_create(**dc_update)
+                client.data_center.update(dc_update)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'put')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.assign(name, value, 'data_centers', results)
 
         if args.del_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'delete')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.deassign(name, value, 'data_centers', results)
 
     if resp:
         check_resp(resp)

@@ -25,9 +25,11 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
-    update_object_fields,
+    parse_cli_args,
     print_results,
+    update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -38,6 +40,8 @@ def search_node_groups(args, client):
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
+
+    resp = None
 
     update_fields = [
         'node_group_owner',
@@ -53,12 +57,8 @@ def search_node_groups(args, client):
     if any(getattr(args, key) for key in update_fields):
         search_fields = 'all'
 
-    resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=search_fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
+    resp = client.node_groups.search(params)
 
     if not resp.get('results'):
         return resp
@@ -66,7 +66,7 @@ def search_node_groups(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'node_groups')
+        results = client.node_groups.get_audit_history(results)
 
     if not any(getattr(args, key) for key in action_fields):
         print_results(args, results)
@@ -86,18 +86,19 @@ def search_node_groups(args, client):
                                                  'node_group',
                                                  node_group,
                                                  update_fields)
-                client.node_group_create(node_group['name'],
-                                         ng_update['owner'],
-                                         ng_update['description'],
-                                         ng_update['notes_url'])
+                client.node_groups.update(ng_update)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
-            resp = client.tag_assignments(tags, 'node_groups', results, 'put')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.assign(name, value, 'node_groups', results)
 
         if args.del_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
-            resp = client.tag_assignments(tags, 'node_groups', results, 'delete')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.deassign(name, value, 'node_groups', results)
 
     if resp:
         check_resp(resp)
@@ -108,29 +109,26 @@ def create_node_group(args, client):
 
     LOG.info('Checking if node_group name exists: {0}'.format(args.node_group_name))
 
-    resp = client.object_search(args.object_type,
-                                'name={0}'.format(args.node_group_name),
-                                exact_get=True)
+    node_group = {
+        'name': args.node_group_name,
+        'owner': args.node_group_owner,
+        'description': args.node_group_description,
+        'notes_url': args.node_group_notes_url,
+    }
 
-    results = resp['results']
+    try:
+        result = client.node_groups.get_by_name(args.node_group_name)
 
-    if results:
         if ask_yes_no('Entry already exists for node_group name: {0}\n Would you ' \
-                      'like to update it?'.format(results[0]['name']),
+                      'like to update it?'.format(result['name']),
                       args.answer_yes):
 
-            resp = client.node_group_create(args.node_group_name,
-                                            args.node_group_owner,
-                                            args.node_group_description,
-                                            args.node_group_notes_url)
+            resp = client.node_groups.update(node_group)
 
-    else:
+    except NoResultFound:
+        resp = client.node_groups.create(node_group)
 
-        resp = client.node_group_create(args.node_group_name,
-                                        args.node_group_owner,
-                                        args.node_group_description,
-                                        args.node_group_notes_url)
-        check_resp(resp)
+    check_resp(resp)
 
 def delete_node_group(args, client):
     '''Delete an existing node_group.'''
@@ -138,22 +136,15 @@ def delete_node_group(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    search = 'name={0}'.format(args.node_group_name)
-    resp = client.object_search(args.object_type,
-                                search,
-                                exact_get=True)
-
-    results = resp['results']
-
-    if results:
-        r_names = []
-        for node_groups in results:
-            r_names.append(node_groups['name'])
+    try:
+        result = client.node_groups.get_by_name(args.node_group_name)
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n Continue?'.format(args.object_type, result['name'])
 
         if ask_yes_no(msg, args.answer_yes):
-            for node_group in results:
-                resp = client.node_group_delete(node_group)
-                check_resp(resp)
+            resp = client.node_groups.delete(result)
+            check_resp(resp)
+
+    except NoResultFound:
+        pass

@@ -26,30 +26,32 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
-    update_object_fields,
+    parse_cli_args,
     print_results,
+    update_object_fields,
     )
 
 LOG = logging.getLogger(__name__)
 
 
 def search_statuses(args, client):
-    '''Search for statuses and perform optional updates. '''
+    '''Search for statuses and perform optional updates.'''
+
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
+
+    resp = None
+
     update_fields = [
         'statuses_description',
     ]
+
     search_fields = args.fields
     if any(getattr(args, key) for key in update_fields):
         search_fields = 'all'
 
-    resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=search_fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
+    resp = client.statuses.search(params)
 
     if not resp.get('results'):
         return resp
@@ -57,7 +59,7 @@ def search_statuses(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'statuses')
+        results = client.statuses.get_audit_history(results)
 
     if not any(getattr(args, key) for key in update_fields):
         print_results(args, results)
@@ -75,7 +77,7 @@ def search_statuses(args, client):
                                                  'statuses',
                                                  status,
                                                  update_fields)
-            resp = client.status_create(**status_update)
+            resp = client.statuses.update(status_update)
     if resp:
         check_resp(resp)
     LOG.debug('Complete.')
