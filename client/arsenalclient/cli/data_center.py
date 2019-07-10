@@ -25,6 +25,7 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
+    parse_cli_args,
     print_results,
     update_object_fields,
     )
