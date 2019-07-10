@@ -50,7 +50,6 @@ def _check_tags(obj, set_tags):
 
     return resp.rstrip()
 
-
 def check_resp(resp):
     '''Check the http response code and exit non-zero if it's not a 200.'''
 
@@ -106,6 +105,17 @@ def gen_help(help_type):
             'node_group_owner',
             'description',
             'notes_url',
+        ],
+        'physical_devices_search': [
+            'id',
+            'name',
+            'serial_number',
+            'physical_elevation_id',
+            'physical_location_id',
+            'physical_rack_id',
+            'hardware_profile_id',
+            'oob_ip_address',
+            'oob_mac_address',
         ],
         'physical_locations_search': [
             'id',
