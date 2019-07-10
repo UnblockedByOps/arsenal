@@ -52,12 +52,10 @@ def _format_msg(results, tags=None):
     for res in results:
         resp = _check_tags(res, tags)
         if resp:
-            r_names.append('{0}: {1}\n{2}'.format(res['serial_number'],
-                                                  res['id'],
-                                                  resp))
+            r_names.append('{0}\n{2}'.format(res['serial_number'],
+                                             resp))
         else:
-            r_names.append('{0}: {1}'.format(res['serial_number'],
-                                             res['id']))
+            r_names.append('{0}'.format(res['serial_number']))
 
     msg = 'We are ready to update the following physical_devices: ' \
           '\n {0}\nContinue?'.format('\n '.join(r_names))
