@@ -18,7 +18,7 @@ class PhysicalRacks(ArsenalInterface):
         Usage:
 
         >>> params = {
-        ...   'serial_number': 'AA11BB22CC34',
+        ...   'name': 'R500',
         ...   'exact_get': True,
         ... }
         >>> PhysicalRacks.search(params)
@@ -45,7 +45,8 @@ class PhysicalRacks(ArsenalInterface):
         Usage:
 
         >>> params = {
-        ...     'serial_number': 'AA11BB22CC34',
+        ...     'name': 'R500',
+        ...     'physical_location': 'TEST DC SCIF 1',
         ... }
         >>> PhysicalRacks.create(params)
         <Response [200]>
@@ -63,13 +64,8 @@ class PhysicalRacks(ArsenalInterface):
             Only the params in the example are updatable from this action.
 
         >>> params = {
-        ...     'serial_number': 'AA11BB22CC34',
-        ...     'physical_elevation': 7,
-        ...     'physical_location': 'SCIF 4',
-        ...     'physical_rack': 'R200',
-        ...     'hardware_profile': 'HP ProLiant DL360 Gen9',
-        ...     'oob_ip_address': '10.0.0.1',
-        ...     'oob_mac_address': 'aa:bb:cc:11:22:33',
+        ...     'name': 'R500',
+        ...     'physical_location': 'TEST DC SCIF 2',
         ... }
         >>> PhysicalRacks.update(params)
 
@@ -90,13 +86,13 @@ class PhysicalRacks(ArsenalInterface):
         Usage:
 
         >>> params = {
-        ...    'id': 1,
-        ...    'serial_number': 'AA11BB22CC34',
+        ...     'id': 1,
+        ...     'name': 'R500',
         ... }
         >>> PhysicalRacks.delete(params)
         '''
 
-        LOG.info('Deleting physical_rack serial_number: {0}'.format(params['serial_number']))
+        LOG.info('Deleting physical_rack name: {0}'.format(params['name']))
         return super(PhysicalRacks, self).delete(params)
 
     def get_audit_history(self, results):
@@ -105,10 +101,13 @@ class PhysicalRacks(ArsenalInterface):
 
     def get_by_name(self, name):
         '''Get a single physical_rack by it's name. This is not possible as
-        physical_devices don't have a name. Use PhysicalRacks.get_by_serial_number()
+        physical_racks are not unique by name alone. Use PhysicalRacks.get_by_name_location()
         instead.
         '''
         pass
 
     # Custom methods
-    # TBD
+    def get_by_name_location(self, name, location):
+        '''Get a single physical_rack by it's name and location.'''
+        # TBD, not sure if we need this yet.
+        pass
