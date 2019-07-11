@@ -30,6 +30,7 @@ from arsenalclient.cli.common import (
     print_results,
     update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
@@ -140,25 +141,30 @@ def search_physical_devices(args, client):
 def create_physical_device(args, client):
     '''Create a new physical_device.'''
 
-    LOG.info('Checking if physical_device name exists: {0}'.format(args.physical_device_name))
+    LOG.info('Checking if physical_device serial_number exists: {0}'.format(args.serial_number))
 
-    resp = client.physical_devices.get_by_name(args.physical_device_name)
+    device = {
+        'hardware_profile': args.hardware_profile,
+        'oob_ip_address': args.oob_ip_address,
+        'oob_mac_address': args.oob_mac_address,
+        'physical_elevation': args.physical_elevation,
+        'physical_location': args.physical_location,
+        'physical_rack': args.physical_rack,
+        'serial_number': args.serial_number,
+    }
 
-    loc_fields = update_object_fields(args,
-                                      'physical_device',
-                                      vars(args),
-                                      UPDATE_FIELDS)
-    if resp:
+    try:
+
+        resp = client.physical_devices.get_by_serial_number(args.serial_number)
+
         if ask_yes_no('Entry already exists for physical_device name: {0}\n Would you ' \
-                      'like to update it?'.format(resp['name']),
+                      'like to update it?'.format(resp['serial_number']),
                       args.answer_yes):
 
-            client.physical_devices.update(name=args.physical_device_name,
-                                           **loc_fields)
+            client.physical_devices.update(device)
 
-    else:
-        client.physical_devices.create(name=args.physical_device_name,
-                                       **loc_fields)
+    except NoResultFound:
+        client.physical_devices.create(device)
 
 def delete_physical_device(args, client):
     '''Delete an existing physical_device.'''
