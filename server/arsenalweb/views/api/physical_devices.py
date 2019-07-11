@@ -260,18 +260,23 @@ def api_physical_devices_write(request):
 
     try:
         req_params = [
+            'physical_elevation',
+            'physical_location',
+            'physical_rack',
             'serial_number',
         ]
         opt_params = [
             'hardware_profile',
             'oob_ip_address',
             'oob_mac_address',
-            'physical_location',
-            'physical_rack',
-            'physical_elevation',
         ]
         params = collect_params(request, req_params, opt_params)
-        params = convert_names_to_ids(params)
+        try:
+            params = convert_names_to_ids(params)
+        except NoResultFound as ex:
+            msg = 'Error writing to physical_devices API: {0}'.format(ex)
+            LOG.error(msg)
+            return api_404(msg=msg)
 
         try:
             physical_device = find_physical_device_by_serial(params['serial_number'])

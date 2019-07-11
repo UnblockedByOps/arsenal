@@ -117,8 +117,32 @@ def parser_physical_devices(top_parser, otsp):
     rcag.add_argument('-s',
                       '--serial-number',
                       required=True,
-                      dest='physical_device_serial_number',
-                      help='physical_device_serial_number to create.')
+                      help='physical device serial number to create.')
+    rcag.add_argument('-e',
+                      '--elevation',
+                      dest='physical_elevation',
+                      required=True,
+                      help='The physical device elevation number.')
+    rcag.add_argument('-H',
+                      '--hardware-profile',
+                      help='The physical device hardware profile name.')
+    rcag.add_argument('-i',
+                      '--oob-ip-address',
+                      help='The physical device out of band ip address.')
+    rcag.add_argument('-l',
+                      '--location',
+                      dest='physical_location',
+                      required=True,
+                      help='The physical device location name.')
+    rcag.add_argument('-m',
+                      '--oob-mac-address',
+                      help='The physical device out of band mac address.')
+    rcag.add_argument('-r',
+                      '--rack',
+                      dest='physical_rack',
+                      required=True,
+                      help='The physical device rack name.')
+
     rcag.set_defaults(func=create_physical_device)
 
     # physical_devices delete subcommand (dsc)
