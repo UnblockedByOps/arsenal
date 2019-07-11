@@ -129,7 +129,6 @@ def process_actions(args, client, results):
             for tag in tags:
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'nodes', results)
-                LOG.info('heeeeer: {0}'.format(resp))
 
     if args.set_status:
         msg = _format_msg(results)
