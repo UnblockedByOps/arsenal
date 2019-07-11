@@ -91,6 +91,8 @@ class ArsenalInterface(object):
                     'message': resp.reason,
                 }
             }
+            LOG.warn('{0}: {1}'.format(resp.status_code,
+                                       resp.reason))
             return my_resp
 
     def api_conn(self, uri, data=None, method='get', log_success=True):
