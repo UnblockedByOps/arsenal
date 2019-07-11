@@ -72,7 +72,7 @@ class PhysicalLocation(Base):
                     postal_code=self.postal_code,
                     contact_name=self.contact_name,
                     phone_number=self.phone_number,
-                    physcial_racks=get_name_id_list(self.physical_racks,
+                    physical_racks=get_name_id_list(self.physical_racks,
                                                     default_keys=['id',
                                                                   'name',
                                                                   'physical_elevations']),

@@ -41,12 +41,12 @@ class PhysicalDevices(ArsenalInterface):
 
         params (dict): A dictionary with the following attributes:
 
-        name : The name of the physical_device you wish to create.
+        serial_number : The serial_number of the physical_device you wish to create.
 
         Usage:
 
         >>> params = {
-        ...     'name': 'my_physical_device1',
+        ...     'serial_number': 'AA11BB22CC34',
         ... }
         >>> PhysicalDevices.create(params)
         <Response [200]>
@@ -65,10 +65,10 @@ class PhysicalDevices(ArsenalInterface):
 
         >>> params = {
         ...     'serial_number': 'AA11BB22CC34',
-        ...     'physical_elevation_id': 1,
-        ...     'physical_location_id': 2,
-        ...     'physical_rack_id': 6,
-        ...     'hardware_profile_id': 2,
+        ...     'physical_elevation': 7,
+        ...     'physical_location': 'SCIF 4',
+        ...     'physical_rack': 'R200',
+        ...     'hardware_profile': 'HP ProLiant DL360 Gen9',
         ...     'oob_ip_address': '10.0.0.1',
         ...     'oob_mac_address': 'aa:bb:cc:11:22:33',
         ... }

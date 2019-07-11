@@ -33,12 +33,8 @@ from arsenalclient.cli.common import (
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
-    'physical_device_elevation_id',
-    'physical_device_location_id',
-    'physical_device_rack_id',
-    'physical_device_hardware_profile_id',
-    'physical_device_oob_ip_address',
-    'physical_device_oob_mac_address',
+    'oob_ip_address',
+    'oob_mac_address',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -81,7 +77,6 @@ def process_actions(args, client, results):
             for tag in tags:
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physcial_locations', results)
-
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         msg = _format_msg(results)

@@ -64,29 +64,29 @@ def parser_physical_devices(top_parser, otsp):
     uaag = ssc.add_argument_group('Update Actions')
 
     uaag.add_argument('-e',
-                      '--elevation-id',
-                      dest='physical_device_elevation_id',
-                      help='Update physical_device elevation_id.')
+                      '--elevation',
+                      dest='physical_elevation',
+                      help='Update physical_device elevation. Changing this ' \
+                      'also requires location and rack to be specified.')
     uaag.add_argument('-H',
-                      '--hardware-profile-id',
-                      dest='physical_device_hardware_profile_id',
-                      help='Update physical_device hardware_profile_id.')
+                      '--hardware-profile',
+                      help='Update physical_device hardware_profile.')
     uaag.add_argument('-i',
                       '--oob-ip-address',
-                      dest='physical_device_oob_ip_address',
                       help='Update physical_device oob_ip_address.')
     uaag.add_argument('-l',
-                      '--location-id',
-                      dest='physical_device_location_id',
-                      help='Update physical_device location_id.')
+                      '--location',
+                      dest='physical_location',
+                      help='Update physical_device location. Changing this ' \
+                      'also requires rack and elevation to be specified.')
     uaag.add_argument('-m',
                       '--oob-mac-address',
-                      dest='physical_device_oob_mac_address',
                       help='Update physical_device oob_mac_address.')
     uaag.add_argument('-r',
-                      '--rack-id',
-                      dest='physical_device_rack_id',
-                      help='Update physical_device rack_id.')
+                      '--rack',
+                      dest='physical_rack',
+                      help='Update physical_device rack. Changing this ' \
+                      'also requires location and elevation to be specified.')
 
     # physical_devices assignment action argument group (aag)
     aag = ssc.add_argument_group('Assignment Actions')

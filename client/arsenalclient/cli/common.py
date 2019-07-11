@@ -60,7 +60,7 @@ def check_resp(resp):
         sys.exit(1)
 
 def gen_help(help_type):
-    '''Generte the list of searchable terms for help'''
+    '''Generate the list of searchable terms for help'''
 
     terms = {
         'data_centers_search': [
@@ -108,12 +108,11 @@ def gen_help(help_type):
         ],
         'physical_devices_search': [
             'id',
-            'name',
             'serial_number',
-            'physical_elevation_id',
-            'physical_location_id',
-            'physical_rack_id',
-            'hardware_profile_id',
+            'physical_elevation',
+            'physical_location',
+            'physical_rack',
+            'hardware_profile',
             'oob_ip_address',
             'oob_mac_address',
         ],

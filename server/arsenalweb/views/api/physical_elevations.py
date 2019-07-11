@@ -41,11 +41,11 @@ LOG = logging.getLogger(__name__)
 
 # Functions
 def find_physical_elevation_by_elevation(elevation, physical_rack_id):
-    '''Find a physical_elevation by elevation and physcial_rack_id. Returns
+    '''Find a physical_elevation by elevation and physical_rack_id. Returns
     a physical_elevation object if found, raises NoResultFound otherwise.'''
 
     LOG.debug('Searching for physical_elevation by elevation: {0} '
-              'physcial_rack_id: {1}'.format(elevation, physical_rack_id))
+              'physical_rack_id: {1}'.format(elevation, physical_rack_id))
     physical_elevation = DBSession.query(PhysicalElevation)
     physical_elevation = physical_elevation.filter(PhysicalElevation.elevation == elevation)
     physical_elevation = physical_elevation.filter(PhysicalElevation.physical_rack_id == physical_rack_id)
