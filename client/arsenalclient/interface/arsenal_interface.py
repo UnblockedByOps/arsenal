@@ -74,15 +74,15 @@ class ArsenalInterface(object):
         '''
 
         try:
+            results = resp.json()
             if resp.status_code == 200:
                 if log_success:
                     LOG.info('Command successful.')
-                LOG.debug('Returning json...')
-                return resp.json()
             else:
-                results = resp.json()
                 LOG.warn('{0}: {1}'.format(results['http_status']['code'],
                                            results['http_status']['message']))
+            LOG.debug('Returning json...')
+            return results
         except ValueError:
             LOG.debug('Json decode failed, falling back to manual json response...')
             my_resp = {
@@ -91,6 +91,8 @@ class ArsenalInterface(object):
                     'message': resp.reason,
                 }
             }
+            LOG.warn('{0}: {1}'.format(resp.status_code,
+                                       resp.reason))
             return my_resp
 
     def api_conn(self, uri, data=None, method='get', log_success=True):
