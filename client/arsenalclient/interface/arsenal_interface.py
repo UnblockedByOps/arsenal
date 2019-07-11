@@ -78,11 +78,11 @@ class ArsenalInterface(object):
                 if log_success:
                     LOG.info('Command successful.')
                 LOG.debug('Returning json...')
-                return resp.json()
             else:
                 results = resp.json()
                 LOG.warn('{0}: {1}'.format(results['http_status']['code'],
                                            results['http_status']['message']))
+            return resp.json()
         except ValueError:
             LOG.debug('Json decode failed, falling back to manual json response...')
             my_resp = {
