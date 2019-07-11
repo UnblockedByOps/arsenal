@@ -40,7 +40,9 @@ class PhysicalRacks(ArsenalInterface):
 
         params (dict): A dictionary with the following attributes:
 
-        serial_number : The serial_number of the physical_rack you wish to create.
+        name : The name of the physical_rack you wish to create.
+        physical_location : The name of the physical_location the
+            physical_rack you wish to create will be in.
 
         Usage:
 
