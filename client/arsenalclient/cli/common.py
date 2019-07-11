@@ -50,7 +50,6 @@ def _check_tags(obj, set_tags):
 
     return resp.rstrip()
 
-
 def check_resp(resp):
     '''Check the http response code and exit non-zero if it's not a 200.'''
 
@@ -61,7 +60,7 @@ def check_resp(resp):
         sys.exit(1)
 
 def gen_help(help_type):
-    '''Generte the list of searchable terms for help'''
+    '''Generate the list of searchable terms for help'''
 
     terms = {
         'data_centers_search': [
@@ -106,6 +105,16 @@ def gen_help(help_type):
             'node_group_owner',
             'description',
             'notes_url',
+        ],
+        'physical_devices_search': [
+            'id',
+            'serial_number',
+            'physical_elevation',
+            'physical_location',
+            'physical_rack',
+            'hardware_profile',
+            'oob_ip_address',
+            'oob_mac_address',
         ],
         'physical_locations_search': [
             'id',

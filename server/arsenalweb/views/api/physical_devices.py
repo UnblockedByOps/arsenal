@@ -216,7 +216,7 @@ def convert_names_to_ids(params):
                 LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
                 del params['physical_location']
             except NoResultFound:
-                msg = 'physcial_location not found: {0}'.format(params['physical_location'])
+                msg = 'physical_location not found: {0}'.format(params['physical_location'])
                 LOG.error(msg)
                 raise NoResultFound(msg)
         if params['physical_rack']:
@@ -226,7 +226,7 @@ def convert_names_to_ids(params):
                 params['physical_rack_id'] = physical_rack.id
                 del params['physical_rack']
             except NoResultFound:
-                msg = 'physcial_rack not found: {0}'.format(params['physical_rack'])
+                msg = 'physical_rack not found: {0}'.format(params['physical_rack'])
                 LOG.error(msg)
                 raise NoResultFound(msg)
         if params['physical_elevation']:
@@ -236,7 +236,7 @@ def convert_names_to_ids(params):
                 params['physical_elevation_id'] = physical_elevation.id
                 del params['physical_elevation']
             except NoResultFound:
-                msg = 'physcial_elevation not found: {0}'.format(params['physical_elevation'])
+                msg = 'physical_elevation not found: {0}'.format(params['physical_elevation'])
                 LOG.error(msg)
                 raise NoResultFound(msg)
     except:
