@@ -22,6 +22,9 @@ line.
 #
 from __future__ import print_function
 import logging
+import sys
+import csv
+import json
 from arsenalclient.cli.common import (
     _check_tags,
     ask_yes_no,
@@ -138,35 +141,40 @@ def search_physical_devices(args, client):
         check_resp(resp)
     LOG.debug('Complete.')
 
-def create_physical_device(args, client):
+def create_physical_device(args, client, device=None):
     '''Create a new physical_device.'''
 
-    LOG.info('Checking if physical_device serial_number exists: {0}'.format(args.serial_number))
+    try:
+        serial_number = device['serial_number']
+    except TypeError:
+        serial_number = args.serial_number
 
-    device = {
-        'hardware_profile': args.hardware_profile,
-        'mac_address_1': args.mac_address_1,
-        'mac_address_2': args.mac_address_2,
-        'oob_ip_address': args.oob_ip_address,
-        'oob_mac_address': args.oob_mac_address,
-        'physical_elevation': args.physical_elevation,
-        'physical_location': args.physical_location,
-        'physical_rack': args.physical_rack,
-        'serial_number': args.serial_number,
-    }
+        device = {
+            'hardware_profile': args.hardware_profile,
+            'mac_address_1': args.mac_address_1,
+            'mac_address_2': args.mac_address_2,
+            'oob_ip_address': args.oob_ip_address,
+            'oob_mac_address': args.oob_mac_address,
+            'physical_elevation': args.physical_elevation,
+            'physical_location': args.physical_location,
+            'physical_rack': args.physical_rack,
+            'serial_number': args.serial_number,
+        }
+
+    LOG.info('Checking if physical_device serial_number exists: {0}'.format(serial_number))
 
     try:
 
-        resp = client.physical_devices.get_by_serial_number(args.serial_number)
+        resp = client.physical_devices.get_by_serial_number(serial_number)
 
         if ask_yes_no('Entry already exists for physical_device name: {0}\n Would you ' \
                       'like to update it?'.format(resp['serial_number']),
                       args.answer_yes):
 
-            client.physical_devices.update(device)
+            return client.physical_devices.update(device)
 
     except NoResultFound:
-        client.physical_devices.create(device)
+        return client.physical_devices.create(device)
 
 def delete_physical_device(args, client):
     '''Delete an existing physical_device.'''
@@ -188,3 +196,67 @@ def delete_physical_device(args, client):
             for physical_location in results:
                 resp = client.physical_devices.delete(physical_location)
                 check_resp(resp)
+
+def import_physical_device(args, client):
+    '''Import physical_devices from a csv file.'''
+
+    LOG.info('Beginning physical_device import from file: {0}'.format(args.physical_device_import))
+    LOG.debug('action_command is: {0}'.format(args.action_command))
+    LOG.debug('object_type is: {0}'.format(args.object_type))
+
+    failures = []
+    overall_exit = 0
+    try:
+        with open(args.physical_device_import) as csv_file:
+            field_names = [
+                'serial_number',
+                'physical_location',
+                'physical_rack',
+                'physical_elevation',
+                'mac_address_1',
+                'mac_address_2',
+                'hardware_profile',
+                'oob_ip_address',
+                'oob_mac_address',
+            ]
+            device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=field_names)
+            for count, row in enumerate(device_import):
+                if row['serial_number'].startswith('#'):
+                    continue
+                LOG.info('Processing row: {0}...'.format(count))
+
+                row = check_null_fields(row, field_names)
+                LOG.debug(json.dumps(row, indent=4, sort_keys=True))
+
+                resp = create_physical_device(args, client, device=row)
+                LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
+
+                try:
+                    resp['http_status']['row'] = row
+                    resp['http_status']['row_number'] = count
+                    failures.append(resp['http_status'])
+                except KeyError:
+                    pass
+
+        if failures:
+            overall_exit = 1
+            LOG.error('The following rows were unable to be processed:')
+            for fail in failures:
+                LOG.error('    Row: {0} Data: {1} Error: {2}'.format(fail['row_number'],
+                                                                     fail['row'],
+                                                                     fail['message'],))
+
+        LOG.info('physical_device import complete')
+        sys.exit(overall_exit)
+
+    except IOError as ex:
+        LOG.error(ex)
+
+def check_null_fields(row, field_names):
+    '''Checks for keys will null values and removes them. This allows the API
+    to return appropriate errors for keys that require a value.'''
+
+    for key in field_names:
+        if not row[key]:
+            del row[key]
+    return row
