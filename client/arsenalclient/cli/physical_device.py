@@ -145,6 +145,8 @@ def create_physical_device(args, client):
 
     device = {
         'hardware_profile': args.hardware_profile,
+        'mac_address_1': args.mac_address_1,
+        'mac_address_2': args.mac_address_2,
         'oob_ip_address': args.oob_ip_address,
         'oob_mac_address': args.oob_mac_address,
         'physical_elevation': args.physical_elevation,

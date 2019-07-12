@@ -54,6 +54,8 @@ class PhysicalDevice(Base):
     physical_elevation_id = Column(Integer,
                                    ForeignKey('physical_elevations.id'),
                                    nullable=False)
+    mac_address_1 = Column(Text, nullable=False)
+    mac_address_2 = Column(Text, nullable=True)
     hardware_profile_id = Column(Integer,
                                  ForeignKey('hardware_profiles.id'),
                                  nullable=True)
@@ -83,6 +85,8 @@ class PhysicalDevice(Base):
                     physical_location=self.physical_location,
                     physical_rack=self.physical_rack,
                     physical_elevation=self.physical_elevation,
+                    mac_address_1=self.mac_address_1,
+                    mac_address_2=self.mac_address_2,
                     node=get_name_id_dict(self.nodes),
                     oob_ip_address=self.oob_ip_address,
                     oob_mac_address=self.oob_mac_address,
@@ -100,6 +104,8 @@ class PhysicalDevice(Base):
                 resp = get_name_id_dict([self], default_keys=['id',
                                                               'hardware_profile',
                                                               'serial_number',
+                                                              'mac_address_1',
+                                                              'mac_address_2',
                                                               'oob_ip_address',
                                                               'oob_mac_address',
                                                               'physical_location',
@@ -122,6 +128,8 @@ class PhysicalDevice(Base):
             resp = get_name_id_dict([self], default_keys=['id',
                                                           'hardware_profile',
                                                           'serial_number',
+                                                          'mac_address_1',
+                                                          'mac_address_2',
                                                           'oob_ip_address',
                                                           'oob_mac_address',
                                                           'physical_location',

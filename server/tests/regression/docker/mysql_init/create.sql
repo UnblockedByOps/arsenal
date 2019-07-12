@@ -305,6 +305,8 @@ CREATE TABLE `physical_devices` (
   `physical_elevation_id`   int(11) NOT NULL,
   `physical_location_id`    int(10) NOT NULL,
   `physical_rack_id`        int(10) NOT NULL,
+  `mac_address_1`           varchar(255) NOT NULL,
+  `mac_address_2`           varchar(255) DEFAULT NULL,
   `hardware_profile_id`     int(11) DEFAULT NULL,
   `oob_ip_address`          varchar(255) DEFAULT NULL,
   `oob_mac_address`         varchar(255) DEFAULT NULL,
