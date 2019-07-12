@@ -116,6 +116,11 @@ def gen_help(help_type):
             'oob_ip_address',
             'oob_mac_address',
         ],
+        'physical_elevations_search': [
+            'id',
+            'name',
+            'physical_rack',
+        ],
         'physical_locations_search': [
             'id',
             'name',

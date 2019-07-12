@@ -26,6 +26,7 @@ from arsenalclient.parser.network_interfaces import parser_network_interfaces
 from arsenalclient.parser.node_groups import parser_node_groups
 from arsenalclient.parser.nodes import parser_nodes
 from arsenalclient.parser.physical_devices import parser_physical_devices
+from arsenalclient.parser.physical_elevations import parser_physical_elevations
 from arsenalclient.parser.physical_locations import parser_physical_locations
 from arsenalclient.parser.physical_racks import parser_physical_racks
 from arsenalclient.parser.register import parser_register
@@ -139,6 +140,7 @@ def _parse_args():
     top_parser, otsp = parser_ip_addresses(top_parser, otsp)
     top_parser, otsp = parser_data_centers(top_parser, otsp)
     top_parser, otsp = parser_physical_devices(top_parser, otsp)
+    top_parser, otsp = parser_physical_elevations(top_parser, otsp)
     top_parser, otsp = parser_physical_locations(top_parser, otsp)
     top_parser, otsp = parser_physical_racks(top_parser, otsp)
 
