@@ -1,4 +1,4 @@
-'''Arsenal client physical_location command line helpers.
+'''Arsenal client physical_rack command line helpers.
 
 These functions are called directly by args.func() to invoke the
 appropriate action. They also handle output formatting to the commmand
@@ -30,18 +30,11 @@ from arsenalclient.cli.common import (
     print_results,
     update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
-    'physical_location_address_1',
-    'physical_location_address_2',
-    'physical_location_admin_area',
-    'physical_location_city',
-    'physical_location_contact_name',
-    'physical_location_country',
-    'physical_location_phone_number',
-    'physical_location_postal_code',
-    'physical_location_provider',
+    'physical_location',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -52,23 +45,21 @@ def _format_msg(results, tags=None):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
-    for loc in results:
-        resp = _check_tags(loc, tags)
+    for res in results:
+        resp = _check_tags(res, tags)
         if resp:
-            r_names.append('{0}: {1}\n{2}'.format(loc['name'],
-                                                  loc['id'],
-                                                  resp))
+            r_names.append('{0}\n{1}'.format(res['name'],
+                                             resp))
         else:
-            r_names.append('{0}: {1}'.format(loc['name'],
-                                             loc['id']))
+            r_names.append('{0}'.format(res['name']))
 
-    msg = 'We are ready to update the following physical_locations: ' \
+    msg = 'We are ready to update the following physical_racks: ' \
           '\n {0}\nContinue?'.format('\n '.join(r_names))
 
     return msg
 
 def process_actions(args, client, results):
-    '''Process change actions for physical_locations search results.'''
+    '''Process change actions for physical_racks search results.'''
 
     resp = None
     if args.set_tags:
@@ -77,7 +68,7 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.set_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.assign(name, value, 'physical_locations', results)
+                resp = client.tags.assign(name, value, 'physical_racks', results)
 
     if args.del_tags:
         msg = _format_msg(results, args.del_tags)
@@ -85,12 +76,23 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.deassign(name, value, 'physical_locations', results)
+                resp = client.tags.deassign(name, value, 'physical_racks', results)
+
+    if any(getattr(args, key) for key in UPDATE_FIELDS):
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            for physical_rack in results:
+                pd_update = update_object_fields(args,
+                                                 'physical_rack',
+                                                 physical_rack,
+                                                 UPDATE_FIELDS)
+
+                client.physical_racks.update(pd_update)
 
     return resp
 
-def search_physical_locations(args, client):
-    '''Search for physical_locations and perform optional assignment
+def search_physical_racks(args, client):
+    '''Search for physical_racks and perform optional assignment
        actions.'''
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
@@ -112,7 +114,7 @@ def search_physical_locations(args, client):
         search_fields = 'all'
 
     params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
-    resp = client.physical_locations.search(params)
+    resp = client.physical_racks.search(params)
 
     if not resp.get('results'):
         return resp
@@ -123,7 +125,7 @@ def search_physical_locations(args, client):
     if not any(getattr(args, key) for key in action_fields):
 
         if args.audit_history:
-            results = client.physical_locations.get_audit_history(results)
+            results = client.physical_racks.get_audit_history(results)
 
         print_results(args, results)
 
@@ -135,46 +137,46 @@ def search_physical_locations(args, client):
         check_resp(resp)
     LOG.debug('Complete.')
 
-def create_physical_location(args, client):
-    '''Create a new physical_location.'''
+def create_physical_rack(args, client):
+    '''Create a new physical_rack.'''
 
-    LOG.info('Checking if physical_location name exists: {0}'.format(args.physical_location_name))
+    LOG.info('Checking if physical_rack name exists: {0}'.format(args.name))
 
-    resp = client.physical_locations.get_by_name(args.physical_location_name)
+    device = {
+        'name': args.name,
+        'physical_location': args.physical_location,
+    }
 
-    loc_fields = update_object_fields(args,
-                                      'physical_location',
-                                      vars(args),
-                                      UPDATE_FIELDS)
-    if resp:
-        if ask_yes_no('Entry already exists for physical_location name: {0}\n Would you ' \
+    try:
+
+        resp = client.physical_racks.get_by_name(args.name)
+
+        if ask_yes_no('Entry already exists for physical_rack name: {0}\n Would you ' \
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_locations.update(name=args.physical_location_name,
-                                             **loc_fields)
+            client.physical_racks.update(device)
 
-    else:
-        client.physical_locations.create(name=args.physical_location_name,
-                                         **loc_fields)
+    except NoResultFound:
+        client.physical_racks.create(device)
 
-def delete_physical_location(args, client):
-    '''Delete an existing physical_location.'''
+def delete_physical_rack(args, client):
+    '''Delete an existing physical_rack.'''
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    results = client.physical_locations.get_by_name(args.physical_location_name)
+    results = client.physical_racks.get_by_name(args.physical_rack_name)
 
     if results:
         r_names = []
-        for physical_locations in results:
-            r_names.append(physical_locations['name'])
+        for physical_racks in results:
+            r_names.append(physical_racks['name'])
 
         msg = 'We are ready to delete the following {0}: ' \
               '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
-            for physical_location in results:
-                resp = client.physical_locations.delete(physical_location)
+            for physical_rack in results:
+                resp = client.physical_racks.delete(physical_rack)
                 check_resp(resp)

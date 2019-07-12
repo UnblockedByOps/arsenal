@@ -49,7 +49,7 @@ def _format_msg(results, tags=None):
     for res in results:
         resp = _check_tags(res, tags)
         if resp:
-            r_names.append('{0}\n{2}'.format(res['serial_number'],
+            r_names.append('{0}\n{1}'.format(res['serial_number'],
                                              resp))
         else:
             r_names.append('{0}'.format(res['serial_number']))
@@ -60,7 +60,7 @@ def _format_msg(results, tags=None):
     return msg
 
 def process_actions(args, client, results):
-    '''Process change actions for physcial_locations search results.'''
+    '''Process change actions for physical_locations search results.'''
 
     resp = None
     if args.set_tags:
@@ -69,7 +69,7 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.set_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.assign(name, value, 'physcial_locations', results)
+                resp = client.tags.assign(name, value, 'physical_locations', results)
 
     if args.del_tags:
         msg = _format_msg(results, args.del_tags)
@@ -77,7 +77,7 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.deassign(name, value, 'physcial_locations', results)
+                resp = client.tags.deassign(name, value, 'physical_locations', results)
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         msg = _format_msg(results)
@@ -126,7 +126,7 @@ def search_physical_devices(args, client):
     if not any(getattr(args, key) for key in action_fields):
 
         if args.audit_history:
-            results = client.physcial_locations.get_audit_history(results)
+            results = client.physical_locations.get_audit_history(results)
 
         print_results(args, results, default_key='serial_number', skip_keys=['serial_number', 'id'])
 
@@ -183,6 +183,6 @@ def delete_physical_device(args, client):
               '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
-            for physcial_location in results:
-                resp = client.physical_devices.delete(physcial_location)
+            for physical_location in results:
+                resp = client.physical_devices.delete(physical_location)
                 check_resp(resp)

@@ -129,6 +129,11 @@ def gen_help(help_type):
             'contact_name',
             'phone_number',
         ],
+        'physical_racks_search': [
+            'id',
+            'name',
+            'physical_location',
+        ],
         'statuses_search': [
             'id',
             'name',

@@ -106,7 +106,7 @@ class PhysicalDevices(ArsenalInterface):
 
     def get_by_name(self, name):
         '''Get a single physical_device by it's name. This is not possible as
-        physcial_devices don't have a name. Use PhysicalDevices.get_by_serial_number()
+        physical_devices don't have a name. Use PhysicalDevices.get_by_serial_number()
         instead.
         '''
         pass
