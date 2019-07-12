@@ -19,6 +19,7 @@ from arsenalclient.cli.physical_device import (
     search_physical_devices,
     create_physical_device,
     delete_physical_device,
+    import_physical_device,
     )
 
 def parser_physical_devices(top_parser, otsp):
@@ -159,5 +160,21 @@ def parser_physical_devices(top_parser, otsp):
                       dest='physical_device_serial_number',
                       help='physical_device_serial_number to delete.')
     dsc.set_defaults(func=delete_physical_device)
+
+    # physical_devices import subcommand (isc)
+    isc = asp.add_parser('import',
+                         help='Import physical_device objects from a csv.',
+                         parents=[top_parser])
+
+    # required physical_device delete argument group (rdag)
+    risc = isc.add_argument_group('required arguments')
+
+    risc.add_argument('-c',
+                      '--csv',
+                      required=True,
+                      dest='physical_device_import',
+                      help='Full filesystem path to the csv file to import '
+                      'physical devices from.')
+    isc.set_defaults(func=import_physical_device)
 
     return top_parser, otsp

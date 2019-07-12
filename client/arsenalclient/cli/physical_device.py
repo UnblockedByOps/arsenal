@@ -22,6 +22,8 @@ line.
 #
 from __future__ import print_function
 import logging
+import csv
+import json
 from arsenalclient.cli.common import (
     _check_tags,
     ask_yes_no,
@@ -138,26 +140,31 @@ def search_physical_devices(args, client):
         check_resp(resp)
     LOG.debug('Complete.')
 
-def create_physical_device(args, client):
+def create_physical_device(args, client, device=None):
     '''Create a new physical_device.'''
 
-    LOG.info('Checking if physical_device serial_number exists: {0}'.format(args.serial_number))
+    try:
+        serial_number = device['serial_number']
+    except TypeError:
+        serial_number = args.serial_number
 
-    device = {
-        'hardware_profile': args.hardware_profile,
-        'mac_address_1': args.mac_address_1,
-        'mac_address_2': args.mac_address_2,
-        'oob_ip_address': args.oob_ip_address,
-        'oob_mac_address': args.oob_mac_address,
-        'physical_elevation': args.physical_elevation,
-        'physical_location': args.physical_location,
-        'physical_rack': args.physical_rack,
-        'serial_number': args.serial_number,
-    }
+        device = {
+            'hardware_profile': args.hardware_profile,
+            'mac_address_1': args.mac_address_1,
+            'mac_address_2': args.mac_address_2,
+            'oob_ip_address': args.oob_ip_address,
+            'oob_mac_address': args.oob_mac_address,
+            'physical_elevation': args.physical_elevation,
+            'physical_location': args.physical_location,
+            'physical_rack': args.physical_rack,
+            'serial_number': args.serial_number,
+        }
+
+    LOG.info('Checking if physical_device serial_number exists: {0}'.format(serial_number))
 
     try:
 
-        resp = client.physical_devices.get_by_serial_number(args.serial_number)
+        resp = client.physical_devices.get_by_serial_number(serial_number)
 
         if ask_yes_no('Entry already exists for physical_device name: {0}\n Would you ' \
                       'like to update it?'.format(resp['serial_number']),
@@ -188,3 +195,36 @@ def delete_physical_device(args, client):
             for physical_location in results:
                 resp = client.physical_devices.delete(physical_location)
                 check_resp(resp)
+
+def import_physical_device(args, client):
+    '''Import physical_devices from a csv file.'''
+
+    LOG.debug('action_command is: {0}'.format(args.action_command))
+    LOG.debug('object_type is: {0}'.format(args.object_type))
+
+    try:
+        with open(args.physical_device_import) as csv_file:
+            fieldnames = [
+                'serial_number',
+                'physical_location',
+                'physical_rack',
+                'physical_elevation',
+                'mac_address_1',
+                'mac_address_2',
+                'hardware_profile',
+                'oob_ip_address',
+                'oob_mac_address',
+            ]
+            device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=fieldnames)
+            for row in device_import:
+                if row['serial_number'].startswith('#'):
+                    continue
+                if len(row) != 9:
+                    LOG.error('Row is missing fields: {0}'.format(row))
+                    LOG.error('Fields are           : {0}'.format(fieldnames))
+                    continue
+                LOG.info(json.dumps(row, indent=4, sort_keys=True))
+                create_physical_device(args, client, device=row)
+
+    except IOError as ex:
+        LOG.error(ex)
