@@ -25,7 +25,7 @@ def parser_physical_elevations(top_parser, otsp):
     '''Add the physical_elevations CLI parser.'''
 
     ### physical_elevations object_type parser (otp)
-    my_help = ('Perform actions on the physical_elevations object_type.\n\n')
+    my_help = 'Perform actions on the physical_elevations object_type.\n\n'
     otp = otsp.add_parser('physical_elevations',
                           description=my_help,
                           help=my_help,
