@@ -72,6 +72,7 @@ def find_physical_device_by_id(physical_device_id):
     return physical_device.one()
 
 def create_physical_device(serial_number=None,
+                           mac_address_1=None,
                            physical_location_id=None,
                            physical_rack_id=None,
                            physical_elevation_id=None,
@@ -81,6 +82,7 @@ def create_physical_device(serial_number=None,
 
     Required params:
 
+    mac_address_1: A string representing the MAC address of the first interface.
     physical_location_id : An integer representing the physical_location_id
         from the physical_locations table.
     physical_rack_id     : An integer representing the physical_rack_id
@@ -94,6 +96,7 @@ def create_physical_device(serial_number=None,
 
     hardware_profile_id: An integer representing the hardware_profile_id from
         the hardware_profiles table.
+    mac_address_2: A string representing the MAC address of the second interface.
     oob_ip_address: A string representing the out of band IP address.
     oob_mac_address: A string representing the out of band MAC address.
     '''
@@ -104,6 +107,7 @@ def create_physical_device(serial_number=None,
         utcnow = datetime.utcnow()
 
         physical_device = PhysicalDevice(serial_number=serial_number,
+                                         mac_address_1=mac_address_1,
                                          physical_location_id=physical_location_id,
                                          physical_rack_id=physical_rack_id,
                                          physical_elevation_id=physical_elevation_id,
@@ -143,6 +147,8 @@ def update_physical_device(physical_device, **kwargs):
 
     hardware_profile_id: An integer representing the hardware_profile_id from
         the hardware_profiles table.
+    mac_address_1: A string representing the MAC address of the first interface.
+    mac_address_2: A string representing the MAC address of the second interface.
     oob_ip_address: A string representing the out of band IP address.
     oob_mac_address: A string representing the out of band MAC address.
     physical_location_id : An integer representing the physical_location_id
@@ -260,6 +266,7 @@ def api_physical_devices_write(request):
 
     try:
         req_params = [
+            'mac_address_1',
             'physical_elevation',
             'physical_location',
             'physical_rack',
@@ -267,6 +274,7 @@ def api_physical_devices_write(request):
         ]
         opt_params = [
             'hardware_profile',
+            'mac_address_2',
             'oob_ip_address',
             'oob_mac_address',
         ]
