@@ -25,6 +25,7 @@ from arsenalclient.interface.data_centers import DataCenters
 from arsenalclient.interface.node_groups import NodeGroups
 from arsenalclient.interface.nodes import Nodes
 from arsenalclient.interface.physical_devices import PhysicalDevices
+from arsenalclient.interface.physical_elevations import PhysicalElevations
 from arsenalclient.interface.physical_locations import PhysicalLocations
 from arsenalclient.interface.physical_racks import PhysicalRacks
 from arsenalclient.interface.statuses import Statuses
@@ -127,6 +128,7 @@ class Client(object):
         self.node_groups = NodeGroups(**kwargs)
         self.nodes = Nodes(**kwargs)
         self.physical_devices = PhysicalDevices(**kwargs)
+        self.physical_elevations = PhysicalElevations(**kwargs)
         self.physical_locations = PhysicalLocations(**kwargs)
         self.physical_racks = PhysicalRacks(**kwargs)
         self.statuses = Statuses(**kwargs)
