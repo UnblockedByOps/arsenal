@@ -208,7 +208,7 @@ def import_physical_device(args, client):
     overall_exit = 0
     try:
         with open(args.physical_device_import) as csv_file:
-            fieldnames = [
+            field_names = [
                 'serial_number',
                 'physical_location',
                 'physical_rack',
@@ -219,17 +219,18 @@ def import_physical_device(args, client):
                 'oob_ip_address',
                 'oob_mac_address',
             ]
-            device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=fieldnames)
+            device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=field_names)
             for count, row in enumerate(device_import):
                 if row['serial_number'].startswith('#'):
                     continue
                 LOG.info('Processing row: {0}...'.format(count))
-                for key in fieldnames:
-                    if not row[key]:
-                        del row[key]
+
+                row = check_null_fields(row, field_names)
                 LOG.debug(json.dumps(row, indent=4, sort_keys=True))
+
                 resp = create_physical_device(args, client, device=row)
                 LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
+
                 try:
                     resp['http_status']['row'] = row
                     resp['http_status']['row_number'] = count
@@ -241,12 +242,21 @@ def import_physical_device(args, client):
             overall_exit = 1
             LOG.error('The following rows were unable to be processed:')
             for fail in failures:
-                LOG.error('  Row: {0} Data: {1} Error: {2}'.format(fail['row_number'],
-                                                                   fail['row'],
-                                                                   fail['message'],))
+                LOG.error('    Row: {0} Data: {1} Error: {2}'.format(fail['row_number'],
+                                                                     fail['row'],
+                                                                     fail['message'],))
 
         LOG.info('physical_device import complete')
         sys.exit(overall_exit)
 
     except IOError as ex:
         LOG.error(ex)
+
+def check_null_fields(row, field_names):
+    '''Checks for keys will null values and removes them. This allows the API
+    to return appropriate errors for keys that require a value.'''
+
+    for key in field_names:
+        if not row[key]:
+            del row[key]
+    return row
