@@ -22,6 +22,7 @@ line.
 #
 from __future__ import print_function
 import logging
+import sys
 import csv
 import json
 from arsenalclient.cli.common import (
@@ -170,10 +171,10 @@ def create_physical_device(args, client, device=None):
                       'like to update it?'.format(resp['serial_number']),
                       args.answer_yes):
 
-            client.physical_devices.update(device)
+            return client.physical_devices.update(device)
 
     except NoResultFound:
-        client.physical_devices.create(device)
+        return client.physical_devices.create(device)
 
 def delete_physical_device(args, client):
     '''Delete an existing physical_device.'''
@@ -199,9 +200,12 @@ def delete_physical_device(args, client):
 def import_physical_device(args, client):
     '''Import physical_devices from a csv file.'''
 
+    LOG.info('Beginning physical_device import from file: {0}'.format(args.physical_device_import))
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
+    failures = []
+    overall_exit = 0
     try:
         with open(args.physical_device_import) as csv_file:
             fieldnames = [
@@ -216,15 +220,33 @@ def import_physical_device(args, client):
                 'oob_mac_address',
             ]
             device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=fieldnames)
-            for row in device_import:
+            for count, row in enumerate(device_import):
                 if row['serial_number'].startswith('#'):
                     continue
-                if len(row) != 9:
-                    LOG.error('Row is missing fields: {0}'.format(row))
-                    LOG.error('Fields are           : {0}'.format(fieldnames))
-                    continue
-                LOG.info(json.dumps(row, indent=4, sort_keys=True))
-                create_physical_device(args, client, device=row)
+                LOG.info('Processing row: {0}...'.format(count))
+                for key in fieldnames:
+                    if not row[key]:
+                        del row[key]
+                LOG.debug(json.dumps(row, indent=4, sort_keys=True))
+                resp = create_physical_device(args, client, device=row)
+                LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
+                try:
+                    resp['http_status']['row'] = row
+                    resp['http_status']['row_number'] = count
+                    failures.append(resp['http_status'])
+                except KeyError:
+                    pass
+
+        if failures:
+            overall_exit = 1
+            LOG.error('The following rows were unable to be processed:')
+            for fail in failures:
+                LOG.error('  Row: {0} Data: {1} Error: {2}'.format(fail['row_number'],
+                                                                   fail['row'],
+                                                                   fail['message'],))
+
+        LOG.info('physical_device import complete')
+        sys.exit(overall_exit)
 
     except IOError as ex:
         LOG.error(ex)
