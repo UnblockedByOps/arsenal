@@ -28,7 +28,6 @@ from arsenalclient.cli.common import (
     check_resp,
     parse_cli_args,
     print_results,
-    update_object_fields,
     )
 from arsenalclient.exceptions import NoResultFound
 
@@ -139,13 +138,23 @@ def search_physical_locations(args, client):
 def create_physical_location(args, client):
     '''Create a new physical_location.'''
 
+    location = {
+        'name': args.physical_location_name,
+        'address_1': args.physical_location_address_1,
+        'address_2': args.physical_location_address_2,
+        'city': args.physical_location_city,
+        'admin_area': args.physical_location_admin_area,
+        'status': args.physical_location_status,
+        'contact_name': args.physical_location_contact_name,
+        'country': args.physical_location_country,
+        'phone_number': args.physical_location_phone_number,
+        'postal_code': args.physical_location_postal_code,
+        'provider': args.physical_location_provider,
+    }
+
     LOG.info('Checking if physical_location name exists: {0}'.format(args.physical_location_name))
 
     try:
-        loc_fields = update_object_fields(args,
-                                          'physical_location',
-                                          vars(args),
-                                          UPDATE_FIELDS)
 
         resp = client.physical_locations.get_by_name(args.physical_location_name)
 
@@ -153,12 +162,10 @@ def create_physical_location(args, client):
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_locations.update(name=args.physical_location_name,
-                                             **loc_fields)
+            client.physical_locations.update(location)
 
     except NoResultFound:
-        client.physical_locations.create(name=args.physical_location_name,
-                                         **loc_fields)
+        client.physical_locations.create(location)
 
 def delete_physical_location(args, client):
     '''Delete an existing physical_location.'''

@@ -63,6 +63,9 @@ def parser_physical_locations(top_parser, otsp):
     # physical_locations update action argument group (uaag)
     uaag = ssc.add_argument_group('Update Actions')
 
+    uaag.add_argument('--name', '-n',
+                      dest='physical_location_name',
+                      help='physical_location_name to create.')
     uaag.add_argument('-a1',
                       '--address-1',
                       dest='physical_location_address_1',
@@ -82,7 +85,7 @@ def parser_physical_locations(top_parser, otsp):
     uaag.add_argument('--status',
                       dest='physical_location_status',
                       help='status to assign to the search results.')
-    uaag.add_argument('-n',
+    uaag.add_argument('-t',
                       '--contact-name',
                       dest='physical_location_contact_name',
                       help='Update physical_location contact name.')
@@ -133,6 +136,46 @@ def parser_physical_locations(top_parser, otsp):
                       required=True,
                       dest='physical_location_name',
                       help='physical_location_name to create.')
+    rcag.add_argument('-a1',
+                      '--address-1',
+                      dest='physical_location_address_1',
+                      help='Update physical_location address 1.')
+    rcag.add_argument('-a2',
+                      '--address-2',
+                      dest='physical_location_address_2',
+                      help='Update physical_location address 2.')
+    rcag.add_argument('-c',
+                      '--city',
+                      dest='physical_location_city',
+                      help='Update physical_location city.')
+    rcag.add_argument('-s',
+                      '--state',
+                      dest='physical_location_admin_area',
+                      help='Update physical_location state.')
+    rcag.add_argument('--status',
+                      dest='physical_location_status',
+                      help='status to assign to the search results.')
+    rcag.add_argument('-t',
+                      '--contact-name',
+                      dest='physical_location_contact_name',
+                      help='Update physical_location contact name.')
+    rcag.add_argument('-C',
+                      '--country',
+                      dest='physical_location_country',
+                      help='Update physical_location country.')
+    rcag.add_argument('-P',
+                      '--phone-number',
+                      dest='physical_location_phone_number',
+                      help='Update physical_location contact phone number.')
+    rcag.add_argument('-p',
+                      '--postal-code',
+                      dest='physical_location_postal_code',
+                      help='Update physical_location postal code.')
+    rcag.add_argument('-r',
+                      '--provider',
+                      dest='physical_location_provider',
+                      help='Update physical_location provider.')
+
     rcag.set_defaults(func=create_physical_location)
 
     # physical_locations delete subcommand (dsc)
