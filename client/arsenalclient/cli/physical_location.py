@@ -30,6 +30,7 @@ from arsenalclient.cli.common import (
     print_results,
     update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
@@ -140,13 +141,14 @@ def create_physical_location(args, client):
 
     LOG.info('Checking if physical_location name exists: {0}'.format(args.physical_location_name))
 
-    resp = client.physical_locations.get_by_name(args.physical_location_name)
+    try:
+        resp = client.physical_locations.get_by_name(args.physical_location_name)
 
-    loc_fields = update_object_fields(args,
-                                      'physical_location',
-                                      vars(args),
-                                      UPDATE_FIELDS)
-    if resp:
+        loc_fields = update_object_fields(args,
+                                          'physical_location',
+                                          vars(args),
+                                          UPDATE_FIELDS)
+
         if ask_yes_no('Entry already exists for physical_location name: {0}\n Would you ' \
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
@@ -154,7 +156,7 @@ def create_physical_location(args, client):
             client.physical_locations.update(name=args.physical_location_name,
                                              **loc_fields)
 
-    else:
+    except NoResultFound:
         client.physical_locations.create(name=args.physical_location_name,
                                          **loc_fields)
 
