@@ -1,4 +1,4 @@
-'''Arsenal data_centers UI'''
+'''Arsenal physical_locations UI'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,30 +26,30 @@ from arsenalweb.views import (
 LOG = logging.getLogger(__name__)
 
 
-@view_config(route_name='data_center', permission='view', renderer='arsenalweb:templates/data_center.pt')
-def view_data_center(request):
-    '''Handle requests for data_center UI route.'''
+@view_config(route_name='physical_location', permission='view', renderer='arsenalweb:templates/physical_location.pt')
+def view_physical_location(request):
+    '''Handle requests for physical_location UI route.'''
 
     page_title_type = 'objects/'
-    page_title_name = 'data_center'
+    page_title_name = 'physical_location'
     auth_user = get_authenticated_user(request)
 
-    uri = '/api/data_centers/{0}'.format(request.matchdict['id'])
-    data_center = _api_get(request, uri)
+    uri = '/api/physical_locations/{0}'.format(request.matchdict['id'])
+    physical_location = _api_get(request, uri)
 
     return {
         'au': auth_user,
-        'data_center': data_center['results'][0],
+        'physical_location': physical_location['results'][0],
         'page_title_name': page_title_name,
         'page_title_type': page_title_type,
     }
 
-@view_config(route_name='data_centers', permission='view', renderer='arsenalweb:templates/data_centers.pt')
-def view_data_centers(request):
-    '''Handle requests for data_centers UI route.'''
+@view_config(route_name='physical_locations', permission='view', renderer='arsenalweb:templates/physical_locations.pt')
+def view_physical_locations(request):
+    '''Handle requests for physical_locations UI route.'''
 
     page_title_type = 'objects/'
-    page_title_name = 'data_centers'
+    page_title_name = 'physical_locations'
     auth_user = get_authenticated_user(request)
     (perpage, offset) = get_pag_params(request)
 
@@ -63,25 +63,27 @@ def view_data_centers(request):
 
     payload['perpage'] = perpage
 
-    uri = '/api/data_centers'
+    uri = '/api/physical_locations'
     LOG.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
 
     resp = _api_get(request, uri, payload)
 
     total = 0
-    data_centers = []
+    physical_locations = []
 
     if resp:
         total = resp['meta']['total']
-        data_centers = resp['results']
+        physical_locations = resp['results']
 
     nav_urls = get_nav_urls(request.path, offset, perpage, total, payload)
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [
+        {'name': 'contact_name', 'pretty_name': 'DC Contact'},
         {'name': 'created', 'pretty_name': 'Date Created'},
         {'name': 'name', 'pretty_name': 'Name'},
-        {'name': 'status', 'pretty_name': 'Status'},
+        {'name': 'phone_number', 'pretty_name': 'DC Phone Number'},
+        {'name': 'provider', 'pretty_name': 'DC Provider'},
         {'name': 'updated', 'pretty_name': 'Date Updated'},
         {'name': 'updated_by', 'pretty_name': 'Updated By'},
     ]
@@ -91,7 +93,7 @@ def view_data_centers(request):
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,
-        'data_centers': data_centers,
+        'physical_locations': physical_locations,
         'offset': offset,
         'page_title_name': page_title_name,
         'page_title_type': page_title_type,

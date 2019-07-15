@@ -33,9 +33,9 @@
   </head>
   <body>
     
-    <div tal:condition="data_center">
+    <div tal:condition="physical_location">
       <div id="page_title_s">
-        <span class="page_title_type_s">objects/data_center/</span> <span class="page_title_name_s">${data_center.name}</span>
+        <span class="page_title_type_s">objects/physical_location/</span> <span class="page_title_name_s">${physical_location.name}</span>
       </div>
     
       <ul class="tabs">
@@ -45,38 +45,48 @@
           <div id="tab-content1" class="tab-content">
             <table>
                 <tr>
-                    <td>ID</td><td><span class="mono">${data_center.id}</span></td>
+                    <td>ID</td><td><span class="mono">${physical_location.id}</span></td>
                 </tr>
                 <tr>
-                    <td>Name</td><td><span class="mono">${data_center.name}</span></td>
+                    <td>Name</td><td><span class="mono">${physical_location.name}</span></td>
                 </tr>
                 <tr>
-                    <td>Status</td><td><span class="mono">${data_center.status['name']}</span></td>
+                    <td>Provider</td><td><span class="mono">${physical_location.provider}</span></td>
                 </tr>
                 <tr>
-                    <td>Created At</td><td><span class="mono">${data_center.created}</span></td>
+                    <td>Contact</td><td><span class="mono">${physical_location.contact_name}</span></td>
                 </tr>
                 <tr>
-                    <td>Updated At</td><td><span class="mono">${data_center.updated}</span></td>
+                    <td>Phone Number</td><td><span class="mono">${physical_location.phone_number}</span></td>
                 </tr>
                 <tr>
-                    <td>Updated By</td><td><span class="mono">${data_center.updated_by}</span></td>
+                    <td>Address 1</td><td><span class="mono">${physical_location.address_1}</span></td>
+                </tr>
+                <tr>
+                    <td>Address 2</td><td><span class="mono">${physical_location.address_2}</span></td>
+                </tr>
+                <tr>
+                    <td>City</td><td><span class="mono">${physical_location.city}</span></td>
+                </tr>
+                <tr>
+                    <td>State</td><td><span class="mono">${physical_location.admin_area}</span></td>
+                </tr>
+                <tr>
+                    <td>Zip Code</td><td><span class="mono">${physical_location.postal_code}</span></td>
+                </tr>
+                <tr>
+                    <td>Country</td><td><span class="mono">${physical_location.country}</span></td>
+                </tr>
+                <tr>
+                    <td>Created At</td><td><span class="mono">${physical_location.created}</span></td>
+                </tr>
+                <tr>
+                    <td>Updated At</td><td><span class="mono">${physical_location.updated}</span></td>
+                </tr>
+                <tr>
+                    <td>Updated By</td><td><span class="mono">${physical_location.updated_by}</span></td>
                 </tr>
             </table>
-          </div>
-        </li>
-        <li>
-          <input type="radio" name="tabs" id="tab2">
-          <label for="tab2">Tags</label>
-          <div id="tab-content2" class="tab-content">
-              <table>
-                <tr tal:repeat="tag data_center.tags">
-                    <td>${tag['name']}</td> <td><span class="mono">${tag['value']}</span></td>
-                </tr>
-              </table>
-              <div tal:condition="not data_center.tags">
-                  <span class="mono">No tags for data_center.</span>
-              </div>
           </div>
         </li>
         <li>
@@ -84,16 +94,16 @@
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
               <div id="history_insert">
-              	<a class="show_history" tal:attributes="href '/data_centers_audit/{0}'.format(data_center.id)">Show history for this data center</a>
+              	<a class="show_history" tal:attributes="href '/physical_locations_audit/{0}'.format(physical_location.id)">Show history for this data center</a>
               </div>
           </div>
         </li>
       </ul>
     </div>
     
-    <div tal:condition="not data_center">
+    <div tal:condition="not physical_location">
       <div id="page_title_s">
-        <span class="page_title_type_s">objects/data_center/</span> <span class="page_title_name_s">Not Found</span>
+        <span class="page_title_type_s">objects/physical_location/</span> <span class="page_title_name_s">Not Found</span>
       </div>
     </div>
 
