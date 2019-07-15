@@ -28,6 +28,7 @@ from arsenalclient.cli.common import (
     check_resp,
     parse_cli_args,
     print_results,
+    update_object_fields,
     )
 from arsenalclient.exceptions import NoResultFound
 
@@ -86,6 +87,17 @@ def process_actions(args, client, results):
             for tag in tags:
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physical_locations', results)
+
+    if any(getattr(args, key) for key in UPDATE_FIELDS):
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            for physical_location in results:
+                pl_update = update_object_fields(args,
+                                                 'physical_location',
+                                                 physical_location,
+                                                 UPDATE_FIELDS)
+
+                client.physical_locations.update(pl_update)
 
     return resp
 
