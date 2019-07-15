@@ -282,6 +282,25 @@ validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --field
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Like a bear, it hibernates.'" 0
 validate_command "${search_cmd} statuses search name=hibernating --fields all --exact" 0 "string" "description: Like a bear, it hibernates."
 #
+# physical_locations
+#
+validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_1" 0
+validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_2" 0
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
+
+#
+# physical_racks
+
+#
+#
+# physical_elevations
+#
+
+#
+# physical_devices
+#
+
+#
 # Clean up
 #
 validate_command "${rw_cmd} nodes delete --name fopd-TEST8675.internal" 0
