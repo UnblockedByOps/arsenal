@@ -188,14 +188,9 @@ def delete_physical_location(args, client):
     results = client.physical_locations.get_by_name(args.physical_location_name)
 
     if results:
-        r_names = []
-        for physical_locations in results:
-            r_names.append(physical_locations['name'])
-
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n Continue?'.format(args.object_type, results['name'])
 
         if ask_yes_no(msg, args.answer_yes):
-            for physical_location in results:
-                resp = client.physical_locations.delete(physical_location)
-                check_resp(resp)
+            resp = client.physical_locations.delete(results)
+            check_resp(resp)
