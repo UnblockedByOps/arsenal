@@ -83,7 +83,7 @@ def create_physical_location(name=None,
     '''
 
     try:
-        LOG.info('Creating new physical_location name: {1}'.format(name))
+        LOG.info('Creating new physical_location name: {0}'.format(name))
 
         utcnow = datetime.utcnow()
 

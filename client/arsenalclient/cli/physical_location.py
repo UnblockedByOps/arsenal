@@ -30,6 +30,7 @@ from arsenalclient.cli.common import (
     print_results,
     update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
@@ -87,6 +88,17 @@ def process_actions(args, client, results):
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physical_locations', results)
 
+    if any(getattr(args, key) for key in UPDATE_FIELDS):
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            for physical_location in results:
+                pl_update = update_object_fields(args,
+                                                 'physical_location',
+                                                 physical_location,
+                                                 UPDATE_FIELDS)
+
+                client.physical_locations.update(pl_update)
+
     return resp
 
 def search_physical_locations(args, client):
@@ -138,25 +150,34 @@ def search_physical_locations(args, client):
 def create_physical_location(args, client):
     '''Create a new physical_location.'''
 
+    location = {
+        'name': args.physical_location_name,
+        'address_1': args.physical_location_address_1,
+        'address_2': args.physical_location_address_2,
+        'city': args.physical_location_city,
+        'admin_area': args.physical_location_admin_area,
+        'status': args.physical_location_status,
+        'contact_name': args.physical_location_contact_name,
+        'country': args.physical_location_country,
+        'phone_number': args.physical_location_phone_number,
+        'postal_code': args.physical_location_postal_code,
+        'provider': args.physical_location_provider,
+    }
+
     LOG.info('Checking if physical_location name exists: {0}'.format(args.physical_location_name))
 
-    resp = client.physical_locations.get_by_name(args.physical_location_name)
+    try:
 
-    loc_fields = update_object_fields(args,
-                                      'physical_location',
-                                      vars(args),
-                                      UPDATE_FIELDS)
-    if resp:
+        resp = client.physical_locations.get_by_name(args.physical_location_name)
+
         if ask_yes_no('Entry already exists for physical_location name: {0}\n Would you ' \
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_locations.update(name=args.physical_location_name,
-                                             **loc_fields)
+            client.physical_locations.update(location)
 
-    else:
-        client.physical_locations.create(name=args.physical_location_name,
-                                         **loc_fields)
+    except NoResultFound:
+        client.physical_locations.create(location)
 
 def delete_physical_location(args, client):
     '''Delete an existing physical_location.'''
