@@ -52,8 +52,7 @@ def find_physical_rack_by_name_loc(name, physical_location_id):
 
     physical_rack = DBSession.query(PhysicalRack)
     physical_rack = physical_rack.filter(PhysicalRack.name == name)
-    physical_rack = physical_rack.filter(PhysicalRack.physical_location_id ==
-                                         physical_location_id)
+    physical_rack = physical_rack.filter(PhysicalRack.physical_location_id == physical_location_id)
 
     return physical_rack.one()
 
