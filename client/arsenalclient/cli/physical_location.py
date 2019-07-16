@@ -173,10 +173,12 @@ def create_physical_location(args, client):
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_locations.update(location)
+            resp = client.physical_locations.update(location)
+            check_resp(resp)
 
     except NoResultFound:
-        client.physical_locations.create(location)
+        resp = client.physical_locations.create(location)
+        check_resp(resp)
 
 def delete_physical_location(args, client):
     '''Delete an existing physical_location.'''

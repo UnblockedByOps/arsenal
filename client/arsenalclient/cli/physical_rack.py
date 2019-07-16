@@ -157,10 +157,12 @@ def create_physical_rack(args, client):
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_racks.update(device)
+            resp = client.physical_racks.update(device)
+            check_resp(resp)
 
     except NoResultFound:
-        client.physical_racks.create(device)
+        resp = client.physical_racks.create(device)
+        check_resp(resp)
 
 def delete_physical_rack(args, client):
     '''Delete an existing physical_rack.'''

@@ -21,6 +21,7 @@ from arsenalweb.views import (
     get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
+    api_200,
     api_400,
     api_500,
     api_501,
@@ -107,7 +108,8 @@ def create_physical_rack(name=None,
         DBSession.add(audit)
         DBSession.flush()
 
-        return physical_rack
+        return api_200(results=physical_rack)
+
     except Exception as ex:
         msg = 'Error creating new physical_rack name: {0} exception: ' \
               '{1}'.format(name, ex)
@@ -165,7 +167,7 @@ def update_physical_rack(physical_rack, **kwargs):
 
         DBSession.flush()
 
-        return physical_rack
+        return api_200(results=physical_rack)
 
     except Exception as ex:
         msg = 'Error updating physical_rack name: {0} updated_by: {1} exception: ' \
