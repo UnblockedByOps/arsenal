@@ -930,6 +930,9 @@ def api_delete_by_id(request):
             'Tag': [
                 'name',
             ],
+            'PhysicalLocation': [
+                'name',
+            ],
         }
 
         utcnow = datetime.utcnow()

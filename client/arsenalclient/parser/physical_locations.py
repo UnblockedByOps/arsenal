@@ -82,9 +82,6 @@ def parser_physical_locations(top_parser, otsp):
                       '--state',
                       dest='physical_location_admin_area',
                       help='Update physical_location state.')
-    uaag.add_argument('--status',
-                      dest='physical_location_status',
-                      help='status to assign to the search results.')
     uaag.add_argument('-t',
                       '--contact-name',
                       dest='physical_location_contact_name',
@@ -152,9 +149,6 @@ def parser_physical_locations(top_parser, otsp):
                       '--state',
                       dest='physical_location_admin_area',
                       help='Update physical_location state.')
-    rcag.add_argument('--status',
-                      dest='physical_location_status',
-                      help='status to assign to the search results.')
     rcag.add_argument('-t',
                       '--contact-name',
                       dest='physical_location_contact_name',

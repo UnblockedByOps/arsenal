@@ -285,7 +285,7 @@ validate_command "${search_cmd} statuses search name=hibernating --fields all --
 # physical_locations
 #
 validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_1" 0
-validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_2 -s CA" 0
+validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_2 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'" 0
 validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
 
 #
