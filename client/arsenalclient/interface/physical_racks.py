@@ -1,6 +1,7 @@
 '''Arsenal client PhysicalRacks class.'''
 import logging
 from arsenalclient.interface.arsenal_interface import ArsenalInterface
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -111,5 +112,28 @@ class PhysicalRacks(ArsenalInterface):
     # Custom methods
     def get_by_name_location(self, name, location):
         '''Get a single physical_rack by it's name and location.'''
-        # TBD, not sure if we need this yet.
-        pass
+
+        LOG.debug('Searching for physical_rack by name: {0} location: {1}'.format(name,
+                                                                                  location))
+        data = {
+            'name': name,
+            'physical_location.name': location,
+        }
+
+        resp = self.api_conn('/api/physical_racks', data, log_success=False)
+        LOG.debug('Results are: {0}'.format(resp))
+
+        try:
+            resource = resp['results'][0]
+        except IndexError:
+            msg = 'Physical Rack not found, name: {0} location: {1}'.format(name,
+                                                                            location)
+            LOG.info(msg)
+            raise NoResultFound(msg)
+        if len(resp['results']) > 1:
+            msg = 'More than one result found, name: {0} location: {1}'.format(name,
+                                                                               location)
+            LOG.error(msg)
+            raise RuntimeError(msg)
+
+        return resource

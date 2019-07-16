@@ -21,9 +21,7 @@ from arsenalweb.views import (
     get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
-    api_200,
     api_400,
-    api_404,
     api_500,
     api_501,
     collect_params,
@@ -213,11 +211,11 @@ def api_physical_locations_write(request):
 
         try:
             physical_location = find_physical_location_by_name(params['name'])
-            update_physical_location(physical_location, **params)
+            resp = update_physical_location(physical_location, **params)
         except NoResultFound:
-            physical_location = create_physical_location(**params)
+            resp = create_physical_location(**params)
 
-        return physical_location
+        return resp
 
     except Exception as ex:
         msg = 'Error writing to physical_locations API: {0} exception: {1}'.format(request.url, ex)

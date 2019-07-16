@@ -35,7 +35,7 @@ from arsenalweb.views.api.physical_locations import (
     find_physical_location_by_name,
     )
 from arsenalweb.views.api.physical_racks import (
-    find_physical_rack_by_name,
+    find_physical_rack_by_name_loc,
     )
 from arsenalweb.views.api.physical_elevations import (
     find_physical_elevation_by_elevation,
@@ -227,8 +227,8 @@ def convert_names_to_ids(params):
                 raise NoResultFound(msg)
         if params['physical_rack']:
             try:
-                physical_rack = find_physical_rack_by_name(params['physical_rack'],
-                                                           params['physical_location_id'])
+                physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
+                                                               params['physical_location'])
                 params['physical_rack_id'] = physical_rack.id
                 del params['physical_rack']
             except NoResultFound:
