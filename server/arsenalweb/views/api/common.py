@@ -197,9 +197,11 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
             LOG.debug('Working on param: {0}'.format(param))
             try:
                 resp[param] = payload[param].rstrip()
+                LOG.debug('  is a string')
             # Handle integers
             except AttributeError:
                 resp[param] = payload[param]
+                LOG.debug('  is an int')
             except KeyError:
                 msg = 'Required parameter: {0} missing from request!'.format(param)
                 raise KeyError(msg)
@@ -208,9 +210,11 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
             LOG.debug('Working on param: {0}'.format(param))
             try:
                 resp[param] = payload[param].rstrip()
+                LOG.debug('  is a string')
             # Handle integers
             except AttributeError:
                 resp[param] = payload[param]
+                LOG.debug('  is an int')
             except KeyError:
                 resp[param] = None
                 msg = 'Optional parameter: {0} missing from request. Setting ' \

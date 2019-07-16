@@ -40,6 +40,10 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 LOG = logging.getLogger(__name__)
 
+INT_AS_STRING = [
+    'postal_code',
+]
+
 
 # Many to many association tables.
 hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
@@ -148,10 +152,15 @@ def jsonify(obj):
         if param.startswith('_'):
             continue
         try:
-            try:
-                p_type = int(getattr(obj, param))
-            except (ValueError, TypeError):
-                p_type = getattr(obj, param)
+            if param in INT_AS_STRING:
+                LOG.debug('Treating int as string for param: {0}'.format(param))
+                p_type = obj.get(param)
+                LOG.debug('    value: {0}'.format(p_type))
+            else:
+                try:
+                    p_type = int(getattr(obj, param))
+                except (ValueError, TypeError):
+                    p_type = getattr(obj, param)
         except AttributeError:
             try:
                 p_type = int(obj.get(param))
