@@ -44,7 +44,7 @@ LOG = logging.getLogger(__name__)
 
 # Functions
 def find_physical_rack_by_name_loc(name, physical_location_id):
-    '''Find a physical_rack by name and physical_location. Returns
+    '''Find a physical_rack by name and physical_location_id. Returns
     a physical_rack object if found, raises NoResultFound otherwise.'''
 
     LOG.debug('Searching for physical_rack by name: {0} '
