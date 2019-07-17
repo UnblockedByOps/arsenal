@@ -1,6 +1,7 @@
 '''Arsenal client PhysicalElevations class.'''
 import logging
 from arsenalclient.interface.arsenal_interface import ArsenalInterface
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -119,7 +120,32 @@ class PhysicalElevations(ArsenalInterface):
         pass
 
     # Custom methods
-    def get_by_loc_rack_el(self, name, location):
+    def get_by_loc_rack_el(self, location, rack, elevation):
         '''Get a single physical_elevation by it's elevation, location and rack.'''
-        # TBD, not sure if we need this yet.
-        pass
+
+        LOG.debug('Searching for physical_elevation by location: {0} '
+                  'rack: {1} elevation: {2}'.format(location, rack, elevation))
+
+        data = {
+            'physical_location': location,
+            'physical_rack': rack,
+            'elevation': elevation,
+        }
+
+        resp = self.api_conn('/api/physical_elevations', data, log_success=False)
+        LOG.debug('Results are: {0}'.format(resp))
+
+        try:
+            resource = resp['results'][0]
+        except IndexError:
+            msg = 'Physical Elevation not found, location: {0} rack: {1} ' \
+                   'elevation: {2}'.format(location, rack, elevation)
+            LOG.info(msg)
+            raise NoResultFound(msg)
+        if len(resp['results']) > 1:
+            msg = 'More than one result found, location: {0} rack: {1} ' \
+                   'elevation: {2}'.format(location, rack, elevation)
+            LOG.error(msg)
+            raise RuntimeError(msg)
+
+        return resource

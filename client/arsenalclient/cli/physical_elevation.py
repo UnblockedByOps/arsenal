@@ -116,25 +116,30 @@ def search_physical_elevations(args, client):
 def create_physical_elevation(args, client):
     '''Create a new physical_elevation.'''
 
-    LOG.info('Checking if physical_elevation name exists: {0}'.format(args.name))
+    LOG.info('Checking if physical_elevation name exists: {0}'.format(args.physical_elevation))
 
     device = {
-        'name': args.name,
+        'elevation': args.physical_elevation,
         'physical_location': args.physical_location,
+        'physical_rack': args.physical_rack,
     }
 
     try:
 
-        resp = client.physical_elevations.get_by_name(args.name)
+        resp = client.physical_elevations.get_by_loc_rack_el(args.physical_location,
+                                                             args.physical_rack,
+                                                             args.physical_elevation)
 
         if ask_yes_no('Entry already exists for physical_elevation name: {0}\n Would you ' \
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_elevations.update(device)
+            resp = client.physical_elevations.update(device)
+            check_resp(resp)
 
     except NoResultFound:
-        client.physical_elevations.create(device)
+        resp = client.physical_elevations.create(device)
+        check_resp(resp)
 
 def delete_physical_elevation(args, client):
     '''Delete an existing physical_elevation.'''
