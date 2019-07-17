@@ -141,7 +141,6 @@ class Tags(ArsenalInterface):
                 LOG.debug('Tag not found, nothing to do.')
                 return
             else:
-                LOG.info('Creating tag...')
                 params = {
                     'name': name,
                     'value': value,
