@@ -290,8 +290,11 @@ validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION,admin_a
 validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 # physical_racks
-
 #
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
+validate_command "${search_cmd} physical_racks search name=r10,sphysical_locations.name=TEST_LOCATION_1" 0
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
 # physical_elevations
 #
