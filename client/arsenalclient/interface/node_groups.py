@@ -99,7 +99,6 @@ class NodeGroups(ArsenalInterface):
         >>> NodeGroups.delete(params)
         '''
 
-        LOG.info('Deleting node_group name: {0}'.format(params['name']))
         return super(NodeGroups, self).delete(params)
 
     def get_audit_history(self, results):

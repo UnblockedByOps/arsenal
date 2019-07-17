@@ -293,7 +293,7 @@ validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
-validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1" 0
+validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "2"
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
 # physical_elevations
@@ -303,13 +303,13 @@ validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R10
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 3" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 4" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 5" 0
-validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0
+validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0 "string" "name: TEST_LOCATION_1"
 #
 # physical_devices
 #
 validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l 'TEST_LOCATION_1' -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
-validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l 'TEST_LOCATION_1' -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1
+validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l 'TEST_LOCATION_1' -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physcial elevation is already occupied, move the existing physical_device first."
 #
 # Clean up
 #

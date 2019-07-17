@@ -94,8 +94,6 @@ class Statuses(ArsenalInterface):
         >>> Statuses.delete(params)
         '''
 
-        LOG.info('Deleting status id: {0} name: {1}'.format(params['id'],
-                                                            params['name']))
         return super(Statuses, self).delete(params)
 
     def get_audit_history(self, results):

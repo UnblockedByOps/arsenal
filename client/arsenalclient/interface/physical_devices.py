@@ -97,7 +97,6 @@ class PhysicalDevices(ArsenalInterface):
         >>> PhysicalDevices.delete(params)
         '''
 
-        LOG.info('Deleting physical_device serial_number: {0}'.format(params['serial_number']))
         return super(PhysicalDevices, self).delete(params)
 
     def get_audit_history(self, results):

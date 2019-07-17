@@ -95,7 +95,6 @@ class PhysicalRacks(ArsenalInterface):
         >>> PhysicalRacks.delete(params)
         '''
 
-        LOG.info('Deleting physical_rack name: {0}'.format(params['name']))
         return super(PhysicalRacks, self).delete(params)
 
     def get_audit_history(self, results):

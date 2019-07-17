@@ -79,8 +79,6 @@ class Tags(ArsenalInterface):
         >>> Tags.delete(params)
         '''
 
-        LOG.info('Deleting tag name: {0} value: {1}'.format(params['name'],
-                                                            params['value']))
         return super(Tags, self).delete(params)
 
     def get_audit_history(self, results):
@@ -143,7 +141,6 @@ class Tags(ArsenalInterface):
                 LOG.debug('Tag not found, nothing to do.')
                 return
             else:
-                LOG.info('Creating tag...')
                 params = {
                     'name': name,
                     'value': value,
