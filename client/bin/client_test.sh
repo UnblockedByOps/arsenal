@@ -293,7 +293,7 @@ validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
-validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1" 0
+validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1 -f all" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
 # physical_elevations
@@ -303,7 +303,7 @@ validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R10
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 3" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 4" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 5" 0
-validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0
+validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0 "string" "name: TEST_LOCATION_1"
 #
 # physical_devices
 #
