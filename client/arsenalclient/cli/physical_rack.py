@@ -140,7 +140,8 @@ def search_physical_racks(args, client):
 def create_physical_rack(args, client):
     '''Create a new physical_rack.'''
 
-    LOG.info('Checking if physical_rack name exists: {0}'.format(args.name))
+    LOG.info('Checking if physical_rack exists name: {0} physical_location: '
+             '{1}'.format(args.name, args.physical_location))
 
     device = {
         'name': args.name,
@@ -149,16 +150,19 @@ def create_physical_rack(args, client):
 
     try:
 
-        resp = client.physical_racks.get_by_name(args.name)
+        resp = client.physical_racks.get_by_name_location(args.name,
+                                                          args.physical_location)
 
         if ask_yes_no('Entry already exists for physical_rack name: {0}\n Would you ' \
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_racks.update(device)
+            resp = client.physical_racks.update(device)
+            check_resp(resp)
 
     except NoResultFound:
-        client.physical_racks.create(device)
+        resp = client.physical_racks.create(device)
+        check_resp(resp)
 
 def delete_physical_rack(args, client):
     '''Delete an existing physical_rack.'''

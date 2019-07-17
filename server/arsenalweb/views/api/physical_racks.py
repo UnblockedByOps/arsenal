@@ -23,10 +23,12 @@ from arsenalweb.views import (
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
-    api_404,
     api_500,
     api_501,
     collect_params,
+    )
+from arsenalweb.views.api.physical_locations import (
+    find_physical_location_by_name,
     )
 from arsenalweb.models.common import (
     DBSession,
@@ -36,16 +38,18 @@ from arsenalweb.models.physical_racks import (
     PhysicalRackAudit,
     )
 
+
 LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_physical_rack_by_name(name, physical_location_id):
+def find_physical_rack_by_name_loc(name, physical_location_id):
     '''Find a physical_rack by name and physical_location_id. Returns
     a physical_rack object if found, raises NoResultFound otherwise.'''
 
     LOG.debug('Searching for physical_rack by name: {0} '
               'physical_location_id: {1}'.format(name, physical_location_id))
+
     physical_rack = DBSession.query(PhysicalRack)
     physical_rack = physical_rack.filter(PhysicalRack.name == name)
     physical_rack = physical_rack.filter(PhysicalRack.physical_location_id == physical_location_id)
@@ -80,7 +84,7 @@ def create_physical_rack(name=None,
     '''
 
     try:
-        LOG.info('Creating new physical_rack name: {1}'.format(name))
+        LOG.info('Creating new physical_rack name: {0}'.format(name))
 
         utcnow = datetime.utcnow()
 
@@ -103,7 +107,8 @@ def create_physical_rack(name=None,
         DBSession.add(audit)
         DBSession.flush()
 
-        return physical_rack
+        return api_200(results=physical_rack)
+
     except Exception as ex:
         msg = 'Error creating new physical_rack name: {0} exception: ' \
               '{1}'.format(name, ex)
@@ -161,7 +166,7 @@ def update_physical_rack(physical_rack, **kwargs):
 
         DBSession.flush()
 
-        return physical_rack
+        return api_200(results=physical_rack)
 
     except Exception as ex:
         msg = 'Error updating physical_rack name: {0} updated_by: {1} exception: ' \
@@ -188,19 +193,28 @@ def api_physical_racks_write(request):
     try:
         req_params = [
             'name',
+            'physical_location',
         ]
-        opt_params = [
-            'physical_location_id',
-        ]
+        opt_params = []
         params = collect_params(request, req_params, opt_params)
 
         try:
-            physical_rack = find_physical_rack_by_name(params['name'])
-            update_physical_rack(physical_rack, **params)
+            physical_location = find_physical_location_by_name(params['physical_location'])
+            params['physical_location_id'] = physical_location.id
+            del params['physical_location']
+            try:
+                physical_rack = find_physical_rack_by_name_loc(params['name'],
+                                                               params['physical_location_id'])
+                resp = update_physical_rack(physical_rack, **params)
+            except NoResultFound:
+                resp = create_physical_rack(**params)
         except NoResultFound:
-            physical_rack = create_physical_rack(**params)
+            msg = 'physical_location not found: {0} unable to create ' \
+                  'rack: {1}'.format(params['physical_location'], params['name'])
+            LOG.warn(msg)
+            raise NoResultFound(msg)
 
-        return physical_rack
+        return resp
 
     except Exception as ex:
         msg = 'Error writing to physical_racks API: {0} exception: {1}'.format(request.url, ex)

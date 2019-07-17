@@ -23,7 +23,6 @@ from arsenalweb.views import (
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
-    api_404,
     api_500,
     api_501,
     collect_params,
@@ -105,7 +104,8 @@ def create_physical_location(name=None,
         DBSession.add(audit)
         DBSession.flush()
 
-        return physical_location
+        return api_200(results=physical_location)
+
     except Exception as ex:
         msg = 'Error creating new physical_location name: {0} exception: ' \
               '{1}'.format(name, ex)
@@ -170,7 +170,7 @@ def update_physical_location(physical_location, **kwargs):
 
         DBSession.flush()
 
-        return physical_location
+        return api_200(results=physical_location)
 
     except Exception as ex:
         msg = 'Error updating physical_location name: {0} updated_by: {1} exception: ' \
@@ -213,11 +213,11 @@ def api_physical_locations_write(request):
 
         try:
             physical_location = find_physical_location_by_name(params['name'])
-            update_physical_location(physical_location, **params)
+            resp = update_physical_location(physical_location, **params)
         except NoResultFound:
-            physical_location = create_physical_location(**params)
+            resp = create_physical_location(**params)
 
-        return physical_location
+        return resp
 
     except Exception as ex:
         msg = 'Error writing to physical_locations API: {0} exception: {1}'.format(request.url, ex)

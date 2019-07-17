@@ -156,7 +156,6 @@ def create_physical_location(args, client):
         'address_2': args.physical_location_address_2,
         'city': args.physical_location_city,
         'admin_area': args.physical_location_admin_area,
-        'status': args.physical_location_status,
         'contact_name': args.physical_location_contact_name,
         'country': args.physical_location_country,
         'phone_number': args.physical_location_phone_number,
@@ -174,10 +173,12 @@ def create_physical_location(args, client):
                       'like to update it?'.format(resp['name']),
                       args.answer_yes):
 
-            client.physical_locations.update(location)
+            resp = client.physical_locations.update(location)
+            check_resp(resp)
 
     except NoResultFound:
-        client.physical_locations.create(location)
+        resp = client.physical_locations.create(location)
+        check_resp(resp)
 
 def delete_physical_location(args, client):
     '''Delete an existing physical_location.'''
