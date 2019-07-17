@@ -23,10 +23,15 @@ from arsenalweb.views import (
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
-    api_404,
     api_500,
     api_501,
     collect_params,
+    )
+from arsenalweb.views.api.physical_racks import (
+    find_physical_rack_by_name_loc,
+    )
+from arsenalweb.views.api.physical_locations import (
+    find_physical_location_by_name,
     )
 from arsenalweb.models.common import (
     DBSession,
@@ -61,7 +66,7 @@ def find_physical_elevation_by_id(physical_elevation_id):
 
     return physical_elevation.one()
 
-def create_physical_elevation(name=None,
+def create_physical_elevation(elevation=None,
                               physical_rack_id=None,
                               updated_by=None,
                               **kwargs):
@@ -80,11 +85,12 @@ def create_physical_elevation(name=None,
     '''
 
     try:
-        LOG.info('Creating new physical_elevation name: {1}'.format(name))
+        LOG.info('Creating new physical_elevation name: {0} physical_rack_id: '
+                 '{1}'.format(elevation, physical_rack_id))
 
         utcnow = datetime.utcnow()
 
-        physical_elevation = PhysicalElevation(name=name,
+        physical_elevation = PhysicalElevation(elevation=elevation,
                                                physical_rack_id=physical_rack_id,
                                                updated_by=updated_by,
                                                created=utcnow,
@@ -103,10 +109,11 @@ def create_physical_elevation(name=None,
         DBSession.add(audit)
         DBSession.flush()
 
-        return physical_elevation
+        return api_200(results=physical_elevation)
+
     except Exception as ex:
-        msg = 'Error creating new physical_elevation name: {0} exception: ' \
-              '{1}'.format(name, ex)
+        msg = 'Error creating new physical_elevation elevation: {0} exception: ' \
+              '{1}'.format(elevation, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -161,7 +168,7 @@ def update_physical_elevation(physical_elevation, **kwargs):
 
         DBSession.flush()
 
-        return physical_elevation
+        return api_200(results=physical_elevation)
 
     except Exception as ex:
         msg = 'Error updating physical_elevation name: {0} updated_by: {1} exception: ' \
@@ -187,23 +194,34 @@ def api_physical_elevations_write(request):
 
     try:
         req_params = [
-            'name',
+            'elevation',
+            'physical_location',
+            'physical_rack',
         ]
-        opt_params = [
-            'physical_rack_id',
-        ]
+        opt_params = []
         params = collect_params(request, req_params, opt_params)
 
         try:
-            physical_elevation = find_physical_elevation_by_elevation(params['elevation'])
-            update_physical_elevation(physical_elevation, **params)
-        except NoResultFound:
-            physical_elevation = create_physical_elevation(**params)
+            physical_location = find_physical_location_by_name(params['physical_location'])
+            del params['physical_location']
 
-        return physical_elevation
+            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'], physical_location.id)
+            params['physical_rack_id'] = physical_rack.id
+            del params['physical_rack']
+
+            try:
+                physical_el = find_physical_elevation_by_elevation(params['elevation'],
+                                                                   params['physical_rack_id'])
+                resp = update_physical_elevation(physical_el, **params)
+            except NoResultFound:
+                resp = create_physical_elevation(**params)
+        except:
+            raise
+
+        return resp
 
     except Exception as ex:
-        msg = 'Error writing to physical_elevations API: {0} exception: {1}'.format(request.url, ex)
+        msg = 'Error writing to physical_racks API: {0} exception: {1}'.format(request.url, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
