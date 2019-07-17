@@ -316,6 +316,7 @@ CREATE TABLE `physical_devices` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 CREATE INDEX idx_physical_device_id on physical_devices (id);
 CREATE UNIQUE INDEX idx_physical_device_serial_number on physical_devices (serial_number);
+CREATE UNIQUE INDEX idx_physical_device_rack_elevation on physical_devices (physical_rack_id, physical_elevation_id);
 
 ###
 ### TABLE: statuses

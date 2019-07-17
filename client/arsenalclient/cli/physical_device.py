@@ -171,10 +171,12 @@ def create_physical_device(args, client, device=None):
                       'like to update it?'.format(resp['serial_number']),
                       args.answer_yes):
 
-            return client.physical_devices.update(device)
+            resp = client.physical_devices.update(device)
+            return check_resp(resp)
 
     except NoResultFound:
-        return client.physical_devices.create(device)
+        resp = client.physical_devices.create(device)
+        return check_resp(resp)
 
 def delete_physical_device(args, client):
     '''Delete an existing physical_device.'''
@@ -182,20 +184,17 @@ def delete_physical_device(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    results = client.physical_devices.get_by_name(args.physical_device_name)
-
-    if results:
-        r_names = []
-        for physical_devices in results:
-            r_names.append(physical_devices['name'])
+    try:
+        results = client.physical_devices.get_by_serial_number(args.physical_device_serial_number)
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n Continue?'.format(args.object_type, results['serial_number'])
 
         if ask_yes_no(msg, args.answer_yes):
-            for physical_location in results:
-                resp = client.physical_devices.delete(physical_location)
-                check_resp(resp)
+            resp = client.physical_devices.delete(results)
+            check_resp(resp)
+    except NoResultFound:
+        LOG.info('Nothing to do.')
 
 def import_physical_device(args, client):
     '''Import physical_devices from a csv file.'''
