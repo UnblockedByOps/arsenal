@@ -17,6 +17,7 @@ import logging
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 from arsenalweb.views import (
     get_authenticated_user,
     )
@@ -128,7 +129,13 @@ def create_physical_device(serial_number=None,
         DBSession.add(audit)
         DBSession.flush()
 
-        return physical_device
+        return api_200(results=physical_device)
+
+    except IntegrityError:
+        msg = 'Physcial elevation is already occupied, move the existing ' \
+              'physical_device first.'
+        LOG.error(msg)
+        raise Exception(msg)
     except Exception as ex:
         msg = 'Error creating new physical_device serial_number: {0} exception: ' \
               '{1}'.format(serial_number, ex)
@@ -192,8 +199,13 @@ def update_physical_device(physical_device, **kwargs):
 
         DBSession.flush()
 
-        return physical_device
+        return api_200(results=physical_device)
 
+    except IntegrityError:
+        msg = 'Physcial elevation is already occupied, move the existing ' \
+              'physical_device first.'
+        LOG.error(msg)
+        raise Exception(msg)
     except Exception as ex:
         msg = 'Error updating physical_device serial_number: {0} updated_by: {1} exception: ' \
               '{2}'.format(physical_device.serial_number,
@@ -206,6 +218,36 @@ def convert_names_to_ids(params):
     '''Converts nice names to ids for creating/updating a physical_device.'''
 
     try:
+        try:
+            physical_location = find_physical_location_by_name(params['physical_location'])
+            params['physical_location_id'] = physical_location.id
+            LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
+            del params['physical_location']
+        except NoResultFound:
+            msg = 'physical_location not found: {0}'.format(params['physical_location'])
+            LOG.error(msg)
+            raise NoResultFound(msg)
+
+        try:
+            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
+                                                           params['physical_location_id'])
+            params['physical_rack_id'] = physical_rack.id
+            del params['physical_rack']
+        except NoResultFound:
+            msg = 'physical_rack not found: {0}'.format(params['physical_rack'])
+            LOG.error(msg)
+            raise NoResultFound(msg)
+
+        try:
+            physical_elevation = find_physical_elevation_by_elevation(params['physical_elevation'],
+                                                                      params['physical_rack_id'])
+            params['physical_elevation_id'] = physical_elevation.id
+            del params['physical_elevation']
+        except NoResultFound:
+            msg = 'physical_elevation not found: {0}'.format(params['physical_elevation'])
+            LOG.error(msg)
+            raise NoResultFound(msg)
+
         if params['hardware_profile']:
             try:
                 hardware_profile = get_hardware_profile(params['hardware_profile'])
@@ -215,37 +257,9 @@ def convert_names_to_ids(params):
                 msg = 'hardware_profile not found: {0}'.format(params['hardware_profile'])
                 LOG.error(msg)
                 raise NoResultFound(msg)
-        if params['physical_location']:
-            try:
-                physical_location = find_physical_location_by_name(params['physical_location'])
-                params['physical_location_id'] = physical_location.id
-                LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
-                del params['physical_location']
-            except NoResultFound:
-                msg = 'physical_location not found: {0}'.format(params['physical_location'])
-                LOG.error(msg)
-                raise NoResultFound(msg)
-        if params['physical_rack']:
-            try:
-                physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
-                                                               params['physical_location'])
-                params['physical_rack_id'] = physical_rack.id
-                del params['physical_rack']
-            except NoResultFound:
-                msg = 'physical_rack not found: {0}'.format(params['physical_rack'])
-                LOG.error(msg)
-                raise NoResultFound(msg)
-        if params['physical_elevation']:
-            try:
-                physical_elevation = find_physical_elevation_by_elevation(params['physical_elevation'],
-                                                                          params['physical_rack_id'])
-                params['physical_elevation_id'] = physical_elevation.id
-                del params['physical_elevation']
-            except NoResultFound:
-                msg = 'physical_elevation not found: {0}'.format(params['physical_elevation'])
-                LOG.error(msg)
-                raise NoResultFound(msg)
-    except:
+
+    except Exception as ex:
+        LOG.error(repr(ex))
         raise
 
     return params

@@ -894,7 +894,6 @@ def api_delete_by_id(request):
         model_type = model_matcher(request.matched_route.name)
         resource_id = request.matchdict['id']
         camel = camel_to_underscore(model_type)
-        c_name = camel + '_name'
         LOG.debug('Checking for id={0}'.format(resource_id))
         object_type = request.path_info.split('/')[2]
 
@@ -902,53 +901,42 @@ def api_delete_by_id(request):
         query = query.filter(getattr(globals()[model_type], 'id') == resource_id)
         query = query.one()
 
-        object_name = getattr(query, 'name')
+        try:
+            unique_field = 'name'
+            object_name = getattr(query, unique_field)
+        except AttributeError:
+            unique_field = 'serial_number'
+            object_name = getattr(query, unique_field)
 
         if object_type == 'tags' and not validate_tag_perm(request, auth_user, object_name):
             return api_403()
 
-        # FIXME: Is this the best approach?
+        # Defines the key to log in the audit table for the given model type
+        # why an object is deleted. If not in this list, will default to
+        # 'name.'
         del_keys = {
-            'DataCenter': [
-                'name',
-            ],
-            'Node': [
-                'unique_id',
-            ],
-            'NodeGroup': [
-                'name',
-            ],
-            'Status': [
-                'name',
-            ],
-            'OperatingSystem': [
-                'name',
-            ],
-            'HardwareProfile': [
-                'name',
-            ],
-            'Tag': [
-                'name',
-            ],
-            'PhysicalLocation': [
-                'name',
-            ],
+            'Node': 'unique_id',
+            'PhysicalDevice': 'serial_number',
         }
 
         utcnow = datetime.utcnow()
 
-        for field in del_keys[model_type]:
-            audit = globals()['{0}Audit'.format(model_type)]()
-            setattr(audit, 'object_id', query.id)
-            setattr(audit, 'field', field)
-            setattr(audit, 'old_value', getattr(query, field))
-            setattr(audit, 'new_value', 'deleted')
-            setattr(audit, 'updated_by', auth_user['user_id'])
-            setattr(audit, 'created', utcnow)
+        try:
+            deleted_key = del_keys[model_type]
+        except KeyError:
+            deleted_key = 'name'
 
-            DBSession.add(audit)
+        audit = globals()['{0}Audit'.format(model_type)]()
+        setattr(audit, 'object_id', query.id)
+        setattr(audit, 'field', deleted_key)
+        setattr(audit, 'old_value', getattr(query, deleted_key))
+        setattr(audit, 'new_value', 'deleted')
+        setattr(audit, 'updated_by', auth_user['user_id'])
+        setattr(audit, 'created', utcnow)
 
-        LOG.info('Deleting name: {0} id: {1}'.format(object_name, resource_id))
+        DBSession.add(audit)
+
+        LOG.info('Deleting {0}: {1} id: {2}'.format(unique_field, object_name, resource_id))
         DBSession.delete(query)
         DBSession.flush()
 
