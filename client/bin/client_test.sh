@@ -286,14 +286,14 @@ validate_command "${search_cmd} statuses search name=hibernating --fields all --
 #
 validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_1" 0
 validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_2 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'" 0
-validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
+validate_command "${search_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
 validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 # physical_racks
 #
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
-validate_command "${search_cmd} physical_racks search name=r10,physical_location.name=TEST_LOCATION_1" 0
+validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
 # physical_elevations
