@@ -246,7 +246,7 @@ class ArsenalInterface(object):
     def delete(self, params):
         '''Delete a resource.'''
         resource_uri = '{0}/{1}'.format(self.uri, params['id'])
-        LOG.info('Deleting {0}...'.format(resource_uri))
+        LOG.info('Deleting {0}...'.format(self.uri.split('/')[-1]))
         resp = self.api_conn(resource_uri, method='delete')
         return resp
 
