@@ -102,10 +102,6 @@ class PhysicalElevations(ArsenalInterface):
         >>> PhysicalElevations.delete(params)
         '''
 
-        LOG.info('Deleting physical_elevation location: {0} '
-                 'rack: {1} elevation: {2}'.format(params['physical_location'],
-                                                   params['physical_rack'],
-                                                   params['elevation'],))
         return super(PhysicalElevations, self).delete(params)
 
     def get_audit_history(self, results):

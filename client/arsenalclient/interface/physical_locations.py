@@ -99,7 +99,6 @@ class PhysicalLocations(ArsenalInterface):
         >>> PhysicalLocations.delete(params)
         '''
 
-        LOG.info('Deleting physical_location name: {0}'.format(params['name']))
         return super(PhysicalLocations, self).delete(params)
 
     def get_audit_history(self, results):

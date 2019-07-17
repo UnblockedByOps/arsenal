@@ -116,8 +116,6 @@ class Nodes(ArsenalInterface):
         >>> Nodes.delete(params)
         '''
 
-        LOG.info('Deleting node name: {0} unique_id: {1}'.format(params['name'],
-                                                                 params['unique_id']))
         return super(Nodes, self).delete(params)
 
     def get_audit_history(self, results):

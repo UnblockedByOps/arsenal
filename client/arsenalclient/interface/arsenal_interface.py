@@ -231,14 +231,14 @@ class ArsenalInterface(object):
     @abstractmethod
     def create(self, params):
         '''Create a resource.'''
-        LOG.verbose('Creating {0}...'.format(self.uri.split('/')[-1]))
+        LOG.info('Creating {0}...'.format(self.uri.split('/')[-1]))
         resp = self.api_conn(self.uri, params, method='put', log_success=False)
         return resp
 
     @abstractmethod
     def update(self, params):
         '''Update a resource.'''
-        LOG.verbose('Updating {0}...'.format(self.uri.split('/')[-1]))
+        LOG.info('Updating {0}...'.format(self.uri.split('/')[-1]))
         resp = self.api_conn(self.uri, params, method='put', log_success=False)
         return resp
 
@@ -246,7 +246,7 @@ class ArsenalInterface(object):
     def delete(self, params):
         '''Delete a resource.'''
         resource_uri = '{0}/{1}'.format(self.uri, params['id'])
-        LOG.verbose('Deleting {0}...'.format(resource_uri))
+        LOG.info('Deleting {0}...'.format(resource_uri))
         resp = self.api_conn(resource_uri, method='delete')
         return resp
 

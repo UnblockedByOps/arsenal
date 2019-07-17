@@ -75,7 +75,6 @@ class DataCenters(ArsenalInterface):
         >>> DataCenters.delete(params)
         '''
 
-        LOG.info('Deleting data_center name: {0}'.format(params['name']))
         return super(DataCenters, self).delete(params)
 
     def get_audit_history(self, results):
