@@ -315,6 +315,7 @@ validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLia
 #
 validate_command "${rw_cmd} physical_devices import -c conf/physical_device_import.csv" 0
 validate_command "${rw_cmd} physical_devices import -c conf/physical_device_import_fail.csv" 1
+validate_command "${rw_cmd} physical_devices import -c conf/physical_device_import_mixed.csv" 1
 #
 # Clean up
 #
