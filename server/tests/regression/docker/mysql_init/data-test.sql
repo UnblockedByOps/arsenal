@@ -46,6 +46,142 @@ INSERT INTO physical_locations_audit VALUES (1, 1, 'name', 'created', 'test_phys
 INSERT INTO physical_locations_audit VALUES (2, 2, 'name', 'created', 'test_physical_location_2', 'Admin', NOW());
 INSERT INTO physical_locations_audit VALUES (3, 3, 'name', 'created', 'other_test_physical_location_1', 'Admin', NOW());
 
+# Test physical_racks
+#----------------------------------------------
+INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (1, 'R900', 1, NOW(), NOW(), 'Admin');
+INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (2, 'R901', 1, NOW(), NOW(), 'Admin');
+INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (3, 'R900', 2, NOW(), NOW(), 'Admin');
+INSERT INTO physical_racks_audit VALUES (1, 1, 'id', 'created', 1, 'Admin', NOW());
+INSERT INTO physical_racks_audit VALUES (2, 2, 'id', 'created', 2, 'Admin', NOW());
+INSERT INTO physical_racks_audit VALUES (3, 3, 'id', 'created', 3, 'Admin', NOW());
+
+# Test physical_elevations
+#----------------------------------------------
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (1, 1, 1, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (2, 2, 1, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (3, 3, 1, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (4, 1, 2, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (5, 2, 2, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (6, 3, 2, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (7, 1, 3, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (8, 2, 3, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (9, 3, 3, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 1, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 2, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 3, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 4, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 5, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 6, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 7, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 8, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 9, 'Admin', NOW());
+
+# Test physical_devices
+#----------------------------------------------
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              created,
+                              updated,
+                              updated_by) VALUES (1,
+                                                  'Z00001', 
+                                                  1, 
+                                                  1, 
+                                                  1, 
+                                                  'aa:aa:aa:00:00:00', 
+                                                  'aa:aa:aa:00:00:01', 
+                                                  2, 
+                                                  '10.5.5.1', 
+                                                  'bb:aa:aa:00:00:00', 
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              created,
+                              updated,
+                              updated_by) VALUES (2,
+                                                  'Z00002', 
+                                                  2, 
+                                                  1, 
+                                                  1, 
+                                                  'aa:aa:aa:00:00:02', 
+                                                  'aa:aa:aa:00:00:03', 
+                                                  3, 
+                                                  '10.5.5.2', 
+                                                  'bb:aa:aa:00:00:01', 
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              created,
+                              updated,
+                              updated_by) VALUES (3,
+                                                  'Z00003', 
+                                                  1, 
+                                                  1, 
+                                                  2, 
+                                                  'aa:aa:aa:00:00:04', 
+                                                  3, 
+                                                  '10.5.5.3', 
+                                                  'bb:aa:aa:00:00:02', 
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              created,
+                              updated,
+                              updated_by) VALUES (4,
+                                                  'Z00003', 
+                                                  1, 
+                                                  2, 
+                                                  3, 
+                                                  'aa:aa:aa:00:00:06', 
+                                                  'aa:aa:aa:00:00:07', 
+                                                  3, 
+                                                  '10.5.5.4', 
+                                                  'bb:aa:aa:00:00:03', 
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices_audit VALUES (1, 1, 'serial_number', 'created', 'Z00001', 'Admin', NOW());
+INSERT INTO physical_devices_audit VALUES (2, 2, 'serial_number', 'created', 'Z00002', 'Admin', NOW());
+INSERT INTO physical_devices_audit VALUES (3, 3, 'serial_number', 'created', 'Z00003', 'Admin', NOW());
+INSERT INTO physical_devices_audit VALUES (4, 4, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
+
+
 # Test nodes
 #----------------------------------------------
 #
