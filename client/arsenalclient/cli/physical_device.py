@@ -146,7 +146,9 @@ def create_physical_device(args, client, device=None):
 
     try:
         serial_number = device['serial_number']
+        import_tool = True
     except TypeError:
+        import_tool = False
         serial_number = args.serial_number
 
         device = {
@@ -172,11 +174,17 @@ def create_physical_device(args, client, device=None):
                       args.answer_yes):
 
             resp = client.physical_devices.update(device)
-            return check_resp(resp)
+            if import_tool:
+                return resp
+            else:
+                return check_resp(resp)
 
     except NoResultFound:
         resp = client.physical_devices.create(device)
-        return check_resp(resp)
+        if import_tool:
+            return resp
+        else:
+            return check_resp(resp)
 
 def delete_physical_device(args, client):
     '''Delete an existing physical_device.'''
