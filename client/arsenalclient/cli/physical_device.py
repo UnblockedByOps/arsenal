@@ -236,7 +236,7 @@ def import_physical_device(args, client):
                 LOG.debug(json.dumps(row, indent=4, sort_keys=True))
 
                 resp = create_physical_device(args, client, device=row)
-                LOG.info(json.dumps(resp, indent=4, sort_keys=True))
+                LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
 
                 if resp['http_status']['code'] != 200:
                     resp['http_status']['row'] = row
