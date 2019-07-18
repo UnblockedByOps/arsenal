@@ -321,8 +321,10 @@ validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLia
 # Import tool
 #
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import.csv" 0
-validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_fail.csv" 1
+validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_mixed.csv" 1
+validate_command "${search_cmd} physical_devices search serial_number=B0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
+validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_fail.csv" 1
 #
 # Clean up
 #
