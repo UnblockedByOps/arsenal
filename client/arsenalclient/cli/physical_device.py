@@ -236,14 +236,12 @@ def import_physical_device(args, client):
                 LOG.debug(json.dumps(row, indent=4, sort_keys=True))
 
                 resp = create_physical_device(args, client, device=row)
-                LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
+                LOG.info(json.dumps(resp, indent=4, sort_keys=True))
 
-                try:
+                if resp['http_status']['code'] != 200:
                     resp['http_status']['row'] = row
                     resp['http_status']['row_number'] = count
                     failures.append(resp['http_status'])
-                except KeyError:
-                    pass
 
         if failures:
             overall_exit = 1
