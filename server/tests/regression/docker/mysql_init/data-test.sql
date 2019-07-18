@@ -37,6 +37,15 @@ INSERT INTO data_centers_audit VALUES (1, 1, 'name', 'created', 'test_data_cente
 INSERT INTO data_centers_audit VALUES (2, 2, 'name', 'created', 'test_data_center_2', 'Admin', NOW());
 INSERT INTO data_centers_audit VALUES (3, 3, 'name', 'created', 'other_test_data_center_1', 'Admin', NOW());
 
+# Test physical_locations
+#----------------------------------------------
+INSERT INTO physical_locations (id,name,created,updated,updated_by) VALUES (1, 'test_physical_location_1', NOW(), NOW(), 'Admin');
+INSERT INTO physical_locations (id,name,created,updated,updated_by) VALUES (2, 'test_physical_location_2', NOW(), NOW(), 'Admin');
+INSERT INTO physical_locations (id,name,created,updated,updated_by) VALUES (3, 'other_test_physical_location_1', NOW(), NOW(), 'Admin');
+INSERT INTO physical_locations_audit VALUES (1, 1, 'name', 'created', 'test_physical_location_1', 'Admin', NOW());
+INSERT INTO physical_locations_audit VALUES (2, 2, 'name', 'created', 'test_physical_location_2', 'Admin', NOW());
+INSERT INTO physical_locations_audit VALUES (3, 3, 'name', 'created', 'other_test_physical_location_1', 'Admin', NOW());
+
 # Test nodes
 #----------------------------------------------
 #
