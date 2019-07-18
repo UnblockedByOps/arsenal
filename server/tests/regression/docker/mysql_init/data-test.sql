@@ -67,14 +67,14 @@ INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,u
 INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (8, 2, 3, NOW(), NOW(), 'Admin');
 INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (9, 3, 3, NOW(), NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 1, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 2, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 3, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 4, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 5, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 6, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 7, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 8, 'Admin', NOW());
-INSERT INTO physical_elevations_audit VALUES (1, 1, 'id', 'created', 9, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (2, 2, 'id', 'created', 2, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (3, 3, 'id', 'created', 3, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (4, 4, 'id', 'created', 4, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (5, 5, 'id', 'created', 5, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (6, 6, 'id', 'created', 6, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (7, 7, 'id', 'created', 7, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (8, 8, 'id', 'created', 8, 'Admin', NOW());
+INSERT INTO physical_elevations_audit VALUES (9, 9, 'id', 'created', 9, 'Admin', NOW());
 
 # Test physical_devices
 #----------------------------------------------
