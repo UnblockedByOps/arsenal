@@ -304,6 +304,12 @@ validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R10
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 4" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 5" 0
 validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0 "string" "name: TEST_LOCATION_1"
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 1" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 2" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 3" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 4" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 5" 0
+validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R200 -f all" 0 "string" "name: TEST_LOCATION_1"
 #
 # physical_devices
 #
