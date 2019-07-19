@@ -502,7 +502,7 @@ tests:
           - elevation: 1
           - elevation: 1
       - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
-        url: '/api//api/physical_elevations?elevation=^1,2'
+        url: '/api/physical_elevations?elevation=^1,2'
         result_count: 6
         expected_responses:
           - elevation: 1
