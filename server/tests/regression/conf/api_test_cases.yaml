@@ -483,7 +483,7 @@ tests:
           - name: 'R900'
           - name: 'R901'
       - description: 'PHYSICAL_RACK - REGEX Multi parameter search, single value'
-        url: '/api/physical_racks?name=^R9,physical_location.name=test_physical_location_1'
+        url: '/api/physical_racks?name=^R9&physical_location.name=test_physical_location_1'
         result_count: 3
         expected_responses:
           - name: 'R800'
