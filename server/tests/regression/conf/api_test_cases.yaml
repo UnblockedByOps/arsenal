@@ -533,7 +533,6 @@ tests:
           - serial_number: 'Z00003'
           - serial_number: 'Z00004'
           - serial_number: 'Y00001'
-
       - description: 'PHYSICAL_DEVICE - REGEX Multi parameter search, single value'
         url: '/api/physical_devices?physical_rack.name=R900&physical_elevation.elevation=1'
         result_count: 2
