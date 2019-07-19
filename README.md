@@ -287,7 +287,7 @@ ValueError: No JSON object could be decoded
 
 ## Physical Hardware Tracking
 
-Arsenal now has the ability to track physical hardware from the moment it is put into a rack/storage in a colo. It uses teh serial number of a physcial piece of hardware, added to arsenal via the import tool, to assign it to a physical location, rack, and elevation. When the node is provisioned and checks into arsenal, it will be associated with it's physical location via the serial_number.
+Arsenal now has the ability to track physical hardware from the moment it is put into a rack/storage in a colo. It uses the serial number of a physical piece of hardware, added to arsenal via the import tool (described below), to assign it to a physical location, rack, and elevation. When the node is provisioned and checks into arsenal, it will be associated with it's physical location via the serial_number.
 
 ### Prerequisites
 
@@ -310,6 +310,8 @@ arsenal physical_racks create -l TEST_LOCATION_1 -n R100
 arsenal physical_racks create -l TEST_LOCATION_1 -n R101
 arsenal physical_racks create -l TEST_LOCATION_1 -n R102
 ...
+arsenal physical_racks create -l TEST_LOCATION_1 -n R10N
+etc.
 ```
 
 #### Physcial elevations
