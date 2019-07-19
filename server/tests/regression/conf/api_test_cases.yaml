@@ -443,6 +443,102 @@ tests:
           - name: 'test_data_center_1'
           - name: 'test_data_center_2'
           - name: 'other_test_data_center_1'
+  search_physical_locations_regex:
+    description: '/api/physical_locations search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, single value'
+        url: '/api/physical_locations?name=^test_physical_location'
+        result_count: 2
+        expected_responses:
+          - name: 'test_physical_location_1'
+          - name: 'test_physical_location_2'
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+        url: '/api/physical_locations?name=^test_physical_location,^other_test'
+        result_count: 3
+        expected_responses:
+          - name: 'test_physical_location_1'
+          - name: 'test_physical_location_2'
+          - name: 'other_test_physical_location_1'
+  search_physical_racks_regex:
+    description: '/api/physical_racks search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, single value'
+        url: '/api/physical_racks?name=^R90'
+        result_count: 3
+        expected_responses:
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, multi value'
+        url: '/api/physical_racks?name=^R9,^R8'
+        result_count: 4
+        expected_responses:
+          - name: 'R800'
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Multi parameter search, single value'
+        url: '/api/physical_racks?name=^R9&physical_location.name=test_physical_location_1'
+        result_count: 2
+        expected_responses:
+          - name: 'R900'
+          - name: 'R901'
+  search_physical_elevations_regex:
+    description: '/api/physical_elevations search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_ELEVATION - REGEX Single parameter search, single value'
+        url: '/api/physical_elevations?elevation=^1'
+        result_count: 3
+        expected_responses:
+          - elevation: 1
+          - elevation: 1
+          - elevation: 1
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+        url: '/api/physical_elevations?elevation=^1,2'
+        result_count: 6
+        expected_responses:
+          - elevation: 1
+          - elevation: 1
+          - elevation: 1
+          - elevation: 2
+          - elevation: 2
+          - elevation: 2
+      - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=1'
+        result_count: 2
+        expected_responses:
+          - elevation: 1
+          - elevation: 1
+  search_physical_devices_regex:
+    description: '/api/physical_devices search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_DEVICE - REGEX Single parameter search, single value'
+        url: '/api/physical_devices?serial_number=^Z0'
+        result_count: 4
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00002'
+          - serial_number: 'Z00003'
+          - serial_number: 'Z00004'
+      - description: 'PHYSICAL_DEVICE - REGEX Single parameter search, multi value'
+        url: '/api/physical_devices?serial_number=^Z0,^Y0'
+        result_count: 5
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00002'
+          - serial_number: 'Z00003'
+          - serial_number: 'Z00004'
+          - serial_number: 'Y00001'
+      - description: 'PHYSICAL_DEVICE - REGEX Multi parameter search, single value'
+        url: '/api/physical_devices?physical_rack.name=R900&physical_elevation.elevation=1'
+        result_count: 2
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00004'
   node_enc:
     description: '/api/enc tests'
     function: 'run_search_test'
