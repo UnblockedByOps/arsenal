@@ -178,10 +178,36 @@ INSERT INTO physical_devices (id,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              created,
+                              updated,
+                              updated_by) VALUES (5,
+                                                  'Y00004', 
+                                                  3, 
+                                                  2, 
+                                                  3, 
+                                                  'aa:aa:aa:00:00:08', 
+                                                  'aa:aa:aa:00:00:09', 
+                                                  3, 
+                                                  '10.5.5.5', 
+                                                  'bb:aa:aa:00:00:04', 
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
 INSERT INTO physical_devices_audit VALUES (1, 1, 'serial_number', 'created', 'Z00001', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (2, 2, 'serial_number', 'created', 'Z00002', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (3, 3, 'serial_number', 'created', 'Z00003', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (4, 4, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
+INSERT INTO physical_devices_audit VALUES (5, 5, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
 
 
 # Test nodes
