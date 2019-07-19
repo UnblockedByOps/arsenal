@@ -209,7 +209,6 @@ INSERT INTO physical_devices_audit VALUES (3, 3, 'serial_number', 'created', 'Z0
 INSERT INTO physical_devices_audit VALUES (4, 4, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (5, 5, 'serial_number', 'created', 'Y00001', 'Admin', NOW());
 
-
 # Test nodes
 #----------------------------------------------
 #
