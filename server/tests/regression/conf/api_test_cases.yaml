@@ -547,7 +547,7 @@ tests:
         result_count: 2
         expected_responses:
           - serial_number: 'Z00001'
-          - serial_number: 'Z00002'
+          - serial_number: 'Z00004'
 
   node_enc:
     description: '/api/enc tests'
