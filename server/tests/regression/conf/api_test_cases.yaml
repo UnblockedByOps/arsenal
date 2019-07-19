@@ -460,6 +460,83 @@ tests:
           - name: 'test_physical_location_1'
           - name: 'test_physical_location_2'
           - name: 'other_test_physical_location_1'
+
+
+
+  search_physical_racks_regex:
+    description: '/api/physical_racks search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, single value'
+        url: '/api/physical_racks?name=^R90'
+        result_count: 3
+        expected_responses:
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, multi value'
+        url: '/api/physical_racks?name=^R9,^R8'
+        result_count: 4
+        expected_responses:
+          - name: 'R800'
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Multi parameter search, single value'
+        url: '/api/physical_racks?name=^R9,physical_location.name=test_physical_location_1'
+        result_count: 3
+        expected_responses:
+          - name: 'R800'
+          - name: 'R900'
+          - name: 'R901'
+
+            #
+            #
+            #
+            #
+            #  search_physical_elevations_regex:
+            #    description: '/api/physical_locations search tests with regex'
+            #    function: 'run_search_test'
+            #    tests:
+            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, single value'
+            #        url: '/api/physical_locations?name=^test_physical_location'
+            #        result_count: 2
+            #        expected_responses:
+            #          - name: 'test_physical_location_1'
+            #          - name: 'test_physical_location_2'
+            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+            #        url: '/api/physical_locations?name=^test_physical_location,^other_test'
+            #        result_count: 3
+            #        expected_responses:
+            #          - name: 'test_physical_location_1'
+            #          - name: 'test_physical_location_2'
+            #          - name: 'other_test_physical_location_1'
+            #
+            #
+            #
+            #  search_physical_devices_regex:
+            #    description: '/api/physical_locations search tests with regex'
+            #    function: 'run_search_test'
+            #    tests:
+            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, single value'
+            #        url: '/api/physical_locations?name=^test_physical_location'
+            #        result_count: 2
+            #        expected_responses:
+            #          - name: 'test_physical_location_1'
+            #          - name: 'test_physical_location_2'
+            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+            #        url: '/api/physical_locations?name=^test_physical_location,^other_test'
+            #        result_count: 3
+            #        expected_responses:
+            #          - name: 'test_physical_location_1'
+            #          - name: 'test_physical_location_2'
+            #          - name: 'other_test_physical_location_1'
+
+
+
+
+
+
   node_enc:
     description: '/api/enc tests'
     function: 'run_search_test'

@@ -51,9 +51,11 @@ INSERT INTO physical_locations_audit VALUES (3, 3, 'name', 'created', 'other_tes
 INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (1, 'R900', 1, NOW(), NOW(), 'Admin');
 INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (2, 'R901', 1, NOW(), NOW(), 'Admin');
 INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (3, 'R900', 2, NOW(), NOW(), 'Admin');
+INSERT INTO physical_racks (id,name,physical_location_id,created,updated,updated_by) VALUES (4, 'R800', 1, NOW(), NOW(), 'Admin');
 INSERT INTO physical_racks_audit VALUES (1, 1, 'id', 'created', 1, 'Admin', NOW());
 INSERT INTO physical_racks_audit VALUES (2, 2, 'id', 'created', 2, 'Admin', NOW());
 INSERT INTO physical_racks_audit VALUES (3, 3, 'id', 'created', 3, 'Admin', NOW());
+INSERT INTO physical_racks_audit VALUES (4, 4, 'id', 'created', 4, 'Admin', NOW());
 
 # Test physical_elevations
 #----------------------------------------------
