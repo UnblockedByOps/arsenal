@@ -489,27 +489,28 @@ tests:
           - name: 'R900'
           - name: 'R901'
 
-            #
-            #
-            #
-            #
-            #  search_physical_elevations_regex:
-            #    description: '/api/physical_locations search tests with regex'
-            #    function: 'run_search_test'
-            #    tests:
-            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, single value'
-            #        url: '/api/physical_locations?name=^test_physical_location'
-            #        result_count: 2
-            #        expected_responses:
-            #          - name: 'test_physical_location_1'
-            #          - name: 'test_physical_location_2'
-            #      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
-            #        url: '/api/physical_locations?name=^test_physical_location,^other_test'
-            #        result_count: 3
-            #        expected_responses:
-            #          - name: 'test_physical_location_1'
-            #          - name: 'test_physical_location_2'
-            #          - name: 'other_test_physical_location_1'
+            
+  search_physical_elevations_regex:
+    description: '/api/physical_elevations search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_ELEVATION - REGEX Single parameter search, single value'
+        url: '/api/physical_elevations?elevation=^1'
+        result_count: 3
+        expected_responses:
+          - elevation: 1
+          - elevation: 1
+          - elevation: 1
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+        url: '/api//api/physical_elevations?elevation=^1,2'
+        result_count: 6
+        expected_responses:
+          - elevation: 1
+          - elevation: 1
+          - elevation: 1
+          - elevation: 2
+          - elevation: 2
+          - elevation: 2
             #
             #
             #
