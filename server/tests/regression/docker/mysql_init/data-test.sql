@@ -191,7 +191,7 @@ INSERT INTO physical_devices (id,
                               created,
                               updated,
                               updated_by) VALUES (5,
-                                                  'Y00004', 
+                                                  'Y00001',
                                                   3, 
                                                   2, 
                                                   3, 
@@ -207,7 +207,7 @@ INSERT INTO physical_devices_audit VALUES (1, 1, 'serial_number', 'created', 'Z0
 INSERT INTO physical_devices_audit VALUES (2, 2, 'serial_number', 'created', 'Z00002', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (3, 3, 'serial_number', 'created', 'Z00003', 'Admin', NOW());
 INSERT INTO physical_devices_audit VALUES (4, 4, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
-INSERT INTO physical_devices_audit VALUES (5, 5, 'serial_number', 'created', 'Z00004', 'Admin', NOW());
+INSERT INTO physical_devices_audit VALUES (5, 5, 'serial_number', 'created', 'Y00001', 'Admin', NOW());
 
 
 # Test nodes
