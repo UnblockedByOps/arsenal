@@ -285,19 +285,74 @@ ValueError: No JSON object could be decoded
 >>>
 ```
 
-## Todo list
+## Physical Hardware Tracking
 
-### API
+Arsenal now has the ability to track physical hardware from the moment it is put into a rack/storage in a colo. It uses the serial number of a physical piece of hardware, added to arsenal via the import tool (described below), to assign it to a physical location, rack, and elevation. When the node is provisioned and checks into arsenal, it will be associated with it's physical location via the serial_number.
 
-* Need ability to set variables for puppet ENC at all levels.
+### Prerequisites
 
-### UI
+First, you must create the physical location, rack and elevations in arsenal before you can assign hardware to them.
 
-* Currently no ability to create or edit anything via the UI (done via the client).
-* No ability to manage users/groups/passwords etc via the UI (done via direct db insert).
-* Need localstorage solution for saving what columns a user has chosen to show/hide on each page.
+#### Physcial location
 
-### CLI
+First, create the location where all the racks will reside:
 
-* formatting of output needs a lot of help.
+```shell
+arsenal physical_locations create --name TEST_LOCATION_1 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'
+```
 
+#### Physcial rack
+
+Then create the racks associated to the location:
+
+```shell
+arsenal physical_racks create -l TEST_LOCATION_1 -n R100
+arsenal physical_racks create -l TEST_LOCATION_1 -n R101
+arsenal physical_racks create -l TEST_LOCATION_1 -n R102
+...
+arsenal physical_racks create -l TEST_LOCATION_1 -n R10N
+etc.
+```
+
+#### Physcial elevations
+
+Then for each rack, create the number of elevations the rack has:
+
+```shell
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e 1
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e 2
+...
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e N
+
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R101 -e 1
+...
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R101 -e N
+etc.
+```
+
+### Adding devices
+
+You are now ready to add devices. The Arsenal client has an import tool to read in physcial devices from a csv.
+
+#### CSV Format
+
+The format of the csv file is as follows:
+
+```csv
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile(optional),oob_ip_address,oob_mac_address
+AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70
+AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71
+BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72
+BB0000002,TEST_LOCATION_1,R101,2,aa:bb:cc:11:22:60,aa:bb:cc:11:22:61,HP ProLiant DL380 Gen9,10.1.1.4,xx:yy:zz:99:88:73
+BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant DL380 Gen9,10.1.1.5,xx:yy:zz:99:88:74
+```
+
+Hardware profile is currently optional but will be needed in the future in order to obtain the rack U for the physcial colo layout.
+
+#### Importing the devices
+
+You can then run the import tool to bring the devices into Arsenal:
+
+```shell
+arsenal physical_devices import -c physical_device_import.csv
+```
