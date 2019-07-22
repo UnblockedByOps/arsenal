@@ -127,14 +127,15 @@ def delete_data_center(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    search = 'name={0}'.format(args.data_center_name)
-    resp = client.object_search(args.object_type,
-                                search,
-                                exact_get=True)
+    try:
+        params = {
+            'name': args.data_center_name,
+            'exact_get': True,
+        }
+        resp = client.data_centers.search(params)
 
-    results = resp['results']
+        results = resp['results']
 
-    if results:
         r_names = []
         for data_centers in results:
             r_names.append(data_centers['name'])
@@ -144,5 +145,7 @@ def delete_data_center(args, client):
 
         if ask_yes_no(msg, args.answer_yes):
             for datacenter in results:
-                resp = client.data_center_delete(datacenter)
+                resp = client.data_centers.delete(datacenter)
                 check_resp(resp)
+    except NoResultFound:
+        LOG.info('data_center not found, nothing to do.')
