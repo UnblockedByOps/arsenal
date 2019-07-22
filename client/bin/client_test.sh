@@ -335,6 +335,8 @@ validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_2 --fi
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "2"
 validate_command "${rw_cmd} data_centers search name=TEST_DATA_CENTER_1 --status inservice" 0
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fields all" 0 "string" "name: inservice"
+validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_1" 0
+validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "1"
 #
 # Clean up
 #
