@@ -27,8 +27,8 @@ from arsenalclient.cli.common import (
     check_resp,
     parse_cli_args,
     print_results,
-    update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
@@ -77,14 +77,9 @@ def search_data_centers(args, client):
         msg = 'We are ready to update the following data_center: \n  ' \
               '{0}\nContinue?'.format('\n '.join(r_names))
 
-        if any(getattr(args, key) for key in UPDATE_FIELDS) and ask_yes_no(msg, args.answer_yes):
-            for data_center in results:
-                dc_update = update_object_fields(args,
-                                                 'data_center',
-                                                 data_center,
-                                                 UPDATE_FIELDS)
-
-                client.data_center.update(dc_update)
+        if args.data_center_status:
+            if ask_yes_no(msg, args.answer_yes):
+                resp = client.statuses.assign(args.data_center_status, 'data_centers', results)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
@@ -105,29 +100,27 @@ def search_data_centers(args, client):
 def create_data_center(args, client):
     '''Create a new data_center.'''
 
+
     LOG.info('Checking if data_center name exists: {0}'.format(args.data_center_name))
 
-    resp = client.object_search(args.object_type,
-                                'name={0}'.format(args.data_center_name),
-                                exact_get=True)
+    data_center = {
+        'name': args.data_center_name,
+        'status': args.data_center_status,
+    }
 
-    results = resp['results']
+    try:
+        result = client.data_centers.get_by_name(args.data_center_name)
 
-    dc_fields = update_object_fields(args,
-                                     'data_center',
-                                     vars(args),
-                                     UPDATE_FIELDS)
-    if results:
         if ask_yes_no('Entry already exists for data_center name: {0}\n Would you ' \
-                      'like to update it?'.format(results[0]['name']),
+                      'like to update it?'.format(result['name']),
                       args.answer_yes):
 
-            client.data_center_create(name=args.data_center_name,
-                                      **dc_fields)
+            resp = client.data_centers.update(data_center)
 
-    else:
-        client.data_center_create(name=args.data_center_name,
-                                  **dc_fields)
+    except NoResultFound:
+        resp = client.data_centers.create(data_center)
+
+    check_resp(resp)
 
 def delete_data_center(args, client):
     '''Delete an existing data_center.'''

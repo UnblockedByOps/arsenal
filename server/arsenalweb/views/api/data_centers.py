@@ -35,11 +35,22 @@ from arsenalweb.models.data_centers import (
     DataCenter,
     DataCenterAudit,
     )
+from arsenalweb.models.statuses import (
+    Status,
+    )
 
 LOG = logging.getLogger(__name__)
 
 
 # Functions
+def find_status_by_name(status_name):
+    '''Find a status by name.'''
+
+    status = DBSession.query(Status)
+    status = status.filter(Status.name == status_name)
+
+    return status.one()
+
 def find_data_center_by_name(name):
     '''Find a data_center by name. Returns a data_center object if found,
     raises NoResultFound otherwise.'''
@@ -69,15 +80,6 @@ def create_data_center(name=None, updated_by=None, **kwargs):
 
     Optional kwargs:
 
-    provider    : A string that is the datacenter provider.
-    address_1   : A string that is the address line 1.
-    address_2   : A string that is the address line 2.
-    city        : A string that is the address city.
-    admin_area  : A string that is the state/province.
-    country     : A string that is teh country.
-    postal_code : A string that is the postal code.
-    contact_name: A string that is the contat name of the data center.
-    phone_number: A string that is the phone number of the data center.
     status_id   : An integer representing the status_id from the statuses table.
                   If not sent, the data_center will be set to status_id 2.
     '''
@@ -88,7 +90,12 @@ def create_data_center(name=None, updated_by=None, **kwargs):
         utcnow = datetime.utcnow()
 
         # Set status to setup if the client doesn't send it.
-        if 'status_id' not in kwargs:
+        if kwargs['status']:
+            LOG.debug('status keyword sent')
+            my_status = find_status_by_name(kwargs['status'])
+            kwargs['status_id'] =  my_status.id
+            del kwargs['status']
+        elif 'status_id' not in kwargs or not kwargs['status_id']:
             kwargs['status_id'] = 2
 
         data_center = DataCenter(name=name,
@@ -109,7 +116,8 @@ def create_data_center(name=None, updated_by=None, **kwargs):
         DBSession.add(audit)
         DBSession.flush()
 
-        return data_center
+        return api_200(results=data_center)
+
     except Exception as ex:
         msg = 'Error creating new data_center name: {0} exception: {1}'.format(name,
                                                                                ex)
@@ -126,15 +134,6 @@ def update_data_center(data_center, **kwargs):
 
     Optional kwargs:
 
-    provider    : A string that is the datacenter provider.
-    address_1   : A string that is the address line 1.
-    address_2   : A string that is the address line 2.
-    city        : A string that is the address city.
-    admin_area  : A string that is the state/province.
-    country     : A string that is teh country.
-    postal_code : A string that is the postal code.
-    contact_name: A string that is the contat name of the data center.
-    phone_number: A string that is the phone number of the data center.
     status_id   : An integer representing the status_id from the statuses table.
     '''
 
@@ -175,25 +174,13 @@ def update_data_center(data_center, **kwargs):
 
         DBSession.flush()
 
-        return data_center
+        return api_200(results=data_center)
 
     except Exception as ex:
-        msg = 'Error updating data_center name: {0} provider: {1} ' \
-              'address_1: {2} address_2: {3} city: {4} admin_area: ' \
-              '{5} country: {6} postal_code: {7} contact_name: {8} ' \
-              'phone_number: {9} updated_by: {10} exception: ' \
-              '{11}'.format(data_center.name,
-                            my_attribs['provider'],
-                            my_attribs['address_1'],
-                            my_attribs['address_2'],
-                            my_attribs['city'],
-                            my_attribs['admin_area'],
-                            my_attribs['country'],
-                            my_attribs['postal_code'],
-                            my_attribs['contact_name'],
-                            my_attribs['phone_number'],
-                            my_attribs['updated_by'],
-                            repr(ex))
+        msg = 'Error updating data_center name: {0} updated_by: {1} exception: ' \
+              '{2}'.format(data_center.name,
+                           my_attribs['updated_by'],
+                           repr(ex))
         LOG.error(msg)
         raise
 
@@ -216,16 +203,7 @@ def api_data_centers_write(request):
             'name',
         ]
         opt_params = [
-            'address_1',
-            'address_2',
-            'admin_area',
-            'city',
-            'contact_name',
-            'country',
-            'phone_number',
-            'postal_code',
-            'provider',
-            'status_id',
+            'status',
         ]
         params = collect_params(request, req_params, opt_params)
 
