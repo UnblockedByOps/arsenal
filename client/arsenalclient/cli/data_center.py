@@ -77,9 +77,8 @@ def search_data_centers(args, client):
         msg = 'We are ready to update the following data_center: \n  ' \
               '{0}\nContinue?'.format('\n '.join(r_names))
 
-        if args.data_center_status:
-            if ask_yes_no(msg, args.answer_yes):
-                resp = client.statuses.assign(args.data_center_status, 'data_centers', results)
+        if args.data_center_status and ask_yes_no(msg, args.answer_yes):
+            resp = client.statuses.assign(args.data_center_status, 'data_centers', results)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
