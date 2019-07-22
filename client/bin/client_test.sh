@@ -326,6 +326,16 @@ validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device
 validate_command "${search_cmd} physical_devices search serial_number=B0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_fail.csv" 1
 #
+# data_centers
+#
+validate_command "${rw_cmd} data_centers create -n TEST_DATA_CENTER_1 -s setup" "0"
+validate_command "${rw_cmd} data_centers create -n TEST_DATA_CENTER_2 -s inservice" "0"
+validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fields all" 0 "string" "name: setup"
+validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_2 --fields all" 0 "string" "name: inservice"
+validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "2"
+validate_command "${rw_cmd} data_centers search name=TEST_DATA_CENTER_1 --status inservice" 0
+validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fields all" 0 "string" "name: inservice"
+#
 # Clean up
 #
 validate_command "${rw_cmd} nodes delete --name fopd-TEST8675.internal" 0
