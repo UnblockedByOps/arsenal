@@ -219,7 +219,12 @@ def convert_names_to_ids(params):
 
     try:
         try:
-            physical_location = find_physical_location_by_name(params['physical_location'])
+            try:
+                physical_location = params['physical_location']['name']
+            except TypeError:
+                physical_location = params['physical_location']
+
+            physical_location = find_physical_location_by_name(physical_location)
             params['physical_location_id'] = physical_location.id
             LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
             del params['physical_location']
