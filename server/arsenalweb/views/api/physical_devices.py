@@ -250,7 +250,11 @@ def convert_names_to_ids(params):
 
         if params['hardware_profile']:
             try:
-                hardware_profile = get_hardware_profile(params['hardware_profile']['name'])
+                hw_profile_name = params['hardware_profile']['name']
+            except TypeError:
+                hw_profile_name = params['hardware_profile']
+            try:
+                hardware_profile = get_hardware_profile(hw_profile_name)
                 params['hardware_profile_id'] = hardware_profile.id
                 del params['hardware_profile']
             except AttributeError:
