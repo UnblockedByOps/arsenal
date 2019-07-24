@@ -326,10 +326,10 @@ validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: R200"
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: 4"
 ## oob-ip-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -oob-ip-address 1.2.3.4" 0
+validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-ip-address 1.2.3.4" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
 ## oob-mac-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -oob-mac-address qq:11:zz:22:xx:33" 0
+validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
 ## hardware-profile
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
