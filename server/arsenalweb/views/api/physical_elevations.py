@@ -205,7 +205,8 @@ def api_physical_elevations_write(request):
             physical_location = find_physical_location_by_name(params['physical_location'])
             del params['physical_location']
 
-            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'], physical_location.id)
+            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
+                                                           physical_location.id)
             params['physical_rack_id'] = physical_rack.id
             del params['physical_rack']
 

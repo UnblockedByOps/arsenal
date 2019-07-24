@@ -37,8 +37,14 @@ from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
+    'hardware_profile',
+    'mac_address_1',
+    'mac_address_2',
     'oob_ip_address',
     'oob_mac_address',
+    'physical_elevation',
+    'physical_location',
+    'physical_rack',
 ]
 TAG_FIELDS = [
     'set_tags',

@@ -219,7 +219,12 @@ def convert_names_to_ids(params):
 
     try:
         try:
-            physical_location = find_physical_location_by_name(params['physical_location'])
+            try:
+                physical_location = params['physical_location']['name']
+            except TypeError:
+                physical_location = params['physical_location']
+
+            physical_location = find_physical_location_by_name(physical_location)
             params['physical_location_id'] = physical_location.id
             LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
             del params['physical_location']
@@ -229,7 +234,11 @@ def convert_names_to_ids(params):
             raise NoResultFound(msg)
 
         try:
-            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
+            try:
+                physical_rack_name = params['physical_rack']['name']
+            except TypeError:
+                physical_rack_name = params['physical_rack']
+            physical_rack = find_physical_rack_by_name_loc(physical_rack_name,
                                                            params['physical_location_id'])
             params['physical_rack_id'] = physical_rack.id
             del params['physical_rack']
@@ -239,7 +248,11 @@ def convert_names_to_ids(params):
             raise NoResultFound(msg)
 
         try:
-            physical_elevation = find_physical_elevation_by_elevation(params['physical_elevation'],
+            try:
+                physical_elevation_el = params['physical_elevation']['elevation']
+            except TypeError:
+                physical_elevation_el = params['physical_elevation']
+            physical_elevation = find_physical_elevation_by_elevation(physical_elevation_el,
                                                                       params['physical_rack_id'])
             params['physical_elevation_id'] = physical_elevation.id
             del params['physical_elevation']
@@ -250,7 +263,11 @@ def convert_names_to_ids(params):
 
         if params['hardware_profile']:
             try:
-                hardware_profile = get_hardware_profile(params['hardware_profile'])
+                hw_profile_name = params['hardware_profile']['name']
+            except TypeError:
+                hw_profile_name = params['hardware_profile']
+            try:
+                hardware_profile = get_hardware_profile(hw_profile_name)
                 params['hardware_profile_id'] = hardware_profile.id
                 del params['hardware_profile']
             except AttributeError:
