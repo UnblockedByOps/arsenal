@@ -244,7 +244,11 @@ def convert_names_to_ids(params):
             raise NoResultFound(msg)
 
         try:
-            physical_elevation = find_physical_elevation_by_elevation(params['physical_elevation'],
+            try:
+                physical_elevation_name = params['physical_elevation']['name']
+            except TypeError:
+                physical_elevation_name = params['physical_elevation']
+            physical_elevation = find_physical_elevation_by_elevation(physical_elevation_name,
                                                                       params['physical_rack_id'])
             params['physical_elevation_id'] = physical_elevation.id
             del params['physical_elevation']
