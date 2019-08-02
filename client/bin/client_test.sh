@@ -190,6 +190,7 @@ validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: 100"
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_string=my_string" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: my_string"
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag test_string=my_string" 0
 #
 # Try to make changes as a read only user, be sure it doesn't let us.
 #
