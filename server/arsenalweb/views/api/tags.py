@@ -19,6 +19,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.exc import DatabaseError
 from arsenalweb.models.common import (
     DBSession,
     )
@@ -68,10 +69,17 @@ def find_tag_by_name(name, value):
     '''Search for an existing tag by name and value.'''
 
     LOG.debug('Searching for tag name: {0} value: {1}'.format(name, value))
-    tag = DBSession.query(Tag)
-    tag = tag.filter(Tag.name == name)
-    tag = tag.filter(Tag.value == value)
-    return tag.one()
+    try:
+        tag = DBSession.query(Tag)
+        tag = tag.filter(Tag.name == name)
+        tag = tag.filter(Tag.value == value)
+        one = tag.one()
+    except DatabaseError:
+        tag = DBSession.query(Tag)
+        tag = tag.filter(Tag.name == name)
+        tag = tag.filter(Tag.value == str(value))
+        one = tag.one()
+    return one
 
 def find_tag_by_id(tag_id):
     '''Search for an existing tag by id.'''
