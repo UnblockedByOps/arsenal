@@ -183,6 +183,13 @@ validate_command "${search_cmd} tags search name=TAG_TEST_CREATE,value=TEST --fi
 # Delete tag
 validate_command "${rw_cmd} tags delete --name TAG_TEST_CREATE --value TEST" 0
 validate_command "${search_cmd} tags search name=TAG_TEST_CREATE,value=TEST --fields all --exact" 0 "string" "No results found for search."
+# Make sure we can change a string to an int and back
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_string=my_string" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: my_string"
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_string=100" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: 100"
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_string=my_string" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: my_string"
 #
 # Try to make changes as a read only user, be sure it doesn't let us.
 #
