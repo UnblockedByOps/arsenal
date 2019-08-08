@@ -31,6 +31,7 @@ LOG = logging.getLogger(__name__)
 @view_config(route_name='node_group_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
 @view_config(route_name='operating_system_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
 @view_config(route_name='physical_device_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
+@view_config(route_name='physical_location_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
 @view_config(route_name='status_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
 @view_config(route_name='tag_audit', permission='view', renderer='arsenalweb:templates/singleton_audit.pt')
 def view_singleton_audit(request):
@@ -69,6 +70,10 @@ def view_singleton_audit(request):
         'physical_device_audit': {
             'page_type': 'Physical Devices',
             'object_type': 'physical_devices',
+        },
+        'physical_location_audit': {
+            'page_type': 'Physical Locations',
+            'object_type': 'physical_locations',
         },
         'status_audit': {
             'page_type': 'Status',

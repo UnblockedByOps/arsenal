@@ -84,6 +84,12 @@ def view_physical_locations(request):
         {'name': 'name', 'pretty_name': 'Name'},
         {'name': 'phone_number', 'pretty_name': 'DC Phone Number'},
         {'name': 'provider', 'pretty_name': 'DC Provider'},
+        {'name': 'address_1', 'pretty_name': 'Address 1'},
+        {'name': 'address_2', 'pretty_name': 'Address 2'},
+        {'name': 'city', 'pretty_name': 'City'},
+        {'name': 'admin_area', 'pretty_name': 'State'},
+        {'name': 'postal_code', 'pretty_name': 'Postal Code'},
+        {'name': 'country', 'pretty_name': 'Country'},
         {'name': 'updated', 'pretty_name': 'Date Updated'},
         {'name': 'updated_by', 'pretty_name': 'Updated By'},
     ]
