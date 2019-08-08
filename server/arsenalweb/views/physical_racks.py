@@ -80,7 +80,7 @@ def view_physical_racks(request):
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [
         {'name': 'created', 'pretty_name': 'Date Created'},
-        {'name': 'name', 'pretty_name': 'Name'},
+        {'name': 'name', 'pretty_name': 'Physical Rack Name'},
         {'name': 'physical_location', 'pretty_name': 'Physical Location'},
         {'name': 'updated', 'pretty_name': 'Date Updated'},
         {'name': 'updated_by', 'pretty_name': 'Updated By'},
