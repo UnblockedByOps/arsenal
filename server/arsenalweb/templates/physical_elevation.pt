@@ -67,6 +67,27 @@
           </div>
         </li>
         <li>
+          <input type="radio" name="tabs" id="tab2">
+          <label for="tab2">Physical Device</label>
+          <div id="tab-content2" class="tab-content">
+            <table>
+                <tr>
+                    <td>ID</td><td><span class="mono">${physical_elevation.physical_device.id}</span></td>
+                </tr>
+                <tr>
+                    <td>Serial Number</td><td><span class="mono">${physical_elevation.physical_device.serial_number}</span></td>
+                </tr>
+                <tr>
+                    <td>Hardware Profile</td><td><span class="mono">${physical_elevation.physical_device.hardware_profile.name}</span></td>
+                </tr>
+                <tr>
+                    <td>Physical Rack</td><td><span class="mono">${physical_elevation.physical_rack.name}</span></td>
+                </tr>
+            </table>
+              <span tal:condition="not physical_elevation.physical_device" class="mono">No physical device found for physical elevation.</span>
+          </div>
+        </li>
+        <li>
           <input type="radio" name="tabs" id="tab_hist">
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
