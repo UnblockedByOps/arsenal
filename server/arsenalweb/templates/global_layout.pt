@@ -225,6 +225,7 @@
                       <a href="/node_groups">node groups</a><br/>
                       <a href="/nodes">nodes</a><br/>
                       <a href="/physical_locations">physical_locations</a><br/>
+                      <a href="/physical_racks">physical_racks</a><br/>
                       <a href="/physical_devices">physical_devices</a><br/>
                       <a href="/tags">tags</a><br/>
                     </div>
