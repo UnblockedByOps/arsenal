@@ -32,16 +32,16 @@
     <script src="/static/js/resizable.js"></script>
   </head>
   <body>
-    
+
     <div tal:condition="physical_location">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/physical_location/</span> <span class="page_title_name_s">${physical_location.name}</span>
       </div>
-    
+
       <ul class="tabs">
         <li>
           <input type="radio" checked name="tabs" id="tab1">
-          <label for="tab1">Data Center</label>
+          <label for="tab1">Physical Location</label>
           <div id="tab-content1" class="tab-content">
             <table>
                 <tr>
@@ -90,17 +90,29 @@
           </div>
         </li>
         <li>
+          <input type="radio" name="tabs" id="tab2">
+          <label for="tab2">Physical Racks</label>
+          <div id="tab-content2" class="tab-content">
+              <table>
+                  <tr tal:repeat="item physical_location.physical_racks">
+                      <td>${item['name']}</td>
+                  </tr>
+              </table>
+              <span tal:condition="not physical_location.physical_racks" class="mono">No physical racks found for physical location.</span>
+          </div>
+        </li>
+        <li>
           <input type="radio" name="tabs" id="tab_hist">
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
               <div id="history_insert">
-              	<a class="show_history" tal:attributes="href '/physical_locations_audit/{0}'.format(physical_location.id)">Show history for this data center</a>
+                  <a class="show_history" tal:attributes="href '/physical_locations_audit/{0}'.format(physical_location.id)">Show history for this Physical Location</a>
               </div>
           </div>
         </li>
       </ul>
     </div>
-    
+
     <div tal:condition="not physical_location">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/physical_location/</span> <span class="page_title_name_s">Not Found</span>
@@ -109,7 +121,7 @@
 
     <script>
       $(document).ready(function() {
-    
+
         // History tab ajax loader
         $('.show_history').click(function(event){
             event.preventDefault();
@@ -127,7 +139,7 @@
         $(document).ajaxStart(function() {
           $("#history_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
         });
-    
+
       });
     </script>
 
