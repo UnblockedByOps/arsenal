@@ -26,7 +26,7 @@ Follow these steps to set up a local development environment for Arsenal (assume
 
 ```bash
 cd ~/git
-git clone git@github.rp-core.com:Devops/arsenal.git
+git clone git@github.rp-core.com:RubiconProject/arsenal.git
 ```
 
 ### Install Mysql DB

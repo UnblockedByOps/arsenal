@@ -193,6 +193,7 @@
                     <option>node_groups</option>
                     <option>operating_systems</option>
                     <option>physical_locations</option>
+                    <option>physical_devices</option>
                     <option>tags</option>
                   </select>
                 </div> <!-- search_select_c -->
@@ -224,6 +225,7 @@
                       <a href="/node_groups">node groups</a><br/>
                       <a href="/nodes">nodes</a><br/>
                       <a href="/physical_locations">physical_locations</a><br/>
+                      <a href="/physical_devices">physical_devices</a><br/>
                       <a href="/tags">tags</a><br/>
                     </div>
                   </div>
