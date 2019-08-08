@@ -69,7 +69,7 @@ def _format_msg(results, tags=None):
     return msg
 
 def process_actions(args, client, results):
-    '''Process change actions for physical_locations search results.'''
+    '''Process change actions for physical_devices search results.'''
 
     resp = None
     if args.set_tags:
@@ -78,7 +78,7 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.set_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.assign(name, value, 'physical_locations', results)
+                resp = client.tags.assign(name, value, 'physical_devices', results)
 
     if args.del_tags:
         msg = _format_msg(results, args.del_tags)
@@ -86,7 +86,7 @@ def process_actions(args, client, results):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
-                resp = client.tags.deassign(name, value, 'physical_locations', results)
+                resp = client.tags.deassign(name, value, 'physical_devices', results)
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         msg = _format_msg(results)
@@ -135,7 +135,7 @@ def search_physical_devices(args, client):
     if not any(getattr(args, key) for key in action_fields):
 
         if args.audit_history:
-            results = client.physical_locations.get_audit_history(results)
+            results = client.physical_devices.get_audit_history(results)
 
         print_results(args, results, default_key='serial_number', skip_keys=['serial_number', 'id'])
 
