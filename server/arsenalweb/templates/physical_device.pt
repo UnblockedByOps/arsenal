@@ -41,7 +41,7 @@
       <ul class="tabs">
         <li>
           <input type="radio" checked name="tabs" id="tab1">
-          <label for="tab1">Data Center</label>
+          <label for="tab1">Physical Device</label>
           <div id="tab-content1" class="tab-content">
             <table>
                 <tr>
@@ -91,7 +91,7 @@
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
               <div id="history_insert">
-                <a class="show_history" tal:attributes="href '/physical_devices_audit/{0}'.format(physical_device.id)">Show history for this Physical Device</a>
+                  <a class="show_history" tal:attributes="href '/physical_devices_audit/{0}'.format(physical_device.id)">Show history for this Physical Device</a>
               </div>
           </div>
         </li>
