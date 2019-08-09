@@ -80,7 +80,7 @@
             </table>
           </div>
         </li>
-        <li>
+        <li tal:condition="node['physical_device']">
           <input type="radio" name="tabs" id="tab2">
           <label for="tab2">Physical Device</label>
           <div id="tab-content2" class="tab-content">
