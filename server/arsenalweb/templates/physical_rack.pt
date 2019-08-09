@@ -68,16 +68,16 @@
           <label for="tab2">Physical Elevations</label>
           <div id="tab-content2" class="tab-content">
               <div tal:repeat="item physical_rack.physical_elevations">
-                  <h4 style="border-bottom: 1px solid #CCCCCC;">${item['elevation']}</h4>
+                  <h4 style="border-bottom: 1px solid #CCCCCC;">Elevation: ${item.elevation}</h4>
                   <table>
                       <tr>
-                          <td>ID:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(item['id'])" tal:content="item['id']">1</a></span></td>
+                          <td>ID:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(item.id)" tal:content="item.id">1</a></span></td>
                       </tr>
-                      <tr>
-                          <td>Physical Device Serial Number:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item['physical_device']['id'])" tal:content="item['physical_device']['serial_number']">1</a></span></td>
+                      <tr tal:condition="item.physical_device">
+                          <td>Physical Device Serial Number:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.physical_device.id)" tal:content="item.physical_device.serial_number">1</a></span></td>
                       </tr>
-                      <tr>
-                          <td>Physical Device Hardware Profile:</td> <td><span class="mono">${item['physical_device']['hardware_profile']['name']}</span></td>
+                      <tr tal:condition="item.physical_device">
+                          <td>Physical Device Hardware Profile:</td> <td><span class="mono">${item.physical_device.hardware_profile.name}</span></td>
                       </tr>
                   </table>
                   <br/>
