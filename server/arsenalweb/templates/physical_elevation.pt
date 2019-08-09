@@ -49,10 +49,10 @@
                     <td>Elevation</td><td><span class="mono">${physical_elevation.elevation}</span></td>
                 </tr>
                 <tr>
-                    <td>Physical Location</td><td><span class="mono">${physical_elevation.physical_rack.physical_location.name}</span></td>
+                    <td>Physical Location</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(physical_elevation.physical_rack.physical_location.id)" tal:content="physical_elevation.physical_rack.physical_location.name">scif1_nap9_inf1</a></span></td>
                 </tr>
                 <tr>
-                    <td>Physical Rack</td><td><span class="mono">${physical_elevation.physical_rack.name}</span></td>
+                    <td>Physical Rack</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(physical_elevation.physical_rack.id)" tal:content="physical_elevation.physical_rack.name">rack0100</a></span></td>
                 </tr>
                 <tr>
                     <td>Created At</td><td><span class="mono">${physical_elevation.created}</span></td>
@@ -75,13 +75,13 @@
                     <td>ID</td><td><span class="mono">${physical_elevation.physical_device.id}</span></td>
                 </tr>
                 <tr>
-                    <td>Serial Number</td><td><span class="mono">${physical_elevation.physical_device.serial_number}</span></td>
+                    <td>Serial Number</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(physical_elevation.physical_device.id)" tal:content="physical_elevation.physical_device.serial_number">abc123</a></span></td>
                 </tr>
                 <tr>
                     <td>Hardware Profile</td><td><span class="mono">${physical_elevation.physical_device.hardware_profile.name}</span></td>
                 </tr>
                 <tr>
-                    <td>Physical Rack</td><td><span class="mono">${physical_elevation.physical_rack.name}</span></td>
+                    <td>Physical Rack</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(physical_elevation.physical_rack.id)" tal:content="physical_elevation.physical_rack.name">rack0100</a></span></td>
                 </tr>
             </table>
               <span tal:condition="not physical_elevation.physical_device" class="mono">No physical device found for physical elevation.</span>
