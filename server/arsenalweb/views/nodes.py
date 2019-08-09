@@ -93,6 +93,7 @@ def view_nodes(request):
         {'name': 'hardware_profile', 'pretty_name': 'Hardware Profile'},
         {'name': 'last_registered', 'pretty_name': 'Last Registered'},
         {'name': 'node_groups', 'pretty_name': 'Node Groups'},
+        {'name': 'serial_number', 'pretty_name': 'Serial Number'},
         {'name': 'node_id', 'pretty_name': 'Node ID'},
         {'name': 'node_name', 'pretty_name': 'Node Name'},
         {'name': 'operating_system', 'pretty_name': 'Operating System'},
