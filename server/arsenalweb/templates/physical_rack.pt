@@ -49,7 +49,7 @@
                     <td>Name</td><td><span class="mono">${physical_rack.name}</span></td>
                 </tr>
                 <tr>
-                    <td>Physical Location</td><td><span class="mono">${physical_rack.physical_location.name}</span></td>
+                    <td>Physical Location</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(physical_rack.physical_location.id)" tal:content="physical_rack.physical_location.name">scif1_nap9_inf1</a></span></td>
                 </tr>
                 <tr>
                     <td>Created At</td><td><span class="mono">${physical_rack.created}</span></td>
@@ -65,29 +65,13 @@
         </li>
         <li>
           <input type="radio" name="tabs" id="tab2">
-          <label for="tab2">Physical Location</label>
+          <label for="tab2">Physical Elevations</label>
           <div id="tab-content2" class="tab-content">
-                  <table>
-                      <tr>
-                          <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(physical_rack['physical_location']['id'])" tal:content="physical_rack['physical_location']['name']">scif1_nap9_inf1</a></span></td>
-                      </tr>
-                  </table>
-                  <br/>
-              <div tal:condition="not physical_rack.physical_location">
-                  <span class="mono">No physical location found for physical rack.</span>
-              </div>
-          </div>
-        </li>
-
-        <li>
-          <input type="radio" name="tabs" id="tab3">
-          <label for="tab3">Physical Elevations</label>
-          <div id="tab-content3" class="tab-content">
               <div tal:repeat="item physical_rack.physical_elevations">
-                  <h4 style="border-bottom: 1px solid #CCCCCC;">${item['id']}</h4>
+                  <h4 style="border-bottom: 1px solid #CCCCCC;">${item['elevation']}</h4>
                   <table>
                       <tr>
-                          <td>Elevation:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(item['id'])" tal:content="item['elevation']">1</a></span></td>
+                          <td>ID:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(item['id'])" tal:content="item['id']">1</a></span></td>
                       </tr>
                       <tr>
                           <td>Physical Device Serial Number:</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item['physical_device']['id'])" tal:content="item['physical_device']['serial_number']">1</a></span></td>
