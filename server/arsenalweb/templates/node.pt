@@ -88,17 +88,17 @@
               <tr>
                 <td>ID</td> <td><span class="mono">${node.physical_device.id}</span></td>
               </tr>
-              <tr>
-                <td>Serial Number</td> <td><span class="mono">${node.serial_number}</span></td>
+              <tr tal:condition="node['physical_device']['serial_number']">
+                  <td>Serial Number</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(node['physical_device']['id'])" tal:content="node['physical_device']['serial_number']">abc123</a></span></td>
               </tr>
-              <tr>
-                <td>Physical Location</td> <td><span class="mono">${node.physical_device.physical_location.name}</span></td>
+              <tr tal:condition="node['physical_device']['physical_location']['id']">
+                  <td>Physical Location</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(node['physical_device']['physical_location']['id'])" tal:content="node['physical_device']['physical_location']['name']">mydc1</a></span></td>
               </tr>
-              <tr>
-                <td>Physical Rack</td> <td><span class="mono">${node.physical_device.physical_rack.name}</span></td>
+              <tr tal:condition="node['physical_device']['physical_rack']['id']">
+                  <td>Physical Rack</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(node['physical_device']['physical_rack']['id'])" tal:content="node['physical_device']['physical_rack']['name']">rack0100</a></span></td>
               </tr>
-              <tr>
-                <td>Physical Elevation</td> <td><span class="mono">${node.physical_device.physical_elevation.elevation}</span></td>
+              <tr tal:condition="node['physical_device']['physical_elevation']['id']">
+                  <td>Physical Elevation</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(node['physical_device']['physical_elevation']['id'])" tal:content="node['physical_device']['physical_elevation']['elevation']">1</a></span></td>
               </tr>
             </table>
           </div>
