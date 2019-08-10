@@ -95,7 +95,7 @@
           <div id="tab-content2" class="tab-content">
               <table>
                   <tr tal:repeat="item physical_location.physical_racks">
-                      <td>${item['name']}</td>
+                      <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(item['id'])" tal:content="item['name']">rack0100</a></span></td>
                   </tr>
               </table>
               <span tal:condition="not physical_location.physical_racks" class="mono">No physical racks found for physical location.</span>
