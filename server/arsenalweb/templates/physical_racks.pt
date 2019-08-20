@@ -38,7 +38,7 @@
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
                     <td class="sr-physical_rack_id ta_right" tal:content="item.id">0</td>
                     <td class="sr-name"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(item.id)" tal:content="item.name">rack0100</a></td>
-                    <td class="sr-physical_location"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(item.id)" tal:content="item.physical_location.name">scif1_nap9_inf1</a></td>
+                    <td class="sr-physical_location"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.physical_location.name">scif1_nap9_inf1</a></td>
                     <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
                     <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
                     <td class="sr-created ta_right" tal:content="item.created">2015/04/23 21:02:15</td>
