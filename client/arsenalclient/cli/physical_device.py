@@ -263,6 +263,46 @@ def import_physical_device(args, client):
     except IOError as ex:
         LOG.error(ex)
 
+def export_physical_device(args, client):
+    '''Export physical_devices to standard out or a csv file.'''
+
+    LOG.info('Beginning physical_device export...')
+
+    params = parse_cli_args(args.search, 'all')
+    if 'physical_location.name' not in params:
+        LOG.error('physical_location.name search parameter is required')
+        sys.exit(1)
+    resp = client.physical_devices.search(params)
+    LOG.info('Found {0} device(s).'.format(resp['meta']['total']))
+    LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
+
+    all_results = []
+    for result in resp['results']:
+        my_device = [
+            result['serial_number'],
+            result['physical_location']['name'],
+            result['physical_rack']['name'],
+            str(result['physical_elevation']['elevation']),
+            result['mac_address_1'],
+            result['mac_address_2'],
+            result['hardware_profile']['name'],
+            result['oob_ip_address'],
+            result['oob_mac_address'],
+        ]
+        line = ','.join(my_device)
+        if args.export_csv:
+            all_results.append(line)
+        else:
+            print(line)
+
+    if all_results:
+        LOG.info('Writing results to csv: {0}'.format(args.export_csv))
+
+        with open(args.export_csv, 'w') as the_file:
+            for result in all_results:
+                the_file.write('{0}\n'.format(result))
+
+
 def check_null_fields(row, field_names):
     '''Checks for keys will null values and removes them. This allows the API
     to return appropriate errors for keys that require a value.'''

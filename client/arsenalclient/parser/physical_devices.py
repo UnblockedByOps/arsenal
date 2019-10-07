@@ -20,6 +20,7 @@ from arsenalclient.cli.physical_device import (
     create_physical_device,
     delete_physical_device,
     import_physical_device,
+    export_physical_device,
     )
 
 def parser_physical_devices(top_parser, otsp):
@@ -182,7 +183,7 @@ def parser_physical_devices(top_parser, otsp):
                          help='Import physical_device objects from a csv.',
                          parents=[top_parser])
 
-    # required physical_device delete argument group (rdag)
+    # required physical_device import argument group (risc)
     risc = isc.add_argument_group('required arguments')
 
     risc.add_argument('-c',
@@ -192,5 +193,26 @@ def parser_physical_devices(top_parser, otsp):
                       help='Full filesystem path to the csv file to import '
                       'physical devices from.')
     isc.set_defaults(func=import_physical_device)
+
+    # physical_devices export subcommand (esc)
+    esc = asp.add_parser('export',
+                         help='Export physical_device objects to stdout or a csv.',
+                         parents=[top_parser])
+    esc.add_argument('search',
+                     default=None,
+                     metavar='search_terms',
+                     help='Comma separated list of key=value pairs to search ' \
+                     'for.\n {0}'.format(gen_help('physical_devices_search')))
+
+    # required physical_device export argument group (resc)
+    resc = esc.add_argument_group('required arguments')
+
+    resc.add_argument('-c',
+                      '--csv',
+                      dest='export_csv',
+                      help='Full filesystem path to the csv file to export '
+                      'physical devices to. If unspecified it will print to '
+                      'standard out')
+    esc.set_defaults(func=export_physical_device)
 
     return top_parser, otsp
