@@ -360,7 +360,8 @@ validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device
 #
 # Export tool
 #
-validate_command "${search_cmd} physical_devices export serial_number=B0" 0 "command" "echo \"\$results\" | egrep -c 'TEST_LOCATION_1'" "3"
+validate_command "${search_cmd} physical_devices export physical_location.name=TEST_LOCATION_1,serial_number=B0" 0 "command" "echo \"\$results\" | egrep -c 'TEST_LOCATION_1'" "3"
+validate_command "${search_cmd} physical_devices export serial_number=B0" 1
 #
 # data_centers
 #
