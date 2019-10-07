@@ -357,3 +357,24 @@ You can then run the import tool to bring the devices into Arsenal:
 arsenal physical_devices import -c physical_device_import.csv
 ```
 
+### Exporting devices
+
+You can also export physcial devices either to standard out or to a csv. Searching for devices works the same as `physical_devices search`.
+
+*NOTE:* The parameter physical_location.name is required.
+
+### Export to a csv file
+
+To export all devices in `TEST_LOCATION_1` to a csv file named `/tmp/export.csv` run the following:
+
+```shell
+arsenal physical_devices export physical_location.name=TEST_LOCATION_1 -c /tmp/export.csv
+```
+
+### Export to standard out
+
+To export all devices in `TEST_LOCATION_1` that live in rack `R1000` to standard output run the following:
+
+```shell
+arsenal physical_devices export physical_location.name=TEST_LOCATION_1,physical_rack.name=R1000
+```
