@@ -263,6 +263,14 @@ def import_physical_device(args, client):
     except IOError as ex:
         LOG.error(ex)
 
+def export_check_optional(param):
+    '''Checks if an optional param exists or not during export. Sets to empty
+    string if not, otherwise returns the param as-is.'''
+
+    if not param or param == 'None':
+        return ''
+    return param
+
 def export_physical_device(args, client):
     '''Export physical_devices to standard out or a csv file.'''
 
@@ -281,14 +289,15 @@ def export_physical_device(args, client):
 
     all_results = []
     for result in resp['results']:
+
         my_device = [
             result['serial_number'],
             result['physical_location']['name'],
             result['physical_rack']['name'],
             str(result['physical_elevation']['elevation']),
             result['mac_address_1'],
-            result['mac_address_2'],
-            result['hardware_profile']['name'],
+            export_check_optional(result['mac_address_2']),
+            export_check_optional(result['hardware_profile']['name']),
             result['oob_ip_address'],
             result['oob_mac_address'],
         ]
