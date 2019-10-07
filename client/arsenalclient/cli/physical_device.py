@@ -302,7 +302,6 @@ def export_physical_device(args, client):
             for result in all_results:
                 the_file.write('{0}\n'.format(result))
 
-
 def check_null_fields(row, field_names):
     '''Checks for keys will null values and removes them. This allows the API
     to return appropriate errors for keys that require a value.'''
