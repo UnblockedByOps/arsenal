@@ -264,8 +264,8 @@ def import_physical_device(args, client):
         LOG.error(ex)
 
 def export_check_optional(param):
-    '''Checks if an optional param exists or not. Sets to empty string if
-    not.'''
+    '''Checks if an optional param exists or not during export. Sets to empty
+    string if not, otherwise returns the param as-is.'''
 
     if not param or param == 'None':
         return ''
