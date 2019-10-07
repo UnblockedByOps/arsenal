@@ -273,6 +273,9 @@ def export_physical_device(args, client):
         LOG.error('physical_location.name search parameter is required')
         sys.exit(1)
     resp = client.physical_devices.search(params)
+    if not resp['results']:
+        return
+
     LOG.info('Found {0} device(s).'.format(resp['meta']['total']))
     LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
 
