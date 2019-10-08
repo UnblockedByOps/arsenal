@@ -244,13 +244,13 @@ def import_physical_device(args, client):
                 resp = create_physical_device(args, client, device=row)
                 LOG.debug(json.dumps(resp, indent=4, sort_keys=True))
 
-                try:
-                    if resp['http_status']['code'] != 200:
-                        resp['http_status']['row'] = row
-                        resp['http_status']['row_number'] = count
-                        failures.append(resp['http_status'])
-                except TypeError:
-                    pass
+                if not resp:
+                    continue
+
+                if resp['http_status']['code'] != 200:
+                    resp['http_status']['row'] = row
+                    resp['http_status']['row_number'] = count
+                    failures.append(resp['http_status'])
 
         if failures:
             overall_exit = 1
