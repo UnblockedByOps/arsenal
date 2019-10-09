@@ -115,10 +115,10 @@ def search_physical_devices(args, client):
 
     # If we are adding or deleting tags, we need existing tags for comparison.
     if args.set_tags or args.del_tags:
-        if args.fields:
-            args.fields += ',tags'
+        if search_fields:
+            search_fields += ',tags'
         else:
-            args.fields = 'tags'
+            search_fields = 'tags'
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         search_fields = 'all'

@@ -62,6 +62,16 @@ CREATE TABLE `tag_data_center_assignments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ###
+### TABLE: tag_physical_device_assignments
+###   This contains assignments of tags to physical_devices object_type.
+###
+DROP TABLE IF EXISTS `tag_physical_device_assignments`;
+CREATE TABLE `tag_physical_device_assignments` (
+  `tag_id`                        int(11) UNSIGNED,
+  `physical_device_id`            int(11) UNSIGNED
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+###
 ### TABLE: data_centers
 ###   The data_centers table.
 ###

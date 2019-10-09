@@ -28,7 +28,7 @@ def parser_physical_devices(top_parser, otsp):
 
     ### physical_devices object_type parser (otp)
     my_help = ('Perform actions on the physical_devices object_type. Use the \n'
-               'search action to perform assignment actions such as tagging (TBD).\n\n')
+               'search action to perform assignment actions such as tagging.\n\n')
     otp = otsp.add_parser('physical_devices',
                           description=my_help,
                           help=my_help,

@@ -64,6 +64,10 @@ class PhysicalDevice(Base):
                                     lazy='joined')
     oob_ip_address = Column(Text, nullable=True)
     oob_mac_address = Column(Text, nullable=True)
+    tags = relationship('Tag',
+                        secondary='tag_physical_device_assignments',
+                        backref='physical_devices',
+                        lazy='joined')
 
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
@@ -91,6 +95,7 @@ class PhysicalDevice(Base):
                     oob_ip_address=self.oob_ip_address,
                     oob_mac_address=self.oob_mac_address,
                     serial_number=check_null_string(self.serial_number),
+                    tags=get_name_id_list(self.tags, extra_keys=['value']),
                     created=self.created,
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -120,6 +125,9 @@ class PhysicalDevice(Base):
 
                 if 'node' in my_fields:
                     resp['node'] = get_name_id_dict(self.nodes)
+                if 'tags' in my_fields:
+                    resp['tags'] = get_name_id_list(self.tags,
+                                                    extra_keys=['value'])
 
                 return jsonify(resp)
 
