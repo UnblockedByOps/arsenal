@@ -38,10 +38,14 @@ def _check_tags(obj, set_tags):
     except AttributeError:
         return resp
 
+    LOG.debug('Taggable object is: {0}'.format(obj))
     for tag in tags:
         LOG.debug('Working on tag: {0}'.format(tag))
         key, val = tag.split('=')
-        LOG.debug('name is: {0}'.format(obj['name']))
+        try:
+            LOG.debug('name is: {0}'.format(obj['name']))
+        except KeyError:
+            LOG.debug('serial_number is: {0}'.format(obj['serial_number']))
         LOG.debug('tags are: {0}'.format(obj['tags']))
         for obj_tag in obj['tags']:
             if key == obj_tag['name']:

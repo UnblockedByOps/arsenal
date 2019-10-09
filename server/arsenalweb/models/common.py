@@ -106,6 +106,16 @@ tag_node_group_assignments = Table('tag_node_group_assignments',
                                           ForeignKey('tags.id'))
                                   )
 
+tag_physical_device_assignments = Table('tag_physical_device_assignments',
+                                        Base.metadata,
+                                        Column('physical_device_id',
+                                               Integer,
+                                               ForeignKey('physical_devices.id')),
+                                        Column('tag_id',
+                                               Integer,
+                                               ForeignKey('tags.id'))
+                                       )
+
 # Common functions
 def check_null_string(obj):
     '''Check for null string for json object.'''

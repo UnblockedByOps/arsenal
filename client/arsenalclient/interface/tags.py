@@ -131,7 +131,10 @@ class Tags(ArsenalInterface):
             msg = 'De-assigning'
 
         for action_object in results:
-            action_names.append(action_object['name'])
+            try:
+                action_names.append(action_object['name'])
+            except KeyError:
+                action_names.append(action_object['serial_number'])
             action_ids.append(action_object['id'])
 
         try:
