@@ -90,6 +90,20 @@
           </div>
         </li>
         <li>
+          <input type="radio" name="tabs" id="tab_tags">
+          <label for="tab_tags">Tags</label>
+          <div id="tab-content_tags" class="tab-content">
+              <table>
+                <tr tal:repeat="tag physical_device.tags">
+                    <td>${tag['name']}</td> <td><span class="mono">${tag['value']}</span></td>
+                </tr>
+              </table>
+              <div tal:condition="not physical_device.tags">
+                  <span class="mono">No tags for physical_device.</span>
+              </div>
+          </div>
+        </li>
+        <li>
           <input type="radio" name="tabs" id="tab_hist">
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
