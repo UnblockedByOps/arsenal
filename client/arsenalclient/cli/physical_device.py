@@ -147,6 +147,16 @@ def search_physical_devices(args, client):
         check_resp(resp)
     LOG.debug('Complete.')
 
+def tag_physical_device_import(client, set_tags, results):
+    '''Tag a physical device that is newly created by the import tool with any
+    tags that were provided in the csv file.'''
+
+    tags = [tag for tag in set_tags.split('|')]
+    for tag in tags:
+        name, value = tag.split('=')
+        resp = client.tags.assign(name, value, 'physical_devices', results)
+        LOG.debug('Tag response: {0}'.format(resp))
+
 def create_physical_device(args, client, device=None):
     '''Create a new physical_device.'''
 
@@ -180,14 +190,26 @@ def create_physical_device(args, client, device=None):
                       args.answer_yes):
 
             resp = client.physical_devices.update(device)
+            LOG.debug('Update response is: {0}'.format(resp))
             if import_tool:
+                try:
+                    set_tags = device['tags']
+                    tag_physical_device_import(client, set_tags, resp['results'])
+                except KeyError:
+                    pass
                 return resp
             else:
                 return check_resp(resp)
 
     except NoResultFound:
         resp = client.physical_devices.create(device)
+        LOG.debug('Create response is: {0}'.format(resp))
         if import_tool:
+            try:
+                set_tags = device['tags']
+                tag_physical_device_import(client, set_tags, resp['results'])
+            except KeyError:
+                pass
             return resp
         else:
             return check_resp(resp)
@@ -231,6 +253,7 @@ def import_physical_device(args, client):
                 'hardware_profile',
                 'oob_ip_address',
                 'oob_mac_address',
+                'tags',
             ]
             device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=field_names)
             for count, row in enumerate(device_import):
