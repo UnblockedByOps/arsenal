@@ -132,7 +132,7 @@ def create_physical_device(serial_number=None,
         return api_200(results=physical_device)
 
     except IntegrityError:
-        msg = 'Physcial elevation is already occupied, move the existing ' \
+        msg = 'Physical elevation is already occupied, move the existing ' \
               'physical_device first.'
         LOG.error(msg)
         raise Exception(msg)
@@ -202,7 +202,7 @@ def update_physical_device(physical_device, **kwargs):
         return api_200(results=physical_device)
 
     except IntegrityError:
-        msg = 'Physcial elevation is already occupied, move the existing ' \
+        msg = 'Physical elevation is already occupied, move the existing ' \
               'physical_device first.'
         LOG.error(msg)
         raise Exception(msg)

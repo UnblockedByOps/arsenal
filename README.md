@@ -293,7 +293,7 @@ Arsenal now has the ability to track physical hardware from the moment it is put
 
 First, you must create the physical location, rack and elevations in arsenal before you can assign hardware to them.
 
-#### Physcial location
+#### Physical location
 
 First, create the location where all the racks will reside:
 
@@ -301,7 +301,7 @@ First, create the location where all the racks will reside:
 arsenal physical_locations create --name TEST_LOCATION_1 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'
 ```
 
-#### Physcial rack
+#### Physical rack
 
 Then create the racks associated to the location:
 
@@ -314,7 +314,7 @@ arsenal physical_racks create -l TEST_LOCATION_1 -n R10N
 etc.
 ```
 
-#### Physcial elevations
+#### Physical elevations
 
 Then for each rack, create the number of elevations the rack has:
 
@@ -332,7 +332,7 @@ etc.
 
 ### Adding devices
 
-You are now ready to add devices. The Arsenal client has an import tool to read in physcial devices from a csv.
+You are now ready to add devices. The Arsenal client has an import tool to read in physical devices from a csv.
 
 #### CSV Format
 
@@ -348,7 +348,7 @@ BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant
 ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
 ```
 
-Hardware profile is currently optional but will be needed in the future in order to obtain the rack U for the physcial colo layout.
+Hardware profile is currently optional but will be needed in the future in order to obtain the rack U for the physical colo layout.
 
 #### Importing the devices
 
@@ -360,7 +360,7 @@ arsenal physical_devices import -c physical_device_import.csv
 
 ### Exporting devices
 
-You can also export physcial devices either to standard out or to a csv. Searching for devices works the same as `physical_devices search`.
+You can also export physical devices either to standard out or to a csv. Searching for devices works the same as `physical_devices search`.
 
 *NOTE:* The parameter physical_location.name is required.
 
