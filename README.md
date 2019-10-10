@@ -339,12 +339,13 @@ You are now ready to add devices. The Arsenal client has an import tool to read 
 The format of the csv file is as follows:
 
 ```csv
-# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile(optional),oob_ip_address,oob_mac_address
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile(optional),oob_ip_address,oob_mac_address,tags (optional, pipe separated)
 AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70
 AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71
 BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72
 BB0000002,TEST_LOCATION_1,R101,2,aa:bb:cc:11:22:60,aa:bb:cc:11:22:61,HP ProLiant DL380 Gen9,10.1.1.4,xx:yy:zz:99:88:73
 BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant DL380 Gen9,10.1.1.5,xx:yy:zz:99:88:74
+ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
 ```
 
 Hardware profile is currently optional but will be needed in the future in order to obtain the rack U for the physcial colo layout.
