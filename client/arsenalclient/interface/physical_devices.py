@@ -126,7 +126,7 @@ class PhysicalDevices(ArsenalInterface):
         try:
             resource = resp['results'][0]
         except IndexError:
-            msg = 'Physcial Device not found: {0}'.format(serial_number)
+            msg = 'Physical Device not found: {0}'.format(serial_number)
             LOG.info(msg)
             raise NoResultFound(msg)
         if len(resp['results']) > 1:

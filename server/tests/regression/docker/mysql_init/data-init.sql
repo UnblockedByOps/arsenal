@@ -181,7 +181,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
 # Add user: hvm to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 3, 'Admin', NOW(),NOW());
-# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, data_center_write, data_center_delete, secure_tags, physcial_*
+# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, data_center_write, data_center_delete, secure_tags, physical_*
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 5, 'Admin', NOW(),NOW());
