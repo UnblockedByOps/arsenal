@@ -357,11 +357,16 @@ validate_command "${search_cmd} physical_devices search serial_number=A0 -f all"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_mixed.csv" 1
 validate_command "${search_cmd} physical_devices search serial_number=B0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_fail.csv" 1
+# tags
+validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: chassis_'" "2"
 #
 # Export tool
 #
 validate_command "${search_cmd} physical_devices export physical_location.name=TEST_LOCATION_1,serial_number=B0" 0 "command" "echo \"\$results\" | egrep -c 'TEST_LOCATION_1'" "3"
+# missing required parameter physical_location.name
 validate_command "${search_cmd} physical_devices export serial_number=B0" 1
+# tags
+validate_command "${search_cmd} physical_devices export physical_location.name=TEST_LOCATION_1,serial_number=A0" 0 "command" "echo \"\$results\" | egrep -c 'chassis_'" "1"
 #
 # data_centers
 #
