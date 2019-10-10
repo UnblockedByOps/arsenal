@@ -147,7 +147,7 @@ def search_physical_devices(args, client):
         check_resp(resp)
     LOG.debug('Complete.')
 
-def tag_pysical_device_import(client, set_tags, results):
+def tag_physical_device_import(client, set_tags, results):
     '''Tag a physical device that is newly created by the import tool with any
     tags that were provided in the csv file.'''
 
@@ -194,7 +194,7 @@ def create_physical_device(args, client, device=None):
             if import_tool:
                 try:
                     set_tags = device['tags']
-                    tag_pysical_device_import(client, set_tags, resp['results'])
+                    tag_physical_device_import(client, set_tags, resp['results'])
                 except KeyError:
                     pass
                 return resp
@@ -207,7 +207,7 @@ def create_physical_device(args, client, device=None):
         if import_tool:
             try:
                 set_tags = device['tags']
-                tag_pysical_device_import(client, set_tags, resp['results'])
+                tag_physical_device_import(client, set_tags, resp['results'])
             except KeyError:
                 pass
             return resp
