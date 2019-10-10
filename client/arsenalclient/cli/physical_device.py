@@ -327,6 +327,13 @@ def export_physical_device(args, client):
             result['oob_ip_address'],
             result['oob_mac_address'],
         ]
+        joined_tags = ''
+        for tag in result['tags']:
+            joined_tags += '{0}={1}|'.format(tag['name'], tag['value'])
+        joined_tags = joined_tags.rstrip('|')
+        if joined_tags:
+            my_device.append(joined_tags)
+
         line = ','.join(my_device)
         if args.export_csv:
             all_results.append(line)
