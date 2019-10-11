@@ -107,15 +107,7 @@ class PhysicalDevice(Base):
                 # Always return these fields, then return whatever additional fields
                 # are asked for.
                 resp = get_name_id_dict([self], default_keys=['id',
-                                                              'hardware_profile',
                                                               'serial_number',
-                                                              'mac_address_1',
-                                                              'mac_address_2',
-                                                              'oob_ip_address',
-                                                              'oob_mac_address',
-                                                              'physical_location',
-                                                              'physical_rack',
-                                                              'physical_elevation',
                                                              ])
 
                 my_fields = fields.split(',')
@@ -134,15 +126,7 @@ class PhysicalDevice(Base):
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self], default_keys=['id',
-                                                          'hardware_profile',
                                                           'serial_number',
-                                                          'mac_address_1',
-                                                          'mac_address_2',
-                                                          'oob_ip_address',
-                                                          'oob_mac_address',
-                                                          'physical_location',
-                                                          'physical_rack',
-                                                          'physical_elevation',
                                                          ])
 
             return resp
