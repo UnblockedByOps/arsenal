@@ -362,7 +362,7 @@ arsenal physical_devices import -c physical_device_import.csv
 
 You can also export physical devices either to standard out or to a csv. Searching for devices works the same as `physical_devices search`.
 
-*NOTE:* The parameter physical_location.name is required.
+**NOTE:** The parameter physical_location.name is required.
 
 ### Export to a csv file
 
