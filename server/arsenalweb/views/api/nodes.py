@@ -341,7 +341,8 @@ def process_data_center(payload, user):
 
     except NoResultFound:
         LOG.debug('data_center data not found, creating...')
-        data_center = create_data_center(name=name, updated_by=user)
+        resp = create_data_center(name=name, updated_by=user)
+        data_center = resp['results'][0]
 
     except (TypeError, KeyError):
         LOG.debug('data_center data not present in payload.')
