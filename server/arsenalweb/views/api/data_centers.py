@@ -90,13 +90,16 @@ def create_data_center(name=None, updated_by=None, **kwargs):
         utcnow = datetime.utcnow()
 
         # Set status to setup if the client doesn't send it.
-        if kwargs['status']:
-            LOG.debug('status keyword sent')
-            my_status = find_status_by_name(kwargs['status'])
-            kwargs['status_id'] =  my_status.id
+        try:
+            stat = kwargs['status']
+            LOG.debug('status keyword sent: {0}'.format(stat))
+            my_status = find_status_by_name(stat)
+            kwargs['status_id'] = my_status.id
             del kwargs['status']
-        elif 'status_id' not in kwargs or not kwargs['status_id']:
-            kwargs['status_id'] = 2
+        except KeyError:
+            if 'status_id' not in kwargs or not kwargs['status_id']:
+                LOG.debug('status_id not present, setting status_id to 2')
+                kwargs['status_id'] = 2
 
         data_center = DataCenter(name=name,
                                  updated_by=updated_by,
