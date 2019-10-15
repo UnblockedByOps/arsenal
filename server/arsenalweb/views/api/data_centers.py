@@ -98,7 +98,7 @@ def create_data_center(name=None, updated_by=None, **kwargs):
             del kwargs['status']
         except KeyError:
             if 'status_id' not in kwargs or not kwargs['status_id']:
-                LOG.debug('Setting status_id to 2')
+                LOG.debug('status_id not present, setting status_id to 2')
                 kwargs['status_id'] = 2
 
         data_center = DataCenter(name=name,
