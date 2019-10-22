@@ -42,6 +42,7 @@ LOG = logging.getLogger(__name__)
 
 NO_CONVERT = [
     'postal_code',
+    'elevation',
 ]
 
 
@@ -163,9 +164,10 @@ def jsonify(obj):
             continue
         try:
             if param in NO_CONVERT:
-                LOG.debug('Using raw db value for param: {0}'.format(param))
                 p_type = obj.get(param)
-                LOG.debug('    value: {0}'.format(p_type))
+
+                LOG.debug('Using raw db value for param: {0} value: {1}'.format(param,
+                                                                                p_type))
             else:
                 try:
                     p_type = int(getattr(obj, param))
