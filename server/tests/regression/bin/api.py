@@ -220,6 +220,8 @@ def run_search_test(args, test_num, test_total, **obj_args):
     LOG.debug('    Response data: {0}'.format(resp))
     if not validate_search_test_results(resp, exp_result_count, exp_responses):
         LOG.error('    result   : FAIL')
+        LOG.error('    response : {0}'.format(json.dumps(resp, indent=4,
+                                                         sort_keys=True)))
         FAILED_TESTS.append({
             'name': desc,
             'url': url
