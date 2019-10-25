@@ -507,7 +507,7 @@ tests:
           - elevation: 2
           - elevation: 2
       - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value'
-        url: '/api/physical_elevations?physical_rack.name=R900&elevation=1'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=^1'
         result_count: 2
         expected_responses:
           - elevation: 1
