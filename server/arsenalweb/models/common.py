@@ -42,6 +42,7 @@ LOG = logging.getLogger(__name__)
 
 NO_CONVERT = [
     'postal_code',
+    'elevation',
 ]
 
 
