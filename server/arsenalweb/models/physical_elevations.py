@@ -38,7 +38,7 @@ class PhysicalElevation(Base):
 
     __tablename__ = 'physical_elevations'
     id = Column(Integer, primary_key=True, nullable=False)
-    elevation = Column(Integer, nullable=False)
+    elevation = Column(Text, nullable=False)
     physical_rack_id = Column(Integer, ForeignKey('physical_racks.id'), nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)

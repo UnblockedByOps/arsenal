@@ -132,27 +132,23 @@ def update_physical_elevation(physical_elevation, **kwargs):
     '''
 
     try:
-        # Convert everything that is defined to a string.
-        my_attribs = kwargs.copy()
-        for my_attr in my_attribs:
-            if my_attribs.get(my_attr):
-                my_attribs[my_attr] = str(my_attribs[my_attr])
-
         LOG.info('Updating physical_elevation: {0}'.format(physical_elevation.elevation))
 
         utcnow = datetime.utcnow()
 
-        for attribute in my_attribs:
+        for attribute in kwargs:
             if attribute == 'elevation':
                 LOG.debug('Skipping update to physical_elevation.elevation')
                 continue
             old_value = getattr(physical_elevation, attribute)
-            new_value = my_attribs[attribute]
+            new_value = kwargs[attribute]
 
             if old_value != new_value and new_value:
                 if not old_value:
                     old_value = 'None'
 
+                LOG.debug('Types old_value: {0} new_value: {1}'.format(type(old_value),
+                                                                       type(new_value)))
                 LOG.debug('Updating physical_elevation: {0} attribute: '
                           '{1} new_value: {2}'.format(physical_elevation.elevation,
                                                       attribute,
@@ -161,7 +157,7 @@ def update_physical_elevation(physical_elevation, **kwargs):
                                                field=attribute,
                                                old_value=old_value,
                                                new_value=new_value,
-                                               updated_by=my_attribs['updated_by'],
+                                               updated_by=kwargs['updated_by'],
                                                created=utcnow)
                 DBSession.add(audit)
                 setattr(physical_elevation, attribute, new_value)

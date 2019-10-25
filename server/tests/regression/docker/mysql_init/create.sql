@@ -295,7 +295,7 @@ CREATE UNIQUE INDEX idx_physical_rack_location on physical_racks (name, physical
 DROP TABLE IF EXISTS `physical_elevations`;
 CREATE TABLE `physical_elevations` (
   `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `elevation`               int(11) NOT NULL,
+  `elevation`               varchar(11) NOT NULL,
   `physical_rack_id`        int(11) NOT NULL,
   `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

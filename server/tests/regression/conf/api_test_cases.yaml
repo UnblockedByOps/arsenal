@@ -493,25 +493,31 @@ tests:
         url: '/api/physical_elevations?elevation=^1'
         result_count: 3
         expected_responses:
-          - elevation: 1
-          - elevation: 1
-          - elevation: 1
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '1'
       - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
         url: '/api/physical_elevations?elevation=^1,2'
         result_count: 6
         expected_responses:
-          - elevation: 1
-          - elevation: 1
-          - elevation: 1
-          - elevation: 2
-          - elevation: 2
-          - elevation: 2
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '2'
+          - elevation: '2'
+          - elevation: '2'
       - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value'
-        url: '/api/physical_elevations?physical_rack.name=R900&elevation=1'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=^1'
         result_count: 2
         expected_responses:
-          - elevation: 1
-          - elevation: 1
+          - elevation: '1'
+          - elevation: '1'
+      - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value sub elevation'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=^4.'
+        result_count: 2
+        expected_responses:
+          - elevation: '4.1'
+          - elevation: '4.10'
   search_physical_devices_regex:
     description: '/api/physical_devices search tests with regex'
     function: 'run_search_test'
