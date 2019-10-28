@@ -297,6 +297,7 @@ def api_physical_devices_write(request):
 
     try:
         req_params = [
+            'hardware_profile',
             'mac_address_1',
             'physical_elevation',
             'physical_location',
@@ -304,7 +305,6 @@ def api_physical_devices_write(request):
             'serial_number',
         ]
         opt_params = [
-            'hardware_profile',
             'mac_address_2',
             'oob_ip_address',
             'oob_mac_address',
