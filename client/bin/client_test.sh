@@ -329,11 +329,11 @@ validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLia
 # physical_devices updates
 ## elevation
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: 5"
+validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '5'"
 ## rack
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: R100"
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: 6"
+validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '6'"
 ## oob-ip-address
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-ip-address 1.2.3.4" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
