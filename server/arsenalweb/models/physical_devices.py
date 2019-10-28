@@ -58,7 +58,7 @@ class PhysicalDevice(Base):
     mac_address_2 = Column(Text, nullable=True)
     hardware_profile_id = Column(Integer,
                                  ForeignKey('hardware_profiles.id'),
-                                 nullable=True)
+                                 nullable=False)
     hardware_profile = relationship('HardwareProfile',
                                     backref=backref('physical_devices'),
                                     lazy='joined')
