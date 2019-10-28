@@ -348,7 +348,7 @@ BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant
 ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
 ```
 
-The hardware profile must match an existing hardware profile name already in Arsenal. If this is a new piece of gear that does not yet have a hardware profile, use `Unknown` for this field.
+The hardware profile must match an existing hardware profile name already in Arsenal. If this is a new piece of gear that does not yet have a hardware profile, use `Unknown` for this field. When the node is kickstarted for the first time, it will register its hardware_profile and update the physical_device accordingly.
 
 #### Importing the devices
 
