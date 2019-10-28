@@ -505,11 +505,14 @@ def update_node(node, **kwargs):
         try:
             current_hwp = node.physical_device.hardware_profile.id
             if current_hwp != hardware_profile_id:
-                LOG.debug('Updating physical_device hardware_profile_id from: '
+                LOG.debug('Updating physical_device.hardware_profile_id from: '
                           '{0} to: {1}'.format(current_hwp, hardware_profile_id))
                 update_physical_device(node.physical_device,
                                        hardware_profile_id=hardware_profile_id,
                                        updated_by=user_id)
+            else:
+                LOG.debug('physical_device.hardware_profile_id matches what '
+                          'is being reported by node registration.')
         except AttributeError:
             LOG.debug('No physical_device for node, not checking '
                       'physical_device.hardware_profile_id for update.')
