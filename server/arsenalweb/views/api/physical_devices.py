@@ -83,6 +83,8 @@ def create_physical_device(serial_number=None,
 
     Required params:
 
+    hardware_profile_id: An integer representing the hardware_profile_id from
+        the hardware_profiles table.
     mac_address_1: A string representing the MAC address of the first interface.
     physical_location_id : An integer representing the physical_location_id
         from the physical_locations table.
@@ -95,8 +97,6 @@ def create_physical_device(serial_number=None,
 
     Optional kwargs:
 
-    hardware_profile_id: An integer representing the hardware_profile_id from
-        the hardware_profiles table.
     mac_address_2: A string representing the MAC address of the second interface.
     oob_ip_address: A string representing the out of band IP address.
     oob_mac_address: A string representing the out of band MAC address.
@@ -297,6 +297,7 @@ def api_physical_devices_write(request):
 
     try:
         req_params = [
+            'hardware_profile',
             'mac_address_1',
             'physical_elevation',
             'physical_location',
@@ -304,7 +305,6 @@ def api_physical_devices_write(request):
             'serial_number',
         ]
         opt_params = [
-            'hardware_profile',
             'mac_address_2',
             'oob_ip_address',
             'oob_mac_address',
