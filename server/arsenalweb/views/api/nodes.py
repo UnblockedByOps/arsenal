@@ -57,6 +57,9 @@ from arsenalweb.views.api.operating_systems import (
     get_operating_system,
     create_operating_system,
     )
+from arsenalweb.views.api.physical_devices import (
+    update_physical_device,
+    )
 from arsenalweb.views.api.ec2_instances import (
     create_ec2_instance,
     find_ec2_instance_by_id,
@@ -498,6 +501,18 @@ def update_node(node, **kwargs):
             manage_guest_vm_assignments(kwargs['guest_vms'], node, user_id)
         except KeyError:
             pass
+
+        try:
+            current_hwp = node.physical_device.hardware_profile.id
+            if current_hwp != hardware_profile_id:
+                LOG.debug('Updating physical_device hardware_profile_id from: '
+                          '{0} to: {1}'.format(current_hwp, hardware_profile_id))
+                update_physical_device(node.physical_device,
+                                       hardware_profile_id=hardware_profile_id,
+                                       updated_by=user_id)
+        except AttributeError:
+            LOG.debug('No physical_device for node, not checking '
+                      'physical_device.hardware_profile_id for update.')
 
         DBSession.flush()
     except Exception as ex:
