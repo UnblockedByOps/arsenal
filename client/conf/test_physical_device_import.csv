@@ -1,4 +1,4 @@
-# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile(optional),oob_ip_address,oob_mac_address,tags (optional, pipe separated)
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,tags (optional, pipe separated)
 A00000001,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL360 Gen9,10.1.1.1,xx:yy:zz:99:88:70
 A00000002,TEST_LOCATION_1,R100,3,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL360 Gen9,10.1.1.2,xx:yy:zz:99:88:71,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
 A00000003,TEST_LOCATION_1,R100,4,aa:bb:cc:11:22:50,,HP ProLiant DL360 Gen9,10.1.1.3,xx:yy:zz:99:88:72
