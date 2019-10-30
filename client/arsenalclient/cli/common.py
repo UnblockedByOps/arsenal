@@ -122,8 +122,8 @@ def gen_help(help_type):
         ],
         'physical_elevations_search': [
             'id',
-            'name',
-            'physical_rack',
+            'elevation',
+            'physical_rack.name',
         ],
         'physical_locations_search': [
             'id',
