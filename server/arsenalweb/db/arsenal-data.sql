@@ -27,6 +27,8 @@ INSERT INTO users VALUES (4, 'readonly', 'Readonly', 'User', 'AT4beMbzo1zYZRFN',
 INSERT INTO users VALUES (5, 'jenkins-techops', 'jenkins-techops', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 # Initial puppet-enc password is 'password'
 INSERT INTO users VALUES (6, 'puppet-enc', 'Puppet Node Classifier', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
+# Initial aws-lambda password is 'password'
+INSERT INTO users VALUES (7, 'aws-lambda', 'AWS Lambda user for ec2 decom', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 #
 # GROUPS
 #
@@ -178,6 +180,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'
 # readonly        = 4
 # jenkins-techops = 5
 # puppet-enc      = 6
+# aws-lambda      = 7
 # Add user: local_admin to groups: local_admin
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
 # Add user: hvm to groups: api_register
@@ -197,6 +200,8 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 2, 'Admin', NOW(),NOW());
 # Add user: puppet-enc to groups: node_write
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 6, 'Admin', NOW(),NOW());
+# Add user: aws-lambda to groups: api_register
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
 
 #
 # STATUSES
