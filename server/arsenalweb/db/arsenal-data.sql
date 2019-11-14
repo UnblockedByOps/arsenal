@@ -62,6 +62,7 @@ INSERT INTO groups VALUES (21,'physical_elevation_write','Admin',NOW(),NOW());
 INSERT INTO groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
 # Site specific groups should be above id 100
 INSERT INTO groups VALUES (100,'rp_noc','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (101,'override_ratio','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -142,6 +143,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (100,6,'
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (9,7,'Admin');
 #  tag_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (10,8,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (101,8,'Admin');
 #  tag_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (11,9,'Admin');
 #  data_center_write
