@@ -41,6 +41,9 @@ from arsenalweb.views.api.common import (
 from arsenalweb.views.api.nodes import (
     find_node_by_id,
     )
+from arsenalweb.views.api.data_centers import (
+    find_data_center_by_id,
+    )
 
 LOG = logging.getLogger(__name__)
 
@@ -94,8 +97,8 @@ def create_status(name, description, user_id):
 
     return status
 
-def assign_status(status, nodes, user):
-    '''Assign node_ids to a status.'''
+def assign_status(status, actionables, resource, user):
+    '''Assign actionable_ids to a status.'''
 
     LOG.debug('START assign_status()')
     resp = {status.name: []}
@@ -104,19 +107,22 @@ def assign_status(status, nodes, user):
         utcnow = datetime.utcnow()
 
         with DBSession.no_autoflush:
-            for node_id in nodes:
-                node = find_node_by_id(node_id)
-                resp[status.name].append(node.name)
+            for actionable_id in actionables:
+                if resource == 'nodes':
+                    my_obj = find_node_by_id(actionable_id)
+                elif resource == 'data_centers':
+                    my_obj = find_data_center_by_id(actionable_id)
+                resp[status.name].append(my_obj.name)
 
-                orig_node_status_id = node.status_id
-                LOG.debug('START assign_status() update node.status_id')
-                node.status_id = status.id
-                LOG.debug('END assign_status() update node.status_id')
-                if orig_node_status_id != status.id:
+                orig_status_id = my_obj.status_id
+                LOG.debug('START assign_status() update status_id')
+                my_obj.status_id = status.id
+                LOG.debug('END assign_status() update status_id')
+                if orig_status_id != status.id:
                     LOG.debug('START assign_status() create audit')
-                    node_audit = NodeAudit(object_id=node.id,
+                    node_audit = NodeAudit(object_id=my_obj.id,
                                            field='status_id',
-                                           old_value=orig_node_status_id,
+                                           old_value=orig_status_id,
                                            new_value=status.id,
                                            updated_by=user,
                                            created=utcnow)
@@ -124,7 +130,7 @@ def assign_status(status, nodes, user):
                     LOG.debug('END assign_status() create audit')
 
             LOG.debug('START assign_status() session add')
-            DBSession.add(node)
+            DBSession.add(my_obj)
             LOG.debug('END assign_status() session add')
             LOG.debug('START assign_status() session flush')
             DBSession.flush()
@@ -134,7 +140,7 @@ def assign_status(status, nodes, user):
         return api_404(msg='status not found')
 
     except MultipleResultsFound:
-        msg = 'Bad request: node_id is not unique: {0}'.format(node_id)
+        msg = 'Bad request: id is not unique: {0}'.format(actionable_id)
         return api_400(msg=msg)
     except Exception as ex:
         msg = 'Error updating status: exception={0}'.format(ex)
@@ -173,12 +179,13 @@ def api_status_write_attrib(request):
         # List of resources allowed
         resources = [
             'nodes',
+            'data_centers',
         ]
 
         if resource in resources:
             try:
                 actionable = payload[resource]
-                resp = assign_status(status, actionable, auth_user['user_id'])
+                resp = assign_status(status, actionable, resource, auth_user['user_id'])
             except KeyError:
                 msg = 'Missing required parameter: {0}'.format(resource)
                 return api_400(msg=msg)

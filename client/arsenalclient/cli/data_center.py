@@ -25,21 +25,13 @@ import logging
 from arsenalclient.cli.common import (
     ask_yes_no,
     check_resp,
+    parse_cli_args,
     print_results,
-    update_object_fields,
     )
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
-    'data_center_address_1',
-    'data_center_address_2',
-    'data_center_admin_area',
-    'data_center_city',
-    'data_center_contact_name',
-    'data_center_country',
-    'data_center_phone_number',
-    'data_center_postal_code',
-    'data_center_provider',
     'data_center_status',
 ]
 TAG_FIELDS = [
@@ -55,17 +47,15 @@ def search_data_centers(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
+    resp = None
+
     action_fields = UPDATE_FIELDS + TAG_FIELDS
     search_fields = args.fields
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         search_fields = 'all'
 
-    resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=search_fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
+    resp = client.data_centers.search(params)
 
     if not resp.get('results'):
         return resp
@@ -73,7 +63,7 @@ def search_data_centers(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'data_centers')
+        results = client.data_centers.get_audit_history(results)
 
     if not any(getattr(args, key) for key in action_fields):
         print_results(args, results)
@@ -87,22 +77,20 @@ def search_data_centers(args, client):
         msg = 'We are ready to update the following data_center: \n  ' \
               '{0}\nContinue?'.format('\n '.join(r_names))
 
-        if any(getattr(args, key) for key in UPDATE_FIELDS) and ask_yes_no(msg, args.answer_yes):
-            for data_center in results:
-                dc_update = update_object_fields(args,
-                                                 'data_center',
-                                                 data_center,
-                                                 UPDATE_FIELDS)
-
-                client.data_center_create(**dc_update)
+        if args.data_center_status and ask_yes_no(msg, args.answer_yes):
+            resp = client.statuses.assign(args.data_center_status, 'data_centers', results)
 
         if args.set_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'put')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.assign(name, value, 'data_centers', results)
 
         if args.del_tags and ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
-            resp = client.tag_assignments(tags, 'data_centers', results, 'delete')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.deassign(name, value, 'data_centers', results)
 
     if resp:
         check_resp(resp)
@@ -111,29 +99,27 @@ def search_data_centers(args, client):
 def create_data_center(args, client):
     '''Create a new data_center.'''
 
+
     LOG.info('Checking if data_center name exists: {0}'.format(args.data_center_name))
 
-    resp = client.object_search(args.object_type,
-                                'name={0}'.format(args.data_center_name),
-                                exact_get=True)
+    data_center = {
+        'name': args.data_center_name,
+        'status': args.data_center_status,
+    }
 
-    results = resp['results']
+    try:
+        result = client.data_centers.get_by_name(args.data_center_name)
 
-    dc_fields = update_object_fields(args,
-                                     'data_center',
-                                     vars(args),
-                                     UPDATE_FIELDS)
-    if results:
         if ask_yes_no('Entry already exists for data_center name: {0}\n Would you ' \
-                      'like to update it?'.format(results[0]['name']),
+                      'like to update it?'.format(result['name']),
                       args.answer_yes):
 
-            client.data_center_create(name=args.data_center_name,
-                                      **dc_fields)
+            resp = client.data_centers.update(data_center)
 
-    else:
-        client.data_center_create(name=args.data_center_name,
-                                  **dc_fields)
+    except NoResultFound:
+        resp = client.data_centers.create(data_center)
+
+    check_resp(resp)
 
 def delete_data_center(args, client):
     '''Delete an existing data_center.'''
@@ -141,14 +127,15 @@ def delete_data_center(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
-    search = 'name={0}'.format(args.data_center_name)
-    resp = client.object_search(args.object_type,
-                                search,
-                                exact_get=True)
+    try:
+        params = {
+            'name': args.data_center_name,
+            'exact_get': True,
+        }
+        resp = client.data_centers.search(params)
 
-    results = resp['results']
+        results = resp['results']
 
-    if results:
         r_names = []
         for data_centers in results:
             r_names.append(data_centers['name'])
@@ -158,5 +145,7 @@ def delete_data_center(args, client):
 
         if ask_yes_no(msg, args.answer_yes):
             for datacenter in results:
-                resp = client.data_center_delete(datacenter)
+                resp = client.data_centers.delete(datacenter)
                 check_resp(resp)
+    except NoResultFound:
+        LOG.info('data_center not found, nothing to do.')

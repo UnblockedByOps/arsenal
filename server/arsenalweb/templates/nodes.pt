@@ -32,6 +32,7 @@
                     <th class="sr-unique_id"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Unique ID</span></div></th>
                     <th class="sr-status"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Status</span></div></th>
                     <th class="sr-node_groups"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Node Groups</span></div></th>
+                    <th class="sr-serial_number"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Serial Number</span></div></th>
                     <th class="sr-operating_system"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Operating System</span></div></th>
                     <th class="sr-hardware_profile"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Hardware Profile</span></div></th>
                     <th class="sr-last_registered"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Last Registered</span></div></th>
@@ -47,6 +48,7 @@
                     <td class="sr-uniq_id" tal:content="item.unique_id">aa:bb:cc:11:22:33</td>
                     <td class="sr-status"><a class="lower_pane" tal:attributes="href '/statuses/{0}'.format(item.status.id)" tal:content="item.status.name">initializing</a></td>
                     <td class="sr-node_groups"><a class="lower_pane" tal:repeat="ng item.node_groups" tal:attributes="href '/node_groups/{0}'.format(ng.id)" tal:content="ng.name ">default_install</a></td>
+                    <td class="sr-serial_number"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(item.id)" tal:content="item.serial_number">abs123</a></td>
                     <td class="sr-operating_system"><a class="lower_pane" tal:attributes="href '/operating_systems/{0}'.format(item.operating_system.id)"
                                                                           tal:content="item.operating_system.name">Centos 4</a></td>
                     <td class="sr-hardware_profile"><a class="lower_pane" tal:attributes="href '/hardware_profiles/{0}'.format(item.hardware_profile.id)"

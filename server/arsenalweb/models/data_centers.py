@@ -41,15 +41,6 @@ class DataCenter(Base):
     name = Column(Text, nullable=False)
     status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
     status = relationship('Status', backref='data_centers', lazy='joined')
-    provider = Column(Text, nullable=True)
-    address_1 = Column(Text, nullable=True)
-    address_2 = Column(Text, nullable=True)
-    city = Column(Text, nullable=True)
-    admin_area = Column(Text, nullable=True)
-    country = Column(Text, nullable=True)
-    postal_code = Column(Text, nullable=True)
-    contact_name = Column(Text, nullable=True)
-    phone_number = Column(Text, nullable=True)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -69,15 +60,6 @@ class DataCenter(Base):
                     id=self.id,
                     name=self.name,
                     status=get_name_id_dict([self.status]),
-                    provider=self.provider,
-                    address_1=self.address_1,
-                    address_2=self.address_2,
-                    city=self.city,
-                    admin_area=self.admin_area,
-                    country=self.country,
-                    postal_code=self.postal_code,
-                    contact_name=self.contact_name,
-                    phone_number=self.phone_number,
                     tags=get_name_id_list(self.tags, extra_keys=['value']),
                     created=self.created,
                     updated=self.updated,

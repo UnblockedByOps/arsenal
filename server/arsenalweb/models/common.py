@@ -40,6 +40,11 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 LOG = logging.getLogger(__name__)
 
+NO_CONVERT = [
+    'postal_code',
+    'elevation',
+]
+
 
 # Many to many association tables.
 hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
@@ -102,6 +107,16 @@ tag_node_group_assignments = Table('tag_node_group_assignments',
                                           ForeignKey('tags.id'))
                                   )
 
+tag_physical_device_assignments = Table('tag_physical_device_assignments',
+                                        Base.metadata,
+                                        Column('physical_device_id',
+                                               Integer,
+                                               ForeignKey('physical_devices.id')),
+                                        Column('tag_id',
+                                               Integer,
+                                               ForeignKey('tags.id'))
+                                       )
+
 # Common functions
 def check_null_string(obj):
     '''Check for null string for json object.'''
@@ -148,10 +163,16 @@ def jsonify(obj):
         if param.startswith('_'):
             continue
         try:
-            try:
-                p_type = int(getattr(obj, param))
-            except (ValueError, TypeError):
-                p_type = getattr(obj, param)
+            if param in NO_CONVERT:
+                p_type = obj.get(param)
+
+                LOG.debug('Using raw db value for param: {0} value: {1}'.format(param,
+                                                                                p_type))
+            else:
+                try:
+                    p_type = int(getattr(obj, param))
+                except (ValueError, TypeError):
+                    p_type = getattr(obj, param)
         except AttributeError:
             try:
                 p_type = int(obj.get(param))

@@ -19,6 +19,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.exc import DatabaseError
 from arsenalweb.models.common import (
     DBSession,
     )
@@ -32,6 +33,10 @@ from arsenalweb.models.nodes import (
 from arsenalweb.models.node_groups import (
     NodeGroup,
     NodeGroupAudit,
+    )
+from arsenalweb.models.physical_devices import (
+    PhysicalDevice,
+    PhysicalDeviceAudit,
     )
 from arsenalweb.models.tags import (
     Tag,
@@ -60,6 +65,9 @@ from arsenalweb.views.api.nodes import (
 from arsenalweb.views.api.node_groups import (
     find_node_group_by_id,
     )
+from arsenalweb.views.api.physical_devices import (
+    find_physical_device_by_id,
+    )
 
 LOG = logging.getLogger(__name__)
 
@@ -68,10 +76,17 @@ def find_tag_by_name(name, value):
     '''Search for an existing tag by name and value.'''
 
     LOG.debug('Searching for tag name: {0} value: {1}'.format(name, value))
-    tag = DBSession.query(Tag)
-    tag = tag.filter(Tag.name == name)
-    tag = tag.filter(Tag.value == value)
-    return tag.one()
+    try:
+        tag = DBSession.query(Tag)
+        tag = tag.filter(Tag.name == name)
+        tag = tag.filter(Tag.value == value)
+        one = tag.one()
+    except DatabaseError:
+        tag = DBSession.query(Tag)
+        tag = tag.filter(Tag.name == name)
+        tag = tag.filter(Tag.value == str(value))
+        one = tag.one()
+    return one
 
 def find_tag_by_id(tag_id):
     '''Search for an existing tag by id.'''
@@ -121,7 +136,8 @@ def manage_tags(tag, tagable_type, tagables, action, user):
     tag     : A Tag object.
     tagable_type: The type of object you are tagging. One of nodes, node_groups
         or data_centers.
-    tagables: A list of node, node_group, or data_center id's to assign/deassign the tag to/from.
+    tagables: A list of node, node_group, data_center, or physical_device id's to
+        assign/deassign the tag to/from.
     action  : A string representing the action to perform. One of either 'PUT' or 'DELETE'.
     '''
 
@@ -129,6 +145,7 @@ def manage_tags(tag, tagable_type, tagables, action, user):
         'nodes',
         'node_groups',
         'data_centers',
+        'physical_devices',
     ]
     if tagable_type not in valid_types:
         msg = 'Invalid tagable type: {0}'.format(tagable_type)
@@ -145,7 +162,12 @@ def manage_tags(tag, tagable_type, tagables, action, user):
         for tagable_id in tagables:
             tagable = find_by_id(tagable_id)
 
-            resp[tag_kv].append(tagable.name)
+            try:
+                resp[tag_kv].append(tagable.name)
+            except AttributeError:
+                LOG.debug('This object has no name, using serial_number instead.')
+                resp[tag_kv].append(tagable.serial_number)
+
             current_tags_list = [my_tag.id for my_tag in tagable.tags]
             current_tags_remove = [my_tag.id for my_tag in tagable.tags if
                                    my_tag.name == tag.name and my_tag.value
@@ -272,9 +294,10 @@ def api_tag_write_attrib(request):
 
         # List of resources allowed
         resources = [
-            'nodes',
-            'node_groups',
             'data_centers',
+            'node_groups',
+            'nodes',
+            'physical_devices',
         ]
 
         if resource in resources:

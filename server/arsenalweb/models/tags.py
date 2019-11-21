@@ -60,6 +60,7 @@ class Tag(Base):
                     value=self.value,
                     nodes=get_name_id_list(self.nodes),
                     node_groups=get_name_id_list(self.node_groups),
+                    physical_devices=get_name_id_list(self.physical_devices),
                     created=self.created,
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -79,6 +80,8 @@ class Tag(Base):
                     resp['nodes'] = get_name_id_list(self.nodes)
                 if 'node_groups' in my_fields:
                     resp['node_groups'] = get_name_id_list(self.node_groups)
+                if 'physical_devices' in my_fields:
+                    resp['physical_devices'] = get_name_id_list(self.physical_devices)
 
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)

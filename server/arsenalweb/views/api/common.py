@@ -58,6 +58,22 @@ from arsenalweb.models.operating_systems import (
     OperatingSystem,
     OperatingSystemAudit,
     )
+from arsenalweb.models.physical_devices import (
+    PhysicalDevice,
+    PhysicalDeviceAudit,
+    )
+from arsenalweb.models.physical_elevations import (
+    PhysicalElevation,
+    PhysicalElevationAudit,
+    )
+from arsenalweb.models.physical_locations import (
+    PhysicalLocation,
+    PhysicalLocationAudit,
+    )
+from arsenalweb.models.physical_racks import (
+    PhysicalRack,
+    PhysicalRackAudit,
+    )
 from arsenalweb.models.statuses import (
     Status,
     StatusAudit,
@@ -181,9 +197,11 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
             LOG.debug('Working on param: {0}'.format(param))
             try:
                 resp[param] = payload[param].rstrip()
+                LOG.debug('  is a string')
             # Handle integers
             except AttributeError:
                 resp[param] = payload[param]
+                LOG.debug('  is an int')
             except KeyError:
                 msg = 'Required parameter: {0} missing from request!'.format(param)
                 raise KeyError(msg)
@@ -192,9 +210,11 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
             LOG.debug('Working on param: {0}'.format(param))
             try:
                 resp[param] = payload[param].rstrip()
+                LOG.debug('  is a string')
             # Handle integers
             except AttributeError:
                 resp[param] = payload[param]
+                LOG.debug('  is an int')
             except KeyError:
                 resp[param] = None
                 msg = 'Optional parameter: {0} missing from request. Setting ' \
@@ -400,6 +420,7 @@ def check_regex_excludes(key):
 def model_matcher(route_name):
     '''Matches routes to their model types.'''
 
+    # FIXME: There has to be a better way than this.
     routes = {
         'api_data_center': 'DataCenter',
         'api_data_center_audit': 'DataCenterAudit',
@@ -407,57 +428,95 @@ def model_matcher(route_name):
         'api_data_center_r': 'DataCenter',
         'api_data_centers': 'DataCenter',
         'api_data_centers_audit': 'DataCenterAudit',
+
         'api_ec2_instance': 'Ec2Instance',
         'api_ec2_instance_audit': 'Ec2InstanceAudit',
         'api_ec2_instance_audit_r': 'Ec2InstanceAudit',
         'api_ec2_instance_r': 'Ec2Instance',
         'api_ec2_instances': 'Ec2Instance',
         'api_ec2_instances_audit': 'Ec2InstanceAudit',
+
         'api_hardware_profile': 'HardwareProfile',
         'api_hardware_profile_audit': 'HardwareProfileAudit',
         'api_hardware_profile_audit_r': 'HardwareProfileAudit',
         'api_hardware_profile_r': 'HardwareProfile',
         'api_hardware_profiles': 'HardwareProfile',
         'api_hardware_profiles_audit': 'HardwareProfileAudit',
+
         'api_hypervisor_vm_assignment': 'HypervisorVmAssignment',
         'api_hypervisor_vm_assignment_r': 'HypervisorVmAssignment',
         'api_hypervisor_vm_assignments': 'HypervisorVmAssignment',
+
         'api_ip_address': 'IpAddress',
         'api_ip_address_audit': 'IpAddressAudit',
         'api_ip_address_audit_r': 'IpAddressAudit',
         'api_ip_address_r': 'IpAddress',
         'api_ip_addresses': 'IpAddress',
         'api_ip_addresses_audit': 'IpAddressAudit',
+
         'api_network_interface': 'NetworkInterface',
         'api_network_interface_audit': 'NetworkInterfaceAudit',
         'api_network_interface_audit_r': 'NetworkInterfaceAudit',
         'api_network_interface_r': 'NetworkInterface',
         'api_network_interfaces': 'NetworkInterface',
         'api_network_interfaces_audit': 'NetworkInterfaceAudit',
+
         'api_node': 'Node',
         'api_node_audit': 'NodeAudit',
         'api_node_audit_r': 'NodeAudit',
+        'api_node_r': 'Node',
+        'api_nodes': 'Node',
+        'api_nodes_audit': 'NodeAudit',
+
         'api_node_group': 'NodeGroup',
         'api_node_group_audit': 'NodeGroupAudit',
         'api_node_group_audit_r': 'NodeGroupAudit',
         'api_node_group_r': 'NodeGroup',
         'api_node_groups': 'NodeGroup',
         'api_node_groups_audit': 'NodeGroupAudit',
-        'api_node_r': 'Node',
-        'api_nodes': 'Node',
-        'api_nodes_audit': 'NodeAudit',
+
         'api_operating_system': 'OperatingSystem',
         'api_operating_system_audit': 'OperatingSystemAudit',
         'api_operating_system_audit_r': 'OperatingSystemAudit',
         'api_operating_system_r': 'OperatingSystem',
         'api_operating_systems': 'OperatingSystem',
         'api_operating_systems_audit': 'OperatingSystemAudit',
+
+        'api_physical_device': 'PhysicalDevice',
+        'api_physical_device_audit': 'PhysicalDeviceAudit',
+        'api_physical_device_audit_r': 'PhysicalDeviceAudit',
+        'api_physical_device_r': 'PhysicalDevice',
+        'api_physical_devices': 'PhysicalDevice',
+        'api_physical_devices_audit': 'PhysicalDeviceAudit',
+
+        'api_physical_elevation': 'PhysicalElevation',
+        'api_physical_elevation_audit': 'PhysicalElevationAudit',
+        'api_physical_elevation_audit_r': 'PhysicalElevationAudit',
+        'api_physical_elevation_r': 'PhysicalElevation',
+        'api_physical_elevations': 'PhysicalElevation',
+        'api_physical_elevations_audit': 'PhysicalElevationAudit',
+
+        'api_physical_location': 'PhysicalLocation',
+        'api_physical_location_audit': 'PhysicalLocationAudit',
+        'api_physical_location_audit_r': 'PhysicalLocationAudit',
+        'api_physical_location_r': 'PhysicalLocation',
+        'api_physical_locations': 'PhysicalLocation',
+        'api_physical_locations_audit': 'PhysicalLocationAudit',
+
+        'api_physical_rack': 'PhysicalRack',
+        'api_physical_rack_audit': 'PhysicalRackAudit',
+        'api_physical_rack_audit_r': 'PhysicalRackAudit',
+        'api_physical_rack_r': 'PhysicalRack',
+        'api_physical_racks': 'PhysicalRack',
+        'api_physical_racks_audit': 'PhysicalRackAudit',
+
         'api_status': 'Status',
         'api_status_audit': 'StatusAudit',
         'api_status_audit_r': 'StatusAudit',
         'api_status_r': 'Status',
         'api_statuses': 'Status',
         'api_statuses_audit': 'StatusAudit',
+
         'api_tag': 'Tag',
         'api_tag_audit': 'TagAudit',
         'api_tag_audit_r': 'TagAudit',
@@ -566,6 +625,14 @@ def validate_tag_perm(request, auth_user, tag_name):
 @view_config(route_name='api_node_r', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_system_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_system_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_device_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_device_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevation_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevation_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_location_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_location_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_rack_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_rack_r', request_method='GET', renderer='json')
 @view_config(route_name='api_status_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_status_r', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit_r', request_method='GET', renderer='json')
@@ -626,6 +693,10 @@ def get_api_attribute(request):
 @view_config(route_name='api_node', request_method='GET', renderer='json')
 @view_config(route_name='api_node_group', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_system', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_device', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevation', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_location', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_rack', request_method='GET', renderer='json')
 @view_config(route_name='api_status', request_method='GET', renderer='json')
 @view_config(route_name='api_tag', request_method='GET', renderer='json')
 def api_read_by_id(request):
@@ -663,6 +734,10 @@ def api_read_by_id(request):
 @view_config(route_name='api_node_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_node_group_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_system_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_device_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevation_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_location_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_rack_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_status_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit', request_method='GET', renderer='json')
 def api_read_audit_by_id(request):
@@ -712,6 +787,14 @@ def api_read_audit_by_id(request):
 @view_config(route_name='api_nodes_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_systems', request_method='GET', renderer='json')
 @view_config(route_name='api_operating_systems_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_devices', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_devices_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevations', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_elevations_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_locations', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_locations_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_racks', request_method='GET', renderer='json')
+@view_config(route_name='api_physical_racks_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_statuses', request_method='GET', renderer='json')
 @view_config(route_name='api_statuses_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
@@ -794,6 +877,10 @@ def api_read_by_params(request):
 @view_config(route_name='api_node', permission='node_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_node_group', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_operating_system', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_device', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_elevation', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_location', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_rack', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_status', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_tag', permission='tag_delete', request_method='DELETE', renderer='json')
 def api_delete_by_id(request):
@@ -807,7 +894,6 @@ def api_delete_by_id(request):
         model_type = model_matcher(request.matched_route.name)
         resource_id = request.matchdict['id']
         camel = camel_to_underscore(model_type)
-        c_name = camel + '_name'
         LOG.debug('Checking for id={0}'.format(resource_id))
         object_type = request.path_info.split('/')[2]
 
@@ -815,50 +901,42 @@ def api_delete_by_id(request):
         query = query.filter(getattr(globals()[model_type], 'id') == resource_id)
         query = query.one()
 
-        object_name = getattr(query, 'name')
+        try:
+            unique_field = 'name'
+            object_name = getattr(query, unique_field)
+        except AttributeError:
+            unique_field = 'serial_number'
+            object_name = getattr(query, unique_field)
 
         if object_type == 'tags' and not validate_tag_perm(request, auth_user, object_name):
             return api_403()
 
-        # FIXME: Is this the best approach?
+        # Defines the key to log in the audit table for the given model type
+        # why an object is deleted. If not in this list, will default to
+        # 'name.'
         del_keys = {
-            'DataCenter': [
-                'name',
-            ],
-            'Node': [
-                'unique_id',
-            ],
-            'NodeGroup': [
-                'name',
-            ],
-            'Status': [
-                'name',
-            ],
-            'OperatingSystem': [
-                'name',
-            ],
-            'HardwareProfile': [
-                'name',
-            ],
-            'Tag': [
-                'name',
-            ],
+            'Node': 'unique_id',
+            'PhysicalDevice': 'serial_number',
         }
 
         utcnow = datetime.utcnow()
 
-        for field in del_keys[model_type]:
-            audit = globals()['{0}Audit'.format(model_type)]()
-            setattr(audit, 'object_id', query.id)
-            setattr(audit, 'field', field)
-            setattr(audit, 'old_value', getattr(query, field))
-            setattr(audit, 'new_value', 'deleted')
-            setattr(audit, 'updated_by', auth_user['user_id'])
-            setattr(audit, 'created', utcnow)
+        try:
+            deleted_key = del_keys[model_type]
+        except KeyError:
+            deleted_key = 'name'
 
-            DBSession.add(audit)
+        audit = globals()['{0}Audit'.format(model_type)]()
+        setattr(audit, 'object_id', query.id)
+        setattr(audit, 'field', deleted_key)
+        setattr(audit, 'old_value', getattr(query, deleted_key))
+        setattr(audit, 'new_value', 'deleted')
+        setattr(audit, 'updated_by', auth_user['user_id'])
+        setattr(audit, 'created', utcnow)
 
-        LOG.info('Deleting name: {0} id: {1}'.format(object_name, resource_id))
+        DBSession.add(audit)
+
+        LOG.info('Deleting {0}: {1} id: {2}'.format(unique_field, object_name, resource_id))
         DBSession.delete(query)
         DBSession.flush()
 
@@ -882,6 +960,10 @@ def api_delete_by_id(request):
 @view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_nodes', permission='node_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_operating_systems', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_devices', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_elevations', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_locations', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_racks', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_tags', permission='tag_delete', request_method='DELETE', renderer='json')
 def api_delete_by_params(request):

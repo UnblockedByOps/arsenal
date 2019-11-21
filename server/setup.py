@@ -23,6 +23,7 @@ with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
     CHANGELOG = f.read()
 
 REQUIRES = [
+    'venusian==1.2.0',
     'pyramid==1.5.1',
     'pyramid_chameleon==0.3',
     'pyramid_debugtoolbar==2.2',
@@ -52,7 +53,7 @@ DEPENDENCY_LINKS = [
 ]
 
 setup(name='arsenalweb',
-      version='6.11',
+      version='7.9',
       description='Arsenal web api/ui',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[

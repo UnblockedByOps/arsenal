@@ -26,7 +26,7 @@ Follow these steps to set up a local development environment for Arsenal (assume
 
 ```bash
 cd ~/git
-git clone git@github.rp-core.com:Devops/arsenal.git
+git clone git@github.rp-core.com:RubiconProject/arsenal.git
 ```
 
 ### Install Mysql DB
@@ -285,19 +285,97 @@ ValueError: No JSON object could be decoded
 >>>
 ```
 
-## Todo list
+## Physical Hardware Tracking
 
-### API
+Arsenal now has the ability to track physical hardware from the moment it is put into a rack/storage in a colo. It uses the serial number of a physical piece of hardware, added to arsenal via the import tool (described below), to assign it to a physical location, rack, and elevation. When the node is provisioned and checks into arsenal, it will be associated with it's physical location via the serial_number.
 
-* Need ability to set variables for puppet ENC at all levels.
+### Prerequisites
 
-### UI
+First, you must create the physical location, rack and elevations in arsenal before you can assign hardware to them.
 
-* Currently no ability to create or edit anything via the UI (done via the client).
-* No ability to manage users/groups/passwords etc via the UI (done via direct db insert).
-* Need localstorage solution for saving what columns a user has chosen to show/hide on each page.
+#### Physical location
 
-### CLI
+First, create the location where all the racks will reside:
 
-* formatting of output needs a lot of help.
+```shell
+arsenal physical_locations create --name TEST_LOCATION_1 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'
+```
 
+#### Physical rack
+
+Then create the racks associated to the location:
+
+```shell
+arsenal physical_racks create -l TEST_LOCATION_1 -n R100
+arsenal physical_racks create -l TEST_LOCATION_1 -n R101
+arsenal physical_racks create -l TEST_LOCATION_1 -n R102
+...
+arsenal physical_racks create -l TEST_LOCATION_1 -n R10N
+etc.
+```
+
+#### Physical elevations
+
+Then for each rack, create the number of elevations the rack has:
+
+```shell
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e 1
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e 2
+...
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R100 -e N
+
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R101 -e 1
+...
+arsenal physical_elevations create -l TEST_LOCATION_1 -r R101 -e N
+etc.
+```
+
+### Adding devices
+
+You are now ready to add devices. The Arsenal client has an import tool to read in physical devices from a csv.
+
+#### CSV Format
+
+The format of the csv file is as follows:
+
+```csv
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,tags (optional, pipe separated)
+AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70
+AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71
+BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72
+BB0000002,TEST_LOCATION_1,R101,2,aa:bb:cc:11:22:60,aa:bb:cc:11:22:61,HP ProLiant DL380 Gen9,10.1.1.4,xx:yy:zz:99:88:73
+BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant DL380 Gen9,10.1.1.5,xx:yy:zz:99:88:74
+ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
+```
+
+The hardware profile must match an existing hardware profile name already in Arsenal. If this is a new piece of gear that does not yet have a hardware profile, use `Unknown` for this field. When the node is kickstarted for the first time, it will register its hardware_profile and update the physical_device accordingly.
+
+#### Importing the devices
+
+You can then run the import tool to bring the devices into Arsenal:
+
+```shell
+arsenal physical_devices import -c physical_device_import.csv
+```
+
+### Exporting devices
+
+You can also export physical devices either to standard out or to a csv. Searching for devices works the same as `physical_devices search`.
+
+**NOTE:** The parameter physical_location.name is required.
+
+### Export to a csv file
+
+To export all devices in `TEST_LOCATION_1` to a csv file named `/tmp/export.csv` run the following:
+
+```shell
+arsenal physical_devices export physical_location.name=TEST_LOCATION_1 -c /tmp/export.csv
+```
+
+### Export to standard out
+
+To export all devices in `TEST_LOCATION_1` that live in rack `R1000` to standard output run the following:
+
+```shell
+arsenal physical_devices export physical_location.name=TEST_LOCATION_1,physical_rack.name=R1000
+```

@@ -40,13 +40,20 @@ def view_node(request):
     # We need all the info about network_interfaces for display in the UI.
     net_ifs = []
     for net_if in node['network_interfaces']:
-        LOG.info('Getting network interface: {0}'.format(net_if))
+        LOG.debug('Getting network interface: {0}'.format(net_if))
         uri = '/api/network_interfaces/{0}'.format(net_if['id'])
         resp = _api_get(request, uri)
         net_ifs.append(resp['results'][0])
     node['network_interfaces'] = sorted(net_ifs, key=lambda k: k['name'])
 
     LOG.debug('network interfaces: {0}'.format(node['network_interfaces']))
+
+    # We need all the info about the physcial_device for display in the UI.
+    if node['physical_device']:
+        LOG.debug('Getting physical_device: {0}'.format(node['physical_device']['serial_number']))
+        uri = '/api/physical_devices/{0}'.format(node['physical_device']['id'])
+        resp = _api_get(request, uri)
+        node['physical_device'] = resp['results'][0]
 
     return {
         'au': auth_user,
@@ -93,6 +100,7 @@ def view_nodes(request):
         {'name': 'hardware_profile', 'pretty_name': 'Hardware Profile'},
         {'name': 'last_registered', 'pretty_name': 'Last Registered'},
         {'name': 'node_groups', 'pretty_name': 'Node Groups'},
+        {'name': 'serial_number', 'pretty_name': 'Serial Number'},
         {'name': 'node_id', 'pretty_name': 'Node ID'},
         {'name': 'node_name', 'pretty_name': 'Node Name'},
         {'name': 'operating_system', 'pretty_name': 'Operating System'},

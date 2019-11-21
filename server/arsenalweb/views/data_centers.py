@@ -79,11 +79,9 @@ def view_data_centers(request):
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [
-        {'name': 'contact_name', 'pretty_name': 'DC Contact'},
         {'name': 'created', 'pretty_name': 'Date Created'},
         {'name': 'name', 'pretty_name': 'Name'},
-        {'name': 'phone_number', 'pretty_name': 'DC Phone Number'},
-        {'name': 'provider', 'pretty_name': 'DC Provider'},
+        {'name': 'status', 'pretty_name': 'Status'},
         {'name': 'updated', 'pretty_name': 'Date Updated'},
         {'name': 'updated_by', 'pretty_name': 'Updated By'},
     ]

@@ -23,10 +23,36 @@ from __future__ import print_function
 import sys
 import logging
 import json
+import re
 import yaml
 
 LOG = logging.getLogger(__name__)
 
+def _check_tags(obj, set_tags):
+    '''Check for tags that will be changed or removed.'''
+
+    resp = ''
+    try:
+        tags = [tag for tag in set_tags.split(',')]
+    # No tags
+    except AttributeError:
+        return resp
+
+    LOG.debug('Taggable object is: {0}'.format(obj))
+    for tag in tags:
+        LOG.debug('Working on tag: {0}'.format(tag))
+        key, val = tag.split('=')
+        try:
+            LOG.debug('name is: {0}'.format(obj['name']))
+        except KeyError:
+            LOG.debug('serial_number is: {0}'.format(obj['serial_number']))
+        LOG.debug('tags are: {0}'.format(obj['tags']))
+        for obj_tag in obj['tags']:
+            if key == obj_tag['name']:
+                resp += '     Existing tag found: {0}={1} value will be updated ' \
+                        'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
+
+    return resp.rstrip()
 
 def check_resp(resp):
     '''Check the http response code and exit non-zero if it's not a 200.'''
@@ -38,20 +64,13 @@ def check_resp(resp):
         sys.exit(1)
 
 def gen_help(help_type):
-    '''Generte the list of searchable terms for help'''
+    '''Generate the list of searchable terms for help'''
 
     terms = {
         'data_centers_search': [
             'id',
-            'provider',
-            'address_1',
-            'address_2',
-            'city',
-            'admin_area',
-            'country',
-            'postal_code',
-            'contact_name',
-            'phone_number',
+            'name',
+            'status',
         ],
         'ip_addresses_search': [
             'id',
@@ -90,6 +109,39 @@ def gen_help(help_type):
             'node_group_owner',
             'description',
             'notes_url',
+        ],
+        'physical_devices_search': [
+            'id',
+            'serial_number',
+            'physical_elevation',
+            'physical_location',
+            'physical_rack',
+            'hardware_profile',
+            'oob_ip_address',
+            'oob_mac_address',
+        ],
+        'physical_elevations_search': [
+            'id',
+            'elevation',
+            'physical_rack.name',
+        ],
+        'physical_locations_search': [
+            'id',
+            'name',
+            'provider',
+            'address_1',
+            'address_2',
+            'city',
+            'admin_area',
+            'country',
+            'postal_code',
+            'contact_name',
+            'phone_number',
+        ],
+        'physical_racks_search': [
+            'id',
+            'name',
+            'physical_location',
         ],
         'statuses_search': [
             'id',
@@ -159,11 +211,11 @@ def ask_yes_no(question, answer_yes=None, default='no'):
 def update_object_fields(args, obj_type, object_result, fields):
     '''Update object fields from CLI.'''
 
-    LOG.debug('DATA: {0}'.format(object_result))
+    LOG.debug('update_object_fields() input: {0}'.format(object_result))
 
     object_result.update((key.replace(obj_type + '_', ''), getattr(args, key)) for key in
                          fields if getattr(args, key, None))
-    LOG.debug('UPDATE DATA: {0}'.format(object_result))
+    LOG.debug('update_object_fields() output: {0}'.format(object_result))
 
     return object_result
 
@@ -219,3 +271,42 @@ def print_results(args, results, default_key='name', skip_keys=None):
                                                       audit['field'],
                                                       audit['old_value'],
                                                       audit['new_value'],))
+
+def parse_cli_args(search=None, fields=None, exact_get=None, exclude=None):
+    '''Parses comma separated argument values passed from the CLI and turns them
+    into a dictionary of parameters for the search() function.
+
+    Args:
+        search (str): The key=value search terms. Multiple values separated
+            by comma (,). Multiple keys sparated by comma (,).
+        fields (str): The specific fields to return. Multiple values separated
+            by comma (,).
+        exact_get (str): Whether to search for terms exactly or use wildcard
+            matching.
+        exclude (str): The key=value search terms to explicitly exclude. Multiple
+            values separated by comma (,). Multiple keys sparated by comma (,).
+
+    Returns:
+        A dict of params to be passed to the <object_type>.search() function
+    '''
+
+    regex = re.compile(r'([^=]+)=([^=]+)(?:,|$)')
+    matches = regex.findall(search)
+    data = {}
+    for match in matches:
+        data[match[0]] = match[1]
+
+    if exclude:
+        ex_matches = regex.findall(exclude)
+        for match in ex_matches:
+            data['ex_{0}'.format(match[0])] = match[1]
+
+    data['exact_get'] = exact_get
+    if fields:
+        data['fields'] = fields
+
+    LOG.debug('Search data is: {0}'.format(json.dumps(data,
+                                                      indent=4,
+                                                      sort_keys=True)))
+
+    return data

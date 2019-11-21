@@ -80,10 +80,33 @@
             </table>
           </div>
         </li>
-        <li tal:condition="(not type == 'rds')">
+        <li tal:condition="node['physical_device']">
           <input type="radio" name="tabs" id="tab2">
-          <label for="tab2">Node Groups</label>
+          <label for="tab2">Physical Device</label>
           <div id="tab-content2" class="tab-content">
+            <table>
+              <tr>
+                <td>ID</td> <td><span class="mono">${node.physical_device.id}</span></td>
+              </tr>
+              <tr tal:condition="node['physical_device']['serial_number']">
+                  <td>Serial Number</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(node['physical_device']['id'])" tal:content="node['physical_device']['serial_number']">abc123</a></span></td>
+              </tr>
+              <tr tal:condition="node['physical_device']['physical_location']['id']">
+                  <td>Physical Location</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(node['physical_device']['physical_location']['id'])" tal:content="node['physical_device']['physical_location']['name']">mydc1</a></span></td>
+              </tr>
+              <tr tal:condition="node['physical_device']['physical_rack']['id']">
+                  <td>Physical Rack</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_racks/{0}'.format(node['physical_device']['physical_rack']['id'])" tal:content="node['physical_device']['physical_rack']['name']">rack0100</a></span></td>
+              </tr>
+              <tr tal:condition="node['physical_device']['physical_elevation']['id']">
+                  <td>Physical Elevation</td> <td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(node['physical_device']['physical_elevation']['id'])" tal:content="node['physical_device']['physical_elevation']['elevation']">1</a></span></td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li tal:condition="(not type == 'rds')">
+          <input type="radio" name="tabs" id="tab3">
+          <label for="tab3">Node Groups</label>
+          <div id="tab-content3" class="tab-content">
               <table>
                   <tr tal:repeat="item node.node_groups">
                     <td>${item.name}</td>
@@ -93,9 +116,9 @@
           </div>
         </li>
         <li tal:condition="node['ec2_instance']">
-          <input type="radio" name="tabs" id="tab3">
-          <label for="tab3">EC2</label>
-          <div id="tab-content3" class="tab-content">
+          <input type="radio" name="tabs" id="tab4">
+          <label for="tab4">EC2</label>
+          <div id="tab-content4" class="tab-content">
               <table>
                   <tr>
                       <td>Ec2 Instance</td><td> <span class="mono">${node.ec2_instance['instance_id']}</span></td>
@@ -128,16 +151,16 @@
           </div>
         </li>
         <li tal:condition="type == 'rds'">
-          <input type="radio" name="tabs" id="tab3">
-          <label for="tab3">RDS</label>
-          <div id="tab-content3" class="tab-content">
+          <input type="radio" name="tabs" id="tab4">
+          <label for="tab4">RDS</label>
+          <div id="tab-content4" class="tab-content">
             tab 2 content
           </div>
         </li>
         <li tal:condition="(not (type == 'ec2_instance' or type == 'rds'))">
-          <input type="radio" name="tabs" id="tab4">
-          <label for="tab4">Tags</label>
-          <div id="tab-content4" class="tab-content">
+          <input type="radio" name="tabs" id="tab5">
+          <label for="tab5">Tags</label>
+          <div id="tab-content5" class="tab-content">
               <table>
                 <tr tal:repeat="tag node.tags">
                     <td>${tag['name']}</td> <td><span class="mono">${tag['value']}</span></td>
@@ -149,9 +172,9 @@
           </div>
         </li>
         <li>
-          <input type="radio" name="tabs" id="tab6">
-          <label for="tab6">Network</label>
-          <div id="tab-content6" class="tab-content">
+          <input type="radio" name="tabs" id="tab7">
+          <label for="tab7">Network</label>
+          <div id="tab-content7" class="tab-content">
 
               <div tal:repeat="net_if node.network_interfaces">
                   <h4 style="border-bottom: 1px solid #CCCCCC;">${net_if['name']}</h4>
@@ -191,9 +214,9 @@
           </div>
         </li>
         <li tal:condition="node.guest_vms">
-          <input type="radio" name="tabs" id="tab7">
-          <label for="tab7">Guest VMs</label>
-          <div id="tab-content7" class="tab-content">
+          <input type="radio" name="tabs" id="tab8">
+          <label for="tab8">Guest VMs</label>
+          <div id="tab-content8" class="tab-content">
               <div>
                   <table>
                       <tr tal:repeat="item node.guest_vms">
@@ -204,9 +227,9 @@
           </div>
         </li>
         <li tal:condition="node.hypervisor">
-          <input type="radio" name="tabs" id="tab7">
-          <label for="tab7">Hypervisor</label>
-          <div id="tab-content7" class="tab-content">
+          <input type="radio" name="tabs" id="tab8">
+          <label for="tab8">Hypervisor</label>
+          <div id="tab-content8" class="tab-content">
             <div>
               <div>
                 <a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(node['hypervisor'][0]['id'])" tal:content="node['hypervisor'][0]['name']">server1.mycompany.com</a>
@@ -223,9 +246,9 @@
               </div>
           </div>
         </li>
+
       </ul>
     </div>
-
     <div tal:condition="not node">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/node/</span> <span class="page_title_name_s">Not Found</span>

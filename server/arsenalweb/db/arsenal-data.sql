@@ -27,6 +27,8 @@ INSERT INTO users VALUES (4, 'readonly', 'Readonly', 'User', 'AT4beMbzo1zYZRFN',
 INSERT INTO users VALUES (5, 'jenkins-techops', 'jenkins-techops', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 # Initial puppet-enc password is 'password'
 INSERT INTO users VALUES (6, 'puppet-enc', 'Puppet Node Classifier', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
+# Initial aws-lambda password is 'password'
+INSERT INTO users VALUES (7, 'aws-lambda', 'AWS Lambda user for ec2 decom', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', 'Admin', NOW(),NOW());
 #
 # GROUPS
 #
@@ -50,6 +52,17 @@ INSERT INTO groups VALUES (13,'data_center_delete','Admin',NOW(),NOW());
 # This is a special local group that is not assigned any permissions via route, but 
 # members of this group will be able to write secure tags.
 INSERT INTO groups VALUES (14,'secure_tags','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (15,'physical_device_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (16,'physical_device_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (17,'physical_location_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (18,'physical_location_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (19,'physical_rack_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (20,'physical_rack_delete','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (21,'physical_elevation_write','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
+# Site specific groups should be above id 100
+INSERT INTO groups VALUES (100,'rp_noc','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (101,'override_ratio','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -64,6 +77,14 @@ INSERT INTO group_perms VALUES (8,'tag_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (9,'tag_delete',NOW(),NOW());
 INSERT INTO group_perms VALUES (10,'data_center_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (11,'data_center_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (12,'physical_device_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (13,'physical_device_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (14,'physical_location_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (15,'physical_location_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (16,'physical_rack_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (17,'physical_rack_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (18,'physical_elevation_write',NOW(),NOW());
+INSERT INTO group_perms VALUES (19,'physical_elevation_delete',NOW(),NOW());
 
 # Assigning group permissions to groups
 ###########################################################################
@@ -79,6 +100,14 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,8,'Ad
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,9,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,10,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,11,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (1,19,'Admin');
 #  api_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (2,2,'Admin');
 #  api_register
@@ -95,23 +124,48 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,8,'Ad
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,9,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,10,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,11,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (4,19,'Admin');
 #  node_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (6,4,'Admin');
 #  node_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (7,5,'Admin');
 #  node_group_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (8,6,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (100,6,'Admin');
 #  node_group_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (9,7,'Admin');
 #  tag_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (10,8,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (101,8,'Admin');
 #  tag_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (11,9,'Admin');
 #  data_center_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (12,10,'Admin');
 #  data_center_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'Admin');
-
+#  physical_device_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (15,12,'Admin');
+#  physical_device_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (16,13,'Admin');
+#  physical_location_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (17,14,'Admin');
+#  physical_location_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (18,15,'Admin');
+#  physical_rack_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (19,16,'Admin');
+#  physical_rack_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (20,17,'Admin');
+#  physical_elevation_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (21,18,'Admin');
+#  physical_elevation_delete
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'Admin');
 
 # For devel on mac
 # INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (5,1,'Admin');
@@ -121,13 +175,14 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'
 # Adding db users to db groups.
 ###########################################################################
 ### Becasue we need to allow kaboom to update status, any user added 
-### to the api_write group also needs ot be added to the api_register group.
+### to the api_write group also needs to be added to the api_register group.
 # admin           = 1
 # kaboom          = 2
 # hvm             = 3
 # readonly        = 4
 # jenkins-techops = 5
 # puppet-enc      = 6
+# aws-lambda      = 7
 # Add user: local_admin to groups: local_admin
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
 # Add user: hvm to groups: api_register
@@ -147,6 +202,8 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 2, 'Admin', NOW(),NOW());
 # Add user: puppet-enc to groups: node_write
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 6, 'Admin', NOW(),NOW());
+# Add user: aws-lambda to groups: api_register
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
 
 #
 # STATUSES
@@ -191,7 +248,7 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 
 #
 # TESTING DATA
-
+#
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (1, 'hypervisor1', 1, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (2, 'hypervisor2', 2, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (3, 'hypervisor3', 3, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
@@ -202,6 +259,7 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 # done
 #
 # Generates this:
+#
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (4, 'guest_vm4', 4, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (5, 'guest_vm5', 5, 3, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (6, 'guest_vm6', 6, 2, 1, 1,'Admin', NOW(),NOW(),NOW());
@@ -220,9 +278,9 @@ INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (19, 'guest_vm19', 19, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
 # INSERT INTO nodes (id,name,unique_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (20, 'guest_vm20', 20, 1, 1, 1,'Admin', NOW(),NOW(),NOW());
 #
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,4,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,5,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,6,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (1,7,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (2,8,'Admin',NOW(),NOW());
-# INSERT INTO hypervisor_vm_assignments (parent_node_id,child_node_id,updated_by,created,updated) VALUES (2,9,'Admin',NOW(),NOW());
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,4);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,5);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,6);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (1,7);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (2,8);
+# INSERT INTO hypervisor_vm_assignments (hypervisor_id,guest_vm_id) VALUES (2,9);

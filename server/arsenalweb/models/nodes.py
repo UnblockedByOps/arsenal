@@ -50,7 +50,7 @@ class Node(Base):
     ec2_id = Column(Integer, ForeignKey('ec2_instances.id'))
     data_center_id = Column(Integer, ForeignKey('data_centers.id'))
     uptime = Column(Text, nullable=False)
-    serial_number = Column(Text)
+    serial_number = Column(Text, ForeignKey('physical_devices.serial_number'))
     processor_count = Column(Integer)
     last_registered = Column(TIMESTAMP)
     created = Column(TIMESTAMP, nullable=False)
@@ -61,6 +61,10 @@ class Node(Base):
     operating_system = relationship('OperatingSystem', backref=backref('nodes'), lazy='joined')
     ec2_instance = relationship('Ec2Instance', backref=backref('nodes'), lazy='joined')
     data_center = relationship('DataCenter', backref=backref('nodes'), lazy='joined')
+    physical_device = relationship('PhysicalDevice',
+                                   backref=backref('nodes'),
+                                   lazy='joined',
+                                   foreign_keys=[serial_number])
     node_groups = relationship('NodeGroup',
                                secondary='node_group_assignments',
                                backref='nodes',
@@ -106,6 +110,7 @@ class Node(Base):
                                                         ]),
                     guest_vms=get_name_id_list(self.guest_vms),
                     hypervisor=get_name_id_list(self.hypervisor),
+                    physical_device=self.physical_device,
                     last_registered=self.last_registered,
                     created=self.created,
                     updated=self.updated,

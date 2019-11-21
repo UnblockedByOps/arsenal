@@ -57,6 +57,9 @@ from arsenalweb.views.api.operating_systems import (
     get_operating_system,
     create_operating_system,
     )
+from arsenalweb.views.api.physical_devices import (
+    update_physical_device,
+    )
 from arsenalweb.views.api.ec2_instances import (
     create_ec2_instance,
     find_ec2_instance_by_id,
@@ -341,7 +344,8 @@ def process_data_center(payload, user):
 
     except NoResultFound:
         LOG.debug('data_center data not found, creating...')
-        data_center = create_data_center(name=name, updated_by=user)
+        resp = create_data_center(name=name, updated_by=user)
+        data_center = resp['results'][0]
 
     except (TypeError, KeyError):
         LOG.debug('data_center data not present in payload.')
@@ -498,6 +502,21 @@ def update_node(node, **kwargs):
         except KeyError:
             pass
 
+        try:
+            current_hwp = node.physical_device.hardware_profile.id
+            if current_hwp != hardware_profile_id:
+                LOG.debug('Updating physical_device.hardware_profile_id from: '
+                          '{0} to: {1}'.format(current_hwp, hardware_profile_id))
+                update_physical_device(node.physical_device,
+                                       hardware_profile_id=hardware_profile_id,
+                                       updated_by=user_id)
+            else:
+                LOG.debug('physical_device.hardware_profile_id matches what '
+                          'is being reported by node registration.')
+        except AttributeError:
+            LOG.debug('No physical_device for node, not checking '
+                      'physical_device.hardware_profile_id for update.')
+
         DBSession.flush()
     except Exception as ex:
         LOG.error('Error updating node name: {0} unique_id: {1} '
@@ -510,18 +529,30 @@ def process_registration_payload(payload, user_id):
     '''Process the payload of a node registration and return a dictionary for
     updating or creating a node.'''
 
-    processed = {}
-    processed['user_id'] = user_id
-    processed['unique_id'] = payload['unique_id'].lower().rstrip()
-    processed['name'] = payload['name'].rstrip()
-    processed['serial_number'] = payload['serial_number'].rstrip()
-    processed['processor_count'] = int(payload['processor_count'])
-    processed['uptime'] = payload['uptime'].rstrip()
+    LOG.debug('Processing registration payload...')
 
-    processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
-    processed['operating_system_id'] = process_operating_system(payload, user_id)
-    processed['data_center_id'] = process_data_center(payload, user_id)
-    processed['ec2_id'] = process_ec2(payload, user_id)
+    try:
+        processed = {}
+        processed['user_id'] = user_id
+        processed['unique_id'] = payload['unique_id'].lower().rstrip()
+        processed['name'] = payload['name'].rstrip()
+        processed['serial_number'] = payload['serial_number'].rstrip()
+        processed['processor_count'] = int(payload['processor_count'])
+        processed['uptime'] = payload['uptime'].rstrip()
+
+        processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
+        processed['operating_system_id'] = process_operating_system(payload, user_id)
+        processed['data_center_id'] = process_data_center(payload, user_id)
+        processed['ec2_id'] = process_ec2(payload, user_id)
+    except KeyError as ex:
+        LOG.error('Required data missing from playload: {0}'.format(repr(ex)))
+        raise
+    except (TypeError, ValueError) as ex:
+        LOG.error('Incorrect data type for payload item: {0}'.format(repr(ex)))
+        raise
+    except Exception as ex:
+        LOG.error('Unhandled data problem for payload item: {0}'.format(repr(ex)))
+        raise
     try:
         processed['guest_vms'] = payload['guest_vms']
     except KeyError:

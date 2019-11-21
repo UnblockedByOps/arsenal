@@ -60,7 +60,8 @@ class HardwareProfile(Base):
 
     def __json__(self, request):
         try:
-            fields = request.params['fields']
+            if request.path_info.startswith('/api/hardware_profiles'):
+                fields = request.params['fields']
 
             if fields == 'all':
                 # Everything.
@@ -88,7 +89,7 @@ class HardwareProfile(Base):
                 return jsonify(resp)
 
         # Default to returning only name and id.
-        except KeyError:
+        except (KeyError, UnboundLocalError):
             resp = get_name_id_dict([self])
 
             return resp

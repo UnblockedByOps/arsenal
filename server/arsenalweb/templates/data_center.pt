@@ -51,31 +51,7 @@
                     <td>Name</td><td><span class="mono">${data_center.name}</span></td>
                 </tr>
                 <tr>
-                    <td>Provider</td><td><span class="mono">${data_center.provider}</span></td>
-                </tr>
-                <tr>
-                    <td>Contact</td><td><span class="mono">${data_center.contact_name}</span></td>
-                </tr>
-                <tr>
-                    <td>Phone Number</td><td><span class="mono">${data_center.phone_number}</span></td>
-                </tr>
-                <tr>
-                    <td>Address 1</td><td><span class="mono">${data_center.address_1}</span></td>
-                </tr>
-                <tr>
-                    <td>Address 2</td><td><span class="mono">${data_center.address_2}</span></td>
-                </tr>
-                <tr>
-                    <td>City</td><td><span class="mono">${data_center.city}</span></td>
-                </tr>
-                <tr>
-                    <td>State</td><td><span class="mono">${data_center.admin_area}</span></td>
-                </tr>
-                <tr>
-                    <td>Zip Code</td><td><span class="mono">${data_center.postal_code}</span></td>
-                </tr>
-                <tr>
-                    <td>Country</td><td><span class="mono">${data_center.country}</span></td>
+                    <td>Status</td><td><span class="mono">${data_center.status['name']}</span></td>
                 </tr>
                 <tr>
                     <td>Created At</td><td><span class="mono">${data_center.created}</span></td>

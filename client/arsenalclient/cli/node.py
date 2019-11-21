@@ -3,7 +3,6 @@
 These functions are called directly by args.func() to invoke the
 appropriate action. They also handle output formatting to the commmand
 line.
-
 '''
 #
 #  Copyright 2015 CityGrid Media, LLC
@@ -21,15 +20,17 @@ line.
 #  limitations under the License.
 #
 from __future__ import print_function
-import sys
 import logging
 import json
 
 from arsenalclient.cli.common import (
+    _check_tags,
     ask_yes_no,
     check_resp,
+    parse_cli_args,
     print_results,
     )
+from arsenalclient.authorization import check_root
 from arsenalclient.version import __version__
 
 LOG = logging.getLogger(__name__)
@@ -48,14 +49,13 @@ def _get_node_sort_order(node):
 def register(args, client):
     '''Collect all the data about a node and register it with the server'''
 
-    LOG.debug('Triggering node registration.')
-    client.node_register()
+    client.nodes.register()
 
 def enc(args, client):
     '''Run the External Node Classifier for puppet and return yaml.'''
 
     LOG.debug('Triggering node enc.')
-    resp = client.node_enc(name=args.name, param_sources=args.inspect)
+    resp = client.nodes.enc(name=args.name, param_sources=args.inspect)
     check_resp(resp)
     results = resp['results'][0]
 
@@ -79,37 +79,17 @@ def enc(args, client):
     print('...')
 
 def unique_id(args, client):
-    '''Collect the unique_id of the current node and print it.'''
+    '''Collect the unique_id of the current node and output it to the command
+    line.'''
 
-    client.arsenal_facts.resolve()
-    uid = client.node_get_unique_id()
-    if args.json:
-        res = {'unique_id': uid}
-        print(json.dumps(res, indent=2, sort_keys=True))
-    else:
-        print(uid)
-
-def _check_tags(node, set_tags):
-    '''check a node for tags that will be changed or removed.'''
-
-    resp = ''
-    try:
-        tags = [tag for tag in set_tags.split(',')]
-    # No tags
-    except AttributeError:
-        return resp
-
-    for tag in tags:
-        LOG.debug('Working on tag: {0}'.format(tag))
-        key = tag.split('=')[0]
-        LOG.debug('node name is: {0}'.format(node['name']))
-        LOG.debug('node_tags are: {0}'.format(node['tags']))
-        for node_tag in node['tags']:
-            if key == node_tag['name']:
-                resp += '     Existing tag found: {0}={1}\n'.format(node_tag['name'],
-                                                                    node_tag['value'])
-
-    return resp.rstrip()
+    if check_root():
+        client.nodes.arsenal_facts.resolve()
+        uid = client.nodes.get_unique_id()
+        if args.json:
+            res = {'unique_id': uid}
+            print(json.dumps(res, indent=4, sort_keys=True))
+        else:
+            print(uid)
 
 def _format_msg(results, tags=None):
     '''Format the message to be passed to ask_yes_no().'''
@@ -133,39 +113,44 @@ def _format_msg(results, tags=None):
 def process_actions(args, client, results):
     '''Process change actions for node search results.'''
 
+    resp = None
     if args.set_tags:
         msg = _format_msg(results, args.set_tags)
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.set_tags.split(',')]
-            resp = client.tag_assignments(tags, 'nodes', results, 'put')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.assign(name, value, 'nodes', results)
 
     if args.del_tags:
         msg = _format_msg(results, args.del_tags)
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
-            resp = client.tag_assignments(tags, 'nodes', results, 'delete')
+            for tag in tags:
+                name, value = tag.split('=')
+                resp = client.tags.deassign(name, value, 'nodes', results)
 
     if args.set_status:
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
-            resp = client.node_set_status(args.set_status, results)
+            resp = client.statuses.assign(args.set_status, 'nodes', results)
 
     if args.set_node_groups:
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
             for node_group_name in args.set_node_groups.split(','):
-                resp = client.node_group_assign(node_group_name, results)
+                resp = client.node_groups.assign(node_group_name, results)
 
     if args.del_node_groups:
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
             for node_group_name in args.del_node_groups.split(','):
-                resp = client.node_group_deassign(node_group_name, results)
+                resp = client.node_groups.deassign(node_group_name, results)
 
     if args.del_all_node_groups:
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
-            resp = client.node_groups_deassign_all(results)
+            resp = client.node_groups.deassign_all(results)
 
     return resp
 
@@ -184,11 +169,8 @@ def search_nodes(args, client):
         else:
             args.fields = 'tags'
 
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=args.fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, args.fields, args.exact_get, args.exclude)
+    resp = client.nodes.search(params)
 
     if not resp.get('results'):
         return resp
@@ -210,7 +192,7 @@ def search_nodes(args, client):
         ]
 
         if args.audit_history:
-            results = client.get_audit_history(results, 'nodes')
+            results = client.nodes.get_audit_history(results)
 
         sort_res = sorted(results, key=_get_node_sort_order)
         print_results(args, sort_res, skip_keys=skip_keys)
@@ -224,37 +206,45 @@ def search_nodes(args, client):
     LOG.debug('Complete.')
 
 def create_node(args, client):
-    '''Create a new node manually in lieu of using the register function.'''
+    '''Create a new node manually in lieu of using the register function.
+    Checks if the node exists (by checking unique_id) first so it can ask
+    if you want to update the existing entry. Can only update the name,
+    status_id, operating_system, or hardware_profile of an existing node.
+    '''
 
-    # Check if the node exists (by checking unique_id) first
-    # so it can ask if you want to update the existing entry, which
-    # essentially would just be changing either the node_name or status_id.
     LOG.info('Checking if unique_id exists: unique_id={0}'.format(args.unique_id))
 
-    resp = client.object_search(args.object_type,
-                                'unique_id={0}'.format(args.unique_id),
-                                exact_get=True)
+    params = {
+        'unique_id': args.unique_id,
+        'exact_get': True,
+    }
+
+    resp = client.nodes.search(params)
 
     results = resp['results']
+
+    node = {
+        'unique_id': args.unique_id,
+        'name': args.node_name,
+        'status_id': args.status_id,
+        'operating_system': {
+            'id': args.operating_system_id,
+        },
+        'hardware_profile': {
+            'id': args.hardware_profile_id,
+        },
+    }
 
     if results:
         if ask_yes_no('Entry already exists for unique_id: {0}: {1}\n Would you ' \
                       'like to update it?'.format(results[0]['name'], results[0]['unique_id']),
                       args.answer_yes):
 
-            resp = client.node_create(args.unique_id,
-                                      args.node_name,
-                                      args.status_id,
-                                      hw_id=args.hardware_profile_id,
-                                      os_id=args.operating_system_id,)
+            resp = client.nodes.update(node)
 
     else:
 
-        resp = client.node_create(args.unique_id,
-                                  args.node_name,
-                                  args.status_id,
-                                  hw_id=args.hardware_profile_id,
-                                  os_id=args.operating_system_id,)
+        resp = client.nodes.create(node)
 
     check_resp(resp)
 
@@ -266,16 +256,17 @@ def delete_nodes(args, client):
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
 
+    search = {
+        'exact_get': True,
+    }
     if args.node_id:
-        search = 'id={0}'.format(args.node_id)
+        search['id'] = args.node_id
     if args.node_name:
-        search = 'name={0}'.format(args.node_name)
+        search['name'] = args.node_name
     if args.unique_id:
-        search = 'unique_id={0}'.format(args.unique_id)
+        search['unique_id'] = args.unique_id
 
-    resp = client.object_search(args.object_type,
-                                search,
-                                exact_get=True)
+    resp = client.nodes.search(search)
 
     results = resp['results']
 
@@ -289,5 +280,5 @@ def delete_nodes(args, client):
 
         if ask_yes_no(msg, args.answer_yes):
             for node in results:
-                resp = client.node_delete(node)
+                resp = client.nodes.delete(node)
                 check_resp(resp)

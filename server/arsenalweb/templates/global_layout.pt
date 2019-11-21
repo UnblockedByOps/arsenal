@@ -185,14 +185,18 @@
               <div id="search_left_c">
                 <div id="search_select_c">
                   <select name="object_type">
+                    <option>data_centers</option>
+                    <option>hardware_profiles</option>
+                    <option>ip_addresses</option>
+                    <option>network_interfaces</option>
                     <option selected="selected">nodes</option>
                     <option>node_groups</option>
-                    <option>tags</option>
                     <option>operating_systems</option>
-                    <option>hardware_profiles</option>
-                    <option>data_centers</option>
-                    <option>network_interfaces</option>
-                    <option>ip_addresses</option>
+                    <option>physical_devices</option>
+                    <option>physical_elevations</option>
+                    <option>physical_locations</option>
+                    <option>physical_racks</option>
+                    <option>tags</option>
                   </select>
                 </div> <!-- search_select_c -->
               </div> <!-- search_left_c -->
@@ -217,20 +221,24 @@
                   <div>
                     <div class="menu_group">
                       <h3>Objects</h3>
-                      <a href="/nodes">nodes</a><br/>
-                      <a href="/node_groups">node groups</a><br/>
-                      <a href="/tags">tags</a><br/>
-                      <a href="/network_interfaces">network_interfaces</a><br/>
-                      <a href="/ip_addresses">ip_addresses</a><br/>
                       <a href="/data_centers">data_centers</a><br/>
+                      <a href="/ip_addresses">ip_addresses</a><br/>
+                      <a href="/network_interfaces">network_interfaces</a><br/>
+                      <a href="/node_groups">node groups</a><br/>
+                      <a href="/nodes">nodes</a><br/>
+                      <a href="/physical_devices">physical_devices</a><br/>
+                      <a href="/physical_elevations">physical_elevations</a><br/>
+                      <a href="/physical_locations">physical_locations</a><br/>
+                      <a href="/physical_racks">physical_racks</a><br/>
+                      <a href="/tags">tags</a><br/>
                     </div>
                   </div>
                   <div>
                     <div class="menu_group">
                       <h3>Meta Objects</h3>
-                      <a href="/statuses">statuses</a><br/>
                       <a href="/hardware_profiles">hardware profiles</a><br/>
                       <a href="/operating_systems">operating systems</a><br/>
+                      <a href="/statuses">statuses</a><br/>
                     </div>
                   </div>
                   <div>
