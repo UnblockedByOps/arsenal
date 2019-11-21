@@ -38,7 +38,7 @@ REQUIRES = [
     'zope.sqlalchemy==0.7.5',
     'python-ldap==2.4.16',
     'ldappool==1.0',
-    'requests==2.3.0',
+    'requests==2.20.0',
     'arrow==0.4.4',
     'passlib==1.6.2',
     'PyramidXmlRenderer==0.1.5',
