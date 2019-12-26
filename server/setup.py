@@ -31,7 +31,7 @@ REQUIRES = [
     'pyramid_ldap==0.2',
     'pyramid-mako==1.0.2',
     'Pygments==1.6',
-    'waitress==0.8.9',
+    'waitress==1.4.1',
     'SQLAlchemy==0.9.7',
     'mysql-connector-python==1.2.3',
     'transaction==1.4.3',
