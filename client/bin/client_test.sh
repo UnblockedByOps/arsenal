@@ -241,6 +241,10 @@ validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP_FORBIDDE
 validate_command "${ro_cmd} node_groups delete --name TEST_NODE_GROUP_FORBIDDEN" 1 "string" "WARNING - 403: Forbidden"
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP_FORBIDDEN --fields all" 0 "string" "name: TEST_NODE_GROUP_FORBIDDEN"
 #
+# network_interfaces
+#
+validate_command "${rw_cmd} network_interfaces search unique_id=00:11:22:aa:bb:cc" 0
+#
 # Regex search testing
 #
 # Create a few more nodes
