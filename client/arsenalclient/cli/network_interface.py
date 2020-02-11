@@ -24,6 +24,7 @@ from __future__ import print_function
 import logging
 from arsenalclient.cli.common import (
     check_resp,
+    parse_cli_args,
     print_results,
     )
 
@@ -41,12 +42,8 @@ def search_network_interfaces(args, client):
     if any(getattr(args, key) for key in update_fields):
         search_fields = 'all'
 
-    resp = None
-    resp = client.object_search(args.object_type,
-                                args.search,
-                                fields=search_fields,
-                                exact_get=args.exact_get,
-                                exclude=args.exclude)
+    params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
+    resp = client.network_interfaces.search(params)
 
     if not resp.get('results'):
         return resp
@@ -54,7 +51,7 @@ def search_network_interfaces(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.get_audit_history(results, 'network_interfaces')
+        results = client.network_interfaces.get_audit_history(results)
 
     if not any(getattr(args, key) for key in update_fields):
         print_results(args, results, skip_keys=['unique_id', 'id'], default_key='unique_id')
