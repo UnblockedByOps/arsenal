@@ -379,3 +379,4 @@ To export all devices in `TEST_LOCATION_1` that live in rack `R1000` to standard
 ```shell
 arsenal physical_devices export physical_location.name=TEST_LOCATION_1,physical_rack.name=R1000
 ```
+
