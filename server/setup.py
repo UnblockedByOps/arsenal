@@ -44,7 +44,7 @@ REQUIRES = [
     'PyramidXmlRenderer==0.1.5',
     'python-pam==1.8.2',
     'zope.interface==4.3.3',
-    'setuptools==36.7.1',
+    'setuptools==44.0.0',
     'WebOb==1.7.4',
 ]
 
