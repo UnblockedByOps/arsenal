@@ -63,6 +63,7 @@ INSERT INTO groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
 # Site specific groups should be above id 100
 INSERT INTO groups VALUES (100,'rp_noc','Admin',NOW(),NOW());
 INSERT INTO groups VALUES (101,'override_ratio','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (102,'dcops','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -152,20 +153,28 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (12,10,'
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'Admin');
 #  physical_device_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (15,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,12,'Admin');
 #  physical_device_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (16,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,13,'Admin');
 #  physical_location_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (17,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,14,'Admin');
 #  physical_location_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (18,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,15,'Admin');
 #  physical_rack_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (19,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,16,'Admin');
 #  physical_rack_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (20,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,17,'Admin');
 #  physical_elevation_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (21,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,18,'Admin');
 #  physical_elevation_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,19,'Admin');
 
 # For devel on mac
 # INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (5,1,'Admin');
