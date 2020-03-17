@@ -29,14 +29,14 @@
                     <th class="sr-physical_location_id"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Physical Location ID</span></div></th>
                     <th class="sr-name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Physical Location Name</span></div></th>
                     <th class="sr-provider"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Physical Location Provider</span></div></th>
-                    <th class="sr-contact_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">DC Contact</span></div></th>
-                    <th class="sr-phone_number"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">DC Phone Number</span></div></th>
                     <th class="sr-address_1"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Address 1</span></div></th>
                     <th class="sr-address_2"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Address 2</span></div></th>
                     <th class="sr-city"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">City</span></div></th>
                     <th class="sr-admin_area"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">State</span></div></th>
                     <th class="sr-postal_code"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Postal Code</span></div></th>
                     <th class="sr-country"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Country</span></div></th>
+                    <th class="sr-contact_name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">DC Contact</span></div></th>
+                    <th class="sr-phone_number"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">DC Phone Number</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
                     <th class="sr-updated"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
                     <th class="sr-created"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
@@ -48,14 +48,14 @@
                     <td class="sr-physical_location_id ta_right" tal:content="item.id">0</td>
                     <td class="sr-name"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.name">mydc1</a></td>
                     <td class="sr-provider"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.provider">Switchnap</a></td>
-                    <td class="sr-contact_name"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.contact_name">Joe Schmoe</a></td>
-                    <td class="sr-phone_number"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.phone_number">867-5309</a></td>
                     <td class="sr-address_1"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.address_1">123 Main ST</a></td>
                     <td class="sr-address_2"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.address_2">Suite 101</a></td>
                     <td class="sr-city"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.city">Las Vegas</a></td>
                     <td class="sr-admin_area"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.admin_area">Nevada</a></td>
-                    <td class="sr-postal_code"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.admin_area">89109</a></td>
+                    <td class="sr-postal_code"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.postal_code">89109</a></td>
                     <td class="sr-country"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.country">USA</a></td>
+                    <td class="sr-contact_name"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.contact_name">Joe Schmoe</a></td>
+                    <td class="sr-phone_number"><a class="lower_pane" tal:attributes="href '/physical_locations/{0}'.format(item.id)" tal:content="item.phone_number">867-5309</a></td>
                     <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
                     <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
                     <td class="sr-created ta_right" tal:content="item.created">2015/04/23 21:02:15</td>
