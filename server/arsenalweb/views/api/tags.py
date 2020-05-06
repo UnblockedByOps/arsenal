@@ -177,9 +177,10 @@ def manage_tags(tag, tagable_type, tagables, action, user):
             if action == 'PUT':
                 if tag.id not in current_tags_list:
                     my_audit = create_audit(object_id=tagable.id,
-                                            field='tag_id',
+                                            field='tag',
                                             old_value='assigned',
-                                            new_value=tag.id,
+                                            new_value='{0}={1}'.format(tag.name,
+                                                                       tag.value),
                                             updated_by=user,
                                             created=utcnow)
                     DBSession.add(my_audit)
@@ -195,8 +196,9 @@ def manage_tags(tag, tagable_type, tagables, action, user):
                     my_subtype = getattr(remove_tag, tagable_type)
                     my_subtype.remove(tagable)
                     my_audit = create_audit(object_id=tagable.id,
-                                            field='tag_id',
-                                            old_value=remove_tag.id,
+                                            field='tag',
+                                            old_value='{0}={1}'.format(remove_tag.name,
+                                                                       remove_tag.value),
                                             new_value='de-assigned',
                                             updated_by=user,
                                             created=utcnow)
@@ -208,8 +210,9 @@ def manage_tags(tag, tagable_type, tagables, action, user):
                     my_subtype = getattr(tag, tagable_type)
                     my_subtype.remove(tagable)
                     my_audit = create_audit(object_id=tagable.id,
-                                            field='tag_id',
-                                            old_value=tag.id,
+                                            field='tag',
+                                            old_value='{0}={1}'.format(tag.name,
+                                                                       tag.value),
                                             new_value='de-assigned',
                                             updated_by=user,
                                             created=utcnow)
