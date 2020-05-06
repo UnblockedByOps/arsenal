@@ -115,15 +115,16 @@ def assign_status(status, actionables, resource, user):
                 resp[status.name].append(my_obj.name)
 
                 orig_status_id = my_obj.status_id
+                orig_status = find_status_by_id(my_obj.status_id)
                 LOG.debug('START assign_status() update status_id')
                 my_obj.status_id = status.id
                 LOG.debug('END assign_status() update status_id')
                 if orig_status_id != status.id:
                     LOG.debug('START assign_status() create audit')
                     node_audit = NodeAudit(object_id=my_obj.id,
-                                           field='status_id',
-                                           old_value=orig_status_id,
-                                           new_value=status.id,
+                                           field='status',
+                                           old_value=orig_status.name,
+                                           new_value=status.name,
                                            updated_by=user,
                                            created=utcnow)
                     DBSession.add(node_audit)

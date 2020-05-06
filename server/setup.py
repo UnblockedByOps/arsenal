@@ -53,7 +53,7 @@ DEPENDENCY_LINKS = [
 ]
 
 setup(name='arsenalweb',
-      version='7.12',
+      version='8.0',
       description='Arsenal web api/ui',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
