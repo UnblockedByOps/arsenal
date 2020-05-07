@@ -578,8 +578,12 @@ def process_registration_payload(payload, user_id):
         processed['operating_system_name'] = operating_system.name
 
         data_center = process_data_center(payload, user_id)
-        processed['data_center_id'] = data_center.id
-        processed['data_center_name'] = data_center.name
+        try:
+            processed['data_center_id'] = data_center.id
+            processed['data_center_name'] = data_center.name
+        except AttributeError:
+            processed['data_center_id'] = None
+            processed['data_center_name'] = None
 
         ec2 = process_ec2(payload, user_id)
         try:
