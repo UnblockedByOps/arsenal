@@ -15,6 +15,7 @@
 #
 import logging
 import json
+import operator
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
@@ -245,7 +246,7 @@ def process_hardware_profile(payload, user):
                                                        user)
 
         LOG.debug('hardware_profile is: {0}'.format(hardware_profile.__dict__))
-        return hardware_profile.id
+        return hardware_profile
 
     except Exception as ex:
         LOG.error('Unable to determine hardware_profile manufacturer={0},model={1},'
@@ -273,7 +274,7 @@ def process_operating_system(payload, user):
                                                        user)
 
         LOG.debug('operating_system is: {0}'.format(operating_system.__dict__))
-        return operating_system.id
+        return operating_system
 
     except Exception as ex:
         LOG.error('Unable to determine operating_system name={0},variant={1},'
@@ -332,7 +333,7 @@ def process_ec2(payload, user):
         raise
 
     LOG.debug('ec2_instance is: {0}'.format(ec2.__dict__))
-    return ec2.id
+    return ec2
 
 def process_data_center(payload, user):
     '''Find the data_center or create if it doesn't exist. Returns data_center.id'''
@@ -357,7 +358,7 @@ def process_data_center(payload, user):
         raise
 
     LOG.debug('data_center is: {0}'.format(data_center.__dict__))
-    return data_center.id
+    return data_center
 
 def manage_guest_vm_assignments(guest_vms, hypervisor, user_id):
     '''Manage the assigning and deassinging of guests during a node
@@ -441,14 +442,26 @@ def update_node(node, **kwargs):
     unique_id = kwargs['unique_id']
     name = kwargs['name']
     hardware_profile_id = kwargs['hardware_profile_id']
+    hardware_profile_name = kwargs['hardware_profile_name']
     operating_system_id = kwargs['operating_system_id']
+    operating_system_name = kwargs['operating_system_name']
     data_center_id = kwargs['data_center_id']
+    data_center_name = kwargs['data_center_name']
     ec2_id = kwargs['ec2_id']
+    ec2_instance_id = kwargs['ec2_instance_id']
     serial_number = kwargs['serial_number']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
     user_id = kwargs['user_id']
     net_if_list = kwargs['net_if_list']
+
+    # Remap for audit entries so we can have values instead of IDs.
+    audit_remap = {
+        'hardware_profile_id': 'hardware_profile_name',
+        'operating_system_id': 'operating_system_name',
+        'data_center_id': 'data_center_name',
+        'ec2_id': 'ec2_instance_id',
+    }
 
     try:
         LOG.info('Updating node: {0}'.format(unique_id))
@@ -468,14 +481,30 @@ def update_node(node, **kwargs):
                                                           locals()[attribute]))
                 # We don't want audit entries for uptime
                 if attribute != 'uptime':
-                    # This will not set 'None' to a string.
-                    old_value = getattr(node, attribute, 'None')
+                    if attribute.endswith('_id') and attribute != 'ec2_id':
+                        obj_name = '{0}.name'.format(attribute[:-3])
+                        LOG.info('Updating object name: {0}'.format(obj_name))
+                        old_value = operator.attrgetter(obj_name)(node)
+                    elif attribute == 'ec2_id':
+                        old_value = node.ec2.instance_id
+                    else:
+                        # This will not set 'None' to a string.
+                        old_value = getattr(node, attribute, 'None')
+
                     if not old_value:
                         old_value = 'None'
+
+                    try:
+                        update_field = audit_remap[attribute]
+                        update_value = locals()[update_field]
+                    except KeyError:
+                        update_field = attribute
+                        update_value = locals()[attribute]
+
                     audit = NodeAudit(object_id=node.id,
-                                      field=attribute,
+                                      field=update_field,
                                       old_value=old_value,
-                                      new_value=locals()[attribute],
+                                      new_value=update_value,
                                       updated_by=user_id,
                                       created=utcnow)
                     DBSession.add(audit)
@@ -540,10 +569,29 @@ def process_registration_payload(payload, user_id):
         processed['processor_count'] = int(payload['processor_count'])
         processed['uptime'] = payload['uptime'].rstrip()
 
-        processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
-        processed['operating_system_id'] = process_operating_system(payload, user_id)
-        processed['data_center_id'] = process_data_center(payload, user_id)
-        processed['ec2_id'] = process_ec2(payload, user_id)
+        hardware_profile = process_hardware_profile(payload, user_id)
+        processed['hardware_profile_id'] = hardware_profile.id
+        processed['hardware_profile_name'] = hardware_profile.name
+
+        operating_system = process_operating_system(payload, user_id)
+        processed['operating_system_id'] = operating_system.id
+        processed['operating_system_name'] = operating_system.name
+
+        data_center = process_data_center(payload, user_id)
+        try:
+            processed['data_center_id'] = data_center.id
+            processed['data_center_name'] = data_center.name
+        except AttributeError:
+            processed['data_center_id'] = None
+            processed['data_center_name'] = None
+
+        ec2 = process_ec2(payload, user_id)
+        try:
+            processed['ec2_id'] = ec2.id
+            processed['ec2_instance_id'] = ec2.instance_id
+        except AttributeError:
+            processed['ec2_id'] = None
+            processed['ec2_instance_id'] = None
     except KeyError as ex:
         LOG.error('Required data missing from playload: {0}'.format(repr(ex)))
         raise
