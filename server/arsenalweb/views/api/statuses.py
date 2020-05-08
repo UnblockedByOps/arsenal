@@ -83,7 +83,7 @@ def create_status(name, description, user_id):
         status_audit = StatusAudit(object_id=status.id,
                                    field='name',
                                    old_value='created',
-                                   new_value=status.id,
+                                   new_value=status.name,
                                    updated_by=user_id,
                                    created=utcnow)
         DBSession.add(status_audit)

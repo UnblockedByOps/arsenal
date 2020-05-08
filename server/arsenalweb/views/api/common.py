@@ -971,7 +971,7 @@ def api_delete_by_params(request):
        over passed parameters.'''
 
     # FIXME: Is any of this used? If so it needs to be locked down.
- 
+
     try:
         # FIXME: Should we enforce required parameters here?
         # Will be used for auditing
