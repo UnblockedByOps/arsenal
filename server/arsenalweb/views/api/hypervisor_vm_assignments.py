@@ -59,9 +59,9 @@ def guest_vms_to_hypervisor(guest_vms, hypervisor, action, user_id):
                 if not guest_vm in hypervisor.guest_vms:
                     hypervisor.guest_vms.append(guest_vm)
                     audit = NodeAudit(object_id=hypervisor.id,
-                                      field='guest_vm_id',
+                                      field='guest_vm',
                                       old_value='assigned',
-                                      new_value=guest_vm.id,
+                                      new_value=guest_vm.name,
                                       updated_by=user_id,
                                       created=utcnow)
                     DBSession.add(audit)
@@ -69,8 +69,8 @@ def guest_vms_to_hypervisor(guest_vms, hypervisor, action, user_id):
                 try:
                     hypervisor.guest_vms.remove(guest_vm)
                     audit = NodeAudit(object_id=hypervisor.id,
-                                      field='guest_vm_id',
-                                      old_value=guest_vm.id,
+                                      field='guest_vm',
+                                      old_value=guest_vm.name,
                                       new_value='deassigned',
                                       updated_by=user_id,
                                       created=utcnow)

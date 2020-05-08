@@ -134,17 +134,17 @@ def node_groups_to_nodes(node, node_groups, action, auth_user):
             if action == 'PUT':
                 node.node_groups.append(node_group)
                 audit = NodeAudit(object_id=node.id,
-                                  field='node_group_id',
+                                  field='node_group',
                                   old_value='created',
-                                  new_value=node_group.id,
+                                  new_value=node_group.name,
                                   updated_by=auth_user['user_id'],
                                   created=utcnow)
                 DBSession.add(audit)
             if action == 'DELETE':
                 try:
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group_id',
-                                      old_value=node_group.id,
+                                      field='node_group',
+                                      old_value=node_group.name,
                                       new_value='deleted',
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)

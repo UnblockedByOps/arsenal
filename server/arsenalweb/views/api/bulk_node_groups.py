@@ -58,8 +58,8 @@ def remove_node_groups(node_ids, auth_user):
                 LOG.debug('Removing node_group: {0}'.format(node_group.name))
                 try:
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group_id',
-                                      old_value=node_group.id,
+                                      field='node_group',
+                                      old_value=node_group.name,
                                       new_value='deleted',
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)
