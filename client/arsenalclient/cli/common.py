@@ -219,6 +219,28 @@ def update_object_fields(args, obj_type, object_result, fields):
 
     return object_result
 
+def get_format_lengths(audit_history):
+    '''Gets the longest string of each column of the audit data for printing
+    output. Returns the max int for each column, plus 2.'''
+
+    updated = []
+    field = []
+    old_value = []
+    new_value = []
+
+    for audit in audit_history:
+        updated.append(audit['updated_by'])
+        field.append(audit['field'])
+        old_value.append(audit['old_value'])
+        new_value.append(audit['new_value'])
+
+    width_updated = len(max(updated, key=len)) + 2
+    width_field = len(max(field, key=len)) + 2
+    width_old = len(max(old_value, key=len)) + 2
+    width_new = len(max(new_value, key=len)) + 2
+
+    return width_updated, width_field, width_old, width_new
+
 def print_results(args, results, default_key='name', skip_keys=None):
     '''Print results to the terminal in a yaml style output. Defaults to
     printing name and id first, but can be overridden
@@ -264,13 +286,19 @@ def print_results(args, results, default_key='name', skip_keys=None):
             else:
                 print(res[default_key])
             if args.audit_history:
+                width_updated, width_field, width_old, width_new = get_format_lengths(res['audit_history'])
                 for audit in res['audit_history']:
-                    print('{0:>23} - updated_by: {1:<15} field: {2:<20} old_value: {3:<14} '
-                          'new_value: {4:<14}'.format(audit['created'],
-                                                      audit['updated_by'],
-                                                      audit['field'],
-                                                      audit['old_value'],
-                                                      audit['new_value'],))
+                    print('{0:>23} - updated_by: {1:<{2}} field: '
+                          '{3:<{4}} old_value: {5:<{6}} '
+                          'new_value: {7:<{8}}'.format(audit['created'],
+                                                       audit['updated_by'],
+                                                       width_updated,
+                                                       audit['field'],
+                                                       width_field,
+                                                       audit['old_value'],
+                                                       width_old,
+                                                       audit['new_value'],
+                                                       width_new,))
 
 def parse_cli_args(search=None, fields=None, exact_get=None, exclude=None):
     '''Parses comma separated argument values passed from the CLI and turns them
