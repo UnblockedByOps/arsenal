@@ -24,6 +24,32 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+    'single_interface_with_dc': {
+        'data_center': {
+            'name': 'test_dc1'
+        },
+        'ec2': None,
+        'guest_vms': [],
+        'hardware_profile': {
+            'manufacturer': 'VMware, Inc.',
+            'model': 'VMware Virtual Platform',
+            'name': 'VMware, Inc. VMware Virtual Platform'
+        },
+        'name': 'server0000.internal',
+        'network_interfaces': [
+            {
+                'ip_address': '10.1.1.20',
+                'name': 'eth0',
+                'unique_id': '00:50:56:bf:4b:f3'
+            }
+        ],
+        'operating_system': {
+            'architecture': 'x86_64',
+            'description': 'CentOS Linux release 7.3.1611 (Core)',
+            'name': 'CentOS 7.3.1611 x86_64',
+            'variant': 'CentOS',
+            'version_number': '7.3.1611'
+        },
         'processor_count': 2,
         'serial_number': '987654321-0',
         'unique_id': '123456789-0',
