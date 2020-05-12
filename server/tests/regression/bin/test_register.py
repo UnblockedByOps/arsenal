@@ -24,6 +24,10 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+        'processor_count': 2,
+        'serial_number': '987654321-0',
+        'unique_id': '123456789-0',
+        'uptime': '1 day'
     },
     'single_interface_with_dc': {
         'data_center': {
