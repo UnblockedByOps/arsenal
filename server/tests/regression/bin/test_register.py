@@ -24,6 +24,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+    },
     'single_interface_with_dc': {
         'data_center': {
             'name': 'test_dc1'
