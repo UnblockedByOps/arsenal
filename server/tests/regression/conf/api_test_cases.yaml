@@ -608,6 +608,8 @@ tests:
     tests:
       - test_data: 'single_interface'
         url: '/api/register'
+      - test_data: 'single_interface_with_dc'
+        url: '/api/register'
       - test_data: 'multi_interface_bonded'
         url: '/api/register'
       - test_data: 'multi_interface_no_bond'

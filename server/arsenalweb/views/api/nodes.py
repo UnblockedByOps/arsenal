@@ -484,7 +484,10 @@ def update_node(node, **kwargs):
                     if attribute.endswith('_id') and attribute != 'ec2_id':
                         obj_name = '{0}.name'.format(attribute[:-3])
                         LOG.info('Updating object name: {0}'.format(obj_name))
-                        old_value = operator.attrgetter(obj_name)(node)
+                        try:
+                            old_value = operator.attrgetter(obj_name)(node)
+                        except AttributeError:
+                            old_value = 'None'
                     elif attribute == 'ec2_id':
                         old_value = node.ec2.instance_id
                     else:
