@@ -196,7 +196,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,19,
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
 # Add user: hvm to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 3, 'Admin', NOW(),NOW());
-# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, secure tags
+# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, secure_tags
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 5, 'Admin', NOW(),NOW());
@@ -209,8 +209,9 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 # Add user: kaboom to groups: api_register, node_write
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 2, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 2, 'Admin', NOW(),NOW());
-# Add user: puppet-enc to groups: node_write
+# Add user: puppet-enc to groups: node_write, secure_tags
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 6, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (14, 6, 'Admin', NOW(),NOW());
 # Add user: aws-lambda to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
 
