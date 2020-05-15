@@ -215,7 +215,6 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 # Add user: aws-lambda to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
 
-
 #
 # STATUSES
 #
