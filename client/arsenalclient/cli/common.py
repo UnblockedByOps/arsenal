@@ -28,7 +28,7 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
-def _check_tags(obj, set_tags):
+def _check_tags(obj, set_tags, mode='tag'):
     '''Check for tags that will be changed or removed.'''
 
     resp = ''
@@ -51,10 +51,24 @@ def _check_tags(obj, set_tags):
         except KeyError:
             LOG.debug('serial_number is: {0}'.format(obj['serial_number']))
         LOG.debug('tags are: {0}'.format(obj['tags']))
+
+        if mode == 'tag' and not any(d.get('name', None) == key for d in obj['tags']):
+            resp += '     Tag not assigned: {0}={1} will be added ' \
+                    '\n'.format(key, val)
+
         for obj_tag in obj['tags']:
-            if key == obj_tag['name'] and val != obj_tag['value']:
-                resp += '     Existing tag found: {0}={1} value will be updated ' \
-                        'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
+            if mode == 'tag':
+                if key == obj_tag['name']:
+                    if val == obj_tag['value']:
+                        resp += '     Existing tag found: {0}={1} value already matches ' \
+                                '\n'.format(obj_tag['name'], obj_tag['value'])
+                    else:
+                        resp += '     Existing tag found: {0}={1} value will be updated ' \
+                                'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
+
+            if key == obj_tag['name'] and val == obj_tag['value'] and mode != 'tag':
+                resp += '     Existing tag found: {0}={1} and will be removed ' \
+                        '\n'.format(obj_tag['name'], obj_tag['value'])
 
     return resp.rstrip()
 
