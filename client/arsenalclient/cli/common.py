@@ -41,7 +41,11 @@ def _check_tags(obj, set_tags):
     LOG.debug('Taggable object is: {0}'.format(obj))
     for tag in tags:
         LOG.debug('Working on tag: {0}'.format(tag))
-        key, val = tag.split('=')
+        try:
+            key, val = tag.split('=')
+        except ValueError:
+            LOG.error('Tags must be in the format key=value')
+            sys.exit(1)
         try:
             LOG.debug('name is: {0}'.format(obj['name']))
         except KeyError:
