@@ -52,7 +52,7 @@ def _check_tags(obj, set_tags):
             LOG.debug('serial_number is: {0}'.format(obj['serial_number']))
         LOG.debug('tags are: {0}'.format(obj['tags']))
         for obj_tag in obj['tags']:
-            if key == obj_tag['name']:
+            if key == obj_tag['name'] and val != obj_tag['value']:
                 resp += '     Existing tag found: {0}={1} value will be updated ' \
                         'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
 
