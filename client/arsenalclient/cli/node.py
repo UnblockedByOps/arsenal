@@ -91,12 +91,12 @@ def unique_id(args, client):
         else:
             print(uid)
 
-def _format_msg(results, tags=None):
+def _format_msg(results, tags=None, mode='tag'):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
     for node in results:
-        resp = _check_tags(node, tags)
+        resp = _check_tags(node, tags, mode=mode)
         if resp:
             r_names.append('{0}: {1}\n{2}'.format(node['name'],
                                                   node['unique_id'],
@@ -123,7 +123,7 @@ def process_actions(args, client, results):
                 resp = client.tags.assign(name, value, 'nodes', results)
 
     if args.del_tags:
-        msg = _format_msg(results, args.del_tags)
+        msg = _format_msg(results, args.del_tags, mode='untag')
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:

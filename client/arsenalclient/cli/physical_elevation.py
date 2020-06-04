@@ -38,12 +38,12 @@ UPDATE_FIELDS = [
     'physical_rack',
 ]
 
-def _format_msg(results, tags=None):
+def _format_msg(results, tags=None, mode='tag'):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
     for res in results:
-        resp = _check_tags(res, tags)
+        resp = _check_tags(res, tags, mode=mode)
         if resp:
             r_names.append('{0}\n{1}'.format(res['name'],
                                              resp))
