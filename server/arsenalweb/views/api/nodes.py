@@ -577,7 +577,10 @@ def process_registration_payload(payload, user_id):
         processed['unique_id'] = payload['unique_id'].lower().rstrip()
         processed['name'] = payload['name'].rstrip()
         processed['serial_number'] = payload['serial_number'].rstrip()
-        processed['os_memory'] = payload['os_memory'].rstrip()
+        try:
+            processed['os_memory'] = payload['os_memory'].rstrip()
+        except (KeyError, AttributeError):
+            processed['os_memory'] = None
         processed['processor_count'] = int(payload['processor_count'])
         processed['uptime'] = payload['uptime'].rstrip()
 

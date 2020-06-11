@@ -56,7 +56,6 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
-        'os_memory': '7.69 GiB',
         'processor_count': 2,
         'serial_number': '987654321-0',
         'unique_id': '123456789-0',
