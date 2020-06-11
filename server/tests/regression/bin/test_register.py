@@ -56,6 +56,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+        'os_memory': '7.69 GiB',
         'processor_count': 2,
         'serial_number': '987654321-0',
         'unique_id': '123456789-0',
@@ -104,6 +105,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+        'os_memory': '31.22 GiB',
         'processor_count': 40,
         'serial_number': '987654321-1',
         'unique_id': '123456789-1',
@@ -141,6 +143,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.4.1708'
         },
+        'os_memory': None,
         'processor_count': 32,
         'serial_number': '987654321-2',
         'unique_id': '123456789-2',
@@ -179,6 +182,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.4.1708'
         },
+        'os_memory': None,
         'processor_count': 2,
         'serial_number': '987654321-1',
         'unique_id': 'i-0c1abf92f3b6c33b1',
