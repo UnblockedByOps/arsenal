@@ -233,6 +233,7 @@ CREATE UNIQUE INDEX idx_node_ec2_id on nodes (ec2_id);
 DROP TABLE IF EXISTS `ec2_instances`;
 CREATE TABLE `ec2_instances` (
   `id`                            int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `account_id`                    varchar(255) DEFAULT NULL,
   `ami_id`                        varchar(255) NOT NULL,
   `hostname`                      varchar(255) NOT NULL,
   `instance_id`                   varchar(255) NOT NULL,

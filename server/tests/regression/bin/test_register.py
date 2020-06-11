@@ -24,6 +24,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+        'os_memory': '7.69 GiB',
         'processor_count': 2,
         'serial_number': '987654321-0',
         'unique_id': '123456789-0',
@@ -147,6 +148,7 @@ REGISTER_TEST_CASES = {
     },
     'single_interface_ec2': {
         'ec2': {
+            'account_id': '12345',
             'ami_id': 'ami-e3415983',
             'hostname': 'ip-10-60-3-114.usw1.fanops.net',
             'instance_id': 'i-129485tu8549',

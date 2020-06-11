@@ -63,6 +63,9 @@
                 <td>Serial Number</td> <td><span class="mono">${node.serial_number}</span></td>
               </tr>
               <tr>
+                <td>OS Memory</td> <td><span class="mono">${node.os_memory}</span></td>
+              </tr>
+              <tr>
                 <td>Processor Count</td> <td><span class="mono">${node.processor_count}</span></td>
               </tr>
               <tr>
@@ -122,6 +125,9 @@
               <table>
                   <tr>
                       <td>Ec2 Instance</td><td> <span class="mono">${node.ec2_instance['instance_id']}</span></td>
+                  </tr>
+                  <tr>
+                      <td>Ec2 Account ID</td><td> <span class="mono">${node.ec2_instance['account_id']}</span></td>
                   </tr>
                   <tr>
                       <td>Ec2 Ami</td><td> <span class="mono">${node.ec2_instance['ami_id']}</span></td>
