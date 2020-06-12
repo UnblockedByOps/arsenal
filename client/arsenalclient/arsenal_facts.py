@@ -18,6 +18,7 @@ import os
 import sys
 import logging
 import subprocess
+import ast
 import json
 import re
 try:
@@ -57,6 +58,7 @@ class ArsenalFacts(object):
                 'name': None,
             },
             'ec2': {
+                'account_id': None,
                 'ami_id': None,
                 'availability_zone': None,
                 'hostname': None,
@@ -89,6 +91,11 @@ class ArsenalFacts(object):
             },
             'processors': {
                 'count': None,
+            },
+            'memory': {
+                'system': {
+                    'total': None,
+                }
             },
             'guest_vms': [],
         }
@@ -190,6 +197,7 @@ class ArsenalFacts(object):
             self.facts['os']['kernel'] = resp['kernel']
         except KeyError:
             LOG.error('Unable to determine operating system.')
+        self.facts['memory']['system']['total'] = resp['memory']['system']['total']
         self.facts['processors']['count'] = resp['processors']['count']
         try:
             self.facts['ec2']['ami_id'] = resp['ec2_metadata']['ami-id']
@@ -200,6 +208,13 @@ class ArsenalFacts(object):
             self.facts['ec2']['profile'] = resp['ec2_metadata']['profile']
             self.facts['ec2']['reservation_id'] = resp['ec2_metadata']['reservation-id']
             self.facts['ec2']['security_groups'] = resp['ec2_metadata']['security-groups'].replace('\n', ',')
+
+            # The value of this fact is a dictionary in string format for some
+            # reason.
+            account_string = resp['ec2_metadata']['identity-credentials']['ec2']['info']
+            account_dict = ast.literal_eval(account_string)
+            self.facts['ec2']['account_id'] = account_dict['AccountId']
+
         except KeyError:
             LOG.debug('ec2 facts not found, nothing to do.')
         self._map_network_interfaces(resp)
