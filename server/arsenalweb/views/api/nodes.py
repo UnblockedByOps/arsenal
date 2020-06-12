@@ -292,6 +292,7 @@ def process_ec2(payload, user):
     exist. Returns ec2.id, or None if not present in the payload.'''
 
     try:
+        account_id = payload['ec2']['account_id'].rstrip()
         ami_id = payload['ec2']['ami_id'].rstrip()
         hostname = payload['ec2']['hostname'].rstrip()
         instance_id = payload['ec2']['instance_id'].rstrip()
@@ -303,6 +304,7 @@ def process_ec2(payload, user):
 
         ec2 = find_ec2_instance_by_id(instance_id)
         ec2 = update_ec2_instance(ec2,
+                                  account_id=account_id,
                                   ami_id=ami_id,
                                   hostname=hostname,
                                   instance_id=instance_id,
@@ -314,7 +316,8 @@ def process_ec2(payload, user):
                                   updated_by=user)
 
     except NoResultFound:
-        ec2 = create_ec2_instance(ami_id=ami_id,
+        ec2 = create_ec2_instance(account_id=account_id,
+                                  ami_id=ami_id,
                                   hostname=hostname,
                                   instance_id=instance_id,
                                   instance_type=instance_type,
@@ -389,6 +392,7 @@ def create_node(**kwargs):
     data_center_id = kwargs['data_center_id']
     ec2_id = kwargs['ec2_id']
     serial_number = kwargs['serial_number']
+    os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
     user_id = kwargs['user_id']
@@ -407,6 +411,7 @@ def create_node(**kwargs):
                     status_id=2,
                     ec2_id=ec2_id,
                     serial_number=serial_number,
+                    os_memory=os_memory,
                     processor_count=processor_count,
                     uptime=uptime,
                     updated_by=user_id,
@@ -450,6 +455,7 @@ def update_node(node, **kwargs):
     ec2_id = kwargs['ec2_id']
     ec2_instance_id = kwargs['ec2_instance_id']
     serial_number = kwargs['serial_number']
+    os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
     user_id = kwargs['user_id']
@@ -474,6 +480,7 @@ def update_node(node, **kwargs):
                           'data_center_id',
                           'ec2_id',
                           'serial_number',
+                          'os_memory',
                           'processor_count',
                           'uptime']:
             if getattr(node, attribute) != locals()[attribute]:
@@ -518,6 +525,7 @@ def update_node(node, **kwargs):
         node.data_center_id = data_center_id
         node.ec2_id = ec2_id
         node.serial_number = serial_number
+        node.os_memory = os_memory
         node.processor_count = processor_count
         node.uptime = uptime
         node.updated_by = user_id
@@ -569,6 +577,10 @@ def process_registration_payload(payload, user_id):
         processed['unique_id'] = payload['unique_id'].lower().rstrip()
         processed['name'] = payload['name'].rstrip()
         processed['serial_number'] = payload['serial_number'].rstrip()
+        try:
+            processed['os_memory'] = payload['os_memory'].rstrip()
+        except (KeyError, AttributeError):
+            processed['os_memory'] = None
         processed['processor_count'] = int(payload['processor_count'])
         processed['uptime'] = payload['uptime'].rstrip()
 

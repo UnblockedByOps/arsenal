@@ -51,6 +51,7 @@ def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
 
     Optional kwargs:
 
+    account_id       : A string that is the account_id.
     ami_id           : A string that is the ami_id.
     hostname         : A string that is the hostname.
     instance_id      : A string that is the instance_id.
@@ -101,6 +102,7 @@ def update_ec2_instance(ec2, **kwargs):
 
     Optional kwargs:
 
+    account_id       : A string that is the account_id.
     ami_id           : A string that is the ami_id.
     hostname         : A string that is the hostname.
     instance_type    : A string that is the instance_type.
@@ -172,6 +174,7 @@ def api_ec2_instance_write(request):
             'instance_id',
         ]
         opt_params = [
+            'account_id',
             'ami_id',
             'availability_zone',
             'hostname',

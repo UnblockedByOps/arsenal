@@ -51,6 +51,7 @@ class Node(Base):
     data_center_id = Column(Integer, ForeignKey('data_centers.id'))
     uptime = Column(Text, nullable=False)
     serial_number = Column(Text, ForeignKey('physical_devices.serial_number'))
+    os_memory = Column(Text)
     processor_count = Column(Integer)
     last_registered = Column(TIMESTAMP)
     created = Column(TIMESTAMP, nullable=False)
@@ -101,6 +102,7 @@ class Node(Base):
                     data_center=get_name_id_dict([self.data_center]),
                     uptime=check_null_string(self.uptime),
                     serial_number=check_null_string(self.serial_number),
+                    os_memory=check_null_string(self.os_memory),
                     processor_count=check_null_string(self.processor_count),
                     node_groups=get_name_id_list(self.node_groups),
                     tags=get_name_id_list(self.tags, extra_keys=['value']),

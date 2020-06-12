@@ -36,6 +36,7 @@ class Ec2Instance(Base):
 
     __tablename__ = 'ec2_instances'
     id = Column(Integer, primary_key=True, nullable=False)
+    account_id = Column(Text, nullable=False)
     ami_id = Column(Text, nullable=False)
     hostname = Column(Text, nullable=False)
     instance_id = Column(Text, nullable=False)
@@ -56,6 +57,7 @@ class Ec2Instance(Base):
                 # Everything.
                 all_fields = dict(
                     id=self.id,
+                    account_id=self.account_id,
                     ami_id=self.ami_id,
                     hostname=self.hostname,
                     instance_id=self.instance_id,
