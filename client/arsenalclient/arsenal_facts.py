@@ -197,8 +197,7 @@ class ArsenalFacts(object):
             self.facts['os']['kernel'] = resp['kernel']
         except KeyError:
             LOG.error('Unable to determine operating system.')
-        self.facts['memory']['system']['total'] =
-        resp['memory']['system']['total']
+        self.facts['memory']['system']['total'] = resp['memory']['system']['total']
         self.facts['processors']['count'] = resp['processors']['count']
         try:
             self.facts['ec2']['ami_id'] = resp['ec2_metadata']['ami-id']
