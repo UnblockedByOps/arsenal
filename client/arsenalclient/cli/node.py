@@ -68,7 +68,7 @@ def enc(args, client):
         print('classes: null')
 
     print('parameters:')
-    for param in results['parameters']:
+    for param in sorted(results['parameters']):
         if args.inspect:
             print('  {0}: {1} # [{2}]'.format(param,
                                               results['parameters'][param],
