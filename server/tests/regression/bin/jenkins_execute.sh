@@ -9,7 +9,7 @@ if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
   echo -e "\nCreating virtualenv...\n"
   /usr/bin/virtualenv -q ${WORKSPACE}/venv
   source ${WORKSPACE}/venv/bin/activate
-  pip install -U pip setuptools && \
+  pip install -U pip==10.0.1 setuptools==44.0 && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple docker-compose && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple rp-retry && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple ruamel.yaml && \
