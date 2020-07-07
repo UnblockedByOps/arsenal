@@ -159,7 +159,7 @@ class Node(Base):
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
 
-                # These are in the dict becasue it is joined, but we
+                # These are in the dict because it is joined, but we
                 # want to add extra fields.
                 if 'physical_device' in my_fields and self.physical_device:
                     resp['physical_device'] = get_name_id_dict([self.physical_device],
