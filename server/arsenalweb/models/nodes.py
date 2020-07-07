@@ -128,7 +128,7 @@ class Node(Base):
 
                 my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
+                # Dynamic backrefs are not in the instance dict, so we handle them here.
                 if 'node_groups' in my_fields:
                     resp['node_groups'] = get_name_id_list(self.node_groups)
                 if 'hypervisor' in my_fields:
@@ -158,6 +158,37 @@ class Node(Base):
 
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
+
+                # These are in the dict becasue it is joined, but we
+                # want to add extra fields.
+                if 'physical_device' in my_fields:
+                    resp['physical_device'] = get_name_id_dict([self.physical_device],
+                                                               default_keys=[
+                                                                   'id',
+                                                                   'serial_number',
+                                                               ],
+                                                               extra_keys=[
+                                                                   'physical_location',
+                                                                   'physical_rack',
+                                                                   'physical_elevation',
+                                                               ])
+
+                if 'ec2_instance' in my_fields and self.ec2_id:
+                    resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
+                                                            default_keys=[
+                                                                'id',
+                                                                'instance_id',
+                                                            ],
+                                                            extra_keys=[
+                                                                'account_id',
+                                                                'ami_id',
+                                                                'hostname',
+                                                                'instance_type',
+                                                                'availability_zone',
+                                                                'profile',
+                                                                'reservation_id',
+                                                                'security_groups',
+                                                            ])
 
                 return jsonify(resp)
 
