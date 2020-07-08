@@ -185,7 +185,7 @@ def search_nodes(args, client):
                 args.del_node_groups,
                 args.del_all_node_groups,)):
 
-        skip_keys = [
+        first_keys = [
             'name',
             'id',
             'unique_id',
@@ -195,7 +195,7 @@ def search_nodes(args, client):
             results = client.nodes.get_audit_history(results)
 
         sort_res = sorted(results, key=_get_node_sort_order)
-        print_results(args, sort_res, skip_keys=skip_keys)
+        print_results(args, sort_res, first_keys=first_keys)
 
     else:
 

@@ -103,7 +103,7 @@ def search_physical_elevations(args, client):
             results = client.physical_elevations.get_audit_history(results)
 
         print_results(args, results, default_key='elevation',
-                      skip_keys=['elevation', 'id'])
+                      first_keys=['elevation', 'id'])
 
     else:
 

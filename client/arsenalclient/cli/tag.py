@@ -54,11 +54,11 @@ def search_tags(args, client):
     # switch to any if there's more than one
     if not args.set_tags:
 
-        skip_keys = [
+        first_keys = [
             'name',
             'value',
         ]
-        print_results(args, results, skip_keys=skip_keys, default_key='tag')
+        print_results(args, results, first_keys=first_keys, default_key='tag')
 
     else:
         LOG.info('Assigning tags via tag search is not implemented.')
