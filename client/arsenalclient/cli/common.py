@@ -340,8 +340,19 @@ def print_results(args, results, default_key='name', first_keys=None):
             'id',
         ]
 
+    if args.brief:
+        try:
+            first_keys.remove('id')
+        except ValueError:
+            pass
+
     if args.fields:
         for res in results:
+            if args.brief:
+                try:
+                    del res['id']
+                except KeyError:
+                    pass
             # Print the first keys and remove them from the result.
             for index, item in enumerate(first_keys):
                 leader = '  '
