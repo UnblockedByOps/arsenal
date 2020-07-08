@@ -54,7 +54,7 @@ def search_network_interfaces(args, client):
         results = client.network_interfaces.get_audit_history(results)
 
     if not any(getattr(args, key) for key in update_fields):
-        print_results(args, results, skip_keys=['unique_id', 'id'], default_key='unique_id')
+        print_results(args, results, first_keys=['unique_id', 'id'], default_key='unique_id')
     else:
         # no direct updates allowed.
         pass

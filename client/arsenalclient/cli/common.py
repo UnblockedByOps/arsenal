@@ -259,7 +259,7 @@ def get_format_lengths(audit_history):
 
     return width_updated, width_field, width_old, width_new
 
-def print_results(args, results, default_key='name', skip_keys=None):
+def print_results(args, results, default_key='name', first_keys=None):
     '''Print results to the terminal in a yaml style output. Defaults to
     printing name and id first, but can be overridden
 
@@ -267,15 +267,15 @@ def print_results(args, results, default_key='name', skip_keys=None):
         args       : arsenal.client args namespace object.
         results    : Dictionary of results to print.
         default_key: The key to use when no specific fields are asked for.
-        skip_keys  : List of keys to print first. Defaults to name, id.
+        first_keys : List of keys to print first. Defaults to name, id.
     '''
 
     if args.json:
         print(json.dumps(results, indent=2, sort_keys=True))
         return True
 
-    if not skip_keys:
-        skip_keys = [
+    if not first_keys:
+        first_keys = [
             'name',
             'id',
         ]
@@ -283,14 +283,14 @@ def print_results(args, results, default_key='name', skip_keys=None):
     if args.fields:
         for res in results:
             dump = yaml.safe_dump(res, default_flow_style=False)
-            for index, item in enumerate(skip_keys):
+            for index, item in enumerate(first_keys):
                 leader = '  '
                 if index == 0:
                     leader = '- '
                 print('{0}{1}: {2}'.format(leader, item, res[item]))
             for line in dump.splitlines():
                 skip = line.split(':')[0]
-                if skip in skip_keys:
+                if skip in first_keys:
                     continue
                 print('  {0}'.format(line))
             print('')

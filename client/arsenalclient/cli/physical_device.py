@@ -137,7 +137,7 @@ def search_physical_devices(args, client):
         if args.audit_history:
             results = client.physical_devices.get_audit_history(results)
 
-        print_results(args, results, default_key='serial_number', skip_keys=['serial_number', 'id'])
+        print_results(args, results, default_key='serial_number', first_keys=['serial_number', 'id'])
 
     else:
 
