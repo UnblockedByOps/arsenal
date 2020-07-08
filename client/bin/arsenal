@@ -60,6 +60,12 @@ def _parse_args():
     main_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                           description='Arsenal CLI')
 
+    main_parser.add_argument('--brief',
+                             '-b',
+                             action='store_true',
+                             help='Print more succinct output in non-json ' \
+                             'format, where available.',
+                             default=None)
     main_parser.add_argument('--conf',
                              '-c',
                              dest='conf',

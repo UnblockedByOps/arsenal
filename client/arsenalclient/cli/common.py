@@ -28,6 +28,7 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
+
 def _check_tags(obj, set_tags, mode='tag'):
     '''Check for tags that will be changed or removed.'''
 
@@ -259,6 +260,28 @@ def get_format_lengths(audit_history):
 
     return width_updated, width_field, width_old, width_new
 
+def format_brief(key, values):
+    '''Custom brief formatting for specific objects.
+
+    Params:
+        key    : The key of the data we are manipulating.
+        values : The the values of the key from the results that we are
+                 potentially manipulatiing.
+    '''
+
+    updated_values = {}
+    # Each key that we want to have breif output will have to be defined
+    # explicitly.
+    if key == 'physical_device':
+        updated_values['serial_number'] = values['serial_number']
+        updated_values['physical_location'] = values['physical_location']['name']
+        updated_values['physical_rack'] = values['physical_rack']['name']
+        updated_values['physical_elevation'] = values['physical_elevation']['elevation']
+
+        values = updated_values
+
+    return values
+
 def print_results(args, results, default_key='name', first_keys=None):
     '''Print results to the terminal in a yaml style output. Defaults to
     printing name and id first, but can be overridden
@@ -282,16 +305,21 @@ def print_results(args, results, default_key='name', first_keys=None):
 
     if args.fields:
         for res in results:
-            dump = yaml.safe_dump(res, default_flow_style=False)
+            # Print the first keys and remove them from the result.
             for index, item in enumerate(first_keys):
                 leader = '  '
                 if index == 0:
                     leader = '- '
                 print('{0}{1}: {2}'.format(leader, item, res[item]))
+                del res[item]
+
+            if args.brief:
+                for item in res:
+                    res[item] = format_brief(item, res[item])
+
+            # Print the rest.
+            dump = yaml.safe_dump(res, default_flow_style=False)
             for line in dump.splitlines():
-                skip = line.split(':')[0]
-                if skip in first_keys:
-                    continue
                 print('  {0}'.format(line))
             print('')
 
