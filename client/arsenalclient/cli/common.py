@@ -340,13 +340,15 @@ def print_results(args, results, default_key='name', first_keys=None):
             'id',
         ]
 
+    if args.brief:
+        try:
+            first_keys.remove('id')
+        except ValueError:
+            pass
+
     if args.fields:
         for res in results:
             if args.brief:
-                try:
-                    first_keys.remove('id')
-                except ValueError:
-                    pass
                 try:
                     del res['id']
                 except KeyError:
