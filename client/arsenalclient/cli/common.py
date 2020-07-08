@@ -28,7 +28,6 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
-
 def _check_tags(obj, set_tags, mode='tag'):
     '''Check for tags that will be changed or removed.'''
 
