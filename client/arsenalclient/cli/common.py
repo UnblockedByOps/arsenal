@@ -268,6 +268,7 @@ def format_brief(key, values):
                  potentially manipulatiing.
     '''
 
+
     if not values:
         return 'None'
 
@@ -287,37 +288,32 @@ def format_brief(key, values):
 
         values = updated_values
 
-    if key == 'tags':
-        updated_values = []
-        for val in values:
-            updated_values.append('{0}={1}'.format(val['name'], val['value']))
-        values = updated_values
-
-    if key == 'network_interfaces':
-        updated_values = []
-        for val in values:
-            updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
-        values = updated_values
-
     list_items = [
         'guest_vms',
+        'network_interfaces',
         'node_groups',
+        'tags',
     ]
+
+    name_only = [
+        'data_center',
+        'hardware_profile',
+        'hypervisor',
+        'operating_system',
+        'status',
+    ]
+
     if key in list_items:
         updated_values = []
         for val in values:
-            updated_values.append(val['name'])
+            if key == 'tags':
+                updated_values.append('{0}={1}'.format(val['name'], val['value']))
+            elif key == 'network_interfaces':
+                updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
+            else:
+                updated_values.append(val['name'])
         values = updated_values
-
-    name_only = [
-        'hardware_profile',
-        'operating_system',
-        'status',
-        'data_center',
-        'hypervisor'
-    ]
-
-    if key in name_only:
+    elif key in name_only:
         updated_values = values['name']
         values = updated_values
 
