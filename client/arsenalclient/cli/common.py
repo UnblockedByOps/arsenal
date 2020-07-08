@@ -268,15 +268,53 @@ def format_brief(key, values):
                  potentially manipulatiing.
     '''
 
-    updated_values = {}
+
+    if not values:
+        return 'None'
+
     # Each key that we want to have breif output will have to be defined
     # explicitly.
     if key == 'physical_device':
-        updated_values['serial_number'] = values['serial_number']
-        updated_values['physical_location'] = values['physical_location']['name']
-        updated_values['physical_rack'] = values['physical_rack']['name']
-        updated_values['physical_elevation'] = values['physical_elevation']['elevation']
+        try:
+            updated_values = {}
+            updated_values['serial_number'] = values['serial_number']
+            updated_values['physical_location'] = values['physical_location']['name']
+            updated_values['physical_rack'] = values['physical_rack']['name']
+            updated_values['physical_elevation'] = values['physical_elevation']['elevation']
 
+        # when fields = 'all' physical_device does not have all the information.
+        except KeyError:
+            updated_values = values['serial_number']
+
+        values = updated_values
+
+    list_items = [
+        'guest_vms',
+        'network_interfaces',
+        'node_groups',
+        'tags',
+    ]
+
+    name_only = [
+        'data_center',
+        'hardware_profile',
+        'hypervisor',
+        'operating_system',
+        'status',
+    ]
+
+    if key in list_items:
+        updated_values = []
+        for val in values:
+            if key == 'tags':
+                updated_values.append('{0}={1}'.format(val['name'], val['value']))
+            elif key == 'network_interfaces':
+                updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
+            else:
+                updated_values.append(val['name'])
+        values = updated_values
+    elif key in name_only:
+        updated_values = values['name']
         values = updated_values
 
     return values
