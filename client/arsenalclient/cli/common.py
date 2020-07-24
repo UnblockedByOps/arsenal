@@ -268,6 +268,7 @@ def format_brief(key, values):
                  potentially manipulatiing.
     '''
 
+    LOG.debug('Processing brief formatting for key: {0}'.format(key))
 
     if not values:
         return 'None'
@@ -290,6 +291,7 @@ def format_brief(key, values):
 
     list_items = [
         'guest_vms',
+        'hypervisor',
         'network_interfaces',
         'node_groups',
         'tags',
@@ -298,7 +300,6 @@ def format_brief(key, values):
     name_only = [
         'data_center',
         'hardware_profile',
-        'hypervisor',
         'operating_system',
         'status',
     ]
