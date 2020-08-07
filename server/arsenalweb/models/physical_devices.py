@@ -67,7 +67,7 @@ class PhysicalDevice(Base):
     tags = relationship('Tag',
                         secondary='tag_physical_device_assignments',
                         backref='physical_devices',
-                        lazy='joined')
+                        lazy='dynamic')
 
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
