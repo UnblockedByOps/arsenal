@@ -49,7 +49,7 @@ class NodeGroup(Base):
     tags = relationship('Tag',
                         secondary='tag_node_group_assignments',
                         backref='node_groups',
-                        lazy='joined')
+                        lazy='dynamic')
 
 
     @hybrid_method
