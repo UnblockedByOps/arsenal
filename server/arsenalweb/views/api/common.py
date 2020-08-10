@@ -174,6 +174,11 @@ def api_501(msg='Not Implemented'):
 
     return api_return_json(501, msg)
 
+def api_503(msg='Service Unavailable'):
+    '''Return json formatted 503.'''
+
+    return api_return_json(503, msg)
+
 def collect_params(request, req_params, opt_params, auth_user_obj=False):
     '''Get values from the request, along with authenticated_user. Returns a
     dict of attributes if successful, raises an exception otherwise.
