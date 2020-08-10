@@ -385,6 +385,21 @@ validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fi
 validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_1" 0
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "1"
 #
+# ENC
+#
+# create the node
+validate_command "${rw_cmd} nodes create --name fxxp-tst9999.internal --unique_id fxxp-tst9999.internal --status_id 1" 0
+# no node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# create the node_group
+validate_command "${rw_cmd} node_groups create --name fxx_tst --owner='nobody' --description 'ENC test node group'" 0
+# Still should not have the node_group assigned since it is not in setup or inservice.
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# Set the status to an assignable status
+validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
+# Now it should get the node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
+#
 # Clean up
 #
 validate_command "${rw_cmd} nodes delete --name fopd-TEST8675.internal" 0

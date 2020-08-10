@@ -113,7 +113,11 @@ def process_node_enc(settings, node_name, param_sources=False):
         LOG.debug('ENC find node_group tags complete.')
 
         LOG.debug('ENC process data_center tags...')
-        my_tags = process_tags(node.data_center.tags, 'data_center')
+        try:
+            my_tags = process_tags(node.data_center.tags, 'data_center')
+        except AttributeError:
+            my_tags = {}
+
         LOG.debug('ENC process data_center tags complete.')
         results['parameters'].update(my_tags)
         if param_sources:
