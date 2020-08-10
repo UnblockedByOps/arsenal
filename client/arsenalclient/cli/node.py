@@ -32,6 +32,7 @@ from arsenalclient.cli.common import (
     )
 from arsenalclient.authorization import check_root
 from arsenalclient.version import __version__
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -70,8 +71,11 @@ def enc(args, client):
         LOG.debug('No classes assigned. Attempting to assign node_group: {0} '
                   'to node: {1}'.format(node_group, args.name))
 
-        if client.node_groups.assign(node_group, [result]):
+        try:
+            client.node_groups.assign(node_group, [result])
             result['classes'].append(node_group)
+        except NoResultFound:
+            pass
 
     # FIXME: Turn this into a yaml dump
     print('---')
