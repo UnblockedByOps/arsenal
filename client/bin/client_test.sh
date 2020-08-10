@@ -330,13 +330,6 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
 validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
-validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
-validate_command "${rw_cmd} physical_devices search serial_number=Y00001 --status allocated" 0
-validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: allocated"
-validate_command "${rw_cmd} nodes search name=kvm0000.docker --status initializing" 0
-validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: initializing"
-validate_command "${rw_cmd} nodes search name=kvm0000.docker --status decom" 0
-validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
 # physical_devices updates
 ## elevation
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
