@@ -17,9 +17,6 @@ import logging
 import json
 import os.path
 from pyramid.view import view_config
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.views.api.common import (
     api_200,
     api_503,
