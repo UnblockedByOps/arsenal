@@ -330,6 +330,13 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
 validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
+validate_command "${rw_cmd} physical_devices search serial_number=Y00001 --status allocated" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: allocated"
+validate_command "${rw_cmd} nodes search name=kvm0000.docker --status initializing" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: initializing"
+validate_command "${rw_cmd} nodes search name=kvm0000.docker --status decom" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
 # physical_devices updates
 ## elevation
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
@@ -384,6 +391,21 @@ validate_command "${rw_cmd} data_centers search name=TEST_DATA_CENTER_1 --status
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fields all" 0 "string" "name: inservice"
 validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_1" 0
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "1"
+#
+# ENC
+#
+# create the node
+validate_command "${rw_cmd} nodes create --name fxxp-tst9999.internal --unique_id fxxp-tst9999.internal --status_id 1" 0
+# no node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# create the node_group
+validate_command "${rw_cmd} node_groups create --name fxx_tst --owner='nobody' --description 'ENC test node group'" 0
+# Still should not have the node_group assigned since it is not in setup or inservice.
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# Set the status to an assignable status
+validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
+# Now it should get the node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
 #
 # Clean up
 #

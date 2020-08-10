@@ -52,26 +52,28 @@ def register(args, client):
     client.nodes.register()
 
 def enc(args, client):
-    '''Run the External Node Classifier for puppet and return yaml.'''
+    '''Run the External Node Classifier for puppet and return yaml. If there
+    are no classes returned for a node, attempt to assign the class.'''
 
     apply_statuses = [
         'setup',
         'inservice',
     ]
 
-    LOG.info('Triggering node enc.')
+    LOG.debug('Triggering node enc.')
     resp = client.nodes.enc(name=args.name, param_sources=args.inspect)
     check_resp(resp)
     result = resp['results'][0]
 
     if not result['classes'] and result['status']['name'] in apply_statuses:
         node_group = '{0}_{1}'.format(args.name[0:3], args.name[5:8])
-        LOG.info('No classes assigned. Attempting to assign node_group: {0} '
-                 'to node: {1}'.format(node_group, args.name))
+        LOG.debug('No classes assigned. Attempting to assign node_group: {0} '
+                  'to node: {1}'.format(node_group, args.name))
 
         if client.node_groups.assign(node_group, [result]):
             result['classes'].append(node_group)
 
+    # FIXME: Turn this into a yaml dump
     print('---')
     if result['classes']:
         print('classes:')
