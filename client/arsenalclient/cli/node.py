@@ -54,28 +54,41 @@ def register(args, client):
 def enc(args, client):
     '''Run the External Node Classifier for puppet and return yaml.'''
 
-    LOG.debug('Triggering node enc.')
+    apply_statuses = [
+        'setup',
+        'inservice',
+    ]
+
+    LOG.info('Triggering node enc.')
     resp = client.nodes.enc(name=args.name, param_sources=args.inspect)
     check_resp(resp)
-    results = resp['results'][0]
+    result = resp['results'][0]
+
+    if not result['classes'] and result['status']['name'] in apply_statuses:
+        node_group = '{0}_{1}'.format(args.name[0:3], args.name[5:8])
+        LOG.info('No classes assigned. Attempting to assign node_group: {0} '
+                 'to node: {1}'.format(node_group, args.name))
+
+        if client.node_groups.assign(node_group, [result]):
+            result['classes'].append(node_group)
 
     print('---')
-    if results['classes']:
+    if result['classes']:
         print('classes:')
-        for my_class in results['classes']:
+        for my_class in result['classes']:
             print('- {0}'.format(my_class))
     else:
         print('classes: null')
 
     print('parameters:')
-    for param in sorted(results['parameters']):
+    for param in sorted(result['parameters']):
         if args.inspect:
             print('  {0}: {1} # [{2}]'.format(param,
-                                              results['parameters'][param],
-                                              results['param_sources'][param]))
+                                              result['parameters'][param],
+                                              result['param_sources'][param]))
         else:
             print('  {0}: {1}'.format(param,
-                                      results['parameters'][param]))
+                                      result['parameters'][param]))
     print('...')
 
 def unique_id(args, client):

@@ -289,6 +289,9 @@ def format_brief(key, values):
 
         values = updated_values
 
+    if key == 'physical_elevation':
+        values = values['elevation']
+
     list_items = [
         'guest_vms',
         'hypervisor',
@@ -299,6 +302,9 @@ def format_brief(key, values):
 
     name_only = [
         'data_center',
+        'node',
+        'physical_location',
+        'physical_rack',
         'hardware_profile',
         'operating_system',
         'status',
