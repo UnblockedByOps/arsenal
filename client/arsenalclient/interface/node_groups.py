@@ -116,7 +116,13 @@ class NodeGroups(ArsenalInterface):
 
     # Custom methods
     def _manage_assignments(self, node_group, nodes, api_method):
-        '''Assign or de-assign a node_group to/from a list of node dictionaries.'''
+        '''Assign or de-assign a node_group to/from a list of node dictionaries.
+        Args:
+
+        node_group (str): The name of the node_group to assign to the node search results.
+        nodes (list): The list of node dicts. Must contain the name and the id.
+        api_method (string): Whether we are doing a 'put' or 'delete'.
+        '''
 
         node_names = []
         node_ids = []
