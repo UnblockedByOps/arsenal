@@ -42,6 +42,7 @@ UPDATE_FIELDS = [
     'mac_address_2',
     'oob_ip_address',
     'oob_mac_address',
+    'physical_device_status',
     'physical_elevation',
     'physical_location',
     'physical_rack',
@@ -87,6 +88,15 @@ def process_actions(args, client, results):
             for tag in tags:
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physical_devices', results)
+
+    # Status is special becasue it is updated via the statuses class.
+    if args.physical_device_status:
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            resp = client.statuses.assign(args.physical_device_status, 'physical_devices', results)
+            # Remove the param form the list so it doesn't try to update it
+            # again and fail.
+            UPDATE_FIELDS.remove('physical_device_status')
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         msg = _format_msg(results)
@@ -254,6 +264,7 @@ def import_physical_device(args, client):
                 'oob_ip_address',
                 'oob_mac_address',
                 'tags',
+                'status',
             ]
             device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=field_names)
             for count, row in enumerate(device_import):

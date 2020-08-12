@@ -30,9 +30,9 @@ INSERT INTO operating_systems VALUES (5, 'CentOS 7.2.1511 x86_64', 'CentOS', '7.
 INSERT INTO operating_systems VALUES (6, 'CentOS 7.3.1611 x86_64', 'CentOS', '7.3.1611', 'x86_64', 'CentOS Linux release 7.3.1611 (Core)', 'Admin', NOW(), NOW());
 # Test data_centers
 #----------------------------------------------
-INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (1, 'test_data_center_1', NOW(), NOW(), 'Admin');
-INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (2, 'test_data_center_2', NOW(), NOW(), 'Admin');
-INSERT INTO data_centers (id,name,created,updated,updated_by) VALUES (3, 'other_test_data_center_1', NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,status_id,created,updated,updated_by) VALUES (1, 'test_data_center_1', 4, NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,status_id,created,updated,updated_by) VALUES (2, 'test_data_center_2', 4, NOW(), NOW(), 'Admin');
+INSERT INTO data_centers (id,name,status_id,created,updated,updated_by) VALUES (3, 'other_test_data_center_1', 4, NOW(), NOW(), 'Admin');
 INSERT INTO data_centers_audit VALUES (1, 1, 'name', 'created', 'test_data_center_1', 'Admin', NOW());
 INSERT INTO data_centers_audit VALUES (2, 2, 'name', 'created', 'test_data_center_2', 'Admin', NOW());
 INSERT INTO data_centers_audit VALUES (3, 3, 'name', 'created', 'other_test_data_center_1', 'Admin', NOW());
@@ -96,6 +96,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              status_id,
                               created,
                               updated,
                               updated_by) VALUES (1,
@@ -108,6 +109,7 @@ INSERT INTO physical_devices (id,
                                                   2, 
                                                   '10.5.5.1', 
                                                   'bb:aa:aa:00:00:00', 
+                                                  7,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -121,6 +123,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              status_id,
                               created,
                               updated,
                               updated_by) VALUES (2,
@@ -133,6 +136,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.2', 
                                                   'bb:aa:aa:00:00:01', 
+                                                  7,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -145,6 +149,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              status_id,
                               created,
                               updated,
                               updated_by) VALUES (3,
@@ -156,6 +161,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.3', 
                                                   'bb:aa:aa:00:00:02', 
+                                                  7,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -169,6 +175,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              status_id,
                               created,
                               updated,
                               updated_by) VALUES (4,
@@ -181,6 +188,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.4', 
                                                   'bb:aa:aa:00:00:03', 
+                                                  7,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -194,6 +202,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              status_id,
                               created,
                               updated,
                               updated_by) VALUES (5,
@@ -206,6 +215,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.5', 
                                                   'bb:aa:aa:00:00:04', 
+                                                  7,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -247,6 +257,7 @@ INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_i
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (12, 'enc0002.docker', 'enc0002.docker_uid', 1, 4, 1, 6,'Admin', NOW(),NOW(),NOW());
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (13, 'enc0003.docker', 'enc0003.docker_uid', 1, 4, 1, 6,'Admin', NOW(),NOW(),NOW());
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (14, 'enc0004.docker', 'enc0004.docker_uid', 2, 4, 1, 6,'Admin', NOW(),NOW(),NOW());
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (15, 'kvm0000.docker', 'kvm0004.docker_uid', 2, 4, 3, 6,'Admin', NOW(),NOW(),NOW(),'Y00001');
 INSERT INTO nodes_audit VALUES (1,   1, 'name', 'created', 'pup0000.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (2,   2, 'name', 'created', 'pup0001.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (3,   3, 'name', 'created', 'pup0002.docker', 'Admin', NOW());
@@ -261,6 +272,7 @@ INSERT INTO nodes_audit VALUES (11, 11, 'name', 'created', 'enc0001.docker', 'Ad
 INSERT INTO nodes_audit VALUES (12, 12, 'name', 'created', 'enc0002.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (13, 13, 'name', 'created', 'enc0003.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (14, 14, 'name', 'created', 'enc0004.docker', 'Admin', NOW());
+INSERT INTO nodes_audit VALUES (15, 15, 'name', 'created', 'kvm0000.docker', 'Admin', NOW());
 
 # Test node_groups
 #----------------------------------------------
@@ -271,6 +283,7 @@ INSERT INTO node_groups VALUES (5, 'pud_docker', 'pud ops', 'Node group for regr
 INSERT INTO node_groups VALUES (6, 'emx_docker', 'emx ops', 'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups VALUES (7, 'bck_docker', 'bck ops', 'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups VALUES (8, 'enc_docker', 'enc ops', 'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (9, 'kvm_docker', 'kvm ops', 'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (2, 2, 'name', 'created', 'pup_docker', 'Admin', NOW());
 INSERT INTO node_groups_audit VALUES (3, 3, 'name', 'created', 'cbl_docker', 'Admin', NOW());
 INSERT INTO node_groups_audit VALUES (4, 4, 'name', 'created', 'log_docker', 'Admin', NOW());
@@ -278,6 +291,7 @@ INSERT INTO node_groups_audit VALUES (5, 5, 'name', 'created', 'pud_docker', 'Ad
 INSERT INTO node_groups_audit VALUES (6, 6, 'name', 'created', 'emx_docker', 'Admin', NOW());
 INSERT INTO node_groups_audit VALUES (7, 7, 'name', 'created', 'bck_docker', 'Admin', NOW());
 INSERT INTO node_groups_audit VALUES (8, 8, 'name', 'created', 'enc_docker', 'Admin', NOW());
+INSERT INTO node_groups_audit VALUES (9, 9, 'name', 'created', 'kvm_docker', 'Admin', NOW());
 #
 # node_group assignments
 #                          node_group_id------|
@@ -294,6 +308,7 @@ INSERT INTO node_group_assignments VALUES (11, 8);
 INSERT INTO node_group_assignments VALUES (12, 8);
 INSERT INTO node_group_assignments VALUES (13, 8);
 INSERT INTO node_group_assignments VALUES (14, 8);
+INSERT INTO node_group_assignments VALUES (15, 9);
 
 # Test tags
 #----------------------------------------------

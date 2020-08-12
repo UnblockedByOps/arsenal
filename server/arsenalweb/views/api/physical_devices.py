@@ -48,11 +48,22 @@ from arsenalweb.models.physical_devices import (
     PhysicalDevice,
     PhysicalDeviceAudit,
     )
+from arsenalweb.models.statuses import (
+    Status,
+    )
 
 LOG = logging.getLogger(__name__)
 
 
 # Functions
+def find_status_by_name(status_name):
+    '''Find a status by name.'''
+
+    status = DBSession.query(Status)
+    status = status.filter(Status.name == status_name)
+
+    return status.one()
+
 def find_physical_device_by_serial(serial_number):
     '''Find a physical_device by serial_number. Returns a physical_device object if found,
     raises NoResultFound otherwise.'''
@@ -77,6 +88,7 @@ def create_physical_device(serial_number=None,
                            physical_location_id=None,
                            physical_rack_id=None,
                            physical_elevation_id=None,
+                           status_id=None,
                            updated_by=None,
                            **kwargs):
     '''Create a new physical_device.
@@ -93,6 +105,7 @@ def create_physical_device(serial_number=None,
     physical_elevation_id: An integer representing the physical_elevation_id
         from the physical_elevations table.
     serial_number        : A string that is the serial_number of the physical_device.
+    status_id            : An integer representing the status_id from the statuses table.
     updated_by           : A string that is the user making the update.
 
     Optional kwargs:
@@ -112,6 +125,7 @@ def create_physical_device(serial_number=None,
                                          physical_location_id=physical_location_id,
                                          physical_rack_id=physical_rack_id,
                                          physical_elevation_id=physical_elevation_id,
+                                         status_id=status_id,
                                          updated_by=updated_by,
                                          created=utcnow,
                                          updated=utcnow,
@@ -164,6 +178,7 @@ def update_physical_device(physical_device, **kwargs):
         from the physical_racks table.
     physical_elevation_id: An integer representing the physical_elevation_id
         from the physical_elevations table.
+    status_id: An integer representing the status_id from the statuses table.
     '''
 
     try:
@@ -261,6 +276,26 @@ def convert_names_to_ids(params):
             LOG.error(msg)
             raise NoResultFound(msg)
 
+        try:
+            try:
+                status_name = params['status']['name']
+            except TypeError:
+                status_name = params['status']
+
+            if not status_name:
+                status_name = 'available'
+
+            status = find_status_by_name(status_name)
+            params['status_id'] = status.id
+            try:
+                del params['status']
+            except KeyError:
+                pass
+        except NoResultFound:
+            msg = 'Unable to determine status of physical_device.'
+            LOG.error(msg)
+            raise NoResultFound(msg)
+
         if params['hardware_profile']:
             try:
                 hw_profile_name = params['hardware_profile']['name']
@@ -308,10 +343,12 @@ def api_physical_devices_write(request):
             'mac_address_2',
             'oob_ip_address',
             'oob_mac_address',
+            'status',
         ]
         params = collect_params(request, req_params, opt_params)
         try:
             params = convert_names_to_ids(params)
+            LOG.debug('params are: {0}'.format(params))
         except NoResultFound as ex:
             msg = 'Error writing to physical_devices API: {0}'.format(ex)
             LOG.error(msg)

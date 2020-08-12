@@ -60,6 +60,7 @@ from arsenalweb.views.api.operating_systems import (
     )
 from arsenalweb.views.api.physical_devices import (
     update_physical_device,
+    find_physical_device_by_serial,
     )
 from arsenalweb.views.api.ec2_instances import (
     create_ec2_instance,
@@ -432,6 +433,16 @@ def create_node(**kwargs):
         DBSession.flush()
 
         net_ifs_to_node(net_if_list, node, 'PUT', user_id)
+
+        # Ensure that brand new nodes update the status of the physical device
+        # to allocated.
+        try:
+            my_physical_device = find_physical_device_by_serial(serial_number)
+            update_physical_device(my_physical_device,
+                                   status_id=10,
+                                   updated_by=user_id)
+        except NoResultFound:
+            pass
 
     except Exception as ex:
         LOG.error('Error creating new node name: {0} unique_id: {1} '
