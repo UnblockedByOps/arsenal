@@ -321,6 +321,7 @@ CREATE TABLE `physical_devices` (
   `hardware_profile_id`     int(11) NOT NULL,
   `oob_ip_address`          varchar(255) DEFAULT NULL,
   `oob_mac_address`         varchar(255) DEFAULT NULL,
+  `status_id`               int(11) NOT NULL,
   `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
