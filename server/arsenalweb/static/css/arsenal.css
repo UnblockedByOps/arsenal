@@ -715,3 +715,9 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
   background: #e0e0e0;
 }
 /* END PAGE_NAV */
+
+/* START rack_render */
+tr.rack_render:nth-child(even) {
+    background-color : transparent;
+}
+/* END rack_render */
