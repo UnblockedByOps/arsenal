@@ -41,8 +41,9 @@ Base = declarative_base()
 LOG = logging.getLogger(__name__)
 
 NO_CONVERT = [
-    'postal_code',
+    'account_id',
     'elevation',
+    'postal_code',
 ]
 
 
