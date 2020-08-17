@@ -15,12 +15,12 @@
 use arsenal;
 
 # Test hardware_profiles FIXME: Need audit entries
-INSERT INTO hardware_profiles VALUES (2, 'VMware, Inc. VMware Virtual Platform', 'VMware, Inc.', 'VMware Virtual Platform', NOW(), NOW(), 'Admin');
-INSERT INTO hardware_profiles VALUES (3, 'HP ProLiant DL360 Gen9', 'HP', 'ProLiant DL360 Gen9', NOW(), NOW(), 'Admin');
-INSERT INTO hardware_profiles VALUES (4, 'HP ProLiant m710x Server Cartridge', 'HP', 'ProLiant m710x Server Cartridge', NOW(), NOW(), 'Admin');
-INSERT INTO hardware_profiles VALUES (5, 'HP ProLiant m510 Server Cartridge', 'HP', 'ProLiant m510 Server Cartridge', NOW(), NOW(), 'Admin');
-INSERT INTO hardware_profiles VALUES (6, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', NOW(), NOW(), 'Admin');
-INSERT INTO hardware_profiles VALUES (7, 'Dell Inc. PowerEdge R740xd', 'Dell Inc.', 'PowerEdge R740xd', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (2, 'VMware, Inc. VMware Virtual Platform', 'VMware, Inc.', 'VMware Virtual Platform', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (3, 'HP ProLiant DL360 Gen9', 'HP', 'ProLiant DL360 Gen9', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (4, 'HP ProLiant m710x Server Cartridge', 'HP', 'ProLiant m710x Server Cartridge', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (5, 'HP ProLiant m510 Server Cartridge', 'HP', 'ProLiant m510 Server Cartridge', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (6, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (7, 'Dell Inc. PowerEdge R740xd', 'Dell Inc.', 'PowerEdge R740xd', '', '', NOW(), NOW(), 'Admin');
 
 # Test operating_systems FIXME: Need audit entries
 INSERT INTO operating_systems VALUES (2, 'CentOS 5.8 x86_64', 'CentOS', '5.8', 'x86_64', 'CentOS release 5.8 (Final)', 'Admin', NOW(), NOW());
