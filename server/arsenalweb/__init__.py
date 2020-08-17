@@ -144,6 +144,7 @@ def main(global_config, **settings):
     config.add_route('physical_rack', '/physical_racks/{id}')
     config.add_route('physical_racks_audit', '/physical_racks_audit')
     config.add_route('physical_rack_audit', '/physical_racks_audit/{id}')
+    config.add_route('render_rack', '/render_rack')
     config.add_route('statuses', '/statuses')
     config.add_route('status', '/statuses/{id}')
     config.add_route('statuses_audit', '/statuses_audit')
