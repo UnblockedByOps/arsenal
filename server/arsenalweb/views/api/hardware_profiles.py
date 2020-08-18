@@ -29,6 +29,7 @@ from arsenalweb.views import (
     get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
+    api_200,
     api_500,
     )
 
@@ -84,16 +85,18 @@ def create_hardware_profile(name, manufacturer, model, user_id):
                   'model={3},exception={4}'.format(name, manufacturer, model, ex))
         raise
 
-def update_hardware_profile(hardware_profile, name, manufacturer, model, user_id):
-    '''Update an existing hardware_profile.'''
+def update_hardware_profile(hardware_profile, name, rack_color, rack_u, user_id):
+    '''Update an existing hardware_profile. We only allow updating rack_color and
+    rack_u. All other hardware profile attributes are derived
+    automatically during node registration.'''
 
     try:
-        LOG.info('Updating hardware_profile name={0},manufacturer={1},'
-                 'model={2}'.format(name, manufacturer, model))
+        LOG.info('Updating hardware_profile name={0} rack_color={1} '
+                 'rack_u={2}'.format(name, rack_color, rack_u))
 
         utcnow = datetime.utcnow()
 
-        for attribute in ['name', 'manufacturer', 'model']:
+        for attribute in ['rack_color', 'rack_u']:
             if getattr(hardware_profile, attribute) != locals()[attribute]:
                 LOG.debug('Updating hardware profile {0}: {1}'.format(attribute,
                                                                       locals()[attribute]))
@@ -105,9 +108,8 @@ def update_hardware_profile(hardware_profile, name, manufacturer, model, user_id
                                              created=utcnow)
                 DBSession.add(audit)
 
-        hardware_profile.name = name
-        hardware_profile.manufacturer = manufacturer
-        hardware_profile.model = model
+        hardware_profile.rack_color = rack_color
+        hardware_profile.rack_u = rack_u
         hardware_profile.updated_by = user_id
 
         DBSession.flush()
@@ -115,8 +117,8 @@ def update_hardware_profile(hardware_profile, name, manufacturer, model, user_id
         return hardware_profile
 
     except Exception as ex:
-        LOG.error('Error updating hardware_profile name={0},manufacturer={1},'
-                  'model={2},exception={3}'.format(name, manufacturer, model, ex))
+        LOG.error('Error updating hardware_profile name={0},rack_color={1},'
+                  'rack_u={2},exception={3}'.format(name, rack_color, rack_u, ex))
         raise
 
 @view_config(route_name='api_hardware_profiles', request_method='GET', request_param='schema=true', renderer='json')
@@ -145,6 +147,8 @@ def api_hardware_profile_write(request):
         name = payload['name'].rstrip()
         manufacturer = payload['manufacturer'].rstrip()
         model = payload['model'].rstrip()
+        rack_u = payload['rack_u']
+        rack_color = payload['rack_color'].rstrip()
 
         hardware_profile = get_hardware_profile(name)
 
@@ -157,13 +161,13 @@ def api_hardware_profile_write(request):
 
             update_hardware_profile(hardware_profile,
                                     name,
-                                    manufacturer,
-                                    model,
+                                    rack_color,
+                                    rack_u,
                                     auth_user['user_id'])
 
         LOG.debug('hardware_profile is: {0}'.format(hardware_profile.__dict__))
 
-        return hardware_profile
+        return api_200(results=hardware_profile)
 
     except Exception as ex:
         msg = 'Error writing to harware_profiles API={0},exception={1}'.format(request.url, ex)

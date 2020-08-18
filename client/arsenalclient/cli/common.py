@@ -90,6 +90,14 @@ def gen_help(help_type):
             'name',
             'status',
         ],
+        'hardware_profiles_search': [
+            'id',
+            'name',
+            'manufacturer',
+            'model',
+            'rack_color',
+            'rack_u',
+        ],
         'ip_addresses_search': [
             'id',
             'ip_address',

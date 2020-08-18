@@ -234,7 +234,7 @@ INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', 'Admi
 INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'Documentation url', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', 'Admin', NOW());
 
-INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', '', '', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', 1, '#fff', NOW(), NOW(), 'Admin');
 INSERT INTO hardware_profiles_audit VALUES (1, 1, 'name', 'created', 'Unknown', 'Admin', NOW());
 
 INSERT INTO operating_systems VALUES (1, 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Admin', NOW(), NOW());

@@ -245,14 +245,14 @@ INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', 'Admi
 INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'http://my/documentation', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', 'Admin', NOW());
 
-INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', 1, '#fff', NOW(), NOW(), 'Admin');
 INSERT INTO hardware_profiles_audit VALUES (1, 1, 'name', 'created', 'Unknown', 'Admin', NOW());
 # These are just for testing
-# INSERT INTO hardware_profiles VALUES (2, 'Dell r610', 'Dell', 'r610', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (3, 'Dell r720', 'Dell', 'r720', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (4, 'Sun Microsystems x4200', 'Sun Microsystems', 'x4200', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (5, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (6, 'Citrix Xen Guest', 'Citrix', 'Xen Guest', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (2, 'Dell r610', 'Dell', 'r610', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (3, 'Dell r720', 'Dell', 'r720', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (4, 'Sun Microsystems x4200', 'Sun Microsystems', 'x4200', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (5, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (6, 'Citrix Xen Guest', 'Citrix', 'Xen Guest', 1, '#fff', NOW(), NOW(), 'Admin');
 
 INSERT INTO operating_systems VALUES (1, 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Admin', NOW(), NOW());
 INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 'Admin', NOW());

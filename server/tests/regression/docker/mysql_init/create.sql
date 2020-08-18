@@ -101,8 +101,8 @@ CREATE TABLE `hardware_profiles` (
   `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
   `manufacturer`           varchar(255) COLLATE utf8_bin NOT NULL,
   `model`                  varchar(255) COLLATE utf8_bin NOT NULL,
-  `rack_u`                 varchar(255) COLLATE utf8_bin,
-  `rack_color`             varchar(255) COLLATE utf8_bin,
+  `rack_u`                 int(11) COLLATE utf8_bin NOT NULL DEFAULT 1,
+  `rack_color`             varchar(255) COLLATE utf8_bin NOT NULL DEFAULT '#fff',
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
