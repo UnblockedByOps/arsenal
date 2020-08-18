@@ -62,6 +62,8 @@ def create_hardware_profile(name, manufacturer, model, user_id):
         hardware_profile = HardwareProfile(name=name,
                                            manufacturer=manufacturer,
                                            model=model,
+                                           rack_u=1,
+                                           rack_color='#fff',
                                            updated_by=user_id,
                                            created=utcnow,
                                            updated=utcnow)
