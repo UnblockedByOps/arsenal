@@ -22,6 +22,7 @@ from argparse import Namespace
 import requests
 
 from arsenalclient.interface.data_centers import DataCenters
+from arsenalclient.interface.hardware_profiles import HardwareProfiles
 from arsenalclient.interface.network_interfaces import NetworkInterfaces
 from arsenalclient.interface.node_groups import NodeGroups
 from arsenalclient.interface.nodes import Nodes
@@ -126,6 +127,7 @@ class Client(object):
         }
 
         self.data_centers = DataCenters(**kwargs)
+        self.hardware_profiles = HardwareProfiles(**kwargs)
         self.network_interfaces = NetworkInterfaces(**kwargs)
         self.node_groups = NodeGroups(**kwargs)
         self.nodes = Nodes(**kwargs)

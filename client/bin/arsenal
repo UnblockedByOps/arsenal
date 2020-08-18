@@ -21,6 +21,7 @@ import argparse
 import requests
 
 from arsenalclient.parser.data_centers import parser_data_centers
+from arsenalclient.parser.hardware_profiles import parser_hardware_profiles
 from arsenalclient.parser.ip_addresses import parser_ip_addresses
 from arsenalclient.parser.network_interfaces import parser_network_interfaces
 from arsenalclient.parser.node_groups import parser_node_groups
@@ -143,6 +144,7 @@ def _parse_args():
     top_parser, otsp = parser_statuses(top_parser, otsp)
     top_parser, otsp = parser_tags(top_parser, otsp)
     top_parser, otsp = parser_network_interfaces(top_parser, otsp)
+    top_parser, otsp = parser_hardware_profiles(top_parser, otsp)
     top_parser, otsp = parser_ip_addresses(top_parser, otsp)
     top_parser, otsp = parser_data_centers(top_parser, otsp)
     top_parser, otsp = parser_physical_devices(top_parser, otsp)
