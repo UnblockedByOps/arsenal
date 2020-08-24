@@ -24,7 +24,7 @@ Dark to light
 A0AEC1
 DBE8F9
 */
-    
+
 html, body {
     height:99%;
     width:99%;
@@ -717,6 +717,67 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 /* END PAGE_NAV */
 
 /* START rack_render */
+/* Create two unequal columns that floats next to each other */
+.rack_column {
+    float: left;
+    padding: 15px;
+}
+
+.rack_left_header {
+  font-size: 20px;
+  width: 50px;
+  height: 60px;
+  border-bottom: 3px solid #CCCCCC;
+  background-color: #042e63;
+  color: #fff;
+}
+
+.rack_right_header {
+  font-size: 20px;
+  width: 35%;
+  min-width: 450px;
+  height: 60px;
+  border-bottom: 3px solid #CCCCCC;
+  background-color:#bbb;
+}
+
+.rack_left {
+  font-size: 20px;
+  width: 50px;
+  height: 120px;
+  border-bottom: 3px solid #CCCCCC;
+  background-color: #042e63;
+  color: #fff;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.rack_right {
+  font-size: 100%;
+  line-height: initial;
+  width: 35%;
+  min-width: 450px;
+  height: 120px;
+  border-bottom: 3px solid #CCCCCC;
+  background-color:#fff;
+  position: relative;
+}
+
+.rack_right_inside {
+  font-size: 12px;
+  position: absolute;
+  bottom: 15px;
+  clear: both;
+}
+
+/* Clear floats after the columns */
+.rack_row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 tr.rack_render:nth-child(even) {
     background-color : transparent;
 }

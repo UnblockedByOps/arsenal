@@ -35,64 +35,6 @@
     * {
         box-sizing: border-box;
     }
-    
-    /* Create two unequal columns that floats next to each other */
-    .column {
-        float: left;
-        padding: 15px;
-    }
-    
-    .left_header {
-      font-size: 20px;
-      width: 50px;
-      height: 60px;
-      border-bottom: 3px solid #CCCCCC;
-      background-color: #042e63;
-      color: #fff;
-    }
-    
-    .right_header {
-      font-size: 20px;
-      width: 35%;
-      min-width: 450px;
-      height: 60px;
-      border-bottom: 3px solid #CCCCCC;
-      background-color:#bbb;
-    }
-    
-    .left {
-      font-size: 20px;
-      width: 50px;
-      height: 120px;
-      border-bottom: 3px solid #CCCCCC;
-      background-color: #042e63;
-      color: #fff;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-    }
-    
-    .right {
-      width: 35%;
-      min-width: 450px;
-      height: 120px;
-      border-bottom: 3px solid #CCCCCC;
-      background-color:#fff;
-      position: relative;
-    }
-
-    .right_inside {
-      position: absolute;
-      bottom: 15px;
-      clear: both;
-    }
-    
-    /* Clear floats after the columns */
-    .row:after {
-        content: "";
-        display: table;
-        clear: both;
-    }
     </style>
   </head>
   <body>
@@ -103,14 +45,14 @@
       </div>
 
         <div style="padding:30px;">
-          <div class="row">
-            <div class="column left_header">U</div>
-            <div class="column right_header">Device</div>
+          <div class="rack_row">
+            <div class="rack_column rack_left_header">U</div>
+            <div class="rack_column rack_right_header">Device</div>
           </div>
-          <div tal:repeat="item physical_devices" class="row">
-              <div tal:content="item.physical_elevation.elevation" class="column left" style="height:${item.hardware_profile.rack_u_pxl}px">0</div>
-              <div class="column right" style="height:${item.hardware_profile.rack_u_pxl}px;background-color:${item.hardware_profile.rack_color};">
-                <div class="right_inside" style="background-color:${item.hardware_profile.rack_color};">
+          <div tal:repeat="item physical_devices" class="rack_row">
+              <div tal:content="item.physical_elevation.elevation" class="rack_column rack_left" style="height:${item.hardware_profile.rack_u_pxl}px">0</div>
+              <div class="rack_column rack_right" style="height:${item.hardware_profile.rack_u_pxl}px;background-color:${item.hardware_profile.rack_color};">
+                <div class="rack_right_inside" style="background-color:${item.hardware_profile.rack_color};">
                   <table>
                       <tbody>
                           <tr class="rack_render" tal:condition="item.node">
