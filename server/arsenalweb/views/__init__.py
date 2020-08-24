@@ -36,9 +36,11 @@ LOG = logging.getLogger(__name__)
 def _api_get(request, uri, payload=None):
     '''GET request to the API.'''
 
-    # FIXME: Why did I do this? It returns way to much to the UI.
+    # Don't override fields if they are passed. Allows large objects to be
+    # filtered down if need be without having to specify fields everywhere.
     if payload:
-        payload['fields'] = 'all'
+        if not 'fields' in payload:
+            payload['fields'] = 'all'
     else:
         payload = {'fields': 'all'}
 

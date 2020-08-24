@@ -93,6 +93,10 @@ class PhysicalLocation(Base):
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
 
+                # Backrefs are not in the instance dict, so we handle them here.
+                if 'physical_racks' in my_fields:
+                    resp['physical_racks'] = get_name_id_list(self.physical_racks)
+
                 return jsonify(resp)
 
         # Default to returning only name and id.

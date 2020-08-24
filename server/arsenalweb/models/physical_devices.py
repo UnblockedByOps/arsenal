@@ -33,6 +33,8 @@ from arsenalweb.models.common import (
 )
 
 LOG = logging.getLogger(__name__)
+
+
 class PhysicalDevice(Base):
     '''Arsenal PhysicalDevice object.'''
 
