@@ -40,6 +40,7 @@ from arsenalweb.views.api.common import (
     api_404,
     api_500,
     api_501,
+    collect_params,
     )
 from arsenalweb.views.api.nodes import (
     find_node_by_id,
@@ -57,6 +58,8 @@ LOG = logging.getLogger(__name__)
 def find_status_by_name(status_name):
     '''Find a status by name.'''
 
+    LOG.debug('Searching for statuses name={0}'.format(status_name))
+
     status = DBSession.query(Status)
     status = status.filter(Status.name == status_name)
 
@@ -70,7 +73,7 @@ def find_status_by_id(status_id):
 
     return status.one()
 
-def create_status(name, description, user_id):
+def create_status(name=None, description=None, user_id=None):
     '''Create a new status.'''
 
     try:
@@ -96,13 +99,66 @@ def create_status(name, description, user_id):
         DBSession.add(status_audit)
         DBSession.flush()
 
-    except Exception, ex:
+    except Exception as ex:
         msg = 'Error creating status name={0},description={1},' \
               'exception={2}'.format(name, description, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
     return status
+
+def update_status(status, **kwargs):
+    '''Update an existing status.
+
+    Required params:
+
+    status     : A status object.
+    description: A string representing the description of this status.
+    updated_by : A string that is the user making the update.
+    '''
+
+    try:
+        my_attribs = kwargs.copy()
+
+        LOG.debug('Updating status: {0}'.format(status.name))
+
+        utcnow = datetime.utcnow()
+
+        for attribute in my_attribs:
+            if attribute == 'name':
+                LOG.debug('Skipping update to status.name')
+                continue
+            old_value = getattr(status, attribute)
+            new_value = my_attribs[attribute]
+
+            if old_value != new_value and new_value:
+                if not old_value:
+                    old_value = 'None'
+
+                LOG.debug('Updating status: {0} attribute: '
+                          '{1} new_value: {2}'.format(status.name,
+                                                      attribute,
+                                                      new_value))
+                audit = StatusAudit(object_id=status.id,
+                                    field=attribute,
+                                    old_value=old_value,
+                                    new_value=new_value,
+                                    updated_by=my_attribs['updated_by'],
+                                    created=utcnow)
+                DBSession.add(audit)
+                setattr(status, attribute, new_value)
+
+        DBSession.flush()
+
+        return api_200(results=status)
+
+    except Exception as ex:
+        msg = 'Error updating status name: {0} updated_by: {1} exception: ' \
+              '{2}'.format(status.name,
+                           my_attribs['updated_by'],
+                           repr(ex))
+        LOG.error(msg)
+        raise
 
 def assign_status(status, actionables, resource, user, settings):
     '''Assign actionable_ids to a status.'''
@@ -258,41 +314,23 @@ def api_status_write(request):
     '''Process write requests for /api/statuses route.'''
 
     try:
-        auth_user = get_authenticated_user(request)
-        payload = request.json_body
-        name = payload['name'].rstrip()
-        description = payload['description'].rstrip()
-
-        LOG.debug('Searching for statuses name={0},description={1}'.format(name,
-                                                                           description))
+        req_params = [
+            'name',
+            'description',
+        ]
+        opt_params = []
+        params = collect_params(request, req_params, opt_params)
         try:
-            status = DBSession.query(Status)
-            status = status.filter(Status.name == name)
-            status = status.one()
-
-            try:
-                LOG.info('Updating name={0},description={1}'.format(name,
-                                                                    description))
-
-                status.name = name
-                status.description = description
-                status.updated_by = auth_user['user_id']
-
-                DBSession.flush()
-
-            except Exception, ex:
-                msg = 'Error updating status name={0},description={1},' \
-                      'exception={2}'.format(name, description, ex)
-                LOG.error(msg)
-                return api_500(msg=msg)
-
+            LOG.debug('Balls')
+            status = find_status_by_name(params['name'])
+            LOG.debug('shaft')
+            status = update_status(status, **params)
         except NoResultFound:
+            status = create_status(**params)
 
-            status = create_status(name, description, auth_user['user_id'])
+        return status
 
-        return api_200(results=status)
-
-    except Exception, ex:
-        msg = 'Error writing to statuses API={0},exception={1}'.format(request.url, ex)
+    except Exception as ex:
+        msg = 'Error writing to statuses API: {0} exception: {1}'.format(request.url, ex)
         LOG.error(msg)
         return api_500(msg=msg)
