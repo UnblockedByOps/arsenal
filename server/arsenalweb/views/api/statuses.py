@@ -321,9 +321,7 @@ def api_status_write(request):
         opt_params = []
         params = collect_params(request, req_params, opt_params)
         try:
-            LOG.debug('Balls')
             status = find_status_by_name(params['name'])
-            LOG.debug('shaft')
             status = update_status(status, **params)
         except NoResultFound:
             status = create_status(**params)
