@@ -171,6 +171,11 @@ def process_actions(args, client, results):
         if ask_yes_no(msg, args.answer_yes):
             resp = client.node_groups.deassign_all(results)
 
+    if args.del_all_tags:
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            resp = client.tags.deassign_all(results)
+
     return resp
 
 def search_nodes(args, client):
@@ -202,6 +207,7 @@ def search_nodes(args, client):
                 args.set_status,
                 args.set_node_groups,
                 args.del_node_groups,
+                args.del_all_tags,
                 args.del_all_node_groups,)):
 
         first_keys = [

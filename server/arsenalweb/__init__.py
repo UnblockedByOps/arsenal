@@ -194,6 +194,7 @@ def main(global_config, **settings):
     config.add_route('api_tags', '/api/tags')
     config.add_route('api_tag_r', '/api/tags/{id}/{resource}')
     config.add_route('api_tag', '/api/tags/{id}')
+    config.add_route('api_b_tags_deassign', '/api/bulk/tags/deassign')
     config.add_route('api_tags_audit', '/api/tags_audit')
     config.add_route('api_tag_audit_r', '/api/tags_audit/{id}/{resource}')
     config.add_route('api_tag_audit', '/api/tags_audit/{id}')
