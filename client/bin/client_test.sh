@@ -168,6 +168,19 @@ validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal,tag.nam
 # Deassign tag from node
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag NODE_TEST_TAG=TEST" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
+
+#
+# Bulk tag removal
+#
+# Create and assign multiple tags to node
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG1=TEST" 0
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG2=TEST" 0
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG3=TEST" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "name: BULK_NODE_TEST_TAG"
+# Deassign all tags from node
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_all_tags" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
+
 # Create and assign tag to node_group
 validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --tag NODE_GROUP_TEST_TAG=TEST" 0
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields tags" 0 "string" "name: NODE_GROUP_TEST_TAG"
