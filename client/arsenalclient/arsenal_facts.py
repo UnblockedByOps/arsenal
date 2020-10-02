@@ -265,7 +265,9 @@ class ArsenalFacts(object):
 
         results = {}
         skip_interfaces = (
+            'cni',
             'docker',
+            'flannel',
             'lo',
             'veth',
         )
