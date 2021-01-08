@@ -28,7 +28,7 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
-def _check_tags(obj, set_tags):
+def _check_tags(obj, set_tags, mode='tag'):
     '''Check for tags that will be changed or removed.'''
 
     resp = ''
@@ -41,16 +41,34 @@ def _check_tags(obj, set_tags):
     LOG.debug('Taggable object is: {0}'.format(obj))
     for tag in tags:
         LOG.debug('Working on tag: {0}'.format(tag))
-        key, val = tag.split('=')
+        try:
+            key, val = tag.split('=')
+        except ValueError:
+            LOG.error('Tags must be in the format key=value')
+            sys.exit(1)
         try:
             LOG.debug('name is: {0}'.format(obj['name']))
         except KeyError:
             LOG.debug('serial_number is: {0}'.format(obj['serial_number']))
         LOG.debug('tags are: {0}'.format(obj['tags']))
+
+        if mode == 'tag' and not any(d.get('name', None) == key for d in obj['tags']):
+            resp += '     Tag not assigned: {0}={1} will be added ' \
+                    '\n'.format(key, val)
+
         for obj_tag in obj['tags']:
-            if key == obj_tag['name']:
-                resp += '     Existing tag found: {0}={1} value will be updated ' \
-                        'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
+            if mode == 'tag':
+                if key == obj_tag['name']:
+                    if val == obj_tag['value']:
+                        resp += '     Existing tag found: {0}={1} value already matches ' \
+                                '\n'.format(obj_tag['name'], obj_tag['value'])
+                    else:
+                        resp += '     Existing tag found: {0}={1} value will be updated ' \
+                                'to: {2}\n'.format(obj_tag['name'], obj_tag['value'], val)
+
+            if key == obj_tag['name'] and val == obj_tag['value'] and mode != 'tag':
+                resp += '     Existing tag found: {0}={1} and will be removed ' \
+                        '\n'.format(obj_tag['name'], obj_tag['value'])
 
     return resp.rstrip()
 
@@ -71,6 +89,14 @@ def gen_help(help_type):
             'id',
             'name',
             'status',
+        ],
+        'hardware_profiles_search': [
+            'id',
+            'name',
+            'manufacturer',
+            'model',
+            'rack_color',
+            'rack_u',
         ],
         'ip_addresses_search': [
             'id',
@@ -219,7 +245,96 @@ def update_object_fields(args, obj_type, object_result, fields):
 
     return object_result
 
-def print_results(args, results, default_key='name', skip_keys=None):
+def get_format_lengths(audit_history):
+    '''Gets the longest string of each column of the audit data for printing
+    output. Returns the max int for each column, plus 2.'''
+
+    updated = []
+    field = []
+    old_value = []
+    new_value = []
+
+    for audit in audit_history:
+        updated.append(audit['updated_by'])
+        field.append(audit['field'])
+        old_value.append(audit['old_value'])
+        new_value.append(audit['new_value'])
+
+    width_updated = len(max(updated, key=len)) + 2
+    width_field = len(max(field, key=len)) + 2
+    width_old = len(max(old_value, key=len)) + 2
+    width_new = len(max(new_value, key=len)) + 2
+
+    return width_updated, width_field, width_old, width_new
+
+def format_brief(key, values):
+    '''Custom brief formatting for specific objects.
+
+    Params:
+        key    : The key of the data we are manipulating.
+        values : The the values of the key from the results that we are
+                 potentially manipulatiing.
+    '''
+
+    LOG.debug('Processing brief formatting for key: {0}'.format(key))
+
+    if not values:
+        return 'None'
+
+    # Each key that we want to have breif output will have to be defined
+    # explicitly.
+    if key == 'physical_device':
+        try:
+            updated_values = {}
+            updated_values['serial_number'] = values['serial_number']
+            updated_values['physical_location'] = values['physical_location']['name']
+            updated_values['physical_rack'] = values['physical_rack']['name']
+            updated_values['physical_elevation'] = values['physical_elevation']['elevation']
+
+        # when fields = 'all' physical_device does not have all the information.
+        except KeyError:
+            updated_values = values['serial_number']
+
+        values = updated_values
+
+    if key == 'physical_elevation':
+        values = values['elevation']
+
+    list_items = [
+        'guest_vms',
+        'hypervisor',
+        'network_interfaces',
+        'node_groups',
+        'tags',
+    ]
+
+    name_only = [
+        'data_center',
+        'node',
+        'physical_location',
+        'physical_rack',
+        'hardware_profile',
+        'operating_system',
+        'status',
+    ]
+
+    if key in list_items:
+        updated_values = []
+        for val in values:
+            if key == 'tags':
+                updated_values.append('{0}={1}'.format(val['name'], val['value']))
+            elif key == 'network_interfaces':
+                updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
+            else:
+                updated_values.append(val['name'])
+        values = updated_values
+    elif key in name_only:
+        updated_values = values['name']
+        values = updated_values
+
+    return values
+
+def print_results(args, results, default_key='name', first_keys=None):
     '''Print results to the terminal in a yaml style output. Defaults to
     printing name and id first, but can be overridden
 
@@ -227,31 +342,47 @@ def print_results(args, results, default_key='name', skip_keys=None):
         args       : arsenal.client args namespace object.
         results    : Dictionary of results to print.
         default_key: The key to use when no specific fields are asked for.
-        skip_keys  : List of keys to print first. Defaults to name, id.
+        first_keys : List of keys to print first. Defaults to name, id.
     '''
 
     if args.json:
         print(json.dumps(results, indent=2, sort_keys=True))
         return True
 
-    if not skip_keys:
-        skip_keys = [
+    if not first_keys:
+        first_keys = [
             'name',
             'id',
         ]
 
+    if args.brief:
+        try:
+            first_keys.remove('id')
+        except ValueError:
+            pass
+
     if args.fields:
         for res in results:
-            dump = yaml.safe_dump(res, default_flow_style=False)
-            for index, item in enumerate(skip_keys):
+            if args.brief:
+                try:
+                    del res['id']
+                except KeyError:
+                    pass
+            # Print the first keys and remove them from the result.
+            for index, item in enumerate(first_keys):
                 leader = '  '
                 if index == 0:
                     leader = '- '
                 print('{0}{1}: {2}'.format(leader, item, res[item]))
+                del res[item]
+
+            if args.brief:
+                for item in res:
+                    res[item] = format_brief(item, res[item])
+
+            # Print the rest.
+            dump = yaml.safe_dump(res, default_flow_style=False)
             for line in dump.splitlines():
-                skip = line.split(':')[0]
-                if skip in skip_keys:
-                    continue
                 print('  {0}'.format(line))
             print('')
 
@@ -264,13 +395,19 @@ def print_results(args, results, default_key='name', skip_keys=None):
             else:
                 print(res[default_key])
             if args.audit_history:
+                width_updated, width_field, width_old, width_new = get_format_lengths(res['audit_history'])
                 for audit in res['audit_history']:
-                    print('{0:>23} - updated_by: {1:<15} field: {2:<20} old_value: {3:<14} '
-                          'new_value: {4:<14}'.format(audit['created'],
-                                                      audit['updated_by'],
-                                                      audit['field'],
-                                                      audit['old_value'],
-                                                      audit['new_value'],))
+                    print('{0:>23} - updated_by: {1:<{2}} field: '
+                          '{3:<{4}} old_value: {5:<{6}} '
+                          'new_value: {7:<{8}}'.format(audit['created'],
+                                                       audit['updated_by'],
+                                                       width_updated,
+                                                       audit['field'],
+                                                       width_field,
+                                                       audit['old_value'],
+                                                       width_old,
+                                                       audit['new_value'],
+                                                       width_new,))
 
 def parse_cli_args(search=None, fields=None, exact_get=None, exclude=None):
     '''Parses comma separated argument values passed from the CLI and turns them

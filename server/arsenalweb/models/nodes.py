@@ -51,6 +51,7 @@ class Node(Base):
     data_center_id = Column(Integer, ForeignKey('data_centers.id'))
     uptime = Column(Text, nullable=False)
     serial_number = Column(Text, ForeignKey('physical_devices.serial_number'))
+    os_memory = Column(Text)
     processor_count = Column(Integer)
     last_registered = Column(TIMESTAMP)
     created = Column(TIMESTAMP, nullable=False)
@@ -101,6 +102,7 @@ class Node(Base):
                     data_center=get_name_id_dict([self.data_center]),
                     uptime=check_null_string(self.uptime),
                     serial_number=check_null_string(self.serial_number),
+                    os_memory=check_null_string(self.os_memory),
                     processor_count=check_null_string(self.processor_count),
                     node_groups=get_name_id_list(self.node_groups),
                     tags=get_name_id_list(self.tags, extra_keys=['value']),
@@ -126,7 +128,7 @@ class Node(Base):
 
                 my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
+                # Dynamic backrefs are not in the instance dict, so we handle them here.
                 if 'node_groups' in my_fields:
                     resp['node_groups'] = get_name_id_list(self.node_groups)
                 if 'hypervisor' in my_fields:
@@ -156,6 +158,37 @@ class Node(Base):
 
                 resp.update((key, getattr(self, key)) for key in my_fields if
                             key in self.__dict__)
+
+                # These are in the dict because it is joined, but we
+                # want to add extra fields.
+                if 'physical_device' in my_fields and self.physical_device:
+                    resp['physical_device'] = get_name_id_dict([self.physical_device],
+                                                               default_keys=[
+                                                                   'id',
+                                                                   'serial_number',
+                                                               ],
+                                                               extra_keys=[
+                                                                   'physical_location',
+                                                                   'physical_rack',
+                                                                   'physical_elevation',
+                                                               ])
+
+                if 'ec2_instance' in my_fields and self.ec2_id:
+                    resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
+                                                            default_keys=[
+                                                                'id',
+                                                                'instance_id',
+                                                            ],
+                                                            extra_keys=[
+                                                                'account_id',
+                                                                'ami_id',
+                                                                'hostname',
+                                                                'instance_type',
+                                                                'availability_zone',
+                                                                'profile',
+                                                                'reservation_id',
+                                                                'security_groups',
+                                                            ])
 
                 return jsonify(resp)
 

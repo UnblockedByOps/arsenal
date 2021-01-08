@@ -137,7 +137,11 @@ class Statuses(ArsenalInterface):
         LOG.info('Assigning status: {0}'.format(status['name']))
 
         for result in results:
-            LOG.info('  {0}: {1}'.format(object_type, result['name']))
+            try:
+                LOG.info('  {0}: {1}'.format(object_type, result['name']))
+            # physical_devices don't have a name attribute
+            except KeyError:
+                LOG.info('  {0}: {1}'.format(object_type, result['serial_number']))
 
         data = {
             object_type: action_ids

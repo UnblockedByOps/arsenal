@@ -47,7 +47,7 @@ class DataCenter(Base):
     tags = relationship('Tag',
                         secondary='tag_data_center_assignments',
                         backref='data_centers',
-                        lazy='joined')
+                        lazy='dynamic')
 
 
     def __json__(self, request):

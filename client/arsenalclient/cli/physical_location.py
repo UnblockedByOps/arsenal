@@ -49,12 +49,12 @@ TAG_FIELDS = [
     'del_tags',
 ]
 
-def _format_msg(results, tags=None):
+def _format_msg(results, tags=None, mode='tag'):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
     for loc in results:
-        resp = _check_tags(loc, tags)
+        resp = _check_tags(loc, tags, mode=mode)
         if resp:
             r_names.append('{0}: {1}\n{2}'.format(loc['name'],
                                                   loc['id'],
@@ -81,7 +81,7 @@ def process_actions(args, client, results):
                 resp = client.tags.assign(name, value, 'physical_locations', results)
 
     if args.del_tags:
-        msg = _format_msg(results, args.del_tags)
+        msg = _format_msg(results, args.del_tags, mode='untag')
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:

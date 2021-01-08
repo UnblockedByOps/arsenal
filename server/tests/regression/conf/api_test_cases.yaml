@@ -179,14 +179,14 @@ tests:
     tests:
       - description: 'NODE - REGEX Single sub-parameter exclude singleton search, single value'
         url: '/api/nodes?hardware_profile.name=HP&ex_hardware_profile.name=m710x&fields=hardware_profile'
-        result_count: 3
+        result_count: 4
         expected_responses:
           - name: 'cbl0000.docker'
           - name: 'log0000.docker'
           - name: 'anr0000.docker'
       - description: 'NODE - REGEX Single sub-parameter exclude singleton search, multi value'
         url: '/api/nodes?hardware_profile.name=HP,VMware&ex_hardware_profile.name=m710x&fields=hardware_profile'
-        result_count: 6
+        result_count: 7
         expected_responses:
           - name: 'pup0000.docker'
           - name: 'pup0001.docker'
@@ -196,7 +196,7 @@ tests:
           - name: 'anr0000.docker'
       - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, single/single value'
         url: '/api/nodes?hardware_profile.name=HP&operating_system.version_number=7.3&ex_hardware_profile.name=m510&fields=hardware_profile,operating_system'
-        result_count: 1
+        result_count: 2
         expected_responses:
           - name: 'cbl0000.docker'
       - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, multi/single value'
@@ -607,6 +607,8 @@ tests:
     function: 'run_node_registration_test'
     tests:
       - test_data: 'single_interface'
+        url: '/api/register'
+      - test_data: 'single_interface_with_dc'
         url: '/api/register'
       - test_data: 'multi_interface_bonded'
         url: '/api/register'

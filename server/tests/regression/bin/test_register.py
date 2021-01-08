@@ -29,6 +29,38 @@ REGISTER_TEST_CASES = {
         'unique_id': '123456789-0',
         'uptime': '1 day'
     },
+    'single_interface_with_dc': {
+        'data_center': {
+            'name': 'test_dc1'
+        },
+        'ec2': None,
+        'guest_vms': [],
+        'hardware_profile': {
+            'manufacturer': 'VMware, Inc.',
+            'model': 'VMware Virtual Platform',
+            'name': 'VMware, Inc. VMware Virtual Platform'
+        },
+        'name': 'server0000.internal',
+        'network_interfaces': [
+            {
+                'ip_address': '10.1.1.20',
+                'name': 'eth0',
+                'unique_id': '00:50:56:bf:4b:f3'
+            }
+        ],
+        'operating_system': {
+            'architecture': 'x86_64',
+            'description': 'CentOS Linux release 7.3.1611 (Core)',
+            'name': 'CentOS 7.3.1611 x86_64',
+            'variant': 'CentOS',
+            'version_number': '7.3.1611'
+        },
+        'os_memory': '7.69 GiB',
+        'processor_count': 2,
+        'serial_number': '987654321-0',
+        'unique_id': '123456789-0',
+        'uptime': '1 day'
+    },
     'multi_interface_bonded': {
         'ec2': None,
         'guest_vms': [],
@@ -72,6 +104,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.3.1611'
         },
+        'os_memory': '31.22 GiB',
         'processor_count': 40,
         'serial_number': '987654321-1',
         'unique_id': '123456789-1',
@@ -109,6 +142,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.4.1708'
         },
+        'os_memory': None,
         'processor_count': 32,
         'serial_number': '987654321-2',
         'unique_id': '123456789-2',
@@ -116,6 +150,7 @@ REGISTER_TEST_CASES = {
     },
     'single_interface_ec2': {
         'ec2': {
+            'account_id': '12345',
             'ami_id': 'ami-e3415983',
             'hostname': 'ip-10-60-3-114.usw1.fanops.net',
             'instance_id': 'i-129485tu8549',
@@ -146,6 +181,7 @@ REGISTER_TEST_CASES = {
             'variant': 'CentOS',
             'version_number': '7.4.1708'
         },
+        'os_memory': None,
         'processor_count': 2,
         'serial_number': '987654321-1',
         'unique_id': 'i-0c1abf92f3b6c33b1',

@@ -1,4 +1,4 @@
-'''Arsenal API bulk node_groups.'''
+'''Arsenal API bulk tags.'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,62 +39,62 @@ from arsenalweb.views.api.nodes import (
 
 LOG = logging.getLogger(__name__)
 
-def remove_node_groups(node_ids, auth_user):
-    '''Remove all node_groups from a list of node_ids.'''
+def remove_tags(node_ids, auth_user):
+    '''Remove all tags from a list of node_ids.'''
 
     resp = {'nodes': []}
     try:
         for node_id in node_ids:
 
             node = find_node_by_id(node_id)
-            LOG.debug('Removing all node_groups from node: {0} '
-                      'node_groups: {1}'.format(node.name,
-                                                [ng.name for ng in node.node_groups]))
+            LOG.debug('Removing all tags from node: {0} '
+                      'tags: {1}'.format(node.name,
+                                         [ng.name for ng in node.tags]))
             resp['nodes'].append(node.name)
             utcnow = datetime.utcnow()
 
-            LOG.debug('node_group objects: {0}'.format(node.node_groups))
-            for node_group in list(node.node_groups):
-                LOG.debug('Removing node_group: {0}'.format(node_group.name))
+            LOG.debug('tag objects: {0}'.format(node.tags))
+            for tag in list(node.tags):
+                LOG.debug('Removing tag: {0}={1}'.format(tag.name, tag.value))
                 try:
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group',
-                                      old_value=node_group.name,
+                                      field='tag',
+                                      old_value='{0}={1}'.format(tag.name, tag.value),
                                       new_value='deleted',
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)
                     DBSession.add(audit)
-                    LOG.debug('Trying to remove node_group: {0} from '
-                              'node: {1}'.format(node_group.name, node.name,))
-                    node.node_groups.remove(node_group)
-                    LOG.debug('Successfully removed node_group: {0} from '
-                              'node: {1}'.format(node_group.name, node.name,))
+                    LOG.debug('Trying to remove tag: {0}={1} from '
+                              'node: {2}'.format(tag.name, tag.value, node.name))
+                    node.tags.remove(tag)
+                    LOG.debug('Successfully removed tag: {0}={1} from '
+                              'node: {2}'.format(tag.name, tag.value, node.name))
                 except (ValueError, AttributeError) as ex:
-                    LOG.debug('Died removing node_group: {0}'.format(ex))
+                    LOG.debug('Died removing tag: {0}'.format(ex))
                     DBSession.remove(audit)
                 except Exception as ex:
-                    LOG.debug('Died removing node_group: {0}'.format(ex))
+                    LOG.debug('Died removing tag: {0}'.format(ex))
                     DBSession.remove(audit)
 
-            LOG.debug('Final node_groups: {0}'.format([ng.name for ng in node.node_groups]))
+            LOG.debug('Final tags: {0}'.format([tag.name for tag in node.tags]))
             DBSession.add(node)
         DBSession.flush()
 
     except (NoResultFound, AttributeError):
-        return api_404(msg='node_group not found')
+        return api_404(msg='tag not found')
     except MultipleResultsFound:
         msg = 'Bad request: node_id is not unique: {0}'.format(node_id)
         return api_400(msg=msg)
     except Exception as ex:
-        LOG.error('Error removing all node_groups from node. exception={0}'.format(ex))
+        LOG.error('Error removing all tags from node. exception={0}'.format(ex))
         return api_500()
 
     return resp
 
-@view_config(route_name='api_b_node_groups_deassign', permission='node_group_delete', request_method='DELETE', renderer='json')
-def api_b_node_groups_deassign(request):
-    '''Process delete requests for the /api/bulk/node_groups/deassign route.
-    Takes a list of nodes and deassigns all node_groups from them.'''
+@view_config(route_name='api_b_tags_deassign', permission='tag_delete', request_method='DELETE', renderer='json')
+def api_b_tagss_deassign(request):
+    '''Process delete requests for the /api/bulk/tags/deassign route.
+    Takes a list of nodes and deassigns all tags from them.'''
 
     try:
         payload = request.json_body
@@ -104,17 +104,17 @@ def api_b_node_groups_deassign(request):
         LOG.debug('Updating {0}'.format(request.url))
 
         try:
-            resp = remove_node_groups(node_ids, auth_user)
+            resp = remove_tags(node_ids, auth_user)
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(payload)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error removing all node_groups from '
+            LOG.error('Error removing all tags from '
                       'node={0},exception={1}'.format(request.url, ex))
             return api_500(msg=str(ex))
 
         return api_200(results=resp)
 
     except Exception as ex:
-        LOG.error('Error updating node_groups={0},exception={1}'.format(request.url, ex))
+        LOG.error('Error updating tags={0},exception={1}'.format(request.url, ex))
         return api_500(msg=str(ex))

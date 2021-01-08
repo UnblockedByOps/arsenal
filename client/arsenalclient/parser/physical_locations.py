@@ -125,6 +125,42 @@ def parser_physical_locations(top_parser, otsp):
     csc = asp.add_parser('create',
                          help='Create physical_location objects.',
                          parents=[top_parser])
+    csc.add_argument('-a1',
+                     '--address-1',
+                     dest='physical_location_address_1',
+                     help='Update physical_location address 1.')
+    csc.add_argument('-a2',
+                     '--address-2',
+                     dest='physical_location_address_2',
+                     help='Update physical_location address 2.')
+    csc.add_argument('-c',
+                     '--city',
+                     dest='physical_location_city',
+                     help='Update physical_location city.')
+    csc.add_argument('-s',
+                     '--state',
+                     dest='physical_location_admin_area',
+                     help='Update physical_location state.')
+    csc.add_argument('-t',
+                     '--contact-name',
+                     dest='physical_location_contact_name',
+                     help='Update physical_location contact name.')
+    csc.add_argument('-C',
+                     '--country',
+                     dest='physical_location_country',
+                     help='Update physical_location country.')
+    csc.add_argument('-P',
+                     '--phone-number',
+                     dest='physical_location_phone_number',
+                     help='Update physical_location contact phone number.')
+    csc.add_argument('-p',
+                     '--postal-code',
+                     dest='physical_location_postal_code',
+                     help='Update physical_location postal code.')
+    csc.add_argument('-r',
+                     '--provider',
+                     dest='physical_location_provider',
+                     help='Update physical_location provider.')
 
     # required physical_location create argument group (rcag)
     rcag = csc.add_argument_group('required arguments')
@@ -133,42 +169,6 @@ def parser_physical_locations(top_parser, otsp):
                       required=True,
                       dest='physical_location_name',
                       help='physical_location_name to create.')
-    rcag.add_argument('-a1',
-                      '--address-1',
-                      dest='physical_location_address_1',
-                      help='Update physical_location address 1.')
-    rcag.add_argument('-a2',
-                      '--address-2',
-                      dest='physical_location_address_2',
-                      help='Update physical_location address 2.')
-    rcag.add_argument('-c',
-                      '--city',
-                      dest='physical_location_city',
-                      help='Update physical_location city.')
-    rcag.add_argument('-s',
-                      '--state',
-                      dest='physical_location_admin_area',
-                      help='Update physical_location state.')
-    rcag.add_argument('-t',
-                      '--contact-name',
-                      dest='physical_location_contact_name',
-                      help='Update physical_location contact name.')
-    rcag.add_argument('-C',
-                      '--country',
-                      dest='physical_location_country',
-                      help='Update physical_location country.')
-    rcag.add_argument('-P',
-                      '--phone-number',
-                      dest='physical_location_phone_number',
-                      help='Update physical_location contact phone number.')
-    rcag.add_argument('-p',
-                      '--postal-code',
-                      dest='physical_location_postal_code',
-                      help='Update physical_location postal code.')
-    rcag.add_argument('-r',
-                      '--provider',
-                      dest='physical_location_provider',
-                      help='Update physical_location provider.')
 
     rcag.set_defaults(func=create_physical_location)
 

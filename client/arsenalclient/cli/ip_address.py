@@ -56,7 +56,7 @@ def search_ip_addresses(args, client):
         results = client.get_audit_history(results, 'ip_addresses')
 
     if not any(getattr(args, key) for key in update_fields):
-        print_results(args, results, skip_keys=['ip_address', 'id'], default_key='ip_address')
+        print_results(args, results, first_keys=['ip_address', 'id'], default_key='ip_address')
     else:
         # no direct updates allowed.
         pass

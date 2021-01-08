@@ -61,6 +61,9 @@
                     <td>Updated By</td><td><span class="mono">${physical_rack.updated_by}</span></td>
                 </tr>
             </table>
+            <div id="rack_insert">
+                <a class="show_rack" tal:attributes="href '/render_rack?physical_location.name={0}&physical_rack.name={1}&fields=all'.format(physical_rack.physical_location.name, physical_rack.name)">Vizualize this rack</a>
+            </div>
           </div>
         </li>
         <li>
@@ -121,6 +124,24 @@
         });
         $(document).ajaxStart(function() {
           $("#history_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
+        });
+
+        // Rack tab ajax loader
+        $('.show_rack').click(function(event){
+            event.preventDefault();
+            var url = $(this).attr('href');
+            $.ajax({
+                url: url,
+                success: function(result){
+                  $("#rack_insert").html(result);
+                },
+                error: function (jXHR, textStatus, errorThrown) {
+                  $("#rack_insert").html(errorThrown);
+                }
+            });
+        });
+        $(document).ajaxStart(function() {
+          $("#rack_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
         });
       });
     </script>

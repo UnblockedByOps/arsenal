@@ -63,6 +63,8 @@ INSERT INTO groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
 # Site specific groups should be above id 100
 INSERT INTO groups VALUES (100,'rp_noc','Admin',NOW(),NOW());
 INSERT INTO groups VALUES (101,'override_ratio','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (102,'dcops','Admin',NOW(),NOW());
+INSERT INTO groups VALUES (103,'devs','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -144,6 +146,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (9,7,'Ad
 #  tag_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (10,8,'Admin');
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (101,8,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (103,8,'Admin');
 #  tag_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (11,9,'Admin');
 #  data_center_write
@@ -152,20 +155,28 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (12,10,'
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (13,11,'Admin');
 #  physical_device_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (15,12,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,12,'Admin');
 #  physical_device_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (16,13,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,13,'Admin');
 #  physical_location_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (17,14,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,14,'Admin');
 #  physical_location_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (18,15,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,15,'Admin');
 #  physical_rack_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (19,16,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,16,'Admin');
 #  physical_rack_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (20,17,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,17,'Admin');
 #  physical_elevation_write
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (21,18,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,18,'Admin');
 #  physical_elevation_delete
 INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'Admin');
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (102,19,'Admin');
 
 # For devel on mac
 # INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (5,1,'Admin');
@@ -187,7 +198,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (22,19,'
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
 # Add user: hvm to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 3, 'Admin', NOW(),NOW());
-# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, secure tags
+# Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, secure_tags
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 5, 'Admin', NOW(),NOW());
@@ -200,8 +211,10 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 # Add user: kaboom to groups: api_register, node_write
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 2, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 2, 'Admin', NOW(),NOW());
-# Add user: puppet-enc to groups: node_write
+# Add user: puppet-enc to groups: node_write, node_group_write, secure_tags
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 6, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (8, 6, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (14, 6, 'Admin', NOW(),NOW());
 # Add user: aws-lambda to groups: api_register
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
 
@@ -226,18 +239,20 @@ INSERT INTO statuses VALUES (8, 'broken', 'Hardware that is in need of repair.',
 INSERT INTO statuses_audit VALUES (8, 8, 'name', 'created', 'broken', 'Admin', NOW());
 INSERT INTO statuses VALUES (9, 'maintenance', 'Hardware that is currently undergoing maintenance.', 'Admin', NOW(),NOW());
 INSERT INTO statuses_audit VALUES (9, 9, 'name', 'created', 'maintenance', 'Admin', NOW());
+INSERT INTO statuses VALUES (10, 'allocated', 'Hardware that has been allocated for a purpose.', 'Admin', NOW(),NOW());
+INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', 'Admin', NOW());
 
 INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'http://my/documentation', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', 'Admin', NOW());
 
-INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', NOW(), NOW(), 'Admin');
+INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', 1, '#fff', NOW(), NOW(), 'Admin');
 INSERT INTO hardware_profiles_audit VALUES (1, 1, 'name', 'created', 'Unknown', 'Admin', NOW());
 # These are just for testing
-# INSERT INTO hardware_profiles VALUES (2, 'Dell r610', 'Dell', 'r610', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (3, 'Dell r720', 'Dell', 'r720', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (4, 'Sun Microsystems x4200', 'Sun Microsystems', 'x4200', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (5, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', NOW(), NOW(), 'Admin');
-# INSERT INTO hardware_profiles VALUES (6, 'Citrix Xen Guest', 'Citrix', 'Xen Guest', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (2, 'Dell r610', 'Dell', 'r610', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (3, 'Dell r720', 'Dell', 'r720', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (4, 'Sun Microsystems x4200', 'Sun Microsystems', 'x4200', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (5, 'Sun Microsystems e3000', 'Sun Microsystems', 'e3000', 1, '#fff', NOW(), NOW(), 'Admin');
+# INSERT INTO hardware_profiles VALUES (6, 'Citrix Xen Guest', 'Citrix', 'Xen Guest', 1, '#fff', NOW(), NOW(), 'Admin');
 
 INSERT INTO operating_systems VALUES (1, 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Admin', NOW(), NOW());
 INSERT INTO operating_systems_audit VALUES (1, 1, 'name', 'created', 'Unknown', 'Admin', NOW());

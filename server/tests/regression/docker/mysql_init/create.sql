@@ -101,6 +101,8 @@ CREATE TABLE `hardware_profiles` (
   `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
   `manufacturer`           varchar(255) COLLATE utf8_bin NOT NULL,
   `model`                  varchar(255) COLLATE utf8_bin NOT NULL,
+  `rack_u`                 int(11) COLLATE utf8_bin NOT NULL,
+  `rack_color`             varchar(255) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
@@ -233,6 +235,7 @@ CREATE UNIQUE INDEX idx_node_ec2_id on nodes (ec2_id);
 DROP TABLE IF EXISTS `ec2_instances`;
 CREATE TABLE `ec2_instances` (
   `id`                            int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `account_id`                    varchar(255) DEFAULT NULL,
   `ami_id`                        varchar(255) NOT NULL,
   `hostname`                      varchar(255) NOT NULL,
   `instance_id`                   varchar(255) NOT NULL,
@@ -320,6 +323,7 @@ CREATE TABLE `physical_devices` (
   `hardware_profile_id`     int(11) NOT NULL,
   `oob_ip_address`          varchar(255) DEFAULT NULL,
   `oob_mac_address`         varchar(255) DEFAULT NULL,
+  `status_id`               int(11) NOT NULL,
   `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

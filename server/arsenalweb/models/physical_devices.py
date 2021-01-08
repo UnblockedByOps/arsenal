@@ -33,6 +33,8 @@ from arsenalweb.models.common import (
 )
 
 LOG = logging.getLogger(__name__)
+
+
 class PhysicalDevice(Base):
     '''Arsenal PhysicalDevice object.'''
 
@@ -54,6 +56,8 @@ class PhysicalDevice(Base):
     physical_elevation_id = Column(Integer,
                                    ForeignKey('physical_elevations.id'),
                                    nullable=False)
+    status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
+    status = relationship('Status', backref='physical_devices', lazy='joined')
     mac_address_1 = Column(Text, nullable=False)
     mac_address_2 = Column(Text, nullable=True)
     hardware_profile_id = Column(Integer,
@@ -67,7 +71,7 @@ class PhysicalDevice(Base):
     tags = relationship('Tag',
                         secondary='tag_physical_device_assignments',
                         backref='physical_devices',
-                        lazy='joined')
+                        lazy='dynamic')
 
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
@@ -85,10 +89,13 @@ class PhysicalDevice(Base):
                     id=self.id,
                     hardware_profile=get_name_id_dict([self.hardware_profile],
                                                       default_keys=['id',
-                                                                    'name']),
+                                                                    'name',
+                                                                    'rack_u',
+                                                                    'rack_color']),
                     physical_location=self.physical_location,
                     physical_rack=self.physical_rack,
                     physical_elevation=self.physical_elevation,
+                    status=get_name_id_dict([self.status]),
                     mac_address_1=self.mac_address_1,
                     mac_address_2=self.mac_address_2,
                     node=get_name_id_dict(self.nodes),

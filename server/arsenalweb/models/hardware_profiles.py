@@ -41,6 +41,8 @@ class HardwareProfile(Base):
     name = Column(Text, nullable=False)
     model = Column(Text, nullable=False)
     manufacturer = Column(Text, nullable=False)
+    rack_u = Column(Integer, nullable=False)
+    rack_color = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -70,6 +72,8 @@ class HardwareProfile(Base):
                     name=self.name,
                     model=self.model,
                     manufacturer=self.manufacturer,
+                    rack_u=self.rack_u,
+                    rack_color=self.rack_color,
                     created=localize_date(self.created),
                     updated=localize_date(self.updated),
                     updated_by=self.updated_by,

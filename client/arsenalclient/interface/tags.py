@@ -208,3 +208,34 @@ class Tags(ArsenalInterface):
         '''
 
         return self._manage_assignments(name, value, object_type, results, 'delete')
+
+    def deassign_all(self, nodes):
+        '''De-assign ALL tags from one or more nodes.
+
+        Args:
+
+        nodes (list): The list of node dicts from the search results to de-assign
+            from all tags.
+
+        Usage:
+
+        >>> Tags.deassign_all(<search results>)
+        <json>
+        '''
+
+        node_ids = []
+        for node in nodes:
+            LOG.info('Removing all tags from node: {0}'.format(node['name']))
+            node_ids.append(node['id'])
+
+        data = {'node_ids': node_ids}
+
+        try:
+            resp = self.api_conn('/api/bulk/tags/deassign',
+                                 data,
+                                 method='delete')
+        except Exception as ex:
+            LOG.error('Command failed: {0}'.format(repr(ex)))
+            raise
+
+        return resp

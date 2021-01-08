@@ -183,6 +183,8 @@ class Nodes(ArsenalInterface):
 
         if facts['hardware']['serial_number']:
             resp['serial_number'] = facts['hardware']['serial_number']
+        if facts['memory']['system']['total']:
+            resp['os_memory'] = facts['memory']['system']['total']
         if facts['processors']['count']:
             resp['processor_count'] = facts['processors']['count']
 

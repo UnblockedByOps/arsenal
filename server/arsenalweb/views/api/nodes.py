@@ -15,6 +15,7 @@
 #
 import logging
 import json
+import operator
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
@@ -59,6 +60,7 @@ from arsenalweb.views.api.operating_systems import (
     )
 from arsenalweb.views.api.physical_devices import (
     update_physical_device,
+    find_physical_device_by_serial,
     )
 from arsenalweb.views.api.ec2_instances import (
     create_ec2_instance,
@@ -133,17 +135,17 @@ def node_groups_to_nodes(node, node_groups, action, auth_user):
             if action == 'PUT':
                 node.node_groups.append(node_group)
                 audit = NodeAudit(object_id=node.id,
-                                  field='node_group_id',
+                                  field='node_group',
                                   old_value='created',
-                                  new_value=node_group.id,
+                                  new_value=node_group.name,
                                   updated_by=auth_user['user_id'],
                                   created=utcnow)
                 DBSession.add(audit)
             if action == 'DELETE':
                 try:
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group_id',
-                                      old_value=node_group.id,
+                                      field='node_group',
+                                      old_value=node_group.name,
                                       new_value='deleted',
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)
@@ -245,7 +247,7 @@ def process_hardware_profile(payload, user):
                                                        user)
 
         LOG.debug('hardware_profile is: {0}'.format(hardware_profile.__dict__))
-        return hardware_profile.id
+        return hardware_profile
 
     except Exception as ex:
         LOG.error('Unable to determine hardware_profile manufacturer={0},model={1},'
@@ -273,7 +275,7 @@ def process_operating_system(payload, user):
                                                        user)
 
         LOG.debug('operating_system is: {0}'.format(operating_system.__dict__))
-        return operating_system.id
+        return operating_system
 
     except Exception as ex:
         LOG.error('Unable to determine operating_system name={0},variant={1},'
@@ -291,6 +293,7 @@ def process_ec2(payload, user):
     exist. Returns ec2.id, or None if not present in the payload.'''
 
     try:
+        account_id = payload['ec2']['account_id'].rstrip()
         ami_id = payload['ec2']['ami_id'].rstrip()
         hostname = payload['ec2']['hostname'].rstrip()
         instance_id = payload['ec2']['instance_id'].rstrip()
@@ -302,6 +305,7 @@ def process_ec2(payload, user):
 
         ec2 = find_ec2_instance_by_id(instance_id)
         ec2 = update_ec2_instance(ec2,
+                                  account_id=account_id,
                                   ami_id=ami_id,
                                   hostname=hostname,
                                   instance_id=instance_id,
@@ -313,7 +317,8 @@ def process_ec2(payload, user):
                                   updated_by=user)
 
     except NoResultFound:
-        ec2 = create_ec2_instance(ami_id=ami_id,
+        ec2 = create_ec2_instance(account_id=account_id,
+                                  ami_id=ami_id,
                                   hostname=hostname,
                                   instance_id=instance_id,
                                   instance_type=instance_type,
@@ -332,7 +337,7 @@ def process_ec2(payload, user):
         raise
 
     LOG.debug('ec2_instance is: {0}'.format(ec2.__dict__))
-    return ec2.id
+    return ec2
 
 def process_data_center(payload, user):
     '''Find the data_center or create if it doesn't exist. Returns data_center.id'''
@@ -357,7 +362,7 @@ def process_data_center(payload, user):
         raise
 
     LOG.debug('data_center is: {0}'.format(data_center.__dict__))
-    return data_center.id
+    return data_center
 
 def manage_guest_vm_assignments(guest_vms, hypervisor, user_id):
     '''Manage the assigning and deassinging of guests during a node
@@ -388,6 +393,7 @@ def create_node(**kwargs):
     data_center_id = kwargs['data_center_id']
     ec2_id = kwargs['ec2_id']
     serial_number = kwargs['serial_number']
+    os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
     user_id = kwargs['user_id']
@@ -406,6 +412,7 @@ def create_node(**kwargs):
                     status_id=2,
                     ec2_id=ec2_id,
                     serial_number=serial_number,
+                    os_memory=os_memory,
                     processor_count=processor_count,
                     uptime=uptime,
                     updated_by=user_id,
@@ -427,6 +434,16 @@ def create_node(**kwargs):
 
         net_ifs_to_node(net_if_list, node, 'PUT', user_id)
 
+        # Ensure that brand new nodes update the status of the physical device
+        # to allocated.
+        try:
+            my_physical_device = find_physical_device_by_serial(serial_number)
+            update_physical_device(my_physical_device,
+                                   status_id=10,
+                                   updated_by=user_id)
+        except NoResultFound:
+            pass
+
     except Exception as ex:
         LOG.error('Error creating new node name: {0} unique_id: {1} '
                   'exception: {2}'.format(name, unique_id, repr(ex)))
@@ -441,14 +458,27 @@ def update_node(node, **kwargs):
     unique_id = kwargs['unique_id']
     name = kwargs['name']
     hardware_profile_id = kwargs['hardware_profile_id']
+    hardware_profile_name = kwargs['hardware_profile_name']
     operating_system_id = kwargs['operating_system_id']
+    operating_system_name = kwargs['operating_system_name']
     data_center_id = kwargs['data_center_id']
+    data_center_name = kwargs['data_center_name']
     ec2_id = kwargs['ec2_id']
+    ec2_instance_id = kwargs['ec2_instance_id']
     serial_number = kwargs['serial_number']
+    os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
     user_id = kwargs['user_id']
     net_if_list = kwargs['net_if_list']
+
+    # Remap for audit entries so we can have values instead of IDs.
+    audit_remap = {
+        'hardware_profile_id': 'hardware_profile_name',
+        'operating_system_id': 'operating_system_name',
+        'data_center_id': 'data_center_name',
+        'ec2_id': 'ec2_instance_id',
+    }
 
     try:
         LOG.info('Updating node: {0}'.format(unique_id))
@@ -461,6 +491,7 @@ def update_node(node, **kwargs):
                           'data_center_id',
                           'ec2_id',
                           'serial_number',
+                          'os_memory',
                           'processor_count',
                           'uptime']:
             if getattr(node, attribute) != locals()[attribute]:
@@ -468,14 +499,33 @@ def update_node(node, **kwargs):
                                                           locals()[attribute]))
                 # We don't want audit entries for uptime
                 if attribute != 'uptime':
-                    # This will not set 'None' to a string.
-                    old_value = getattr(node, attribute, 'None')
+                    if attribute.endswith('_id') and attribute != 'ec2_id':
+                        obj_name = '{0}.name'.format(attribute[:-3])
+                        LOG.info('Updating object name: {0}'.format(obj_name))
+                        try:
+                            old_value = operator.attrgetter(obj_name)(node)
+                        except AttributeError:
+                            old_value = 'None'
+                    elif attribute == 'ec2_id':
+                        old_value = node.ec2.instance_id
+                    else:
+                        # This will not set 'None' to a string.
+                        old_value = getattr(node, attribute, 'None')
+
                     if not old_value:
                         old_value = 'None'
+
+                    try:
+                        update_field = audit_remap[attribute]
+                        update_value = locals()[update_field]
+                    except KeyError:
+                        update_field = attribute
+                        update_value = locals()[attribute]
+
                     audit = NodeAudit(object_id=node.id,
-                                      field=attribute,
+                                      field=update_field,
                                       old_value=old_value,
-                                      new_value=locals()[attribute],
+                                      new_value=update_value,
                                       updated_by=user_id,
                                       created=utcnow)
                     DBSession.add(audit)
@@ -486,6 +536,7 @@ def update_node(node, **kwargs):
         node.data_center_id = data_center_id
         node.ec2_id = ec2_id
         node.serial_number = serial_number
+        node.os_memory = os_memory
         node.processor_count = processor_count
         node.uptime = uptime
         node.updated_by = user_id
@@ -537,13 +588,36 @@ def process_registration_payload(payload, user_id):
         processed['unique_id'] = payload['unique_id'].lower().rstrip()
         processed['name'] = payload['name'].rstrip()
         processed['serial_number'] = payload['serial_number'].rstrip()
+        try:
+            processed['os_memory'] = payload['os_memory'].rstrip()
+        except (KeyError, AttributeError):
+            processed['os_memory'] = None
         processed['processor_count'] = int(payload['processor_count'])
         processed['uptime'] = payload['uptime'].rstrip()
 
-        processed['hardware_profile_id'] = process_hardware_profile(payload, user_id)
-        processed['operating_system_id'] = process_operating_system(payload, user_id)
-        processed['data_center_id'] = process_data_center(payload, user_id)
-        processed['ec2_id'] = process_ec2(payload, user_id)
+        hardware_profile = process_hardware_profile(payload, user_id)
+        processed['hardware_profile_id'] = hardware_profile.id
+        processed['hardware_profile_name'] = hardware_profile.name
+
+        operating_system = process_operating_system(payload, user_id)
+        processed['operating_system_id'] = operating_system.id
+        processed['operating_system_name'] = operating_system.name
+
+        data_center = process_data_center(payload, user_id)
+        try:
+            processed['data_center_id'] = data_center.id
+            processed['data_center_name'] = data_center.name
+        except AttributeError:
+            processed['data_center_id'] = None
+            processed['data_center_name'] = None
+
+        ec2 = process_ec2(payload, user_id)
+        try:
+            processed['ec2_id'] = ec2.id
+            processed['ec2_instance_id'] = ec2.instance_id
+        except AttributeError:
+            processed['ec2_id'] = None
+            processed['ec2_instance_id'] = None
     except KeyError as ex:
         LOG.error('Required data missing from playload: {0}'.format(repr(ex)))
         raise

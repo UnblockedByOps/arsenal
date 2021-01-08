@@ -25,6 +25,22 @@ from arsenalweb.views import (
 
 LOG = logging.getLogger(__name__)
 
+GET_FIELDS = [
+    'address_1',
+    'address_2',
+    'admin_area',
+    'city',
+    'contact_name',
+    'country',
+    'created',
+    'name',
+    'phone_number',
+    'postal_code',
+    'provider',
+    'updated',
+    'updated_by',
+]
+JOINED_GET_FIELDS = ','.join(GET_FIELDS)
 
 @view_config(route_name='physical_location', permission='view', renderer='arsenalweb:templates/physical_location.pt')
 def view_physical_location(request):
@@ -34,8 +50,12 @@ def view_physical_location(request):
     page_title_name = 'physical_location'
     auth_user = get_authenticated_user(request)
 
+    params = {
+        'fields': JOINED_GET_FIELDS + ',physical_racks'
+    }
+
     uri = '/api/physical_locations/{0}'.format(request.matchdict['id'])
-    physical_location = _api_get(request, uri)
+    physical_location = _api_get(request, uri, params)
 
     return {
         'au': auth_user,
@@ -62,9 +82,10 @@ def view_physical_locations(request):
         perpage = 50
 
     payload['perpage'] = perpage
+    payload['fields'] = JOINED_GET_FIELDS
 
     uri = '/api/physical_locations'
-    LOG.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
+    LOG.debug('UI requesting data from API={0},payload={1}'.format(uri, payload))
 
     resp = _api_get(request, uri, payload)
 

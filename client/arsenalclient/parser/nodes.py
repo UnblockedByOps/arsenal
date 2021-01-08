@@ -104,6 +104,10 @@ def parser_nodes(top_parser, otsp):
                        dest='del_all_node_groups',
                        action='store_true',
                        help='De-assign ALL node_groups from the search results.')
+    ansag.add_argument('--del_all_tags',
+                       dest='del_all_tags',
+                       action='store_true',
+                       help='De-assign ALL tags from the search results.')
     nssc.add_argument('search',
                       default=None,
                       metavar='search_terms',

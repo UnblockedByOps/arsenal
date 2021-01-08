@@ -45,7 +45,8 @@ class PhysicalRack(Base):
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
 
-    physical_location = relationship('PhysicalLocation', backref='physical_racks', lazy='joined')
+    physical_location = relationship('PhysicalLocation',
+                                     backref=backref('physical_racks', lazy='dynamic'))
 
     def __json__(self, request):
         try:

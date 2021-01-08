@@ -1,4 +1,4 @@
-'''Arsenal client network_interface command line helpers.
+'''Arsenal client hardware_profile command line helpers.
 
 These functions are called directly by args.func() to invoke the
 appropriate action. They also handle output formatting to the commmand
@@ -21,29 +21,38 @@ line.
 #  limitations under the License.
 #
 from __future__ import print_function
+import sys
 import logging
 from arsenalclient.cli.common import (
+    ask_yes_no,
     check_resp,
     parse_cli_args,
     print_results,
+    update_object_fields,
     )
 
 LOG = logging.getLogger(__name__)
 
 
-def search_network_interfaces(args, client):
-    '''Search for network_interfaces.'''
+def search_hardware_profiles(args, client):
+    '''Search for hardware_profiles and perform optional updates.'''
 
     LOG.debug('action_command is: {0}'.format(args.action_command))
     LOG.debug('object_type is: {0}'.format(args.object_type))
-    # Manual updates not allowed from the client.
-    update_fields = []
+
+    resp = None
+
+    update_fields = [
+        'hardware_profiles_rack_color',
+        'hardware_profiles_rack_u',
+    ]
+
     search_fields = args.fields
     if any(getattr(args, key) for key in update_fields):
         search_fields = 'all'
 
     params = parse_cli_args(args.search, search_fields, args.exact_get, args.exclude)
-    resp = client.network_interfaces.search(params)
+    resp = client.hardware_profiles.search(params)
 
     if not resp.get('results'):
         return resp
@@ -51,14 +60,25 @@ def search_network_interfaces(args, client):
     results = resp['results']
 
     if args.audit_history:
-        results = client.network_interfaces.get_audit_history(results)
+        results = client.hardware_profiles.get_audit_history(results)
 
     if not any(getattr(args, key) for key in update_fields):
-        print_results(args, results, first_keys=['unique_id', 'id'], default_key='unique_id')
+        print_results(args, results)
     else:
-        # no direct updates allowed.
-        pass
-
+        if len(results) > 1:
+            LOG.error('Expected 1 result, exiting.')
+            sys.exit(1)
+        else:
+            hardware_profile = results[0]
+        LOG.debug('HARDWARE_PROFILE: {0}'.format(hardware_profile))
+        msg = 'We are ready to update the following hardware_profile: \n  ' \
+              '{0}\nContinue?'.format(hardware_profile['name'])
+        if any(getattr(args, key) for key in update_fields) and ask_yes_no(msg, args.answer_yes):
+            hardware_profile_update = update_object_fields(args,
+                                                           'hardware_profiles',
+                                                           hardware_profile,
+                                                           update_fields)
+            resp = client.hardware_profiles.update(hardware_profile_update)
     if resp:
         check_resp(resp)
     LOG.debug('Complete.')

@@ -28,9 +28,6 @@ from arsenalweb.views.api.common import (
     api_500,
     api_501,
     )
-from arsenalweb.views.api.data_centers import (
-    find_data_center_by_id,
-    )
 
 LOG = logging.getLogger(__name__)
 
@@ -46,8 +43,8 @@ def find_node_by_name_and_status(settings, node_name):
         raise type(ex)(ex.message + ' {0}'.format(msg))
 
     node = DBSession.query(Node)
-    node = node.filter(Node.status_id.in_(status_ids))
     node = node.filter(Node.name == node_name)
+    node = node.filter(Node.status_id.in_(status_ids))
 
     return node.one()
 
@@ -92,35 +89,49 @@ def process_node_enc(settings, node_name, param_sources=False):
         results['param_sources'] = {}
 
     try:
+        LOG.debug('ENC find the node...')
         node = find_node_by_name_and_status(settings, node_name)
+        LOG.debug('ENC find the node complete')
         results['name'] = node.name
         results['id'] = node.id
         results['status'] = node.status
-        LOG.debug('node name is: {0}'.format(node.name))
-        LOG.debug('node datacenter is: {0}'.format(node.data_center_id))
+
+        LOG.debug('ENC node name is: {0}'.format(node.name))
+        LOG.debug('ENC node datacenter is: {0}'.format(node.data_center_id))
+
         # What happens when there's more than one node group? What tags
         # win, alphabetic?
+        LOG.debug('ENC find node_group tags...')
         for node_group in node.node_groups:
-            LOG.debug('node_group: {0}'.format(node_group.name))
+            LOG.debug('ENC node_group: {0}'.format(node_group.name))
             results['classes'].append(node_group.name)
             my_tags = process_tags(node_group.tags, 'node_group')
             results['parameters'].update(my_tags)
             if param_sources:
                 for tag in my_tags:
                     results['param_sources'][tag] = 'node_group'
+        LOG.debug('ENC find node_group tags complete.')
 
-        data_center = find_data_center_by_id(node.data_center_id)
-        my_tags = process_tags(data_center.tags, 'data_center')
+        LOG.debug('ENC process data_center tags...')
+        try:
+            my_tags = process_tags(node.data_center.tags, 'data_center')
+        except AttributeError:
+            my_tags = {}
+
+        LOG.debug('ENC process data_center tags complete.')
         results['parameters'].update(my_tags)
         if param_sources:
             for tag in my_tags:
                 results['param_sources'][tag] = 'data_center'
 
+        LOG.debug('ENC process node tags...')
         my_tags = process_tags(node.tags, 'node')
         results['parameters'].update(my_tags)
         if param_sources:
             for tag in my_tags:
                 results['param_sources'][tag] = 'node'
+
+        LOG.debug('ENC process node tags complete.')
 
     except NoResultFound:
         LOG.debug('node not found: {0}'.format(node_name))

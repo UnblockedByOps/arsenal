@@ -101,6 +101,9 @@ def parser_physical_devices(top_parser, otsp):
     # physical_devices assignment action argument group (aag)
     aag = ssc.add_argument_group('Assignment Actions')
 
+    aag.add_argument('--status',
+                     dest='physical_device_status',
+                     help='status to assign to the search results.')
     aag.add_argument('--tag',
                      dest='set_tags',
                      help='Comma separated list of key=value pairs to tag to ' \

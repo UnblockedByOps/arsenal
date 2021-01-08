@@ -1,5 +1,4 @@
-'''Arsenal client version'''
-#
+'''Arsenal healthcheck.'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-__version__ = '9.2'
+import logging
+import json
+import os.path
+from pyramid.view import view_config
+from arsenalweb.views.api.common import (
+    api_200,
+    api_503,
+    )
+
+LOG = logging.getLogger(__name__)
+
+@view_config(route_name='healthcheck', request_method='GET', renderer='json')
+def healthcheck(request):
+    '''The loadbalancer healthcheck endpoint.'''
+
+    settings = request.registry.settings
+
+    if os.path.exists(settings['arsenal.healthcheck_file']):
+        return api_200()
+    else:
+        return api_503()

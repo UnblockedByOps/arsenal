@@ -168,6 +168,19 @@ validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal,tag.nam
 # Deassign tag from node
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag NODE_TEST_TAG=TEST" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
+
+#
+# Bulk tag removal
+#
+# Create and assign multiple tags to node
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG1=TEST" 0
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG2=TEST" 0
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag BULK_NODE_TEST_TAG3=TEST" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "name: BULK_NODE_TEST_TAG"
+# Deassign all tags from node
+validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_all_tags" 0
+validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
+
 # Create and assign tag to node_group
 validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --tag NODE_GROUP_TEST_TAG=TEST" 0
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields tags" 0 "string" "name: NODE_GROUP_TEST_TAG"
@@ -191,6 +204,13 @@ validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --tag test_string=my_string" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "value: my_string"
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag test_string=my_string" 0
+#
+# hardware_profiles
+#
+validate_command "${rw_cmd} hardware_profiles search name=Unknown --rack-color '#000'" 0
+validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --fields rack_color" 0 "string" "rack_color: '#000'"
+validate_command "${rw_cmd} hardware_profiles search name=Unknown --rack-u 6" 0
+validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --fields rack_u" 0 "string" "rack_u: 6"
 #
 # Try to make changes as a read only user, be sure it doesn't let us.
 #
@@ -240,6 +260,10 @@ validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP_FORBIDDE
 # Delete node_group by name
 validate_command "${ro_cmd} node_groups delete --name TEST_NODE_GROUP_FORBIDDEN" 1 "string" "WARNING - 403: Forbidden"
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP_FORBIDDEN --fields all" 0 "string" "name: TEST_NODE_GROUP_FORBIDDEN"
+#
+# network_interfaces
+#
+validate_command "${rw_cmd} network_interfaces search unique_id=00:11:22:aa:bb:cc" 0
 #
 # Regex search testing
 #
@@ -326,6 +350,18 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
 validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
 validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+# physical_device defaults to available
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
+# set physical_device to  allocated and ensure the status changes.
+validate_command "${rw_cmd} physical_devices search serial_number=Y00001 --status allocated" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: allocated"
+# Set the node to decom, ensure the physical_device becomes available
+validate_command "${rw_cmd} nodes search name=kvm0000.docker --status decom" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
+# Set the node to hibernating, which is not in the map, ensure the physical_device status remains unchanged
+validate_command "${rw_cmd} nodes search name=kvm0000.docker --status hibernating" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
+
 # physical_devices updates
 ## elevation
 validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
@@ -354,6 +390,10 @@ validate_command "${search_cmd} physical_devices search serial_number=aabb123450
 #
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import.csv" 0
 validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
+# Make sure physical_device without a status specified is set to available
+validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: available"
+# Make sure physical_device with a status specified has the correct status set
+validate_command "${search_cmd} physical_devices search serial_number=A00000003 -f status" 0 "string" "name: allocated"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_mixed.csv" 1
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_no_hw_profile.csv" 1
 validate_command "${search_cmd} physical_devices search serial_number=B0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
@@ -380,6 +420,21 @@ validate_command "${rw_cmd} data_centers search name=TEST_DATA_CENTER_1 --status
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_1 --fields all" 0 "string" "name: inservice"
 validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_1" 0
 validate_command "${search_cmd} data_centers search name=TEST_DATA_CENTER_ --fields all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_DATA_CENTER_'" "1"
+#
+# ENC
+#
+# create the node
+validate_command "${rw_cmd} nodes create --name fxxp-tst9999.internal --unique_id fxxp-tst9999.internal --status_id 1" 0
+# no node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# create the node_group
+validate_command "${rw_cmd} node_groups create --name fxx_tst --owner='nobody' --description 'ENC test node group'" 0
+# Still should not have the node_group assigned since it is not in setup or inservice.
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "classes: null"
+# Set the status to an assignable status
+validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
+# Now it should get the node group
+validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
 #
 # Clean up
 #

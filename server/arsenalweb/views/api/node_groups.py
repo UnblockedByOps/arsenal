@@ -121,9 +121,9 @@ def nodes_to_node_groups(node_group, nodes, action, auth_user):
                 if not node in node_group.nodes:
                     node_group.nodes.append(node)
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group_id',
+                                      field='node_group',
                                       old_value='assigned',
-                                      new_value=node_group.id,
+                                      new_value=node_group.name,
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)
                     DBSession.add(audit)
@@ -131,8 +131,8 @@ def nodes_to_node_groups(node_group, nodes, action, auth_user):
                 try:
                     node_group.nodes.remove(node)
                     audit = NodeAudit(object_id=node.id,
-                                      field='node_group_id',
-                                      old_value=node_group.id,
+                                      field='node_group',
+                                      old_value=node_group.name,
                                       new_value='deassigned',
                                       updated_by=auth_user['user_id'],
                                       created=utcnow)

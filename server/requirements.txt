@@ -1,4 +1,6 @@
 https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-1.2.3.tar.gz
+venusian==1.2.0
+python-dateutil==2.7.0
 pyramid==1.5.1
 pyramid_chameleon==0.3
 pyramid_debugtoolbar==2.2

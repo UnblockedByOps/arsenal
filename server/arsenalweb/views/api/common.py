@@ -174,6 +174,11 @@ def api_501(msg='Not Implemented'):
 
     return api_return_json(501, msg)
 
+def api_503(msg='Service Unavailable'):
+    '''Return json formatted 503.'''
+
+    return api_return_json(503, msg)
+
 def collect_params(request, req_params, opt_params, auth_user_obj=False):
     '''Get values from the request, along with authenticated_user. Returns a
     dict of attributes if successful, raises an exception otherwise.
@@ -877,10 +882,10 @@ def api_read_by_params(request):
 @view_config(route_name='api_node', permission='node_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_node_group', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_operating_system', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_device', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_elevation', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_location', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_rack', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_device', permission='physical_device_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_elevation', permission='physical_elevation_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_location', permission='physical_location_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_rack', permission='physical_rack_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_status', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_tag', permission='tag_delete', request_method='DELETE', renderer='json')
 def api_delete_by_id(request):
@@ -960,10 +965,10 @@ def api_delete_by_id(request):
 @view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_nodes', permission='node_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_operating_systems', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_devices', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_elevations', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_locations', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_racks', permission='api_write', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_devices', permission='physical_device_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_elevations', permission='physical_elevation_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_locations', permission='physical_location_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_physical_racks', permission='physical_rack_delete', request_method='DELETE', renderer='json')
 @view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json')
 @view_config(route_name='api_tags', permission='tag_delete', request_method='DELETE', renderer='json')
 def api_delete_by_params(request):
@@ -971,7 +976,7 @@ def api_delete_by_params(request):
        over passed parameters.'''
 
     # FIXME: Is any of this used? If so it needs to be locked down.
- 
+
     try:
         # FIXME: Should we enforce required parameters here?
         # Will be used for auditing

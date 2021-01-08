@@ -32,6 +32,7 @@ from arsenalclient.cli.common import (
     )
 from arsenalclient.authorization import check_root
 from arsenalclient.version import __version__
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -52,30 +53,48 @@ def register(args, client):
     client.nodes.register()
 
 def enc(args, client):
-    '''Run the External Node Classifier for puppet and return yaml.'''
+    '''Run the External Node Classifier for puppet and return yaml. If there
+    are no classes returned for a node, attempt to assign the class.'''
+
+    apply_statuses = [
+        'setup',
+        'inservice',
+    ]
 
     LOG.debug('Triggering node enc.')
     resp = client.nodes.enc(name=args.name, param_sources=args.inspect)
     check_resp(resp)
-    results = resp['results'][0]
+    result = resp['results'][0]
 
+    if not result['classes'] and result['status']['name'] in apply_statuses:
+        node_group = '{0}_{1}'.format(args.name[0:3], args.name[5:8])
+        LOG.debug('No classes assigned. Attempting to assign node_group: {0} '
+                  'to node: {1}'.format(node_group, args.name))
+
+        try:
+            client.node_groups.assign(node_group, [result])
+            result['classes'].append(node_group)
+        except NoResultFound:
+            pass
+
+    # FIXME: Turn this into a yaml dump
     print('---')
-    if results['classes']:
+    if result['classes']:
         print('classes:')
-        for my_class in results['classes']:
+        for my_class in result['classes']:
             print('- {0}'.format(my_class))
     else:
         print('classes: null')
 
     print('parameters:')
-    for param in results['parameters']:
+    for param in sorted(result['parameters']):
         if args.inspect:
             print('  {0}: {1} # [{2}]'.format(param,
-                                              results['parameters'][param],
-                                              results['param_sources'][param]))
+                                              result['parameters'][param],
+                                              result['param_sources'][param]))
         else:
             print('  {0}: {1}'.format(param,
-                                      results['parameters'][param]))
+                                      result['parameters'][param]))
     print('...')
 
 def unique_id(args, client):
@@ -91,12 +110,12 @@ def unique_id(args, client):
         else:
             print(uid)
 
-def _format_msg(results, tags=None):
+def _format_msg(results, tags=None, mode='tag'):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
     for node in results:
-        resp = _check_tags(node, tags)
+        resp = _check_tags(node, tags, mode=mode)
         if resp:
             r_names.append('{0}: {1}\n{2}'.format(node['name'],
                                                   node['unique_id'],
@@ -123,7 +142,7 @@ def process_actions(args, client, results):
                 resp = client.tags.assign(name, value, 'nodes', results)
 
     if args.del_tags:
-        msg = _format_msg(results, args.del_tags)
+        msg = _format_msg(results, args.del_tags, mode='untag')
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:
@@ -151,6 +170,11 @@ def process_actions(args, client, results):
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
             resp = client.node_groups.deassign_all(results)
+
+    if args.del_all_tags:
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            resp = client.tags.deassign_all(results)
 
     return resp
 
@@ -183,9 +207,10 @@ def search_nodes(args, client):
                 args.set_status,
                 args.set_node_groups,
                 args.del_node_groups,
+                args.del_all_tags,
                 args.del_all_node_groups,)):
 
-        skip_keys = [
+        first_keys = [
             'name',
             'id',
             'unique_id',
@@ -195,7 +220,7 @@ def search_nodes(args, client):
             results = client.nodes.get_audit_history(results)
 
         sort_res = sorted(results, key=_get_node_sort_order)
-        print_results(args, sort_res, skip_keys=skip_keys)
+        print_results(args, sort_res, first_keys=first_keys)
 
     else:
 

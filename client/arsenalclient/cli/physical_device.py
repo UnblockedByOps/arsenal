@@ -42,6 +42,7 @@ UPDATE_FIELDS = [
     'mac_address_2',
     'oob_ip_address',
     'oob_mac_address',
+    'physical_device_status',
     'physical_elevation',
     'physical_location',
     'physical_rack',
@@ -51,12 +52,12 @@ TAG_FIELDS = [
     'del_tags',
 ]
 
-def _format_msg(results, tags=None):
+def _format_msg(results, tags=None, mode='tag'):
     '''Format the message to be passed to ask_yes_no().'''
 
     r_names = []
     for res in results:
-        resp = _check_tags(res, tags)
+        resp = _check_tags(res, tags, mode=mode)
         if resp:
             r_names.append('{0}\n{1}'.format(res['serial_number'],
                                              resp))
@@ -81,12 +82,21 @@ def process_actions(args, client, results):
                 resp = client.tags.assign(name, value, 'physical_devices', results)
 
     if args.del_tags:
-        msg = _format_msg(results, args.del_tags)
+        msg = _format_msg(results, args.del_tags, mode='untag')
         if ask_yes_no(msg, args.answer_yes):
             tags = [tag for tag in args.del_tags.split(',')]
             for tag in tags:
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physical_devices', results)
+
+    # Status is special becasue it is updated via the statuses class.
+    if args.physical_device_status:
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            resp = client.statuses.assign(args.physical_device_status, 'physical_devices', results)
+            # Remove the param form the list so it doesn't try to update it
+            # again and fail.
+            UPDATE_FIELDS.remove('physical_device_status')
 
     if any(getattr(args, key) for key in UPDATE_FIELDS):
         msg = _format_msg(results)
@@ -137,7 +147,7 @@ def search_physical_devices(args, client):
         if args.audit_history:
             results = client.physical_devices.get_audit_history(results)
 
-        print_results(args, results, default_key='serial_number', skip_keys=['serial_number', 'id'])
+        print_results(args, results, default_key='serial_number', first_keys=['serial_number', 'id'])
 
     else:
 
@@ -254,6 +264,7 @@ def import_physical_device(args, client):
                 'oob_ip_address',
                 'oob_mac_address',
                 'tags',
+                'status',
             ]
             device_import = csv.DictReader(csv_file, delimiter=',', fieldnames=field_names)
             for count, row in enumerate(device_import):
