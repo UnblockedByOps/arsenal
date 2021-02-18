@@ -80,8 +80,8 @@ class Node(Base):
                                       lazy='dynamic')
     hypervisor = relationship('Node',
                               secondary='hypervisor_vm_assignments',
-                              primaryjoin=hypervisor_vm_assignments.c.hypervisor_id == id,
-                              secondaryjoin=hypervisor_vm_assignments.c.guest_vm_id == id,
+                              primaryjoin=hypervisor_vm_assignments.c.guest_vm_id == id,
+                              secondaryjoin=hypervisor_vm_assignments.c.hypervisor_id == id,
                               backref='guest_vms',
                               lazy='dynamic')
 
