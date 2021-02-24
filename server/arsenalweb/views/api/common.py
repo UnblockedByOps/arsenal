@@ -316,8 +316,8 @@ def process_exact_search(query, model_type, key, val):
 def filter_datetime(query, model_type, key, val):
     '''Deal with date searches. Return a sqlalchemy query object.
 
-    Can be passed all or part of a date string, preceeded by a > (older than)
-    or < (newer than), or two date strings comma separated for searching a
+    Can be passed all or part of a date string, preceeded by a > (newer than)
+    or < (older than), or two date strings comma separated for searching a
     range between the two dates (oldest date must be first).
 
     Examples:
