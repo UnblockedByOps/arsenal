@@ -88,6 +88,11 @@ from arsenalweb.views import (
     )
 
 LOG = logging.getLogger(__name__)
+DATETIME_FIELDS = [
+    'created',
+    'updated',
+    'last_registered',
+]
 
 # Common functions
 def api_return_json(http_code, msg, total=0, result_count=0, results=None):
@@ -266,7 +271,7 @@ def process_search(query, params, model_type, exact_get):
         for mut in muta:
             mutations.append('ex_{0}'.format(mut))
 
-        LOG.info('MUTATIONS: {0}'.format(mutations))
+        LOG.debug('MUTATIONS: {0}'.format(mutations))
 
         if key in mutations:
             key += '.name'
@@ -286,7 +291,9 @@ def process_regex_search(query, model_type, key, val):
     if '.' in key:
         query = filter_regex_subparam(query, model_type, key, val)
     else:
-        if ',' in val:
+        if key in DATETIME_FIELDS:
+            query = filter_datetime(query, model_type, key, val)
+        elif ',' in val:
             query = filter_regex_multi_val(query, model_type, key, val)
         else:
             query = filter_regex(query, model_type, key, val)
@@ -304,6 +311,45 @@ def process_exact_search(query, model_type, key, val):
     else:
         query = query.filter(getattr(global_model, key) == val)
 
+    return query
+
+def filter_datetime(query, model_type, key, val):
+    '''Deal with date searches. Return a sqlalchemy query object.
+
+    Can be passed all or part of a date string, preceeded by a > (older than)
+    or < (newer than), or two date strings comma separated for searching a
+    range between the two dates (oldest date must be first).
+
+    Examples:
+        '>2020-08-06'
+        '<2021-01-01'
+        '2020-08-06 21:00:00,2020-08-07 16:00:00'
+    '''
+
+    LOG.debug('START: filter_datetime()')
+    operator, key = check_regex_excludes(key)
+    global_model = globals()[model_type]
+    LOG.debug('Single value for model_type: %s key: %s value: %s '
+              'operator: %s', model_type,
+                              key,
+                              val,
+                              operator)
+    my_val = val.split(',')
+    if len(my_val) == 2:
+        query = query.filter(getattr(global_model, key).between(my_val[0],
+                                                                my_val[1]))
+    else:
+        oper = my_val[0][:1]
+        sanitized_val = my_val[0][1:]
+        LOG.debug('oper: %s sanitized_val: %s', oper, sanitized_val)
+        if oper == '<':
+            query = query.filter(getattr(global_model, key) <= sanitized_val)
+        elif oper == '>':
+            query = query.filter(getattr(global_model, key) >= sanitized_val)
+        else:
+            raise RuntimeError('Invalid operator for date search')
+
+    LOG.debug('RETURN: filter_datetime()')
     return query
 
 def filter_regex(query, model_type, key, val):
@@ -401,7 +447,6 @@ def filter_regex_subparam(query, model_type, key, val):
         search_key = 'ex_{0}'.format(obj_attrib)
     LOG.debug('Mutated search key: {0}'.format(search_key))
 
-#    if not orig_obj_type.startswith('ex_'):
     if ',' in val:
         query = filter_regex_multi_val(query, obj_type_camel, search_key, val)
     else:
@@ -412,8 +457,7 @@ def filter_regex_subparam(query, model_type, key, val):
 
 def check_regex_excludes(key):
     '''Checks a key to see if it's an exclude (starts with 'ex_'). Returns a
-
-    and operator for regexp and a key.'''
+    not operator for regexp and a key.'''
     # Handle excludes
     operator = 'regexp'
     if key.startswith('ex_'):
@@ -825,8 +869,8 @@ def api_read_by_params(request):
             exclude_params = sorted([x for x in params if x[0].startswith('ex_')])
             include_params = sorted([x for x in params if not x[0].startswith('ex_')])
 
-            LOG.info('include_params: {0} exclude_params: {1}'.format(include_params,
-                                                                      exclude_params))
+            LOG.debug('include_params: {0} exclude_params: {1}'.format(include_params,
+                                                                       exclude_params))
 
             query = process_search(query, include_params, model_type, exact_get)
             # Process excludes at the end to ensure they're excluded.
@@ -854,7 +898,7 @@ def api_read_by_params(request):
 
         else:
 
-            LOG.info('Displaying all {0}'.format(camel))
+            LOG.debug('Displaying all {0}'.format(camel))
 
             query = DBSession.query(globals()[model_type])
             total = query.count()
@@ -866,7 +910,7 @@ def api_read_by_params(request):
     except (NoResultFound, AttributeError):
         return api_404()
 
-    except Exception, ex:
+    except Exception as ex:
         msg = 'Error querying {0} url: {1} exception: {2}'.format(camel,
                                                                     request.url,
                                                                     repr(ex))

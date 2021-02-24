@@ -22,7 +22,7 @@ COPY conf/ssl/server.key /etc/pki/tls/private/server.key
 RUN /usr/bin/virtualenv --no-setuptools /app/arsenal_web/venv && \
   source /app/arsenal_web/venv/bin/activate && \
   pip install setuptools==44.0.0 && \
-  pip install --upgrade pip && \
+  pip install --upgrade pip==10.0.1 && \
   pip install https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-1.2.3.tar.gz
 
 # Valid values for ARSENAL_VERSION are as follows:
