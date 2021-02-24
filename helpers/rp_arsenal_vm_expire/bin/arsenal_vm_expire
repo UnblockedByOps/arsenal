@@ -18,7 +18,9 @@
 import sys
 import logging
 import argparse
-import ConfigParser
+import datetime
+import json
+import configparser
 import requests
 
 try:
@@ -116,18 +118,53 @@ def arsenal_login(server, username, password):
 def register_esx_servers(server, all_esx_data, regex_pattern):
     '''Register esx servers with arsenal.'''
 
-    headers = {'Content-Type': 'application/json'}
-    url = '{0}/api/register'.format(server)
-
-    session = arsenal_login(server, 'kaboom', 'password')
-
-    resp = session.put(url, headers=headers, json=esx_server, verify=False)
-    resp.faise_for_status()
-    LOG.info('    Success.')
 
 def get_vms_to_delete(args):
     '''Get the list of VMs to delete from Arsenal.'''
 
+    headers = {'Content-Type': 'application/json'}
+    url = '{0}/api/nodes'.format(args.arsenal_server)
+    past_date = datetime.date.today() - datetime.timedelta(int(args.expire_days))
+    past_date_str = past_date.isoformat()
+
+    LOG.info('Searching for VMs in decom status older than: %s', past_date_str)
+
+    payload = {
+        'status': 'decom',
+        'hardware_profile': 'KVM,VMware,Amazon',
+        'last_registered': '<{0}'.format(past_date_str),
+        'fields': 'hardware_profile,last_registered',
+    }
+    LOG.debug(json.dumps(payload, sort_keys=True, indent=4))
+    resp = requests.get(url, headers=headers, params=payload, verify=False, timeout=120)
+    resp.raise_for_status()
+    my_json = resp.json()
+
+    LOG.info('Total VMs found: %s', my_json['meta']['total'])
+    LOG.debug(json.dumps(resp.json(), sort_keys=True, indent=4))
+
+    return my_json['results']
+
+def delete_vms(args, username, password, vms_to_delete):
+    '''Delete the passed VMs from Arsenal.'''
+
+    headers = {'Content-Type': 'application/json'}
+
+    session = arsenal_login(args.arsenal_server, username, password)
+
+    for my_vm in vms_to_delete:
+        LOG.info('Working on VM:')
+        LOG.info('    name            : %s', my_vm['name'])
+        LOG.info('    id              : %s', my_vm['id'])
+        LOG.info('    unique_id       : %s', my_vm['unique_id'])
+        LOG.info('    hardware_profile: %s', my_vm['hardware_profile']['name'])
+        LOG.info('    last_registered : %s', my_vm['last_registered'])
+
+        if not args.dry_run:
+            url = '{0}/api/nodes/{1}'.format(args.arsenal_server,  my_vm['id'])
+            resp = session.delete(url, headers=headers, verify=False, timeout=60)
+            resp.raise_for_status()
+            LOG.info('  Successfuly deleted VM.')
 
 def main():
     '''Do All the things.'''
@@ -135,17 +172,17 @@ def main():
     args = parse_args()
     configure_logging(args)
 
-    secrets_config = ConfigParser.ConfigParser()
-    secrets_config.read('/Users/abandt/app/arsenal/conf/arsenal_standalone.ini')
-    username = secrets_config.get('arsenal', 'username')
-    password = secrets_config.get('arsenal', 'password')
+    secrets_config = configparser.ConfigParser()
+    secrets_config.read(args.secrets)
+    username = secrets_config.get('user', 'user_login')
+    password = secrets_config.get('user', 'user_password')
 
-
-    LOG.info('BEGIN gathering esx information and registering with arsenal...')
+    LOG.info('BEGIN gathering VMs to delete from Arsenal...')
 
     vms_to_delete = get_vms_to_delete(args)
+    delete_vms(args, username, password, vms_to_delete)
 
-    LOG.info('END gathering esx information and registering with arsenal.')
+    LOG.info('END deleting VMs from Arsenal.')
 
 if __name__ == '__main__':
     main()
