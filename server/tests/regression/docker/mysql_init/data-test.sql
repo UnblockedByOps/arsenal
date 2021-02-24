@@ -258,6 +258,10 @@ INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_i
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (13, 'enc0003.docker', 'enc0003.docker_uid', 1, 4, 1, 6,'Admin', NOW(),NOW(),NOW());
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated) VALUES (14, 'enc0004.docker', 'enc0004.docker_uid', 2, 4, 1, 6,'Admin', NOW(),NOW(),NOW());
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (15, 'kvm0000.docker', 'kvm0004.docker_uid', 2, 4, 3, 6,'Admin', NOW(),NOW(),NOW(),'Y00001');
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (16, 'node0000.datetime', 'node0000.datetime_uid', 2, 4, 3, 6,'Admin', '2020-06-01 12:00:00','2020-05-01 12:00:00','2020-06-01 12:00:00','DT00000');
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (17, 'node0001.datetime', 'node0001.datetime_uid', 2, 4, 3, 6,'Admin', '2020-06-15 14:30:00','2020-05-15 14:30:00','2020-06-10 14:30:00','DT00001');
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (18, 'node0002.datetime', 'node0002.datetime_uid', 2, 4, 3, 6,'Admin', '2020-10-01 12:00:00','2020-09-01 12:00:00','2020-09-20 12:00:00','DT00002');
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (19, 'node0003.datetime', 'node0003.datetime_uid', 2, 4, 3, 6,'Admin', '2021-02-01 08:00:00','2021-01-01 08:00:00','2021-01-20 08:00:00','DT00003');
 INSERT INTO nodes_audit VALUES (1,   1, 'name', 'created', 'pup0000.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (2,   2, 'name', 'created', 'pup0001.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (3,   3, 'name', 'created', 'pup0002.docker', 'Admin', NOW());
@@ -273,6 +277,10 @@ INSERT INTO nodes_audit VALUES (12, 12, 'name', 'created', 'enc0002.docker', 'Ad
 INSERT INTO nodes_audit VALUES (13, 13, 'name', 'created', 'enc0003.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (14, 14, 'name', 'created', 'enc0004.docker', 'Admin', NOW());
 INSERT INTO nodes_audit VALUES (15, 15, 'name', 'created', 'kvm0000.docker', 'Admin', NOW());
+INSERT INTO nodes_audit VALUES (16, 16, 'name', 'created', 'node0000.datetime', 'Admin', NOW());
+INSERT INTO nodes_audit VALUES (17, 17, 'name', 'created', 'node0001.datetime', 'Admin', NOW());
+INSERT INTO nodes_audit VALUES (18, 18, 'name', 'created', 'node0002.datetime', 'Admin', NOW());
+INSERT INTO nodes_audit VALUES (19, 19, 'name', 'created', 'node0003.datetime', 'Admin', NOW());
 
 # Test node_groups
 #----------------------------------------------

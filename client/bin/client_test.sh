@@ -285,6 +285,13 @@ validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP[12] --fields
 validate_command "${rw_cmd} nodes search name=fopd-TEST867[78].internal --exclude name=fopd-TEST8677.internal" 0 "command" "echo \"\$results\" | egrep -c 'fopd-TEST8678.internal'" "1"
 validate_command "${rw_cmd} nodes search name=fopd-TEST867[78].internal --exclude operating_system=Unknown" 0 "command" "echo \"\$results\" | egrep -c 'fopd-TEST'" "0"
 #
+# datetime search
+#
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='<2020-06-16'" 0 "command" "echo \"\$results\" | egrep -c 'node000[01].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='>2020-06-16'" 0 "command" "echo \"\$results\" | egrep -c 'node000[23].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='2020-05-01,2020-09-01'" 0 "command" "echo \"\$results\" | egrep -c 'node000[01].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='2020-05-01,2020-10-01 13:00:00'" 0 "command" "echo \"\$results\" | egrep -c 'node000[012].datetime'" "3"
+#
 #
 # Malformed command testing
 #
