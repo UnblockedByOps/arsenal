@@ -16,4 +16,4 @@
 Description
 ===========
 
-Arsenal Client for VMWare ESXi
+Delete VMs in Arsenal that are in decom status and older than X days.
