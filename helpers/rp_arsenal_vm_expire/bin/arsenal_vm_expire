@@ -115,10 +115,6 @@ def arsenal_login(server, username, password):
     session.post('{0}/login'.format(server), data=payload, verify=False)
     return session
 
-def register_esx_servers(server, all_esx_data, regex_pattern):
-    '''Register esx servers with arsenal.'''
-
-
 def get_vms_to_delete(args):
     '''Get the list of VMs to delete from Arsenal.'''
 
