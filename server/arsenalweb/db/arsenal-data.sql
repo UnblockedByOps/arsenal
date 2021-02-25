@@ -202,7 +202,7 @@ INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,up
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 5, 'Admin', NOW(),NOW());
-# INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (7, 5, 'Admin', NOW(),NOW()); # node_delete - inf1 only
+INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (7, 5, 'Admin', NOW(),NOW());
 # INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (8, 5, 'Admin', NOW(),NOW()); # node_group_write - inf1 only
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (9, 5, 'Admin', NOW(),NOW());
 INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (10, 5, 'Admin', NOW(),NOW());
