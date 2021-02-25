@@ -148,13 +148,16 @@ def delete_vms(args, username, password, vms_to_delete):
 
     session = arsenal_login(args.arsenal_server, username, password)
 
+    total_vms = len(vms_to_delete)
+    current_vm = 1
     for my_vm in vms_to_delete:
-        LOG.info('Working on VM:')
+        LOG.info('Working on VM (%s of %s):', current_vm, total_vms)
         LOG.info('    name            : %s', my_vm['name'])
         LOG.info('    id              : %s', my_vm['id'])
         LOG.info('    unique_id       : %s', my_vm['unique_id'])
         LOG.info('    hardware_profile: %s', my_vm['hardware_profile']['name'])
         LOG.info('    last_registered : %s', my_vm['last_registered'])
+        current_vm += 1
 
         if not args.dry_run:
             url = '{0}/api/nodes/{1}'.format(args.arsenal_server,  my_vm['id'])
