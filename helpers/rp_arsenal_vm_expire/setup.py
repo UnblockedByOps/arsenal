@@ -27,7 +27,7 @@ REQUIRES = [
 ]
 
 setup(name='rp_arsenal_vm_expire',
-      version=1.0,
+      version=1.1,
       description='Delete VMs in Arsenal that are in decom status and older than X days.',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
