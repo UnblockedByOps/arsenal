@@ -14,7 +14,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.ip_address import (
     search_ip_addresses,
     )
@@ -37,7 +39,8 @@ def parser_ip_addresses(top_parser, otsp):
     # ip_addresses search subcommand (iassc)
     iassc = iaasp.add_parser('search',
                              help='Search for ip_address objects.',
-                             parents=[top_parser])
+                             parents=[top_parser],
+                             formatter_class=RawTextHelpFormatter)
     iassc.add_argument('--fields',
                        '-f',
                        dest='fields',
@@ -61,7 +64,8 @@ def parser_ip_addresses(top_parser, otsp):
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search ' \
-                            'for.\n {0}'.format(gen_help('ip_addresses_search')))
+                            'for:\n{0} \n {1}'.format(gen_help('ip_addresses_search'),
+                                                      date_help()))
     iassc.set_defaults(func=search_ip_addresses)
 
     return top_parser, otsp

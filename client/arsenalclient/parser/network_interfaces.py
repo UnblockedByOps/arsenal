@@ -14,7 +14,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.network_interface import (
     search_network_interfaces,
     )
@@ -37,7 +39,8 @@ def parser_network_interfaces(top_parser, otsp):
     # network_interfaces search subcommand (nissc)
     nissc = niasp.add_parser('search',
                              help='Search for network_interface objects.',
-                             parents=[top_parser])
+                             parents=[top_parser],
+                             formatter_class=RawTextHelpFormatter)
     nissc.add_argument('--fields',
                        '-f',
                        dest='fields',
@@ -61,7 +64,8 @@ def parser_network_interfaces(top_parser, otsp):
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search ' \
-                            'for.\n {0}'.format(gen_help('network_interfaces_search')))
+                            'for:\n{0} \n {1}'.format(gen_help('network_interfaces_search'),
+                                                      date_help()))
     nissc.set_defaults(func=search_network_interfaces)
 
     return top_parser, otsp
