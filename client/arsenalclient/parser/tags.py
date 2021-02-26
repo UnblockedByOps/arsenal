@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
 from arsenalclient.cli.tag import (
@@ -39,7 +40,8 @@ def parser_tags(top_parser, otsp):
     # tags search subcommand (tssc)
     tssc = tasp.add_parser('search',
                            help='Search for tags objects and optionally act upon the results.',
-                           parents=[top_parser])
+                           parents=[top_parser],
+                           formatter_class=RawTextHelpFormatter)
     tssc.add_argument('--fields',
                       '-f',
                       dest='fields',
@@ -70,8 +72,8 @@ def parser_tags(top_parser, otsp):
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search ' \
-                           'for.\n {0} \n {1}'.format(gen_help('tags_search'),
-                                                      date_help()))
+                           'for:\n{0} \n {1}'.format(gen_help('tags_search'),
+                                                     date_help()))
     atsag.set_defaults(func=search_tags)
 
     # tags create subcommand (tcsc)

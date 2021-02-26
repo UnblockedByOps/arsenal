@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
 from arsenalclient.cli.physical_location import (
@@ -40,7 +41,8 @@ def parser_physical_locations(top_parser, otsp):
     ssc = asp.add_parser('search',
                          help='Search for physical_location objects and optionally ' \
                          'act upon the results.',
-                         parents=[top_parser])
+                         parents=[top_parser],
+                         formatter_class=RawTextHelpFormatter)
     ssc.add_argument('--fields',
                      '-f',
                      dest='fields',
@@ -119,8 +121,8 @@ def parser_physical_locations(top_parser, otsp):
                      default=None,
                      metavar='search_terms',
                      help='Comma separated list of key=value pairs to search ' \
-                          'for.\n {0} \n {1}'.format(gen_help('physical_locations_search'),
-                                                     date_help()))
+                          'for:\n{0} \n {1}'.format(gen_help('physical_locations_search'),
+                                                    date_help()))
     ssc.set_defaults(func=search_physical_locations)
 
     # physical_locations create subcommand (csc)

@@ -230,15 +230,14 @@ def date_help():
     '''Return the string that explains how to search for dates.'''
 
     my_help = '''
-    Date fields can be passed all or part of a date string, preceeded by
-    a > (newer than) or < (older than), or two date strings comma separated
-    for searching a range between the two dates (oldest date must be first).
-\n
-    Examples:
-        '>2020-08-06'
-        '<2021-01-01'
-        '2020-08-06 21:00:00,2020-08-07 16:00:00'
-    '''
+Date fields can be passed all or part of a date string, preceeded by
+a > (newer than) or < (older than), or two date strings comma separated
+for searching a range between the two dates (oldest date must be first).
+
+Examples:
+    '>2020-08-06'
+    '<2021-01-01'
+    '2020-08-06 21:00:00,2020-08-07 16:00:00' '''
     return my_help
 
 def ask_yes_no(question, answer_yes=None, default='no'):
