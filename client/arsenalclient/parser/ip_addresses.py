@@ -15,6 +15,7 @@
 #  limitations under the License.
 #
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.ip_address import (
     search_ip_addresses,
     )
@@ -61,7 +62,8 @@ def parser_ip_addresses(top_parser, otsp):
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search ' \
-                            'for.\n {0}'.format(gen_help('ip_addresses_search')))
+                            'for.\n {0} \n {1}'.format(gen_help('ip_addresses_search'),
+                                                       date_help()))
     iassc.set_defaults(func=search_ip_addresses)
 
     return top_parser, otsp

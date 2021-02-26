@@ -89,6 +89,9 @@ def gen_help(help_type):
             'id',
             'name',
             'status',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'hardware_profiles_search': [
             'id',
@@ -97,10 +100,16 @@ def gen_help(help_type):
             'model',
             'rack_color',
             'rack_u',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'ip_addresses_search': [
             'id',
             'ip_address',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'network_interfaces_search': [
             'id',
@@ -112,6 +121,9 @@ def gen_help(help_type):
             'port_number',
             'port_switch',
             'port_vlan',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'nodes_search': [
             'id',
@@ -125,6 +137,7 @@ def gen_help(help_type):
             'operating_system',
             'uptime',
             'node_groups',
+            'last_updated',
             'created',
             'updated',
             'updated_by',
@@ -135,6 +148,9 @@ def gen_help(help_type):
             'node_group_owner',
             'description',
             'notes_url',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'physical_devices_search': [
             'id',
@@ -145,11 +161,17 @@ def gen_help(help_type):
             'hardware_profile',
             'oob_ip_address',
             'oob_mac_address',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'physical_elevations_search': [
             'id',
             'elevation',
             'physical_rack.name',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'physical_locations_search': [
             'id',
@@ -163,21 +185,33 @@ def gen_help(help_type):
             'postal_code',
             'contact_name',
             'phone_number',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'physical_racks_search': [
             'id',
             'name',
             'physical_location',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'statuses_search': [
             'id',
             'name',
             'description',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'tags_search': [
             'id',
             'name',
             'value',
+            'created',
+            'updated',
+            'updated_by',
         ],
         'hypervisor_vm_assignments_search': [
             'parent_id',
@@ -191,6 +225,21 @@ def gen_help(help_type):
     except KeyError:
         LOG.error('No help terms defined for help type: {0}'.format(help_type))
         raise
+
+def date_help():
+    '''Return the string that explains how to search for dates.'''
+
+    my_help = '''
+    Date fields can be passed all or part of a date string, preceeded by
+    a > (newer than) or < (older than), or two date strings comma separated
+    for searching a range between the two dates (oldest date must be first).
+\n
+    Examples:
+        '>2020-08-06'
+        '<2021-01-01'
+        '2020-08-06 21:00:00,2020-08-07 16:00:00'
+    '''
+    return my_help
 
 def ask_yes_no(question, answer_yes=None, default='no'):
     '''Ask a yes/no question via raw_input() and return their answer.

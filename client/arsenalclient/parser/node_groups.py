@@ -15,6 +15,7 @@
 #  limitations under the License.
 #
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.node_group import (
     search_node_groups,
     create_node_group,
@@ -87,7 +88,8 @@ def parser_node_groups(top_parser, otsp):
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search ' \
-                       'for.\n {0}'.format(gen_help('node_groups_search')))
+                            'for.\n {0} \n {1}'.format(gen_help('node_groups_search'),
+                                                       date_help()))
     ngssc.set_defaults(func=search_node_groups)
 
     # node_groups create subcommand (ngcsc)

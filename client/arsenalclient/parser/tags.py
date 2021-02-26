@@ -15,6 +15,7 @@
 #  limitations under the License.
 #
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.tag import (
     search_tags,
     create_tag,
@@ -69,7 +70,8 @@ def parser_tags(top_parser, otsp):
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search ' \
-                      'for.\n {0}'.format(gen_help('tags_search')))
+                           'for.\n {0} \n {1}'.format(gen_help('tags_search'),
+                                                      date_help()))
     atsag.set_defaults(func=search_tags)
 
     # tags create subcommand (tcsc)
