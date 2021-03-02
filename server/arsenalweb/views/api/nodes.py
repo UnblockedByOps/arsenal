@@ -76,11 +76,22 @@ from arsenalweb.views.api.network_interfaces import (
 from arsenalweb.views.api.hypervisor_vm_assignments import (
     guest_vms_to_hypervisor,
     )
+from arsenalweb.models.statuses import (
+    Status,
+    )
 
 LOG = logging.getLogger(__name__)
 
 
 # Functions
+def find_status_by_name(status_name):
+    '''Find a status by name.'''
+
+    status = DBSession.query(Status)
+    status = status.filter(Status.name == status_name)
+
+    return status.one()
+
 def find_node_by_name(node_name):
     '''Find a node by name.'''
 
@@ -451,7 +462,7 @@ def create_node(**kwargs):
 
     return node
 
-def update_node(node, **kwargs):
+def update_node(node, settings, **kwargs):
     '''Update an existing node.'''
 
     user_id = kwargs['user_id']
@@ -564,6 +575,22 @@ def update_node(node, **kwargs):
             else:
                 LOG.debug('physical_device.hardware_profile_id matches what '
                           'is being reported by node registration.')
+
+            pd_status = getattr(settings, 'arsenal.node_hw_map.{0}'.format(node.status.name))
+            final_status = find_status_by_name(pd_status)
+            final_status_id = final_status.id
+
+            if node.physical_device.status_id != final_status_id:
+
+                LOG.debug('Updating physical_device.status_id from: '
+                          '{0} to: {1}'.format(node.physical_device.status_id,
+                                               final_status_id))
+                update_physical_device(node.physical_device,
+                                       status_id=final_status_id,
+                                       updated_by=user_id)
+            else:
+                LOG.debug('physical_device.status_id matches the '
+                          'nodes current status per the map.')
         except AttributeError:
             LOG.debug('No physical_device for node, not checking '
                       'physical_device.hardware_profile_id for update.')
@@ -739,10 +766,11 @@ def api_node_register(request):
         auth_user = get_authenticated_user(request)
         payload = request.json_body
         processed = process_registration_payload(payload, auth_user['user_id'])
+        settings = request.registry.settings
 
         try:
             existing_node = find_node_by_unique_id(processed['unique_id'])
-            node = update_node(existing_node, **processed)
+            node = update_node(existing_node, settings, **processed)
         except NoResultFound:
             node = create_node(**processed)
 
