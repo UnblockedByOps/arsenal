@@ -576,10 +576,9 @@ def update_node(node, settings, **kwargs):
                 LOG.debug('physical_device.hardware_profile_id matches what '
                           'is being reported by node registration.')
 
-            node_current_status_id = node.status_id
             pd_status = getattr(settings, 'arsenal.node_hw_map.{0}'.format(node.status.name))
-            av = find_status_by_name(pd_status)
-            final_status_id = av.id
+            final_status = find_status_by_name(pd_status)
+            final_status_id = final_status.id
 
             if node.physical_device.status_id != final_status_id:
 
