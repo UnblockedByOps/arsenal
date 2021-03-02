@@ -591,7 +591,7 @@ def update_node(node, settings, **kwargs):
                                        updated_by=user_id)
             else:
                 LOG.debug('physical_device.status_id matches the '
-                          'nodes current status.')
+                          'nodes current status per the map.')
         except AttributeError:
             LOG.debug('No physical_device for node, not checking '
                       'physical_device.hardware_profile_id for update.')
