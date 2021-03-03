@@ -29,7 +29,7 @@ REQUIRES = [
 ]
 
 setup(name='rp_arsenal_esx',
-      version=1.2,
+      version=2.0,
       description='Arsenal client for registering VMWare ESXi nodes',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
