@@ -31,6 +31,9 @@ from arsenalweb.models.statuses import (
     Status,
     StatusAudit,
     )
+from arsenalweb.models.physical_devices import (
+    PhysicalDeviceAudit,
+    )
 from arsenalweb.views import (
     get_authenticated_user,
     )
@@ -191,6 +194,7 @@ def assign_status(status, actionables, resource, user, settings):
                 LOG.debug('END assign_status() update status_id')
 
                 if orig_status_id != status.id:
+                    my_obj.updated_by = user
                     LOG.debug('START assign_status() create audit')
                     if resource == 'nodes':
 
@@ -231,8 +235,19 @@ def assign_status(status, actionables, resource, user, settings):
                                                    created=utcnow)
                         DBSession.add(dc_audit)
 
+                    elif resource == 'physical_devices':
+
+                        pd_audit = PhysicalDeviceAudit(object_id=my_obj.id,
+                                                       field='status',
+                                                       old_value=orig_status.name,
+                                                       new_value=status.name,
+                                                       updated_by=user,
+                                                       created=utcnow)
+                        DBSession.add(pd_audit)
+
                     LOG.debug('END assign_status() create audit')
 
+            LOG.debug('WANG User is: %s', user)
             LOG.debug('START assign_status() session add')
             DBSession.add(my_obj)
             LOG.debug('END assign_status() session add')
