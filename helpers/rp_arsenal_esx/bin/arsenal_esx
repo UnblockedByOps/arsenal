@@ -283,7 +283,8 @@ def main():
     vsphere_password = parser.get('vsphere_server', 'password')
     vpshere_port = parser.get('vsphere_server', 'port')
 
-    LOG.info('BEGIN gathering esx information and registering with arsenal...')
+    LOG.info('BEGIN gathering esx information and registering with Arsenal...')
+    LOG.info('Connecting to vsphere host: %s', args.vsphere_host)
 
     vsphere_instance = vsphere_connect(args.vsphere_host,
                                        vsphere_username,
@@ -292,7 +293,7 @@ def main():
     all_esx_data = get_esx_data(vsphere_instance)
     register_esx_servers(args.arsenal_server, all_esx_data, args.regex_pattern)
 
-    LOG.info('END gathering esx information and registering with arsenal.')
+    LOG.info('END gathering esx information and registering with Arsenal.')
 
 if __name__ == '__main__':
     main()
