@@ -194,8 +194,11 @@ def assign_status(status, actionables, resource, user, settings):
                 LOG.debug('END assign_status() update status_id')
 
                 if orig_status_id != status.id:
-                    my_obj.updated_by = user
                     LOG.debug('START assign_status() create audit')
+
+                    my_obj.updated = utcnow
+                    my_obj.updated_by = user
+
                     if resource == 'nodes':
 
                         if my_obj.physical_device:
