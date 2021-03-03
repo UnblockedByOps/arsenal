@@ -247,7 +247,6 @@ def assign_status(status, actionables, resource, user, settings):
 
                     LOG.debug('END assign_status() create audit')
 
-            LOG.debug('WANG User is: %s', user)
             LOG.debug('START assign_status() session add')
             DBSession.add(my_obj)
             LOG.debug('END assign_status() session add')
