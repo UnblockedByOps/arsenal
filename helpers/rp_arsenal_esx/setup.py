@@ -23,13 +23,13 @@ with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
     CHANGELOG = f.read()
 
 REQUIRES = [
-    'requests',
-    'pyVim',
-    'pyVmomi',
+    'requests==2.21.0',
+    'pyVim==2.0.24',
+    'pyVmomi==6.7.1.2018.12',
 ]
 
 setup(name='rp_arsenal_esx',
-      version=2.0,
+      version=2.1,
       description='Arsenal client for registering VMWare ESXi nodes',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
