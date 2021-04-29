@@ -70,6 +70,14 @@ def parser_physical_racks(top_parser, otsp):
                       '--location',
                       dest='physical_location',
                       help='Update physical_rack location.')
+    uaag.add_argument('-o',
+                      '--oob-subnet',
+                     dest='physical_rack_oob_subnet',
+                      help='Update the oob-subnet (must be CIDR notation).')
+    uaag.add_argument('-s',
+                      '--server-subnet',
+                     dest='physical_rack_server_subnet',
+                      help='Update the server-subnet (must be CIDR notation).')
 
     # physical_racks assignment action argument group (aag)
     aag = ssc.add_argument_group('Assignment Actions')
@@ -95,6 +103,16 @@ def parser_physical_racks(top_parser, otsp):
                          help='Create physical_rack objects.',
                          parents=[top_parser])
 
+    csc.add_argument('-o',
+                     '--oob-subnet',
+                     dest='physical_rack_oob_subnet',
+                     help='the oob-subnet (must be CIDR notation).')
+
+    csc.add_argument('-s',
+                     '--server-subnet',
+                     dest='physical_rack_server_subnet',
+                     help='the oob-subnet (must be CIDR notation).')
+
     # required physical_rack create argument group (rcag)
     rcag = csc.add_argument_group('required arguments')
 
@@ -105,6 +123,7 @@ def parser_physical_racks(top_parser, otsp):
                       help='The physical rack location name.')
     rcag.add_argument('-n',
                       '--name',
+                      required=True,
                       help='The physical rack name.')
 
     rcag.set_defaults(func=create_physical_rack)

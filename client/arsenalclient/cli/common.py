@@ -192,7 +192,9 @@ def gen_help(help_type):
         'physical_racks_search': [
             'id',
             'name',
+            'oob_subnet',
             'physical_location',
+            'server_subnet',
             'created',
             'updated',
             'updated_by',

@@ -34,7 +34,9 @@ from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
+    'physical_rack_oob_subnet',
     'physical_location',
+    'physical_rack_server_subnet',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -146,6 +148,8 @@ def create_physical_rack(args, client):
     device = {
         'name': args.name,
         'physical_location': args.physical_location,
+        'oob_subnet': args.physical_rack_oob_subnet,
+        'server_subnet': args.physical_rack_server_subnet,
     }
 
     try:

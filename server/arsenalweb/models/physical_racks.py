@@ -41,6 +41,8 @@ class PhysicalRack(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
     physical_location_id = Column(Integer, ForeignKey('physical_locations.id'), nullable=False)
+    server_subnet = Column(Text)
+    oob_subnet = Column(Text)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Text, nullable=False)
@@ -59,6 +61,8 @@ class PhysicalRack(Base):
                     id=self.id,
                     name=self.name,
                     physical_location=get_name_id_dict([self.physical_location]),
+                    server_subnet=self.server_subnet,
+                    oob_subnet=self.oob_subnet,
                     physical_elevations=self.physical_elevations,
                     created=self.created,
                     updated=self.updated,

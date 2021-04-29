@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import logging
+import re
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
@@ -80,13 +81,23 @@ def create_physical_rack(name=None,
 
     Optional kwargs:
 
-    None yet.
+    server_subnet: A string that is the subnet for server addresses for
+        this rack. Must be in CIDR format.
+    oob_subnet   : A string that is the subnet for oob management addresses for
+        this rack. Must be in CIDR format.
     '''
 
     try:
         LOG.info('Creating new physical_rack name: {0}'.format(name))
 
         utcnow = datetime.utcnow()
+
+        my_attribs = kwargs.copy()
+        for attribute in my_attribs:
+            if attribute.endswith('_subnet') and my_attribs[attribute] and not validate_cidr(my_attribs[attribute]):
+                msg = '{0} is not in CIDR format'.format(my_attribs[attribute])
+
+                return api_500(msg=msg)
 
         physical_rack = PhysicalRack(name=name,
                                      physical_location_id=physical_location_id,
@@ -127,6 +138,10 @@ def update_physical_rack(physical_rack, **kwargs):
 
     physical_location_id: An integer that represents the id of the
         physical_location the rack resides in.
+    server_subnet       : A string that is the subnet for server addresses for
+        this rack. Must be in CIDR format.
+    oob_subnet          : A string that is the subnet for oob management addresses for
+        this rack. Must be in CIDR format.
     '''
 
     try:
@@ -141,13 +156,21 @@ def update_physical_rack(physical_rack, **kwargs):
         utcnow = datetime.utcnow()
 
         for attribute in my_attribs:
+            LOG.debug('Working on attribute: %s', attribute)
             if attribute == 'name':
                 LOG.debug('Skipping update to physical_rack.name')
                 continue
+
             old_value = getattr(physical_rack, attribute)
             new_value = my_attribs[attribute]
 
             if old_value != new_value and new_value:
+
+                if attribute.endswith('_subnet') and not validate_cidr(my_attribs[attribute]):
+                    msg = '{0} is not in CIDR format'.format(my_attribs[attribute])
+
+                    return api_500(msg=msg)
+
                 if not old_value:
                     old_value = 'None'
 
@@ -176,6 +199,19 @@ def update_physical_rack(physical_rack, **kwargs):
         LOG.error(msg)
         raise
 
+def validate_cidr(my_cidr):
+    '''Validate that the input is valid CIDR notation'''
+
+    LOG.debug('Validating string is in CIDR format: %s', my_cidr)
+    re_cidr = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(\\d|[1-2]\\d|3[0-2]))$")
+
+    if re.match(re_cidr, my_cidr):
+        LOG.debug('%s is valid CIDR notation', my_cidr)
+        return True
+
+    LOG.debug('%s is not valid CIDR notation', my_cidr)
+    return False
+
 # Routes
 @view_config(route_name='api_physical_racks', request_method='GET', request_param='schema=true', renderer='json')
 def api_physical_racks_schema(request):
@@ -195,11 +231,18 @@ def api_physical_racks_write(request):
             'name',
             'physical_location',
         ]
-        opt_params = []
+        opt_params = [
+            'oob_subnet',
+            'server_subnet',
+        ]
         params = collect_params(request, req_params, opt_params)
 
         try:
-            physical_location = find_physical_location_by_name(params['physical_location'])
+            if isinstance(params['physical_location'], dict):
+                my_pl = params['physical_location']['name']
+            else:
+                my_pl = params['physical_location']
+            physical_location = find_physical_location_by_name(my_pl)
             params['physical_location_id'] = physical_location.id
             del params['physical_location']
             try:
