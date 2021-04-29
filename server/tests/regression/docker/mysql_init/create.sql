@@ -284,6 +284,8 @@ CREATE TABLE `physical_racks` (
   `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name`                    varchar(255) NOT NULL,
   `physical_location_id`    int(11) NOT NULL,
+  `server_subnet`           varchar(255) DEFAULT NULL,
+  `oob_subnet`              varchar(255) DEFAULT NULL,
   `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

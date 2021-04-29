@@ -333,6 +333,18 @@ validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R200" 0
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R300 -o 10.1.1.0" 1
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R300 -o 10.1.1.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R300,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.1.0/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R301 -s 10.1.1.128/25" 0
+validate_command "${search_cmd} physical_racks search name=R301,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'server_subnet: 10.1.1.128/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R302 -o 10.1.2.0/25 -s 10.1.2.128/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.2.0/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R302 -o 10.1.44.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.44.0/25'" "1"
+validate_command "${rw_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -o 10.1.45.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.45.0/25'" "1"
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'server_subnet: 10.1.2.128/25'" "1"
 validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "2"
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
