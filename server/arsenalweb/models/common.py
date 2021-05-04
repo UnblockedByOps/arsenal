@@ -312,6 +312,51 @@ class User(Base):
         local = localize_date(self.updated)
         return local
 
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    user_id=self.user_id,
+                    user_name=self.user_name,
+                    first_name=self.first_name,
+                    last_name=self.last_name,
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return user_id, and user_name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'user_id',
+                                                             'user_name',
+                                                         ])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'group' in my_fields:
+                resp['group'] = get_name_id_list(self.group)
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only user_id, and user_name.
+        except KeyError:
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'user_id',
+                                                             'user_name',
+                                                         ])
+
+            return resp
+
 
 class LocalUserGroupAssignment(Base):
     '''Arsenal LocalUserGroupAssignment object.'''
@@ -326,6 +371,57 @@ class LocalUserGroupAssignment(Base):
     user = relationship('User', backref=backref('local_user_group_assignments'))
     group = relationship('Group', backref=backref('local_user_group_assignments'))
 
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    user_group_assignment_id=self.user_group_assignment_id,
+                    group_id=self.group_id,
+                    user_id=self.user_id,
+                    user=self.user,
+                    group=self.group,
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return user_id, and user_name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'user_group_assignment_id',
+                                                             'user',
+                                                             'group',
+                                                         ])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'user' in my_fields:
+                resp['user'] = get_name_id_list(self.user)
+
+            if 'group' in my_fields:
+                resp['group'] = get_name_id_list(self.group)
+
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only user_id, and user_name.
+        except KeyError:
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'user_group_assignment_id',
+                                                             'user',
+                                                             'group',
+                                                         ])
+
+            return resp
 
 class Group(Base):
     '''Arsenal Group object.'''
@@ -358,6 +454,49 @@ class Group(Base):
         local = localize_date(self.updated)
         return local
 
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    group_id=self.group_id,
+                    group_name=self.group_name,
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return user_id, and user_name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'group_id',
+                                                             'group_name',
+                                                         ])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'user' in my_fields:
+                resp['user'] = get_name_id_list(self.user)
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only user_id, and user_name.
+        except KeyError:
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'group_id',
+                                                             'group_name',
+                                                         ])
+
+            return resp
+
 
 class GroupPermAssignment(Base):
     '''Arsenal GroupPermAssignment object.'''
@@ -370,6 +509,7 @@ class GroupPermAssignment(Base):
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
     group = relationship('Group', backref=backref('group_perm_assignments'))
+    group_perms = relationship('GroupPerm', backref=backref('group_perm_assignments'))
 
     @hybrid_method
     def get_assignments_by_group(self, group_name):
@@ -390,6 +530,53 @@ class GroupPermAssignment(Base):
         query = query.filter(GroupPerm.perm_name == perm_name)
         return query.all()
 
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    group_assignment_id=self.group_assignment_id,
+                    group_id=self.group_id,
+                    perm_id=self.perm_id,
+                    group=self.group,
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return user_id, and user_name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'group_assignment_id',
+                                                             'group_id',
+                                                             'perm_id',
+                                                         ])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'group' in my_fields:
+                resp['group'] = get_name_id_list(self.group)
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only user_id, and user_name.
+        except KeyError:
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'group_assignment_id',
+                                                             'group_id',
+                                                             'perm_id',
+                                                         ])
+
+            return resp
+
 
 class GroupPerm(Base):
     '''Arsenal GroupPerm object.'''
@@ -398,9 +585,6 @@ class GroupPerm(Base):
     perm_id = Column(Integer, primary_key=True, nullable=False)
     perm_name = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
-    group_perm_assignments = relationship('GroupPermAssignment', backref=backref('group_perms'),
-                                          order_by=GroupPermAssignment.created.desc,
-                                          lazy='dynamic')
 
     def __repr__(self):
         return "GroupPerm(perm_id='%s', perm_name='%s', )" % (self.perm_id, self.perm_name)
@@ -420,3 +604,40 @@ class GroupPerm(Base):
         query = DBSession.query(GroupPerm)
         query = query.filter(GroupPerm.perm_name == '%s' % perm_name)
         return query.one()
+
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    perm_id=self.perm_id,
+                    perm_name=self.perm_name,
+                    created=localize_date(self.created),
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return user_id, and user_name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'perm_id',
+                                                             'perm_name',
+                                                         ])
+
+            my_fields = fields.split(',')
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only user_id, and user_name.
+        except KeyError:
+            resp = get_name_id_dict([self], default_keys=[
+                                                             'perm_id',
+                                                             'perm_name',
+                                                         ])
+
+            return resp
