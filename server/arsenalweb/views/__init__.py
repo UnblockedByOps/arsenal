@@ -185,12 +185,13 @@ def db_groupfinder(userid):
     groups = None
     try:
         user = DBSession.query(User).filter(User.user_name == userid).one()
-        groups = user.get_all_assignments()
+        groups = [group.group_name for group in user.groups]
     except NoResultFound:
-        LOG.debug('No db groups for: {0}'.format(userid))
+        LOG.debug('No DB groups for: %s', userid)
     except Exception as ex:
         LOG.error('{0} ({1})'.format(Exception, ex))
 
+    LOG.debug('DB groups for user: %s are: %s', userid, groups)
     return groups
 
 def db_authenticate(login, password):
@@ -296,21 +297,6 @@ def get_authenticated_user(request):
     authenticated_user['loggedin'] = auth
 
     return authenticated_user
-
-def get_all_groups():
-    '''Gets all the groups that are configured in the db and returns a dict of
-    everything.'''
-
-    # Get the groups from the db
-    group_perms = []
-    r = DBSession.query(Group).all()
-    for g in range(len(r)):
-        ga = r[g].get_all_assignments()
-        if ga:
-            ga = tuple(ga)
-            group_perms.append([r[g].group_name, ga])
-
-    return(group_perms)
 
 def format_user(user):
     '''Remove the extra stuff from ldap users for display purposes.'''
