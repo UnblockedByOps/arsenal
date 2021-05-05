@@ -23,6 +23,8 @@ from sqlalchemy import or_
 from sqlalchemy.orm.dynamic import AppenderQuery
 from arsenalweb.models.common import (
     DBSession,
+    Group,
+    User,
     get_name_id_list,
     localize_date,
     )
@@ -485,6 +487,13 @@ def model_matcher(route_name):
         'api_ec2_instances': 'Ec2Instance',
         'api_ec2_instances_audit': 'Ec2InstanceAudit',
 
+        'api_group': 'Group',
+        'api_group_audit': 'GroupAudit',
+        'api_group_audit_r': 'GroupAudit',
+        'api_group_r': 'Group',
+        'api_groups': 'Group',
+        'api_groups_audit': 'GroupAudit',
+
         'api_hardware_profile': 'HardwareProfile',
         'api_hardware_profile_audit': 'HardwareProfileAudit',
         'api_hardware_profile_audit_r': 'HardwareProfileAudit',
@@ -572,6 +581,13 @@ def model_matcher(route_name):
         'api_tag_r': 'Tag',
         'api_tags': 'Tag',
         'api_tags_audit': 'TagAudit',
+
+        'api_user': 'User',
+        'api_user_audit': 'UserAudit',
+        'api_user_audit_r': 'UserAudit',
+        'api_user_r': 'User',
+        'api_users': 'User',
+        'api_users_audit': 'UserAudit',
     }
 
     return routes[route_name]
@@ -661,6 +677,8 @@ def validate_tag_perm(request, auth_user, tag_name):
 @view_config(route_name='api_data_center_r', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance_r', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_group_r', request_method='GET', renderer='json')
+@view_config(route_name='api_group_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment_r', request_method='GET', renderer='json')
@@ -686,6 +704,8 @@ def validate_tag_perm(request, auth_user, tag_name):
 @view_config(route_name='api_status_r', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_r', request_method='GET', renderer='json')
+@view_config(route_name='api_user_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_user_r', request_method='GET', renderer='json')
 def get_api_attribute(request):
     '''Get single attribute request for /api/{object_type}/{id}/{resource}
        route match.'''
@@ -735,6 +755,7 @@ def get_api_attribute(request):
 
 @view_config(route_name='api_data_center', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance', request_method='GET', renderer='json')
+@view_config(route_name='api_group', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment', request_method='GET', renderer='json')
 @view_config(route_name='api_ip_address', request_method='GET', renderer='json')
@@ -748,6 +769,7 @@ def get_api_attribute(request):
 @view_config(route_name='api_physical_rack', request_method='GET', renderer='json')
 @view_config(route_name='api_status', request_method='GET', renderer='json')
 @view_config(route_name='api_tag', request_method='GET', renderer='json')
+@view_config(route_name='api_user', request_method='GET', renderer='json')
 def api_read_by_id(request):
     '''Process get requests for /api/{object_type}/{id} route match.'''
 
@@ -777,6 +799,7 @@ def api_read_by_id(request):
         return api_500(msg=repr(ex))
 
 @view_config(route_name='api_data_center_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_group_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_ip_address_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_network_interface_audit', request_method='GET', renderer='json')
@@ -789,6 +812,7 @@ def api_read_by_id(request):
 @view_config(route_name='api_physical_rack_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_status_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_user_audit', request_method='GET', renderer='json')
 def api_read_audit_by_id(request):
     '''Process get requests for /api/{object_type}_audit/{id} route match.
     Audit routes are different in that we use the matchdict id to look up the
@@ -823,6 +847,8 @@ def api_read_audit_by_id(request):
 @view_config(route_name='api_data_centers_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instances', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instances_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_groups', request_method='GET', renderer='json')
+@view_config(route_name='api_groups_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignments', request_method='GET', renderer='json')
@@ -848,6 +874,8 @@ def api_read_audit_by_id(request):
 @view_config(route_name='api_statuses_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
 @view_config(route_name='api_tags_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_users', request_method='GET', renderer='json')
+@view_config(route_name='api_users_audit', request_method='GET', renderer='json')
 def api_read_by_params(request):
     '''Process get requests for /api/{object_type} route match.'''
 

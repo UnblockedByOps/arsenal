@@ -1,4 +1,4 @@
-'''Arsenal user UI.'''
+'''Arsenal user_management UI.'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,12 +28,12 @@ from arsenalweb.models.common import (
 
 LOG = logging.getLogger(__name__)
 
-@view_config(route_name='user', permission='view', renderer='arsenalweb:templates/user.pt')
+@view_config(route_name='user_management', permission='view', renderer='arsenalweb:templates/user_management.pt')
 def view_user(request):
     '''Handle requests for user UI route.'''
 
     auth_user = get_authenticated_user(request)
-    page_title_type = 'user/'
+    page_title_type = 'user_management/'
     page_title_name = 'User Data'
     change_pw = False
     perpage = 1
