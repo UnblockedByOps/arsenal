@@ -418,6 +418,11 @@ class Group(Base):
                                                      'perm_id',
                                                      'perm_name'
                                                  ]),
+                    users=get_name_id_list(self.users,
+                                            default_keys=[
+                                                'user_id',
+                                                'user_name'
+                                            ]),
                     created=localize_date(self.created),
                     updated=self.updated,
                     updated_by=self.updated_by,
