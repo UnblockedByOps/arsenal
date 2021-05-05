@@ -48,6 +48,26 @@ NO_CONVERT = [
 
 
 # Many to many association tables.
+local_user_group_assignments = Table('local_user_group_assignments',
+                                      Base.metadata,
+                                      Column('user_id',
+                                             Integer,
+                                             ForeignKey('users.user_id')),
+                                      Column('group_id',
+                                             Integer,
+                                             ForeignKey('groups.group_id'))
+                                     )
+
+group_perm_assignments = Table('group_perm_assignments',
+                                Base.metadata,
+                                Column('group_id',
+                                       Integer,
+                                       ForeignKey('groups.group_id')),
+                                Column('perm_id',
+                                       Integer,
+                                       ForeignKey('group_perms.perm_id'))
+                               )
+
 hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
                                   Base.metadata,
                                   Column('hypervisor_id',
@@ -287,18 +307,13 @@ class User(Base):
     last_name = Column(Text, nullable=True)
     salt = Column(Text, nullable=False)
     password = Column(Text, nullable=False)
+    groups = relationship('Group',
+                    secondary='local_user_group_assignments',
+                    backref='users',
+                    lazy='dynamic')
     updated_by = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Get all group assignents for the user.'''
-
-        groups = []
-        for assign in self.local_user_group_assignments:
-            groups.append(assign.group.group_name)
-        return groups
 
     @hybrid_property
     def localize_date_created(self):
@@ -323,6 +338,11 @@ class User(Base):
                     user_name=self.user_name,
                     first_name=self.first_name,
                     last_name=self.last_name,
+                    groups=get_name_id_list(self.groups,
+                                            default_keys=[
+                                                'group_id',
+                                                'group_name'
+                                            ]),
                     created=localize_date(self.created),
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -357,71 +377,6 @@ class User(Base):
 
             return resp
 
-
-class LocalUserGroupAssignment(Base):
-    '''Arsenal LocalUserGroupAssignment object.'''
-
-    __tablename__ = 'local_user_group_assignments'
-    user_group_assignment_id = Column(Integer, primary_key=True, nullable=False)
-    group_id = Column(Integer, ForeignKey('groups.group_id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    user = relationship('User', backref=backref('local_user_group_assignments'))
-    group = relationship('Group', backref=backref('local_user_group_assignments'))
-
-    def __json__(self, request):
-        try:
-            fields = request.params['fields']
-
-            if fields == 'all':
-
-                all_fields = dict(
-                    user_group_assignment_id=self.user_group_assignment_id,
-                    group_id=self.group_id,
-                    user_id=self.user_id,
-                    user=self.user,
-                    group=self.group,
-                    created=localize_date(self.created),
-                    updated=self.updated,
-                    updated_by=self.updated_by,
-                    )
-
-                return jsonify(all_fields)
-
-            # Always return user_id, and user_name, then return whatever
-            # additional fields are asked for.
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'user_group_assignment_id',
-                                                             'user',
-                                                             'group',
-                                                         ])
-
-            my_fields = fields.split(',')
-
-            # Backrefs are not in the instance dict, so we handle them here.
-            if 'user' in my_fields:
-                resp['user'] = get_name_id_list(self.user)
-
-            if 'group' in my_fields:
-                resp['group'] = get_name_id_list(self.group)
-
-
-            resp.update((key, getattr(self, key)) for key in my_fields if
-                        key in self.__dict__)
-
-            return jsonify(resp)
-
-        # Default to returning only user_id, and user_name.
-        except KeyError:
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'user_group_assignment_id',
-                                                             'user',
-                                                             'group',
-                                                         ])
-
-            return resp
 
 class Group(Base):
     '''Arsenal Group object.'''
@@ -429,18 +384,13 @@ class Group(Base):
     __tablename__ = 'groups'
     group_id = Column(Integer, primary_key=True, nullable=False)
     group_name = Column(Text, nullable=False)
+    group_perms = relationship('GroupPerm',
+                    secondary='group_perm_assignments',
+                    backref='groups',
+                    lazy='dynamic')
     updated_by = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP, nullable=False)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Get all permissions a group is assigned to.'''
-
-        group_assign = []
-        for assign in self.group_perm_assignments:
-            group_assign.append(assign.group_perms.perm_name)
-        return group_assign
 
     @hybrid_property
     def localize_date_created(self):
@@ -463,6 +413,11 @@ class Group(Base):
                 all_fields = dict(
                     group_id=self.group_id,
                     group_name=self.group_name,
+                    group_perms=get_name_id_list(self.group_perms,
+                                                 default_keys=[
+                                                     'perm_id',
+                                                     'perm_name'
+                                                 ]),
                     created=localize_date(self.created),
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -498,86 +453,6 @@ class Group(Base):
             return resp
 
 
-class GroupPermAssignment(Base):
-    '''Arsenal GroupPermAssignment object.'''
-
-    __tablename__ = 'group_perm_assignments'
-    group_assignment_id = Column(Integer, primary_key=True, nullable=False)
-    group_id = Column(Integer, ForeignKey('groups.group_id'), nullable=False)
-    perm_id = Column(Integer, ForeignKey('group_perms.perm_id'), nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    group = relationship('Group', backref=backref('group_perm_assignments'))
-    group_perms = relationship('GroupPerm', backref=backref('group_perm_assignments'))
-
-    @hybrid_method
-    def get_assignments_by_group(self, group_name):
-        '''Return a list of permission assignments by group name.'''
-
-        query = DBSession.query(GroupPermAssignment)
-        query = query.join(Group, GroupPermAssignment.group_id == Group.group_id)
-        query = query.filter(Group.group_name == group_name)
-        return query.all()
-
-    @hybrid_method
-    def get_assignments_by_perm(self, perm_name):
-        '''Return a list of permission assignments by permission name.'''
-
-        query = DBSession.query(GroupPermAssignment)
-        query = query.join(Group, GroupPermAssignment.group_id == Group.group_id)
-        query = query.join(GroupPerm, GroupPermAssignment.perm_id == GroupPerm.perm_id)
-        query = query.filter(GroupPerm.perm_name == perm_name)
-        return query.all()
-
-    def __json__(self, request):
-        try:
-            fields = request.params['fields']
-
-            if fields == 'all':
-
-                all_fields = dict(
-                    group_assignment_id=self.group_assignment_id,
-                    group_id=self.group_id,
-                    perm_id=self.perm_id,
-                    group=self.group,
-                    created=localize_date(self.created),
-                    updated=self.updated,
-                    updated_by=self.updated_by,
-                    )
-
-                return jsonify(all_fields)
-
-            # Always return user_id, and user_name, then return whatever
-            # additional fields are asked for.
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'group_assignment_id',
-                                                             'group_id',
-                                                             'perm_id',
-                                                         ])
-
-            my_fields = fields.split(',')
-
-            # Backrefs are not in the instance dict, so we handle them here.
-            if 'group' in my_fields:
-                resp['group'] = get_name_id_list(self.group)
-
-            resp.update((key, getattr(self, key)) for key in my_fields if
-                        key in self.__dict__)
-
-            return jsonify(resp)
-
-        # Default to returning only user_id, and user_name.
-        except KeyError:
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'group_assignment_id',
-                                                             'group_id',
-                                                             'perm_id',
-                                                         ])
-
-            return resp
-
-
 class GroupPerm(Base):
     '''Arsenal GroupPerm object.'''
 
@@ -588,14 +463,6 @@ class GroupPerm(Base):
 
     def __repr__(self):
         return "GroupPerm(perm_id='%s', perm_name='%s', )" % (self.perm_id, self.perm_name)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Return a list of all group permission assignments.'''
-        perm_assign = []
-        for assign in self.group_perm_assignments:
-            perm_assign.append(assign.group.group_name)
-        return perm_assign
 
     @hybrid_method
     def get_group_perm_id(self, perm_name):

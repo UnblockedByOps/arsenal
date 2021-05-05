@@ -421,12 +421,8 @@ CREATE UNIQUE INDEX idx_group_name_unique on arsenal.groups (group_name);
 ###
 DROP TABLE IF EXISTS `local_user_group_assignments`;
 CREATE TABLE `local_user_group_assignments` (
-  `user_group_assignment_id`    mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `group_id`                    mediumint(9) UNSIGNED NOT NULL,
-  `user_id`                     mediumint(9) UNSIGNED NOT NULL,
-  `updated_by`                  varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                     timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                     timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `user_id`                     mediumint(9) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ###
@@ -450,12 +446,8 @@ CREATE UNIQUE INDEX idx_group_perms_unique on group_perms (perm_name);
 ###
 DROP TABLE IF EXISTS `group_perm_assignments`;
 CREATE TABLE `group_perm_assignments` (
-  `group_assignment_id`    mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `group_id`               mediumint(9) UNSIGNED NOT NULL,
-  `perm_id`                mediumint(9) UNSIGNED NOT NULL,
-  `updated_by`             varchar(30) NOT NULL, # this could be/become a FK
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `perm_id`                mediumint(9) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 ###
