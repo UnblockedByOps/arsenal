@@ -184,8 +184,8 @@ def db_groupfinder(userid):
 
     groups = None
     try:
-        user = DBSession.query(User).filter(User.user_name == userid).one()
-        groups = [group.group_name for group in user.groups]
+        user = DBSession.query(User).filter(User.name == userid).one()
+        groups = [group.name for group in user.groups]
     except NoResultFound:
         LOG.debug('No DB groups for: %s', userid)
     except Exception as ex:
@@ -200,7 +200,7 @@ def db_authenticate(login, password):
 
     try:
         q = DBSession.query(User)
-        q = q.filter(User.user_name == login)
+        q = q.filter(User.name == login)
         db_user = q.one()
     except Exception as e:
         LOG.debug("%s (%s)" % (Exception, e))
@@ -240,7 +240,7 @@ def get_authenticated_user(request):
     groups = []
 
     try:
-        user = DBSession.query(User).filter(User.user_name == user_id).one()
+        user = DBSession.query(User).filter(User.name == user_id).one()
         first = user.first_name
         last = user.last_name
         # FIXME: Getting called twice

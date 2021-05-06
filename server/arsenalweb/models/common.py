@@ -52,20 +52,20 @@ local_user_group_assignments = Table('local_user_group_assignments',
                                       Base.metadata,
                                       Column('user_id',
                                              Integer,
-                                             ForeignKey('users.user_id')),
+                                             ForeignKey('users.id')),
                                       Column('group_id',
                                              Integer,
-                                             ForeignKey('groups.group_id'))
+                                             ForeignKey('groups.id'))
                                      )
 
 group_perm_assignments = Table('group_perm_assignments',
                                 Base.metadata,
                                 Column('group_id',
                                        Integer,
-                                       ForeignKey('groups.group_id')),
+                                       ForeignKey('groups.id')),
                                 Column('perm_id',
                                        Integer,
-                                       ForeignKey('group_perms.perm_id'))
+                                       ForeignKey('group_perms.id'))
                                )
 
 hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
@@ -301,8 +301,8 @@ class User(Base):
     '''Arsenal User object.'''
 
     __tablename__ = 'users'
-    user_id = Column(Integer, primary_key=True, nullable=False)
-    user_name = Column(Text, nullable=False) # email address
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(Text, nullable=False) # email address
     first_name = Column(Text, nullable=True)
     last_name = Column(Text, nullable=True)
     salt = Column(Text, nullable=False)
@@ -334,15 +334,11 @@ class User(Base):
             if fields == 'all':
 
                 all_fields = dict(
-                    user_id=self.user_id,
-                    user_name=self.user_name,
+                    id=self.id,
+                    name=self.name,
                     first_name=self.first_name,
                     last_name=self.last_name,
-                    groups=get_name_id_list(self.groups,
-                                            default_keys=[
-                                                'group_id',
-                                                'group_name'
-                                            ]),
+                    groups=get_name_id_list(self.groups),
                     created=localize_date(self.created),
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -350,30 +346,24 @@ class User(Base):
 
                 return jsonify(all_fields)
 
-            # Always return user_id, and user_name, then return whatever
+            # Always return id, and name, then return whatever
             # additional fields are asked for.
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'user_id',
-                                                             'user_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             my_fields = fields.split(',')
 
             # Backrefs are not in the instance dict, so we handle them here.
-            if 'group' in my_fields:
-                resp['group'] = get_name_id_list(self.group)
+            if 'groups' in my_fields:
+                resp['groups'] = get_name_id_list(self.groups)
 
             resp.update((key, getattr(self, key)) for key in my_fields if
                         key in self.__dict__)
 
             return jsonify(resp)
 
-        # Default to returning only user_id, and user_name.
+        # Default to returning only id, and name.
         except KeyError:
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'user_id',
-                                                             'user_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             return resp
 
@@ -382,8 +372,8 @@ class Group(Base):
     '''Arsenal Group object.'''
 
     __tablename__ = 'groups'
-    group_id = Column(Integer, primary_key=True, nullable=False)
-    group_name = Column(Text, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(Text, nullable=False)
     group_perms = relationship('GroupPerm',
                     secondary='group_perm_assignments',
                     backref='groups',
@@ -411,18 +401,10 @@ class Group(Base):
             if fields == 'all':
 
                 all_fields = dict(
-                    group_id=self.group_id,
-                    group_name=self.group_name,
-                    group_perms=get_name_id_list(self.group_perms,
-                                                 default_keys=[
-                                                     'perm_id',
-                                                     'perm_name'
-                                                 ]),
-                    users=get_name_id_list(self.users,
-                                            default_keys=[
-                                                'user_id',
-                                                'user_name'
-                                            ]),
+                    id=self.id,
+                    name=self.name,
+                    group_perms=get_name_id_list(self.group_perms),
+                    users=get_name_id_list(self.users),
                     created=localize_date(self.created),
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -430,30 +412,27 @@ class Group(Base):
 
                 return jsonify(all_fields)
 
-            # Always return user_id, and user_name, then return whatever
+            # Always return id, and name, then return whatever
             # additional fields are asked for.
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'group_id',
-                                                             'group_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             my_fields = fields.split(',')
 
             # Backrefs are not in the instance dict, so we handle them here.
-            if 'user' in my_fields:
-                resp['user'] = get_name_id_list(self.user)
+            if 'users' in my_fields:
+                resp['users'] = get_name_id_list(self.users)
+
+            if 'group_perms' in my_fields:
+                resp['group_perms'] = get_name_id_list(self.group_perms)
 
             resp.update((key, getattr(self, key)) for key in my_fields if
                         key in self.__dict__)
 
             return jsonify(resp)
 
-        # Default to returning only user_id, and user_name.
+        # Default to returning only id, and name.
         except KeyError:
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'group_id',
-                                                             'group_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             return resp
 
@@ -462,19 +441,19 @@ class GroupPerm(Base):
     '''Arsenal GroupPerm object.'''
 
     __tablename__ = 'group_perms'
-    perm_id = Column(Integer, primary_key=True, nullable=False)
-    perm_name = Column(Text, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
 
     def __repr__(self):
-        return "GroupPerm(perm_id='%s', perm_name='%s', )" % (self.perm_id, self.perm_name)
+        return "GroupPerm(id='%s', name='%s', )" % (self.id, self.name)
 
     @hybrid_method
     def get_group_perm_id(self, perm_name):
         '''Convert the perm name to the id.'''
 
         query = DBSession.query(GroupPerm)
-        query = query.filter(GroupPerm.perm_name == '%s' % perm_name)
+        query = query.filter(GroupPerm.name == '%s' % perm_name)
         return query.one()
 
     def __json__(self, request):
@@ -484,19 +463,16 @@ class GroupPerm(Base):
             if fields == 'all':
 
                 all_fields = dict(
-                    perm_id=self.perm_id,
-                    perm_name=self.perm_name,
+                    id=self.id,
+                    name=self.name,
                     created=localize_date(self.created),
                     )
 
                 return jsonify(all_fields)
 
-            # Always return user_id, and user_name, then return whatever
+            # Always return id, and name, then return whatever
             # additional fields are asked for.
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'perm_id',
-                                                             'perm_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             my_fields = fields.split(',')
 
@@ -505,11 +481,8 @@ class GroupPerm(Base):
 
             return jsonify(resp)
 
-        # Default to returning only user_id, and user_name.
+        # Default to returning only id, and name.
         except KeyError:
-            resp = get_name_id_dict([self], default_keys=[
-                                                             'perm_id',
-                                                             'perm_name',
-                                                         ])
+            resp = get_name_id_dict([self])
 
             return resp

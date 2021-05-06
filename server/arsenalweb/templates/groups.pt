@@ -32,11 +32,11 @@
                 <tbody>
                   <tr tal:repeat="item groups">
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <td class="sr-group_id ta_right" tal:content="item.group_id">0</td>
-                    <td class="sr-name"><a tal:attributes="href '/groups/{0}'.format(item.group_id)" tal:content="item.group_name">mygroup1</a></td>
+                    <td class="sr-group_id ta_right" tal:content="item.id">0</td>
+                    <td class="sr-name"><a tal:attributes="href '/groups/{0}'.format(item.id)" tal:content="item.name">mygroup1</a></td>
 
-                    <td class="sr-name" style="white-space:pre" tal:content="'\n'.join([user['user_name'] for user in item.users])">users</td>
-                    <td class="sr-name" style="white-space:pre" tal:content="'\n'.join([perm['perm_name'] for perm in item.group_perms])">group_perms</td>
+                    <td class="sr-name" style="white-space:pre" tal:content="'\n'.join([user['name'] for user in item.users])">users</td>
+                    <td class="sr-name" style="white-space:pre" tal:content="'\n'.join([perm['name'] for perm in item.group_perms])">group_perms</td>
 
                     <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
                     <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>

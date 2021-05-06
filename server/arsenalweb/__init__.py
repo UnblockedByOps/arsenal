@@ -349,12 +349,12 @@ def main(global_config, **settings):
         try:
             resp = DBSession.query(Group).all()
             for group in resp:
-                group_assign_names = [gp.perm_name for gp in group.group_perms]
+                group_assign_names = [gp.name for gp in group.group_perms]
                 if group_assign_names:
                     group_assign_names = tuple(group_assign_names)
-                    log.info('Adding group: {0} perm: {1}'.format(group.group_name,
+                    log.info('Adding group: {0} perm: {1}'.format(group.name,
                                                                   group_assign_names))
-                    RootFactory.__acl__.append([Allow, group.group_name, group_assign_names])
+                    RootFactory.__acl__.append([Allow, group.name, group_assign_names])
         except Exception as ex:
             log.warn('Unable to load ACLs from database({0} of {1})! Exception: '
                      '{2}'.format(retry,
