@@ -397,7 +397,7 @@ CREATE TABLE `users` (
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_user_name_unique on users (user_name);
+CREATE UNIQUE INDEX idx_user_name_unique on users (name);
 
 ###
 ### TABLE: groups
@@ -411,7 +411,7 @@ CREATE TABLE `groups` (
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_group_name_unique on arsenal.groups (group_name);
+CREATE UNIQUE INDEX idx_group_name_unique on arsenal.groups (name);
 
 ###
 ### TABLE: local_user_group_assignments
