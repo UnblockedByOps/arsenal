@@ -240,7 +240,7 @@ def get_authenticated_user(request):
     groups = []
 
     try:
-        user = DBSession.query(User).filter(User.user_name == user_id).one()
+        user = DBSession.query(User).filter(User.name == user_id).one()
         first = user.first_name
         last = user.last_name
         # FIXME: Getting called twice

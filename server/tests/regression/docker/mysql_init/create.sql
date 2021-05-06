@@ -387,8 +387,8 @@ CREATE TABLE `hypervisor_vm_assignments` (
 ###
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `user_id`                mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_name`              varchar(250) COLLATE utf8_bin NOT NULL,
+  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name`                   varchar(250) COLLATE utf8_bin NOT NULL,
   `first_name`             varchar(250) COLLATE utf8_bin,
   `last_name`              varchar(250) COLLATE utf8_bin,
   `salt`                   varchar(50) COLLATE utf8_bin NOT NULL,
@@ -397,7 +397,6 @@ CREATE TABLE `users` (
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
 CREATE UNIQUE INDEX idx_user_name_unique on users (user_name);
 
 ###
@@ -406,13 +405,12 @@ CREATE UNIQUE INDEX idx_user_name_unique on users (user_name);
 ###
 DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
-  `group_id`               mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `group_name`             varchar(250) COLLATE utf8_bin NOT NULL,
+  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name`                   varchar(250) COLLATE utf8_bin NOT NULL,
   `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
 CREATE UNIQUE INDEX idx_group_name_unique on arsenal.groups (group_name);
 
 ###
@@ -431,13 +429,12 @@ CREATE TABLE `local_user_group_assignments` (
 ###
 DROP TABLE IF EXISTS `group_perms`;
 CREATE TABLE `group_perms` (
-  `perm_id`                mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `perm_name`               varchar(250) COLLATE utf8_bin NOT NULL ,
+  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name`                   varchar(250) COLLATE utf8_bin NOT NULL ,
   `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-CREATE UNIQUE INDEX idx_group_perms_unique on group_perms (perm_name);
+CREATE UNIQUE INDEX idx_group_perms_unique on group_perms (name);
 
 ###
 ### TABLE: group_perm_assignments
