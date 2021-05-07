@@ -57,6 +57,7 @@ INSERT INTO arsenal.groups VALUES (19,'physical_rack_write','Admin',NOW(),NOW())
 INSERT INTO arsenal.groups VALUES (20,'physical_rack_delete','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (21,'physical_elevation_write','Admin',NOW(),NOW());
 INSERT INTO arsenal.groups VALUES (22,'physical_elevation_delete','Admin',NOW(),NOW());
+INSERT INTO arsenal.groups VALUES (23,'status_write','Admin',NOW(),NOW());
 
 # Group permissions that can be assigned to groups
 ###########################################################################
@@ -79,6 +80,7 @@ INSERT INTO group_perms VALUES (16,'physical_rack_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (17,'physical_rack_delete',NOW(),NOW());
 INSERT INTO group_perms VALUES (18,'physical_elevation_write',NOW(),NOW());
 INSERT INTO group_perms VALUES (19,'physical_elevation_delete',NOW(),NOW());
+INSERT INTO group_perms VALUES (20,'status_write',NOW(),NOW());
 
 # Assigning group permissions to groups
 ###########################################################################
@@ -102,6 +104,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (1,16);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (1,17);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (1,18);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (1,19);
+INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (1,20);
 #  api_write
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (2,2);
 #  api_register
@@ -126,6 +129,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (4,16);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (4,17);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (4,18);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (4,19);
+INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (4,20);
 
 #  node_write
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (6,4);
@@ -159,6 +163,8 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (20,17);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (21,18);
 #  physical_elevation_delete
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (22,19);
+#  status_write
+INSERT INTO group_perm_assignments (group_id,perm_id,updated_by) VALUES (23,20,'Admin');
 
 
 
@@ -179,9 +185,10 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (22,19);
 # puppet-enc      = 6
 # Add user: local_admin to groups: local_admin
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (1, 1);
-# Add user: hvm to groups: api_register
+# Add user: hvm to groups: api_register, status_write
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 3);
-# Add user: jenkins-techops to groups: api_write, api_regip_delete, tag_a_center_write, data_center_delete, secure_tags, physical_*
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 3);
+# Add user: jenkins-techops to groups: api_write, api_regip_delete, tag_a_center_write, data_center_delete, secure_tags, physical_*, status_write
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 5);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 5);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 5);
@@ -201,9 +208,11 @@ INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (19, 5);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (20, 5);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (21, 5);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (22, 5);
-# Add user: kaboom to groups: api_register, node_write
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 5);
+# Add user: kaboom to groups: api_register, node_write, status_write
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 2);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 2);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 2);
 # Add user: puppet-enc to groups: node_write
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 6);
 

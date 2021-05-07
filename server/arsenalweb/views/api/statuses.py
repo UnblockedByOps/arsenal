@@ -280,8 +280,7 @@ def api_statuses_schema(request):
 
     return status
 
-# api_register permission is so that kaboom can update status.
-@view_config(route_name='api_status_r', permission='api_register', request_method='PUT', renderer='json')
+@view_config(route_name='api_status_r', permission='status_write', request_method='PUT', renderer='json')
 def api_status_write_attrib(request):
     '''Process write requests for the /api/statuses/{id}/{resource} route.'''
 
