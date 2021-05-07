@@ -164,7 +164,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (21,18);
 #  physical_elevation_delete
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (22,19);
 #  status_write
-INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (23,20,);
+INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (23,20);
 
 
 
