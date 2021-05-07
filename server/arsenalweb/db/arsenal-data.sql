@@ -202,32 +202,32 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (102,20);
 # puppet-enc      = 6
 # aws-lambda      = 7
 # Add user: local_admin to groups: local_admin
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (1, 1, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (1, 1);
 # Add user: hvm to groups: api_register, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 3, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (23, 3, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 3);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 3);
 # Add user: jenkins-techops to groups: api_write, api_register, node_write, node_group_delete, tag_write, tag_delete, secure_tags, status+write
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (2, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (7, 5, 'Admin', NOW(),NOW());
-# INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (8, 5, 'Admin', NOW(),NOW()); # node_group_write - inf1 only
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (9, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (10, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (14, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (11, 5, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (23, 5, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (7, 5);
+# INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (8, 5); # node_group_write - inf1 only
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (9, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (10, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (14, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (11, 5);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 5);
 # Add user: kaboom to groups: api_register, node_write, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 2, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 2, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (23, 2, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 2);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 2);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 20);
 # Add user: puppet-enc to groups: node_write, node_group_write, secure_tags
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (6, 6, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (8, 6, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (14, 6, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 6);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (8, 6);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (14, 6);
 # Add user: aws-lambda to groups: api_register, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (3, 7, 'Admin', NOW(),NOW());
-INSERT INTO local_user_group_assignments (group_id,user_id,updated_by,created,updated) VALUES (23, 7, 'Admin', NOW(),NOW());
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 7);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 7);
 
 #
 # STATUSES
