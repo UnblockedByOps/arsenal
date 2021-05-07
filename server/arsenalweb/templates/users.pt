@@ -20,22 +20,20 @@
                 <thead>
                   <tr> 
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <th class="sr-group_id"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Group ID</span></div></th>
-                    <th class="sr-name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Group Name</span></div></th>
-                    <th class="sr-users"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Group Users</span></div></th>
-                    <th class="sr-perms"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Group Perms</span></div></th>
+                    <th class="sr-user_id"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">User ID</span></div></th>
+                    <th class="sr-name"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">User Name</span></div></th>
+                    <th class="sr-users"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">User Groups</span></div></th>
                     <th class="sr-updated_by"><div class="table_header_c"><div class="drag-handle"></div><span class="table_header">Updated By</span></div></th>
                     <th class="sr-updated"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Updated</span></div></th>
                     <th class="sr-created"><div class="table_header_c ta_right_th"><div class="drag-handle"></div><span class="table_header">Date Created</span></div></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr tal:repeat="item groups">
+                  <tr tal:repeat="item users">
                     <!--! Would like to use tal:repeat based on keys here but order and display is problematic -->
-                    <td class="sr-group_id ta_right" tal:content="item.id">0</td>
-                    <td class="sr-name"><a tal:attributes="href '/groups/{0}'.format(item.id)" tal:content="item.name">mygroup1</a></td>
-                    <td class="sr-name" ><div tal:repeat="user item.users"><a tal:attributes="href '/users/{0}'.format(user.id)" tal:content="user.name">admin</a></div></td>
-                    <td class="sr-name" style="white-space:pre" tal:content="'\n'.join([perm['name'] for perm in item.group_perms])">group_perms</td>
+                    <td class="sr-user_id ta_right" tal:content="item.id">0</td>
+                    <td class="sr-name"><a tal:attributes="href '/users/{0}'.format(item.id)" tal:content="item.name">myuser1</a></td>
+                    <td class="sr-name" ><div tal:repeat="group item.groups"><a tal:attributes="href '/groups/{0}'.format(group.id)" tal:content="group.name">arsenal_admins</a></div></td>
                     <td class="sr-updated_by" tal:content="item.updated_by">Admin</td>
                     <td class="sr-updated ta_right" tal:content="item.updated">2015/04/23 21:02:15</td>
                     <td class="sr-created ta_right" tal:content="item.created">2015/04/23 21:02:15</td>

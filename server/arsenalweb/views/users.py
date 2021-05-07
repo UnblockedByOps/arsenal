@@ -1,4 +1,4 @@
-'''Arsenal groups UI'''
+'''Arsenal users UI'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,30 +26,30 @@ from arsenalweb.views import (
 LOG = logging.getLogger(__name__)
 
 
-@view_config(route_name='group', permission='view', renderer='arsenalweb:templates/group.pt')
-def view_group(request):
-    '''Handle requests for group UI route.'''
+@view_config(route_name='user', permission='view', renderer='arsenalweb:templates/user.pt')
+def view_user(request):
+    '''Handle requests for user UI route.'''
 
     page_title_type = 'objects/'
-    page_title_name = 'group'
+    page_title_name = 'user'
     auth_user = get_authenticated_user(request)
 
-    uri = '/api/groups/{0}'.format(request.matchdict['id'])
-    group = _api_get(request, uri)
+    uri = '/api/users/{0}'.format(request.matchdict['id'])
+    user = _api_get(request, uri)
 
     return {
         'au': auth_user,
-        'group': group['results'][0],
+        'user': user['results'][0],
         'page_title_name': page_title_name,
         'page_title_type': page_title_type,
     }
 
-@view_config(route_name='groups', permission='view', renderer='arsenalweb:templates/groups.pt')
-def view_groups(request):
-    '''Handle requests for groups UI route.'''
+@view_config(route_name='users', permission='view', renderer='arsenalweb:templates/users.pt')
+def view_users(request):
+    '''Handle requests for users UI route.'''
 
     page_title_type = 'objects/'
-    page_title_name = 'groups'
+    page_title_name = 'users'
     auth_user = get_authenticated_user(request)
     (perpage, offset) = get_pag_params(request)
 
@@ -63,17 +63,17 @@ def view_groups(request):
 
     payload['perpage'] = perpage
 
-    uri = '/api/groups'
+    uri = '/api/users'
     LOG.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
 
     resp = _api_get(request, uri, payload)
 
     total = 0
-    groups = []
+    users = []
 
     if resp:
         total = resp['meta']['total']
-        groups = resp['results']
+        users = resp['results']
 
     nav_urls = get_nav_urls(request.path, offset, perpage, total, payload)
 
@@ -90,7 +90,7 @@ def view_groups(request):
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,
-        'groups': groups,
+        'users': users,
         'offset': offset,
         'page_title_name': page_title_name,
         'page_title_type': page_title_type,
