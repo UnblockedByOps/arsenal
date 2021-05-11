@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -35,8 +36,15 @@ def parser_tags(top_parser, otsp):
                            parents=[top_parser])
 
     # tags action sub-parser (tasp)
-    tasp = totp.add_subparsers(title='Available actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        tasp = totp.add_subparsers(title='Available actions',
+                                   dest='action_command')
+    else:
+        tasp = totp.add_subparsers(title='Available actions',
+                                   dest='action_command',
+                                   required=True)
+
     # tags search subcommand (tssc)
     tssc = tasp.add_parser('search',
                            help='Search for tags objects and optionally act upon the results.',

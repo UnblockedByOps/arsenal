@@ -5,6 +5,7 @@
 set -o pipefail
 REGRESSION_DIR="${WORKSPACE}/server/tests/regression"
 CLIENT_DIR="${WORKSPACE}/client"
+CLIENT3_DIR="${WORKSPACE}/client3"
 ARSENAL_SERVER="localhost:4443"
 
 check_arsenal_ready () {
@@ -83,9 +84,29 @@ echo -e '\ndocker-compose complete.\n'
 
 check_arsenal_ready
 
+cp -R ${CLIENT_DIR} ${CLIENT3_DIR}
+
+echo -e "\nTesting python 2.7...\n"
+
 cd ${CLIENT_DIR}
 python2.7 setup.py develop
-./bin/client_test.sh -s ${ARSENAL_SERVER}
+./bin/client_test.sh -s ${ARSENAL_SERVER} -p 2.7
+
+deactivate
+
+echo -e "\nTesting python 3...\n"
+
+/opt/rh/rh-python36/root/bin/virtualenv client3
+. client3/bin/activate
+pip install --upgrade pip==21.1.1
+pip install --upgrade setuptools==56.2.0
+cd ${CLIENT3_DIR}
+python3 setup.py develop
+./bin/client_test.sh -s ${ARSENAL_SERVER} -p 3
+
+deactivate
+
+source ${WORKSPACE}/venv/bin/activate
 
 cd ${REGRESSION_DIR}/docker
 echo -e '\nShutting down docker images...\n'

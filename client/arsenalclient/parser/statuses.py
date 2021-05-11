@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -34,8 +35,15 @@ def parser_statuses(top_parser, otsp):
                            parents=[top_parser])
 
     # statuses action sub-parser (sasp)
-    sasp = sotp.add_subparsers(title='Available actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        sasp = sotp.add_subparsers(title='Available actions',
+                                   dest='action_command')
+    else:
+        sasp = sotp.add_subparsers(title='Available actions',
+                                   dest='action_command',
+                                   required=True)
+
     # statuses search subcommand (sssc)
     sssc = sasp.add_parser('search',
                            help='Search for statues objects and optionally act upon the results.',

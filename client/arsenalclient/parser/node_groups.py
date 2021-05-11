@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -35,8 +36,15 @@ def parser_node_groups(top_parser, otsp):
                             parents=[top_parser])
 
     # node_groups action sub-parser (ngasp)
-    ngasp = ngotp.add_subparsers(title='Available actions',
-                                 dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        ngasp = ngotp.add_subparsers(title='Available actions',
+                                     dest='action_command')
+    else:
+        ngasp = ngotp.add_subparsers(title='Available actions',
+                                     dest='action_command',
+                                     required=True)
+
     # node_groups search subcommand (ngssc)
     ngssc = ngasp.add_parser('search',
                              help='Search for node_group objects and optionally ' \

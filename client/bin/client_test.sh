@@ -10,6 +10,7 @@ functionality works as expected.
 
 OPTIONS:
        -h      Show this message.
+       -p      Python version to test with
        -s      The name of the Arsenal server to connect to. Defaults
                to arsenal.
 
@@ -71,20 +72,15 @@ validate_command () {
 
 }
 
-overall_ret=0
-test_num=0
-FAILED_TESTS=()
-arsenal_cmd="python2.7 bin/arsenal"
-ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
-ro_cookie="/var/lib/jenkins/.arsenal_cookie_readonly"
-rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
-
 # Parse options
-while getopts "hs:" OPTION; do
+while getopts "hp:s:" OPTION; do
     case $OPTION in
         h)
             usage
             exit 1
+            ;;
+        p)
+            python_version="$OPTARG"
             ;;
         s)
             server="$OPTARG"
@@ -95,6 +91,14 @@ while getopts "hs:" OPTION; do
             ;;
     esac
 done
+
+overall_ret=0
+test_num=0
+FAILED_TESTS=()
+arsenal_cmd="python${python_version} bin/arsenal"
+ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
+ro_cookie="/var/lib/jenkins/.arsenal_cookie_readonly"
+rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
 
 if [[ -z "$server" ]] ; then
     server="arsenal"
@@ -473,6 +477,7 @@ validate_command "${rw_cmd} tags delete --name sec_NODE_GROUP_TEST_TAG_FORBIDDEN
 validate_command "${rw_cmd} tags delete --name TAG_TEST_CREATE --value TEST" 0
 validate_command "${rw_cmd} tags delete --name TAG_TEST_CREATE_FORBIDDEN --value TEST" 0
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Instances that have been spun down that will be spun up on demand.'" 0
+validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_2" 0
 
 
 # print out failed tests

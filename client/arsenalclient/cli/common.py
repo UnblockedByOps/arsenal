@@ -28,6 +28,12 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
+try:
+    input = raw_input
+except NameError:
+    pass
+
+
 def _check_tags(obj, set_tags, mode='tag'):
     '''Check for tags that will be changed or removed.'''
 
@@ -275,7 +281,7 @@ def ask_yes_no(question, answer_yes=None, default='no'):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:

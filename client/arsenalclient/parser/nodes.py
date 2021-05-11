@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -37,8 +38,14 @@ def parser_nodes(top_parser, otsp):
                            parents=[top_parser])
 
     # nodes action sub-parser (nasp)
-    nasp = notp.add_subparsers(title='Actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        nasp = notp.add_subparsers(title='Actions',
+                                   dest='action_command')
+    else:
+        nasp = notp.add_subparsers(title='Actions',
+                                   dest='action_command',
+                                   required=True)
 
     # nodes enc subcommand (nesc)
     nesc = nasp.add_parser('enc',

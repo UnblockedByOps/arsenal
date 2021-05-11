@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -33,8 +34,14 @@ def parser_network_interfaces(top_parser, otsp):
                             parents=[top_parser])
 
     # network_interfaces action sub-parser (niasp)
-    niasp = niotp.add_subparsers(title='Actions',
-                                 dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        niasp = niotp.add_subparsers(title='Actions',
+                                     dest='action_command')
+    else:
+        niasp = niotp.add_subparsers(title='Actions',
+                                     dest='action_command',
+                                     required=True)
 
     # network_interfaces search subcommand (nissc)
     nissc = niasp.add_parser('search',

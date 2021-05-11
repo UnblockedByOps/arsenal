@@ -101,7 +101,7 @@ class Authorization(object):
             else:
                 self.cookies = ast.literal_eval(self.cookies)
 
-        except Exception, ex:
+        except Exception as ex:
             LOG.error('Failed to evaluate cookies: {0}'.format(repr(ex)))
             raise
 
@@ -134,7 +134,7 @@ class Authorization(object):
             cookie_dict = dict(cookies)
             with open(self.cookie_file, "w") as cookie_file:
                 cookie_file.write(str(cookie_dict))
-            os.chmod(self.cookie_file, 0600)
+            os.chmod(self.cookie_file, 0o600)
 
         except Exception as ex:
             LOG.error('Unable to write cookie: '
@@ -186,11 +186,11 @@ class Authorization(object):
                 LOG.debug('Cookies are: {0}'.format(self.cookies))
                 try:
                     self.write_cookie(self.cookies)
-                except Exception, ex:
+                except Exception as ex:
                     LOG.error('Exception: {0}'.format(repr(ex)))
                     raise
 
-            except Exception, ex:
+            except Exception as ex:
                 LOG.error('Exception: {0}'.format(repr(ex)))
                 LOG.error('Authentication failed')
                 raise
