@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -35,8 +36,15 @@ def parser_data_centers(top_parser, otsp):
                             parents=[top_parser])
 
     # data_centers action sub-parser (dcasp)
-    dcasp = dcotp.add_subparsers(title='Available actions',
-                                 dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        dcasp = dcotp.add_subparsers(title='Available actions',
+                                     dest='action_command')
+    else:
+        dcasp = dcotp.add_subparsers(title='Available actions',
+                                     dest='action_command',
+                                     required=True)
+
     # data_centers search subcommand (dcssc)
     dcssc = dcasp.add_parser('search',
                              help='Search for data_center objects and optionally ' \

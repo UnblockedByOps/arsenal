@@ -14,6 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
 from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
 from arsenalclient.cli.common import date_help
@@ -33,8 +34,14 @@ def parser_ip_addresses(top_parser, otsp):
                             parents=[top_parser])
 
     # ip_addresses action sub-parser (iaasp)
-    iaasp = iaotp.add_subparsers(title='Actions',
-                                 dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        iaasp = iaotp.add_subparsers(title='Actions',
+                                     dest='action_command')
+    else:
+        iaasp = iaotp.add_subparsers(title='Actions',
+                                     dest='action_command',
+                                     required=True)
 
     # ip_addresses search subcommand (iassc)
     iassc = iaasp.add_parser('search',
