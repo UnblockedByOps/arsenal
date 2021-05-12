@@ -244,9 +244,8 @@
                   <div>
                     <div class="menu_group">
                       <h3>Admin</h3>
-                      <a href="/accounts">accounts</a><br/>
-                      <a href="/account_groups">groups</a><br/>
-                      <a href="/audits">audits</a>
+                      <a href="/users">users</a><br/>
+                      <a href="/groups">groups</a><br/>
                     </div>
                   </div>
                 </li>
