@@ -1,15 +1,20 @@
+import logging
 from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.exc import SQLAlchemyError
 
 from .. import models
 
+LOG = logging.getLogger(__name__)
 
 @view_config(route_name='home', renderer='arsenalweb:templates/mytemplate.pt')
 def my_view(request):
     try:
         query = request.dbsession.query(models.MyModel)
         one = query.filter(models.MyModel.name == 'one').one()
+        LOG.info('one id: %s', one.id)
+        LOG.info('one name: %s', one.name)
+        LOG.info('one value: %s', one.value)
     except SQLAlchemyError:
         return Response(db_err_msg, content_type='text/plain', status=500)
     return {'one': one, 'project': 'arsenalweb'}
