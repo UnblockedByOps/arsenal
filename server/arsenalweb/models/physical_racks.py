@@ -18,9 +18,7 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Index,
-    Integer,
     TIMESTAMP,
-    Text,
     UniqueConstraint,
     VARCHAR,
     text,
@@ -32,7 +30,6 @@ from arsenalweb.models.common import (
     Base,
     BaseAudit,
     get_name_id_dict,
-    get_name_id_list,
     jsonify,
 )
 
@@ -45,7 +42,9 @@ class PhysicalRack(Base):
     __tablename__ = 'physical_racks'
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
-    physical_location_id = Column(INTEGER(unsigned=True), ForeignKey('physical_locations.id'), nullable=False)
+    physical_location_id = Column(INTEGER(unsigned=True),
+                                  ForeignKey('physical_locations.id'),
+                                  nullable=False)
     server_subnet = Column(VARCHAR(255))
     oob_subnet = Column(VARCHAR(255))
     created = Column(TIMESTAMP, nullable=False)
@@ -80,17 +79,16 @@ class PhysicalRack(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):

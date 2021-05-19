@@ -17,9 +17,7 @@ import logging
 from sqlalchemy import (
     Column,
     Index,
-    Integer,
     TIMESTAMP,
-    Text,
     VARCHAR,
     text,
 )
@@ -79,16 +77,15 @@ class Ec2Instance(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and instance_id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], default_keys=['id', 'instance_id'])
+            # Always return id and instance_id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], default_keys=['id', 'instance_id'])
 
-                my_fields = fields.split(',')
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            my_fields = fields.split(',')
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only instance_id and id.
         except KeyError:

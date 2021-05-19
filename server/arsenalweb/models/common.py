@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import logging
+import datetime
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -30,7 +31,6 @@ from sqlalchemy.dialects.mysql import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 
 from .meta import Base
 
@@ -49,16 +49,15 @@ def check_null_string(obj):
 
     if not obj:
         return ''
-    else:
-        return obj
+    return obj
 
 def check_null_dict(obj):
     '''Check for null dict for json object.'''
 
     if not obj:
         return {}
-    else:
-        return obj
+
+    return obj
 
 def localize_date(obj):
     '''Localize dates stored in UTC in the DB to a timezone.'''
@@ -68,7 +67,7 @@ def localize_date(obj):
         registry = pyramid.threadlocal.get_current_registry()
         settings = registry.settings
         zone = settings['arsenal.timezone']
-        LOG.debug('Time zone is: {0}'.format(zone))
+        LOG.debug('Time zone is: %s', zone)
         return utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss')
     except:
         return 'Datetime object'

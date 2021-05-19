@@ -16,17 +16,13 @@
 import logging
 from sqlalchemy import (
     Column,
-    ForeignKey,
     Index,
-    Integer,
     TIMESTAMP,
     Text,
     VARCHAR,
     text,
 )
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
@@ -88,21 +84,20 @@ class PhysicalLocation(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'physical_racks' in my_fields:
-                    resp['physical_racks'] = get_name_id_list(self.physical_racks)
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'physical_racks' in my_fields:
+                resp['physical_racks'] = get_name_id_list(self.physical_racks)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):

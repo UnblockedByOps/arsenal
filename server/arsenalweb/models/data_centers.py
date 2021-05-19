@@ -18,9 +18,7 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Index,
-    Integer,
     TIMESTAMP,
-    Text,
     VARCHAR,
     text,
 )
@@ -74,22 +72,21 @@ class DataCenter(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return name and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except KeyError:
@@ -97,9 +94,9 @@ class DataCenter(Base):
 
             return resp
 
+
 Index('idx_data_center_id', DataCenter.id, unique=False)
 Index('idx_unique_data_center_name', DataCenter.name, unique=True)
-
 
 
 class DataCenterAudit(BaseAudit):

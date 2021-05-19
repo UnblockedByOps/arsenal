@@ -19,7 +19,6 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     TIMESTAMP,
-    Text,
     UniqueConstraint,
     VARCHAR,
     text,
@@ -119,25 +118,24 @@ class PhysicalDevice(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return these fields, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], default_keys=['id',
-                                                              'serial_number',
-                                                             ])
+            # Always return these fields, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], default_keys=['id',
+                                                          'serial_number',
+                                                         ])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                if 'node' in my_fields:
-                    resp['node'] = get_name_id_dict(self.nodes)
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
+            if 'node' in my_fields:
+                resp['node'] = get_name_id_dict(self.nodes)
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):

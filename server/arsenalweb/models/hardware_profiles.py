@@ -20,8 +20,8 @@ from sqlalchemy import (
     Index,
     Integer,
     TIMESTAMP,
-    VARCHAR,
     Text,
+    VARCHAR,
     text,
 )
 from sqlalchemy.dialects.mysql import INTEGER
@@ -85,16 +85,15 @@ class HardwareProfile(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return name and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            my_fields = fields.split(',')
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):

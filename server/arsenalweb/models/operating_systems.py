@@ -18,7 +18,6 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy import (
     Column,
     Index,
-    Integer,
     TIMESTAMP,
     Text,
     VARCHAR,
@@ -80,16 +79,15 @@ class OperatingSystem(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            my_fields = fields.split(',')
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only id and name.
         except KeyError:

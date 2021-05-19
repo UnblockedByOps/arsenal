@@ -18,7 +18,6 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Index,
-    Integer,
     TIMESTAMP,
     Text,
     VARCHAR,
@@ -44,7 +43,7 @@ class NetworkInterface(Base):
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     unique_id = Column(VARCHAR(255), nullable=False)
-    ip_address_id = Column(Integer, ForeignKey('ip_addresses.id'),
+    ip_address_id = Column(INTEGER(unsigned=True), ForeignKey('ip_addresses.id'),
                            nullable=True)
     ip_address = relationship('IpAddress', backref='network_interfaces',
                               lazy='joined')
@@ -84,21 +83,20 @@ class NetworkInterface(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name, id, and unique_id, then return whatever
-                # additional fields are asked for.
-                resp = get_name_id_dict([self], extra_keys=['unique_id'])
+            # Always return name, id, and unique_id, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self], extra_keys=['unique_id'])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'nodes' in my_fields:
-                    resp['nodes'] = get_name_id_list(self.nodes)
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'nodes' in my_fields:
+                resp['nodes'] = get_name_id_list(self.nodes)
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name, id, and unique_id.
         except KeyError:

@@ -18,7 +18,6 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy import (
     Column,
     Index,
-    Integer,
     TIMESTAMP,
     Text,
     VARCHAR,
@@ -86,24 +85,23 @@ class NodeGroup(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return name and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'nodes' in my_fields:
-                    resp['nodes'] = get_name_id_list(self.nodes)
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'nodes' in my_fields:
+                resp['nodes'] = get_name_id_list(self.nodes)
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name, id, and unique_id.
         except KeyError:

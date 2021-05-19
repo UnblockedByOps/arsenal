@@ -18,9 +18,8 @@ from sqlalchemy import (
     Column,
     Index,
     TIMESTAMP,
-    Text,
-    VARCHAR,
     UniqueConstraint,
+    VARCHAR,
     text,
 )
 from sqlalchemy.dialects.mysql import INTEGER
@@ -75,29 +74,28 @@ class Tag(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id, name, and value, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], extra_keys=['value'])
+            # Always return id, name, and value, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], extra_keys=['value'])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'nodes' in my_fields:
-                    resp['nodes'] = get_name_id_list(self.nodes)
-                if 'node_groups' in my_fields:
-                    resp['node_groups'] = get_name_id_list(self.node_groups)
-                if 'physical_devices' in my_fields:
-                    resp['physical_devices'] = get_name_id_list(self.physical_devices)
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'nodes' in my_fields:
+                resp['nodes'] = get_name_id_list(self.nodes)
+            if 'node_groups' in my_fields:
+                resp['node_groups'] = get_name_id_list(self.node_groups)
+            if 'physical_devices' in my_fields:
+                resp['physical_devices'] = get_name_id_list(self.physical_devices)
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
-                try:
-                    resp['value'] = int(resp['value'])
-                except ValueError:
-                    pass
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+            try:
+                resp['value'] = int(resp['value'])
+            except ValueError:
+                pass
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only id, value, and name.
         except KeyError:

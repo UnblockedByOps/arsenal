@@ -14,7 +14,6 @@
 #  limitations under the License.
 #
 import logging
-import datetime
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -49,13 +48,16 @@ class Node(Base):
     name = Column(VARCHAR(255), nullable=False)
     unique_id = Column(VARCHAR(255), nullable=False)
     status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
-    hardware_profile_id = Column(INTEGER(unsigned=True), ForeignKey('hardware_profiles.id'), nullable=False)
-    operating_system_id = Column(INTEGER(unsigned=True), ForeignKey('operating_systems.id'), nullable=False)
+    hardware_profile_id = Column(INTEGER(unsigned=True),
+                                 ForeignKey('hardware_profiles.id'),
+                                 nullable=False)
+    operating_system_id = Column(INTEGER(unsigned=True),
+                                 ForeignKey('operating_systems.id'),
+                                 nullable=False)
     ec2_id = Column(INTEGER(unsigned=True), ForeignKey('ec2_instances.id'))
     data_center_id = Column(INTEGER(unsigned=True), ForeignKey('data_centers.id'))
     uptime = Column(VARCHAR(255), nullable=False)
     serial_number = Column(VARCHAR(255), ForeignKey('physical_devices.serial_number'))
-#    serial_number = Column(VARCHAR(255))
     os_memory = Column(VARCHAR(255))
     processor_count = Column(Integer)
     last_registered = Column(TIMESTAMP)
@@ -127,82 +129,82 @@ class Node(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name id and unique_id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], extra_keys=['unique_id'])
+            # Always return name id and unique_id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], extra_keys=['unique_id'])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Dynamic backrefs are not in the instance dict, so we handle them here.
-                if 'node_groups' in my_fields:
-                    resp['node_groups'] = get_name_id_list(self.node_groups)
-                if 'hypervisor' in my_fields:
-                    resp['hypervisor'] = get_name_id_list(self.hypervisor)
-                if 'guest_vms' in my_fields:
-                    my_guest_vms = get_name_id_list(self.guest_vms)
-                    if my_guest_vms:
-                        resp['guest_vms'] = my_guest_vms
-                    # Need this so we don't return an empty list of guest_vms
-                    # for each guest vm.
-                    else:
-                        del resp['guest_vms']
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
-                if 'network_interfaces' in my_fields:
-                    resp['network_interfaces'] = get_name_id_list(self.network_interfaces,
-                                                                  extra_keys=[
-                                                                      'unique_id',
-                                                                      'ip_address',
-                                                                      'bond_master',
-                                                                      'port_description',
-                                                                      'port_number',
-                                                                      'port_switch',
-                                                                      'port_vlan',
-                                                                  ])
+            # Dynamic backrefs are not in the instance dict, so we handle them here.
+            if 'node_groups' in my_fields:
+                resp['node_groups'] = get_name_id_list(self.node_groups)
+            if 'hypervisor' in my_fields:
+                resp['hypervisor'] = get_name_id_list(self.hypervisor)
+            if 'guest_vms' in my_fields:
+                my_guest_vms = get_name_id_list(self.guest_vms)
+                if my_guest_vms:
+                    resp['guest_vms'] = my_guest_vms
+                # Need this so we don't return an empty list of guest_vms
+                # for each guest vm.
+                else:
+                    del resp['guest_vms']
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
+            if 'network_interfaces' in my_fields:
+                resp['network_interfaces'] = get_name_id_list(self.network_interfaces,
+                                                              extra_keys=[
+                                                                  'unique_id',
+                                                                  'ip_address',
+                                                                  'bond_master',
+                                                                  'port_description',
+                                                                  'port_number',
+                                                                  'port_switch',
+                                                                  'port_vlan',
+                                                              ])
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                # These are in the dict because it is joined, but we
-                # want to add extra fields.
-                if 'physical_device' in my_fields and self.physical_device:
-                    resp['physical_device'] = get_name_id_dict([self.physical_device],
-                                                               default_keys=[
-                                                                   'id',
-                                                                   'serial_number',
-                                                               ],
-                                                               extra_keys=[
-                                                                   'physical_location',
-                                                                   'physical_rack',
-                                                                   'physical_elevation',
-                                                               ])
+            # These are in the dict because it is joined, but we
+            # want to add extra fields.
+            if 'physical_device' in my_fields and self.physical_device:
+                resp['physical_device'] = get_name_id_dict([self.physical_device],
+                                                           default_keys=[
+                                                               'id',
+                                                               'serial_number',
+                                                           ],
+                                                           extra_keys=[
+                                                               'physical_location',
+                                                               'physical_rack',
+                                                               'physical_elevation',
+                                                           ])
 
-                if 'ec2_instance' in my_fields and self.ec2_id:
-                    resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
-                                                            default_keys=[
-                                                                'id',
-                                                                'instance_id',
-                                                            ],
-                                                            extra_keys=[
-                                                                'account_id',
-                                                                'ami_id',
-                                                                'hostname',
-                                                                'instance_type',
-                                                                'availability_zone',
-                                                                'profile',
-                                                                'reservation_id',
-                                                                'security_groups',
-                                                            ])
+            if 'ec2_instance' in my_fields and self.ec2_id:
+                resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
+                                                        default_keys=[
+                                                            'id',
+                                                            'instance_id',
+                                                        ],
+                                                        extra_keys=[
+                                                            'account_id',
+                                                            'ami_id',
+                                                            'hostname',
+                                                            'instance_type',
+                                                            'availability_zone',
+                                                            'profile',
+                                                            'reservation_id',
+                                                            'security_groups',
+                                                        ])
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name, id, and unique_id.
         except KeyError:
             resp = get_name_id_dict([self], extra_keys=['unique_id'])
 
             return resp
+
 
 Index('idx_node_id', Node.id, unique=False)
 Index('idx_node_name', Node.name, unique=False)
