@@ -1,3 +1,19 @@
+'''Arsenal common DB Model'''
+#  Copyright 2015 CityGrid Media, LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -8,58 +24,256 @@ from sqlalchemy import (
     Text,
     text,
 )
+from sqlalchemy.dialects.mysql import (
+    INTEGER,
+    MEDIUMINT,
+)
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import backref
 
-
 from .meta import Base
 
+LOG = logging.getLogger(__name__)
 
-#class MyModel(Base):
-#    __tablename__ = 'models'
-#    id = Column(Integer, primary_key=True)
-#    name = Column(Text)
-#    value = Column(Integer)
-#
-#
-#Index('my_index', MyModel.name, unique=True, mysql_length=255)
-#
-#class MyModel2(Base):
-#    __tablename__ = 'models2'
-#    id = Column(Integer, primary_key=True)
-#    name = Column(Text)
-#    value = Column(Integer)
-#
-#
-#Index('my_index2', MyModel2.name, unique=True, mysql_length=255)
+NO_CONVERT = [
+    'account_id',
+    'elevation',
+    'postal_code',
+]
+
+
+# Common functions
+def check_null_string(obj):
+    '''Check for null string for json object.'''
+
+    if not obj:
+        return ''
+    else:
+        return obj
+
+def check_null_dict(obj):
+    '''Check for null dict for json object.'''
+
+    if not obj:
+        return {}
+    else:
+        return obj
+
+def localize_date(obj):
+    '''Localize dates stored in UTC in the DB to a timezone.'''
+
+    try:
+        utc = arrow.get(obj)
+        registry = pyramid.threadlocal.get_current_registry()
+        settings = registry.settings
+        zone = settings['arsenal.timezone']
+        LOG.debug('Time zone is: {0}'.format(zone))
+        return utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss')
+    except:
+        return 'Datetime object'
+
+def jsonify(obj):
+    '''Convert an object or dict to json.'''
+
+    LOG.debug('jsonify()')
+    resp = {}
+    try:
+        convert = obj.__dict__
+    except AttributeError:
+        convert = obj
+    except:
+        raise
+
+    for param in convert:
+        if param.startswith('_'):
+            continue
+        try:
+            if param in NO_CONVERT:
+                p_type = obj.get(param)
+
+                LOG.debug('Using raw db value for param: {0} value: {1}'.format(param,
+                                                                                p_type))
+            else:
+                try:
+                    p_type = int(getattr(obj, param))
+                except (ValueError, TypeError):
+                    p_type = getattr(obj, param)
+        except AttributeError:
+            try:
+                p_type = int(obj.get(param))
+            except (ValueError, TypeError):
+                p_type = obj.get(param)
+
+        # Handle datetime objects
+        if isinstance(p_type, datetime):
+            date = localize_date(p_type)
+            resp[param] = date
+        else:
+            resp[param] = p_type
+
+    return resp
+
+def get_name_id_dict(objs, default_keys=None, extra_keys=None):
+    '''Take a list of one object and convert them to json. Returns a dict. Have
+    to iterate over a list to get SQL Alchemy to execute the query.'''
+
+    if not default_keys:
+        default_keys = ['name', 'id']
+
+    LOG.debug('get_name_id_dict()')
+    resp = {}
+    for obj in objs:
+        item = {}
+        for key in default_keys:
+            try:
+                my_val = getattr(obj, key)
+            except AttributeError:
+                my_val = 'None'
+            except:
+                raise
+            item[key] = my_val
+        if extra_keys:
+            for key in extra_keys:
+                LOG.debug('Working on extra key: {0}'.format(key))
+                try:
+                    my_val = getattr(obj, key)
+                except AttributeError:
+                    my_val = 'None'
+                except:
+                    raise
+                item[key] = my_val
+
+        resp = jsonify(item)
+
+    return resp
+
+def get_name_id_list(objs, default_keys=None, extra_keys=None):
+    '''Take a list of one or more objects and convert them to json. Returns a
+    list.'''
+
+    if not default_keys:
+        default_keys = ['name', 'id']
+
+    LOG.debug('get_name_id_list()')
+    resp = []
+    for obj in objs:
+        item = {}
+        for key in default_keys:
+            item[key] = getattr(obj, key)
+        if extra_keys:
+            for key in extra_keys:
+                # Preserve integers in tag values.
+                if key == 'value':
+                    try:
+                        item[key] = int(getattr(obj, key))
+                    except ValueError:
+                        item[key] = getattr(obj, key)
+                else:
+                    item[key] = getattr(obj, key)
+
+        resp.append(jsonify(item))
+
+    return resp
+
 
 # Many to many association tables.
 local_user_group_assignments = Table('local_user_group_assignments',
                                       Base.metadata,
                                       Column('user_id',
-                                             Integer,
+                                             MEDIUMINT(9, unsigned=True),
                                              ForeignKey('users.id')),
                                       Column('group_id',
-                                             Integer,
+                                             MEDIUMINT(9, unsigned=True),
                                              ForeignKey('groups.id'))
                                      )
 
 group_perm_assignments = Table('group_perm_assignments',
                                 Base.metadata,
                                 Column('group_id',
-                                       Integer,
+                                       MEDIUMINT(9, unsigned=True),
                                        ForeignKey('groups.id')),
                                 Column('perm_id',
-                                       Integer,
+                                       MEDIUMINT(9, unsigned=True),
                                        ForeignKey('group_perms.id'))
                                )
+
+hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
+                                  Base.metadata,
+                                  Column('hypervisor_id',
+                                         INTEGER(unsigned=True),
+                                         ForeignKey('nodes.id')),
+                                  Column('guest_vm_id',
+                                         INTEGER(unsigned=True),
+                                         ForeignKey('nodes.id'))
+                                 )
+
+network_interface_assignments = Table('network_interface_assignments',
+                                      Base.metadata,
+                                      Column('node_id',
+                                             INTEGER(unsigned=True),
+                                             ForeignKey('nodes.id')),
+                                      Column('network_interface_id',
+                                             INTEGER(unsigned=True),
+                                             ForeignKey('network_interfaces.id'))
+                                     )
+
+node_group_assignments = Table('node_group_assignments',
+                               Base.metadata,
+                               Column('node_id',
+                                      INTEGER(unsigned=True),
+                                      ForeignKey('nodes.id')),
+                               Column('node_group_id',
+                                      INTEGER(unsigned=True),
+                                      ForeignKey('node_groups.id'))
+                              )
+
+tag_data_center_assignments = Table('tag_data_center_assignments',
+                                    Base.metadata,
+                                    Column('data_center_id',
+                                           INTEGER(unsigned=True),
+                                           ForeignKey('data_centers.id')),
+                                    Column('tag_id',
+                                           INTEGER(unsigned=True),
+                                           ForeignKey('tags.id'))
+                                   )
+
+tag_node_assignments = Table('tag_node_assignments',
+                             Base.metadata,
+                             Column('node_id',
+                                    INTEGER(unsigned=True),
+                                    ForeignKey('nodes.id')),
+                             Column('tag_id',
+                                    INTEGER(unsigned=True),
+                                    ForeignKey('tags.id'))
+                            )
+
+tag_node_group_assignments = Table('tag_node_group_assignments',
+                                   Base.metadata,
+                                   Column('node_group_id',
+                                          INTEGER(unsigned=True),
+                                          ForeignKey('node_groups.id')),
+                                   Column('tag_id',
+                                          INTEGER(unsigned=True),
+                                          ForeignKey('tags.id'))
+                                  )
+
+tag_physical_device_assignments = Table('tag_physical_device_assignments',
+                                        Base.metadata,
+                                        Column('physical_device_id',
+                                               INTEGER(unsigned=True),
+                                               ForeignKey('physical_devices.id')),
+                                        Column('tag_id',
+                                               INTEGER(unsigned=True),
+                                               ForeignKey('tags.id'))
+                                       )
+
 
 class User(Base):
     '''Arsenal User object.'''
 
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False) # email address
     first_name = Column(Text, nullable=True)
     last_name = Column(Text, nullable=True)
@@ -132,7 +346,7 @@ class Group(Base):
     '''Arsenal Group object.'''
 
     __tablename__ = 'groups'
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
     group_perms = relationship('GroupPerm',
                     secondary='group_perm_assignments',
@@ -204,7 +418,7 @@ class GroupPerm(Base):
     '''Arsenal GroupPerm object.'''
 
     __tablename__ = 'group_perms'
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
 
@@ -251,3 +465,28 @@ class GroupPerm(Base):
             return resp
 
 Index('idx_group_perms_unique', GroupPerm.name, unique=True, mysql_length=255)
+
+
+class BaseAudit(Base):
+    '''Arsenal BaseAudit object. Allows for overriding on other Audit classes.'''
+
+    __abstract__ = True
+    id = Column(Integer, primary_key=True, nullable=False)
+    object_id = Column(Integer, nullable=False)
+    field = Column(Text, nullable=False)
+    old_value = Column(Text, nullable=False)
+    new_value = Column(Text, nullable=False)
+    created = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+    updated_by = Column(Text, nullable=False)
+
+    def __json__(self, request):
+        return dict(
+            id=self.id,
+            object_id=self.object_id,
+            field=self.field,
+            old_value=self.old_value,
+            new_value=self.new_value,
+            created=localize_date(self.created),
+            updated_by=self.updated_by,
+            )

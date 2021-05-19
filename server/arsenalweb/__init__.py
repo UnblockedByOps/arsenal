@@ -4,7 +4,7 @@ import configparser
 from pyramid.config import Configurator
 import transaction
 from .models import get_engine, get_session_factory, get_tm_session
-#from .models.common import MyModel
+from .models.common import User
 
 
 LOG = logging.getLogger(__name__)
@@ -29,19 +29,20 @@ def get_settings(global_config, settings):
 
     return settings
 
-def connect_db():
-    '''Connect to the db here and do something.'''
+def lod_db_acls(settings):
+    '''Load all the group based ACLs from the database at startup.'''
 
     engine = get_engine(settings)
     session_factory = get_session_factory(engine)
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
 
-        query = dbsession.query(MyModel)
-        one = query.filter(MyModel.name == 'one').one()
-        LOG.info('one id: %s', one.id)
-        LOG.info('one name: %s', one.name)
-        LOG.info('one value: %s', one.value)
+        query = dbsession.query(User)
+        one = query.filter(User.name == 'admin').one()
+        LOG.info('user id: %s', one.id)
+        LOG.info('user name: %s', one.name)
+        LOG.info('one first_name: %s', one.first_name)
+        LOG.info('one last_name: %s', one.last_name)
 
 
 def main(global_config, **settings):
@@ -49,6 +50,7 @@ def main(global_config, **settings):
 
     settings = get_settings(global_config['__file__'], settings)
     LOG.debug('Some setting: %s', settings['arsenal.node_hw_map.hibernating'])
+    lod_db_acls(settings)
 
     with Configurator(settings=settings) as config:
         config.include('pyramid_chameleon')

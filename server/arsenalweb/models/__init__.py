@@ -5,10 +5,38 @@ import zope.sqlalchemy
 
 # Import or define all models here to ensure they are attached to the
 # ``Base.metadata`` prior to any initialization routines.
-#from .mymodel import MyModel  # flake8: noqa
 from .common import User  # flake8: noqa
 from .common import Group  # flake8: noqa
 from .common import GroupPerm  # flake8: noqa
+from .data_centers import DataCenter  # flake8: noqa
+from .data_centers import DataCenterAudit  # flake8: noqa
+from .ec2_instances import Ec2Instance  # flake8: noqa
+from .ec2_instances import Ec2InstanceAudit  # flake8: noqa
+from .hardware_profiles import HardwareProfile  # flake8: noqa
+from .hardware_profiles import HardwareProfileAudit  # flake8: noqa
+from .ip_addresses import IpAddress  # flake8: noqa
+from .ip_addresses import IpAddressAudit  # flake8: noqa
+from .network_interfaces import NetworkInterface  # flake8: noqa
+from .network_interfaces import NetworkInterfaceAudit  # flake8: noqa
+from .node_groups import NodeGroup  # flake8: noqa
+from .node_groups import NodeGroupAudit  # flake8: noqa
+from .nodes import Node  # flake8: noqa
+from .nodes import NodeAudit  # flake8: noqa
+from .operating_systems import OperatingSystem  # flake8: noqa
+from .operating_systems import OperatingSystemAudit  # flake8: noqa
+from .physical_devices import PhysicalDevice  # flake8: noqa
+from .physical_devices import PhysicalDeviceAudit  # flake8: noqa
+from .physical_elevations import PhysicalElevation  # flake8: noqa
+from .physical_elevations import PhysicalElevationAudit  # flake8: noqa
+from .physical_locations import PhysicalLocation  # flake8: noqa
+from .physical_locations import PhysicalLocationAudit  # flake8: noqa
+from .physical_racks import PhysicalRack  # flake8: noqa
+from .physical_racks import PhysicalRackAudit  # flake8: noqa
+from .statuses import Status  # flake8: noqa
+from .statuses import StatusAudit  # flake8: noqa
+from .tags import Tag  # flake8: noqa
+from .tags import TagAudit  # flake8: noqa
+
 
 # Run ``configure_mappers`` after defining all of the models to ensure
 # all relationships can be setup.
