@@ -61,26 +61,26 @@ INSERT INTO arsenal.groups VALUES (23,'status_write',              NOW(), NOW(),
 
 # Group permissions that can be assigned to groups
 ###########################################################################
-INSERT INTO group_perms VALUES (1,'admin',                      NOW(), NOW());
-INSERT INTO group_perms VALUES (2,'api_write',                  NOW(), NOW());
-INSERT INTO group_perms VALUES (3,'api_register',               NOW(), NOW());
-INSERT INTO group_perms VALUES (4,'node_write',                 NOW(), NOW());
-INSERT INTO group_perms VALUES (5,'node_delete',                NOW(), NOW());
-INSERT INTO group_perms VALUES (6,'node_group_write',           NOW(), NOW());
-INSERT INTO group_perms VALUES (7,'node_group_delete',          NOW(), NOW());
-INSERT INTO group_perms VALUES (8,'tag_write',                  NOW(), NOW());
-INSERT INTO group_perms VALUES (9,'tag_delete',                 NOW(), NOW());
-INSERT INTO group_perms VALUES (10,'data_center_write',         NOW(), NOW());
-INSERT INTO group_perms VALUES (11,'data_center_delete',        NOW(), NOW());
-INSERT INTO group_perms VALUES (12,'physical_device_write',     NOW(), NOW());
-INSERT INTO group_perms VALUES (13,'physical_device_delete',    NOW(), NOW());
-INSERT INTO group_perms VALUES (14,'physical_location_write',   NOW(), NOW());
-INSERT INTO group_perms VALUES (15,'physical_location_delete',  NOW(), NOW());
-INSERT INTO group_perms VALUES (16,'physical_rack_write',       NOW(), NOW());
-INSERT INTO group_perms VALUES (17,'physical_rack_delete',      NOW(), NOW());
-INSERT INTO group_perms VALUES (18,'physical_elevation_write',  NOW(), NOW());
-INSERT INTO group_perms VALUES (19,'physical_elevation_delete', NOW(), NOW());
-INSERT INTO group_perms VALUES (20,'status_write',              NOW(), NOW());
+INSERT INTO group_perms VALUES (1,'admin',                      NOW());
+INSERT INTO group_perms VALUES (2,'api_write',                  NOW());
+INSERT INTO group_perms VALUES (3,'api_register',               NOW());
+INSERT INTO group_perms VALUES (4,'node_write',                 NOW());
+INSERT INTO group_perms VALUES (5,'node_delete',                NOW());
+INSERT INTO group_perms VALUES (6,'node_group_write',           NOW());
+INSERT INTO group_perms VALUES (7,'node_group_delete',          NOW());
+INSERT INTO group_perms VALUES (8,'tag_write',                  NOW());
+INSERT INTO group_perms VALUES (9,'tag_delete',                 NOW());
+INSERT INTO group_perms VALUES (10,'data_center_write',         NOW());
+INSERT INTO group_perms VALUES (11,'data_center_delete',        NOW());
+INSERT INTO group_perms VALUES (12,'physical_device_write',     NOW());
+INSERT INTO group_perms VALUES (13,'physical_device_delete',    NOW());
+INSERT INTO group_perms VALUES (14,'physical_location_write',   NOW());
+INSERT INTO group_perms VALUES (15,'physical_location_delete',  NOW());
+INSERT INTO group_perms VALUES (16,'physical_rack_write',       NOW());
+INSERT INTO group_perms VALUES (17,'physical_rack_delete',      NOW());
+INSERT INTO group_perms VALUES (18,'physical_elevation_write',  NOW());
+INSERT INTO group_perms VALUES (19,'physical_elevation_delete', NOW());
+INSERT INTO group_perms VALUES (20,'status_write',              NOW());
 
 # Assigning group permissions to groups
 ###########################################################################
