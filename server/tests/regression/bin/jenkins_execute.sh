@@ -5,13 +5,21 @@
 set -o pipefail
 REGRESSION_DIR="${WORKSPACE}/server/tests/regression"
 
+if [ "$ARSENAL_VERSION" == 'latest' ] ; then
+    ARSENAL_VERSION=''
+elif [ "$ARSENAL_VERSION" == 'dev' ] ; then
+    ARSENAL_VERSION=' --pre'
+else
+    ARSENAL_VERSION="==${ARSENAL_VERSION}"
+fi
+
 if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
   echo -e "\nCreating virtualenv...\n"
   /opt/rh/rh-python36/root/bin/virtualenv -q ${WORKSPACE}/venv
   source ${WORKSPACE}/venv/bin/activate
   pip install -U pip setuptools && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple alembic && \
-  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple pyramid && \
+  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple arsenalweb${ARSENAL_VERSION} && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple paramiko && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple docker-compose && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple rp-retry==2.0 && \
@@ -27,14 +35,6 @@ echo 'use arsenal;' >  ${CREATE_FILE}
 alembic -c development.ini upgrade head --sql >>  ${CREATE_FILE}
 
 cd ${REGRESSION_DIR}/docker
-
-if [ "$ARSENAL_VERSION" == 'latest' ] ; then
-    ARSENAL_VERSION=''
-elif [ "$ARSENAL_VERSION" == 'dev' ] ; then
-    ARSENAL_VERSION=' --pre'
-else
-    ARSENAL_VERSION="==${ARSENAL_VERSION}"
-fi
 
 echo -e "\nFinal arsenal version: $ARSENAL_VERSION"
 
