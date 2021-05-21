@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> adf4c9cf2a45
+-- Running upgrade  -> 65be7e220ae7
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -400,6 +400,39 @@ CREATE TABLE tag_node_group_assignments (
     CONSTRAINT fk_tag_node_group_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
+CREATE TABLE nodes (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    unique_id VARCHAR(255) NOT NULL, 
+    status_id INTEGER UNSIGNED NOT NULL, 
+    hardware_profile_id INTEGER UNSIGNED NOT NULL, 
+    operating_system_id INTEGER UNSIGNED NOT NULL, 
+    ec2_id INTEGER UNSIGNED, 
+    data_center_id INTEGER UNSIGNED, 
+    uptime VARCHAR(255), 
+    serial_number VARCHAR(255), 
+    os_memory VARCHAR(255), 
+    processor_count INTEGER, 
+    last_registered TIMESTAMP NULL, 
+    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, 
+    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(200) NOT NULL, 
+    CONSTRAINT pk_nodes PRIMARY KEY (id), 
+    CONSTRAINT fk_nodes_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
+    CONSTRAINT fk_nodes_ec2_id_ec2_instances FOREIGN KEY(ec2_id) REFERENCES ec2_instances (id), 
+    CONSTRAINT fk_nodes_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
+    CONSTRAINT fk_nodes_operating_system_id_operating_systems FOREIGN KEY(operating_system_id) REFERENCES operating_systems (id), 
+    CONSTRAINT fk_nodes_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
+);
+
+CREATE UNIQUE INDEX idx_node_ec2_id ON nodes (ec2_id);
+
+CREATE INDEX idx_node_id ON nodes (id);
+
+CREATE INDEX idx_node_name ON nodes (name);
+
+CREATE INDEX idx_node_serial_number ON nodes (serial_number);
+
 CREATE TABLE physical_elevations (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
     elevation VARCHAR(11) NOT NULL, 
@@ -419,6 +452,27 @@ CREATE TABLE tag_data_center_assignments (
     tag_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_data_center_assignments_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
     CONSTRAINT fk_tag_data_center_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
+);
+
+CREATE TABLE hypervisor_vm_assignments (
+    hypervisor_id INTEGER UNSIGNED, 
+    guest_vm_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_hypervisor_vm_assignments_guest_vm_id_nodes FOREIGN KEY(guest_vm_id) REFERENCES nodes (id), 
+    CONSTRAINT fk_hypervisor_vm_assignments_hypervisor_id_nodes FOREIGN KEY(hypervisor_id) REFERENCES nodes (id)
+);
+
+CREATE TABLE network_interface_assignments (
+    node_id INTEGER UNSIGNED, 
+    network_interface_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_network_interface_assignments_network_interface_id_ne_7ba3 FOREIGN KEY(network_interface_id) REFERENCES network_interfaces (id), 
+    CONSTRAINT fk_network_interface_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
+);
+
+CREATE TABLE node_group_assignments (
+    node_id INTEGER UNSIGNED, 
+    node_group_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
+    CONSTRAINT fk_node_group_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
 );
 
 CREATE TABLE physical_devices (
@@ -449,39 +503,12 @@ CREATE INDEX idx_physical_device_id ON physical_devices (id);
 
 CREATE UNIQUE INDEX idx_physical_device_serial_number ON physical_devices (serial_number);
 
-CREATE TABLE nodes (
-    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
-    name VARCHAR(255) NOT NULL, 
-    unique_id VARCHAR(255) NOT NULL, 
-    status_id INTEGER UNSIGNED NOT NULL, 
-    hardware_profile_id INTEGER UNSIGNED NOT NULL, 
-    operating_system_id INTEGER UNSIGNED NOT NULL, 
-    ec2_id INTEGER UNSIGNED, 
-    data_center_id INTEGER UNSIGNED, 
-    uptime VARCHAR(255), 
-    serial_number VARCHAR(255), 
-    os_memory VARCHAR(255), 
-    processor_count INTEGER, 
-    last_registered TIMESTAMP NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
-    CONSTRAINT pk_nodes PRIMARY KEY (id), 
-    CONSTRAINT fk_nodes_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
-    CONSTRAINT fk_nodes_ec2_id_ec2_instances FOREIGN KEY(ec2_id) REFERENCES ec2_instances (id), 
-    CONSTRAINT fk_nodes_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
-    CONSTRAINT fk_nodes_operating_system_id_operating_systems FOREIGN KEY(operating_system_id) REFERENCES operating_systems (id), 
-    CONSTRAINT fk_nodes_serial_number_physical_devices FOREIGN KEY(serial_number) REFERENCES physical_devices (serial_number), 
-    CONSTRAINT fk_nodes_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
+CREATE TABLE tag_node_assignments (
+    node_id INTEGER UNSIGNED, 
+    tag_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_tag_node_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id), 
+    CONSTRAINT fk_tag_node_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
-
-CREATE UNIQUE INDEX idx_node_ec2_id ON nodes (ec2_id);
-
-CREATE INDEX idx_node_id ON nodes (id);
-
-CREATE INDEX idx_node_name ON nodes (name);
-
-CREATE INDEX idx_node_serial_number ON nodes (serial_number);
 
 CREATE TABLE tag_physical_device_assignments (
     physical_device_id INTEGER UNSIGNED, 
@@ -490,33 +517,5 @@ CREATE TABLE tag_physical_device_assignments (
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
-CREATE TABLE hypervisor_vm_assignments (
-    hypervisor_id INTEGER UNSIGNED, 
-    guest_vm_id INTEGER UNSIGNED, 
-    CONSTRAINT fk_hypervisor_vm_assignments_guest_vm_id_nodes FOREIGN KEY(guest_vm_id) REFERENCES nodes (id), 
-    CONSTRAINT fk_hypervisor_vm_assignments_hypervisor_id_nodes FOREIGN KEY(hypervisor_id) REFERENCES nodes (id)
-);
-
-CREATE TABLE network_interface_assignments (
-    node_id INTEGER UNSIGNED, 
-    network_interface_id INTEGER UNSIGNED, 
-    CONSTRAINT fk_network_interface_assignments_network_interface_id_ne_7ba3 FOREIGN KEY(network_interface_id) REFERENCES network_interfaces (id), 
-    CONSTRAINT fk_network_interface_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
-);
-
-CREATE TABLE node_group_assignments (
-    node_id INTEGER UNSIGNED, 
-    node_group_id INTEGER UNSIGNED, 
-    CONSTRAINT fk_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
-    CONSTRAINT fk_node_group_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
-);
-
-CREATE TABLE tag_node_assignments (
-    node_id INTEGER UNSIGNED, 
-    tag_id INTEGER UNSIGNED, 
-    CONSTRAINT fk_tag_node_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id), 
-    CONSTRAINT fk_tag_node_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
-);
-
-INSERT INTO alembic_version (version_num) VALUES ('adf4c9cf2a45');
+INSERT INTO alembic_version (version_num) VALUES ('65be7e220ae7');
 

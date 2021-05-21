@@ -74,6 +74,7 @@ class Node(Base):
     physical_device = relationship('PhysicalDevice',
                                    backref=backref('nodes'),
                                    lazy='joined',
+                                   primaryjoin='Node.serial_number==PhysicalDevice.serial_number',
                                    foreign_keys=[serial_number])
     node_groups = relationship('NodeGroup',
                                secondary='node_group_assignments',

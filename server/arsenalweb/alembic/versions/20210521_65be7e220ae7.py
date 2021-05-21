@@ -1,8 +1,8 @@
 """init
 
-Revision ID: adf4c9cf2a45
+Revision ID: 65be7e220ae7
 Revises: 
-Create Date: 2021-05-20 09:11:12.206118
+Create Date: 2021-05-21 16:23:58.879272
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'adf4c9cf2a45'
+revision = '65be7e220ae7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -357,6 +357,34 @@ def upgrade():
     sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_tag_node_group_assignments_node_group_id_node_groups')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_group_assignments_tag_id_tags'))
     )
+    op.create_table('nodes',
+    sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
+    sa.Column('name', sa.VARCHAR(length=255), nullable=False),
+    sa.Column('unique_id', sa.VARCHAR(length=255), nullable=False),
+    sa.Column('status_id', mysql.INTEGER(unsigned=True), nullable=False),
+    sa.Column('hardware_profile_id', mysql.INTEGER(unsigned=True), nullable=False),
+    sa.Column('operating_system_id', mysql.INTEGER(unsigned=True), nullable=False),
+    sa.Column('ec2_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('uptime', sa.VARCHAR(length=255), nullable=True),
+    sa.Column('serial_number', sa.VARCHAR(length=255), nullable=True),
+    sa.Column('os_memory', sa.VARCHAR(length=255), nullable=True),
+    sa.Column('processor_count', sa.Integer(), nullable=True),
+    sa.Column('last_registered', sa.TIMESTAMP(), nullable=True),
+    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
+    sa.ForeignKeyConstraint(['data_center_id'], ['data_centers.id'], name=op.f('fk_nodes_data_center_id_data_centers')),
+    sa.ForeignKeyConstraint(['ec2_id'], ['ec2_instances.id'], name=op.f('fk_nodes_ec2_id_ec2_instances')),
+    sa.ForeignKeyConstraint(['hardware_profile_id'], ['hardware_profiles.id'], name=op.f('fk_nodes_hardware_profile_id_hardware_profiles')),
+    sa.ForeignKeyConstraint(['operating_system_id'], ['operating_systems.id'], name=op.f('fk_nodes_operating_system_id_operating_systems')),
+    sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], name=op.f('fk_nodes_status_id_statuses')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes'))
+    )
+    op.create_index('idx_node_ec2_id', 'nodes', ['ec2_id'], unique=True)
+    op.create_index('idx_node_id', 'nodes', ['id'], unique=False)
+    op.create_index('idx_node_name', 'nodes', ['name'], unique=False)
+    op.create_index('idx_node_serial_number', 'nodes', ['serial_number'], unique=False)
     op.create_table('physical_elevations',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
     sa.Column('elevation', sa.VARCHAR(length=11), nullable=False),
@@ -374,6 +402,24 @@ def upgrade():
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['data_center_id'], ['data_centers.id'], name=op.f('fk_tag_data_center_assignments_data_center_id_data_centers')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_data_center_assignments_tag_id_tags'))
+    )
+    op.create_table('hypervisor_vm_assignments',
+    sa.Column('hypervisor_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('guest_vm_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.ForeignKeyConstraint(['guest_vm_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_guest_vm_id_nodes')),
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_hypervisor_id_nodes'))
+    )
+    op.create_table('network_interface_assignments',
+    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('network_interface_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.ForeignKeyConstraint(['network_interface_id'], ['network_interfaces.id'], name=op.f('fk_network_interface_assignments_network_interface_id_network_interfaces')),
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_network_interface_assignments_node_id_nodes'))
+    )
+    op.create_table('node_group_assignments',
+    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_node_group_assignments_node_group_id_node_groups')),
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_node_group_assignments_node_id_nodes'))
     )
     op.create_table('physical_devices',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -400,85 +446,38 @@ def upgrade():
     )
     op.create_index('idx_physical_device_id', 'physical_devices', ['id'], unique=False)
     op.create_index('idx_physical_device_serial_number', 'physical_devices', ['serial_number'], unique=True)
-    op.create_table('nodes',
-    sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
-    sa.Column('name', sa.VARCHAR(length=255), nullable=False),
-    sa.Column('unique_id', sa.VARCHAR(length=255), nullable=False),
-    sa.Column('status_id', mysql.INTEGER(unsigned=True), nullable=False),
-    sa.Column('hardware_profile_id', mysql.INTEGER(unsigned=True), nullable=False),
-    sa.Column('operating_system_id', mysql.INTEGER(unsigned=True), nullable=False),
-    sa.Column('ec2_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('uptime', sa.VARCHAR(length=255), nullable=True),
-    sa.Column('serial_number', sa.VARCHAR(length=255), nullable=True),
-    sa.Column('os_memory', sa.VARCHAR(length=255), nullable=True),
-    sa.Column('processor_count', sa.Integer(), nullable=True),
-    sa.Column('last_registered', sa.TIMESTAMP(), nullable=True),
-    sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.ForeignKeyConstraint(['data_center_id'], ['data_centers.id'], name=op.f('fk_nodes_data_center_id_data_centers')),
-    sa.ForeignKeyConstraint(['ec2_id'], ['ec2_instances.id'], name=op.f('fk_nodes_ec2_id_ec2_instances')),
-    sa.ForeignKeyConstraint(['hardware_profile_id'], ['hardware_profiles.id'], name=op.f('fk_nodes_hardware_profile_id_hardware_profiles')),
-    sa.ForeignKeyConstraint(['operating_system_id'], ['operating_systems.id'], name=op.f('fk_nodes_operating_system_id_operating_systems')),
-    sa.ForeignKeyConstraint(['serial_number'], ['physical_devices.serial_number'], name=op.f('fk_nodes_serial_number_physical_devices')),
-    sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], name=op.f('fk_nodes_status_id_statuses')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes'))
-    )
-    op.create_index('idx_node_ec2_id', 'nodes', ['ec2_id'], unique=True)
-    op.create_index('idx_node_id', 'nodes', ['id'], unique=False)
-    op.create_index('idx_node_name', 'nodes', ['name'], unique=False)
-    op.create_index('idx_node_serial_number', 'nodes', ['serial_number'], unique=False)
-    op.create_table('tag_physical_device_assignments',
-    sa.Column('physical_device_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.ForeignKeyConstraint(['physical_device_id'], ['physical_devices.id'], name=op.f('fk_tag_physical_device_assignments_physical_device_id_physical_devices')),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_physical_device_assignments_tag_id_tags'))
-    )
-    op.create_table('hypervisor_vm_assignments',
-    sa.Column('hypervisor_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('guest_vm_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.ForeignKeyConstraint(['guest_vm_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_guest_vm_id_nodes')),
-    sa.ForeignKeyConstraint(['hypervisor_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_hypervisor_id_nodes'))
-    )
-    op.create_table('network_interface_assignments',
-    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('network_interface_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.ForeignKeyConstraint(['network_interface_id'], ['network_interfaces.id'], name=op.f('fk_network_interface_assignments_network_interface_id_network_interfaces')),
-    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_network_interface_assignments_node_id_nodes'))
-    )
-    op.create_table('node_group_assignments',
-    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_node_group_assignments_node_group_id_node_groups')),
-    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_node_group_assignments_node_id_nodes'))
-    )
     op.create_table('tag_node_assignments',
     sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_tag_node_assignments_node_id_nodes')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_assignments_tag_id_tags'))
     )
+    op.create_table('tag_physical_device_assignments',
+    sa.Column('physical_device_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.ForeignKeyConstraint(['physical_device_id'], ['physical_devices.id'], name=op.f('fk_tag_physical_device_assignments_physical_device_id_physical_devices')),
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_physical_device_assignments_tag_id_tags'))
+    )
     # ### end Alembic commands ###
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('tag_physical_device_assignments')
     op.drop_table('tag_node_assignments')
+    op.drop_index('idx_physical_device_serial_number', table_name='physical_devices')
+    op.drop_index('idx_physical_device_id', table_name='physical_devices')
+    op.drop_table('physical_devices')
     op.drop_table('node_group_assignments')
     op.drop_table('network_interface_assignments')
     op.drop_table('hypervisor_vm_assignments')
-    op.drop_table('tag_physical_device_assignments')
+    op.drop_table('tag_data_center_assignments')
+    op.drop_index('idx_physical_elevation_id', table_name='physical_elevations')
+    op.drop_table('physical_elevations')
     op.drop_index('idx_node_serial_number', table_name='nodes')
     op.drop_index('idx_node_name', table_name='nodes')
     op.drop_index('idx_node_id', table_name='nodes')
     op.drop_index('idx_node_ec2_id', table_name='nodes')
     op.drop_table('nodes')
-    op.drop_index('idx_physical_device_serial_number', table_name='physical_devices')
-    op.drop_index('idx_physical_device_id', table_name='physical_devices')
-    op.drop_table('physical_devices')
-    op.drop_table('tag_data_center_assignments')
-    op.drop_index('idx_physical_elevation_id', table_name='physical_elevations')
-    op.drop_table('physical_elevations')
     op.drop_table('tag_node_group_assignments')
     op.drop_index('idx_physical_rack_id', table_name='physical_racks')
     op.drop_table('physical_racks')
