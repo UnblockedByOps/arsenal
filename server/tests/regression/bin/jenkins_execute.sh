@@ -21,8 +21,9 @@ fi
 source ${WORKSPACE}/venv/bin/activate
 
 cd ${WORKSPACE}/server/
-echo 'use arsenal;' > ../tests/regression/docker/mysql_init/create.sql
-alembic -c development.ini upgrade head --sql >> ../tests/regression/docker/mysql_init/create.sql
+CREATE_FILE="${WORKSPACE}/server/tests/regression/docker/mysql_init/create.sql"
+echo 'use arsenal;' >  ${CREATE_FILE}
+alembic -c development.ini upgrade head --sql >>  ${CREATE_FILE}
 
 cd ${REGRESSION_DIR}/docker
 
