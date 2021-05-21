@@ -14,12 +14,10 @@ else
 fi
 
 if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
-  echo -e "\nCreating virtualenv...\n"
+  echo -e "\n***\n***\n*** Creating virtualenv...\n***\n***\n"
   /opt/rh/rh-python36/root/bin/virtualenv -q ${WORKSPACE}/venv
   source ${WORKSPACE}/venv/bin/activate
   pip install -U pip setuptools && \
-  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple alembic && \
-  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple arsenalweb${ARSENAL_VERSION} && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple paramiko && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple docker-compose && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple rp-retry==2.0 && \
@@ -28,12 +26,6 @@ if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
 fi
 
 source ${WORKSPACE}/venv/bin/activate
-
-cd ${WORKSPACE}/server/
-CREATE_FILE="${WORKSPACE}/server/tests/regression/docker/mysql_init/create.sql"
-echo 'use arsenal;' >  ${CREATE_FILE}
-alembic -c development.ini upgrade head --sql >>  ${CREATE_FILE}
-
 cd ${REGRESSION_DIR}/docker
 
 echo -e "\nFinal arsenal version: $ARSENAL_VERSION"
