@@ -10,7 +10,8 @@ RUN yum install -y \
   mod_ssl \
   rh-python36 \
   gcc \
-  openldap-devel
+  openldap-devel \
+  mariadb-devel
 COPY conf/arsenal.wsgi /app/arsenal_web/conf/arsenal.wsgi
 COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
