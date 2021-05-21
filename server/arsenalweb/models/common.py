@@ -343,7 +343,9 @@ class User(Base):
 
             return resp
 
+
 Index('idx_user_name_unique', User.name, unique=True, mysql_length=255)
+
 
 class Group(Base):
     '''Arsenal Group object.'''
@@ -414,6 +416,7 @@ class Group(Base):
 
             return resp
 
+
 Index('idx_group_name_unique', Group.name, unique=True, mysql_length=255)
 
 
@@ -466,6 +469,7 @@ class GroupPerm(Base):
             resp = get_name_id_dict([self])
 
             return resp
+
 
 Index('idx_group_perms_unique', GroupPerm.name, unique=True, mysql_length=255)
 
