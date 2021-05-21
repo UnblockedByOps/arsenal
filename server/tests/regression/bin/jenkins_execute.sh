@@ -14,7 +14,7 @@ else
 fi
 
 if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
-  echo -e "\n***\n***\n*** Creating virtualenv...\n***\n***\n"
+  echo -e "\n***\n***\n*** Creating virtualenv for running docker images...\n***\n***\n"
   /opt/rh/rh-python36/root/bin/virtualenv -q ${WORKSPACE}/venv
   source ${WORKSPACE}/venv/bin/activate
   pip install -U pip setuptools && \
@@ -31,13 +31,13 @@ cd ${REGRESSION_DIR}/docker
 echo -e "\nFinal arsenal version: $ARSENAL_VERSION"
 
 if [ "$REBUILD_CONTAINERS" = true ] ; then
-  echo -e '\nRemoving existing docker containers...'
+  echo -e "\n***\n***\n*** Removing existing docker containers...\n***\n***\n"
   docker-compose rm -f -s
   echo 'Done.'
 fi
 
 if [ "$REMOVE_IMAGES" = true ] ; then
-  echo -e '\nRemoving existing docker images...'
+  echo -e "\n***\n***\n*** Removing existing docker images...\n***\n***\n"
   docker-compose down --rmi all
   echo 'Done.'
 fi
@@ -47,15 +47,17 @@ if [ "$FOREGROUND_DOCKER" = true ] ; then
     FG_OPTS=''
 fi
 
-echo -e '\nRunning docker-compose...\n'
+echo -e "\n***\n***\n*** Running docker-compose...\n***\n***\n"
 docker-compose build
 docker-compose up ${FG_OPTS}
-echo -e '\ndocker-compose complete.\n'
+echo -e "\n***\n***\n*** docker-compose complete.\n***\n***\n"
 
+echo -e "\n***\n***\n*** Running test harness...\n***\n***\n"
 cd ${REGRESSION_DIR}
 python bin/api.py -t conf/api_test_cases.yaml -r ${TESTS_TO_RUN}
+echo -e "\n***\n***\n*** Test harness complete.\n***\n***\n"
 
 cd ${REGRESSION_DIR}/docker
-echo -e '\nShutting down docker images...\n'
+echo -e "\n***\n***\n*** Shutting down docker images...\n***\n***\n"
 docker-compose down
-echo -e '\ndocker images shut down.\n'
+echo -e "\n***\n***\n*** Docker images shut down.\n***\n***\n"

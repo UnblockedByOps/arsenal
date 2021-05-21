@@ -3,7 +3,7 @@
 Test arsenal api endpoints to ensure they return correctly.
 '''
 import sys
-import ConfigParser
+import configparser
 import logging
 import argparse
 import json
@@ -90,7 +90,7 @@ def ar_query(args, endpoint, http_method, data=None, session=None):
 
             return results
 
-    except Exception, ex:
+    except Exception as ex:
         try:
             LOG.error('  API query failed: {0}'.format(ex))
             LOG.error('    text: {0}'.format(resp.text))
@@ -367,7 +367,7 @@ def main():
     check_req_params(args)
 
     if args.secrets_config:
-        secrets_config = ConfigParser.ConfigParser()
+        secrets_config = configparser.ConfigParser()
         secrets_config.read(args.secrets_config_file)
 
         username = secrets_config.get('arsenal', 'username')
