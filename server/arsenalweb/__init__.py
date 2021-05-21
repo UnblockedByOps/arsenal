@@ -2,9 +2,11 @@
 import logging
 import configparser
 from pyramid.config import Configurator
+from pyramid.renderers import JSON
 import transaction
 from .models import get_engine, get_session_factory, get_tm_session
 from .models.common import User
+from sqlalchemy import inspect as sa_inspect
 
 
 LOG = logging.getLogger(__name__)
@@ -37,13 +39,14 @@ def lod_db_acls(settings):
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
 
+        LOG.info('User : %s', dir(User.registry))
+
         query = dbsession.query(User)
         one = query.filter(User.name == 'admin').one()
         LOG.info('user id: %s', one.id)
         LOG.info('user name: %s', one.name)
         LOG.info('one first_name: %s', one.first_name)
         LOG.info('one last_name: %s', one.last_name)
-
 
 def main(global_config, **settings):
     '''This function returns a Pyramid WSGI application.'''
@@ -56,5 +59,6 @@ def main(global_config, **settings):
         config.include('pyramid_chameleon')
         config.include('.routes')
         config.include('.models')
+        config.add_renderer('json', JSON(indent=2, sort_keys=True))
         config.scan()
     return config.make_wsgi_app()

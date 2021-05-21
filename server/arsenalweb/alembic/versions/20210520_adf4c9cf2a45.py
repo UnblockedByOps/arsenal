@@ -1,8 +1,8 @@
 """init
 
-Revision ID: d66120d52a66
+Revision ID: adf4c9cf2a45
 Revises: 
-Create Date: 2021-05-19 13:30:26.738056
+Create Date: 2021-05-20 09:11:12.206118
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'd66120d52a66'
+revision = 'adf4c9cf2a45'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_data_centers_audit'))
     )
     op.create_table('ec2_instances',
@@ -52,7 +52,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ec2_instances_audit'))
     )
     op.create_table('group_perms',
@@ -65,9 +65,9 @@ def upgrade():
     op.create_table('groups',
     sa.Column('id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
-    sa.Column('updated_by', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), nullable=True),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_groups'))
     )
     op.create_index('idx_group_name_unique', 'groups', ['name'], unique=True, mysql_length=255)
@@ -92,17 +92,18 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_hardware_profiles_audit'))
     )
     op.create_table('ip_addresses',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('ip_address', sa.Text(), nullable=False),
+    sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
+    sa.Column('ip_address', sa.VARCHAR(length=255), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses'))
     )
+    op.create_index('idx_ip_address_uniq', 'ip_addresses', ['ip_address'], unique=True)
     op.create_table('ip_addresses_audit',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('object_id', sa.Integer(), nullable=False),
@@ -110,7 +111,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses_audit'))
     )
     op.create_table('network_interfaces_audit',
@@ -120,7 +121,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_network_interfaces_audit'))
     )
     op.create_table('node_groups',
@@ -143,7 +144,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_node_groups_audit'))
     )
     op.create_table('nodes_audit',
@@ -153,7 +154,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes_audit'))
     )
     op.create_table('operating_systems',
@@ -177,7 +178,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_operating_systems_audit'))
     )
     op.create_table('physical_devices_audit',
@@ -187,7 +188,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_devices_audit'))
     )
     op.create_table('physical_elevations_audit',
@@ -197,7 +198,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_elevations_audit'))
     )
     op.create_table('physical_locations',
@@ -226,7 +227,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_locations_audit'))
     )
     op.create_table('physical_racks_audit',
@@ -236,7 +237,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_racks_audit'))
     )
     op.create_table('statuses',
@@ -257,7 +258,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_statuses_audit'))
     )
     op.create_table('tags',
@@ -278,7 +279,7 @@ def upgrade():
     sa.Column('old_value', sa.Text(), nullable=False),
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_by', sa.Text(), nullable=False),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_tags_audit'))
     )
     op.create_table('users',
@@ -288,9 +289,9 @@ def upgrade():
     sa.Column('last_name', sa.Text(), nullable=True),
     sa.Column('salt', sa.Text(), nullable=False),
     sa.Column('password', sa.Text(), nullable=False),
-    sa.Column('updated_by', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), nullable=True),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_users'))
     )
     op.create_index('idx_user_name_unique', 'users', ['name'], unique=True, mysql_length=255)
@@ -322,7 +323,7 @@ def upgrade():
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
     sa.Column('name', sa.VARCHAR(length=255), nullable=False),
     sa.Column('unique_id', sa.VARCHAR(length=255), nullable=False),
-    sa.Column('ip_address_id', sa.Integer(), nullable=True),
+    sa.Column('ip_address_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('bond_master', sa.Text(), nullable=True),
     sa.Column('port_description', sa.Text(), nullable=True),
     sa.Column('port_number', sa.Text(), nullable=True),
@@ -408,7 +409,7 @@ def upgrade():
     sa.Column('operating_system_id', mysql.INTEGER(unsigned=True), nullable=False),
     sa.Column('ec2_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
-    sa.Column('uptime', sa.VARCHAR(length=255), nullable=False),
+    sa.Column('uptime', sa.VARCHAR(length=255), nullable=True),
     sa.Column('serial_number', sa.VARCHAR(length=255), nullable=True),
     sa.Column('os_memory', sa.VARCHAR(length=255), nullable=True),
     sa.Column('processor_count', sa.Integer(), nullable=True),
@@ -516,6 +517,7 @@ def downgrade():
     op.drop_table('node_groups')
     op.drop_table('network_interfaces_audit')
     op.drop_table('ip_addresses_audit')
+    op.drop_index('idx_ip_address_uniq', table_name='ip_addresses')
     op.drop_table('ip_addresses')
     op.drop_table('hardware_profiles_audit')
     op.drop_index('idx_uniq_hardware_profile', table_name='hardware_profiles')

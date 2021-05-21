@@ -1,0 +1,632 @@
+tests: 
+  endpoint:
+    description: 'Basic endpoint tests'
+    function: 'run_basic_endpoint_test'
+    tests:
+      - endpoint: 'data_centers'
+        url: '/api/data_centers?fields=all&id=1'
+      - endpoint: 'data_centers_audit'
+        url: '/api/data_centers_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'hardware_profiles'
+        url: '/api/hardware_profiles?fields=all&id=1'
+      - endpoint: 'hardware_profiles_audit'
+        url: '/api/hardware_profiles_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'ip_addresses'
+        url: '/api/ip_addresses?fields=all&ip_address=10.100.100.1'
+      - endpoint: 'ip_addresses_audit'
+        url: '/api/ip_addresses_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'network_interfaces'
+        url: '/api/network_interfaces?fields=all&id=1'
+      - endpoint: 'network_interfaces_audit'
+        url: '/api/network_interfaces_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'nodes'
+        url: '/api/nodes?fields=all&name=cbl0000.docker&status=inservice'
+      - endpoint: 'nodes_audit'
+        url: '/api/nodes_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'node_groups'
+        url: '/api/node_groups?fields=all&name=default_install'
+      - endpoint: 'node_groups_audit'
+        url: '/api/node_groups_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'operating_systems'
+        url: '/api/operating_systems?fields=all&id=1'
+      - endpoint: 'operating_systems_audit'
+        url: '/api/operating_systems_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'statuses'
+        url: '/api/statuses?fields=all&name=inservice'
+      - endpoint: 'statuses_audit'
+        url: '/api/statuses_audit?fields=all&exact_get=true&id=1'
+      - endpoint: 'tags'
+        url: '/api/tags?fields=all&name=docker_test_tag_a&value=docker_test_1'
+      - endpoint: 'tags_audit'
+        url: '/api/tags_audit?fields=all&exact_get=true&id=1'
+  search_nodes_exact:
+    description: '/api/nodes search tests with exact_get'
+    function: 'run_search_test'
+    tests:
+      - description: 'NODE - EXACT Single parameter search, single value'
+        url: '/api/nodes?name=pup0000.docker&exact_get=true'
+        result_count: 1
+        expected_responses:
+            - name: 'pup0000.docker'
+      - description: 'NODE - EXACT Single parameter search, multi value'
+        url: '/api/nodes?name=pup0000.docker,cbl0000.docker&exact_get=true'
+        result_count: 2
+        expected_responses:
+            - name: 'pup0000.docker'
+            - name: 'cbl0000.docker'
+      # FIXME: broken in 1.2
+      # - description: 'NODE - EXACT Multi parameter search, single value'
+      #   url: '/api/nodes?name=cbl0000.docker&status=inservice&exact_get=true'
+      #   result_count: 1
+      #   expected_responses:
+      #     - name: 'cbl0000.docker'
+  search_nodes_regex:
+    description: '/api/nodes search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'NODE - REGEX Single parameter search, single value'
+        url: '/api/nodes?name=pup000.*'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Multi parameter search, single value'
+        url: '/api/nodes?name=cbl00.*cker&status=inservice'
+        result_count: 1
+        expected_responses:
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Single parameter search, multi value'
+        url: '/api/nodes?name=cbl.*,pup'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multi parameter search, multi/single value'
+        url: '/api/nodes?name=pup.*,log&status=inservice&fields=status'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'log0000.docker'
+      - description: 'NODE - REGEX Multi parameter search, multi/multi value'
+        url: '/api/nodes?name=cbl.*,pup&status=inservice,decom&fields=status'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+  search_nodes_regex_exclude:
+    description: '/api/nodes search exclude tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'NODE - REGEX Single parameter exclude search, single value'
+        url: '/api/nodes?name=pup000.*&ex_name=pup0001.docker'
+        result_count: 2
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Multi parameter exclude search, single value'
+        url: '/api/nodes?name=pup000.*&ex_name=pup0001.docker&status=inservice'
+        result_count: 1
+        expected_responses:
+          - name: 'pup0000.docker'
+      - description: 'NODE - REGEX Single parameter exclude search, multi value'
+        url: '/api/nodes?name=cbl.*,pup&ex_name=pup0001.docker'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multi parameter exclude search, multi/single value'
+        url: '/api/nodes?name=pup.*,log&status=inservice&ex_name=pup0001.docker&fields=status'
+        result_count: 2
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'log0000.docker'
+      - description: 'NODE - REGEX Multi parameter exclude search, multi/multi value'
+        url: '/api/nodes?name=cbl.*,pup&status=inservice,decom&ex_name=pup0001.docker&fields=status'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+  search_nodes_regex_singleton_sub_param:
+    description: '/api/nodes search tests with regex - singleton sub params'
+    function: 'run_search_test'
+    tests:
+      - description: 'NODE - REGEX Single sub-parameter singleton search, single value'
+        url: '/api/nodes?hardware_profile.name=e3000&fields=hardware_profile'
+        result_count: 1
+        expected_responses:
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Single sub-parameter singleton search, multi value'
+        url: '/api/nodes?hardware_profile.name=e3000,VMware&fields=hardware_profile'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'pud0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter singleton search, single/single value'
+        url: '/api/nodes?hardware_profile.name=e3000&operating_system.version_number=5.8&fields=hardware_profile,operating_system'
+        result_count: 1
+        expected_responses:
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter singleton search, multi/single value'
+        url: '/api/nodes?hardware_profile.name=VMware,m710x&operating_system.version_number=6.7&fields=hardware_profile,operating_system'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pud0000.docker'
+          - name: 'emx0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter singleton search, multi/multi value'
+        url: '/api/nodes?hardware_profile.name=VMware,m710x,Dell&operating_system.version_number=6.7,7.3&fields=hardware_profile,operating_system'
+        result_count: 5
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pud0000.docker'
+          - name: 'emx0000.docker'
+          - name: 'bck0000.docker'
+  search_nodes_regex_singleton_sub_param_exclude:
+    description: '/api/nodes search exclude tests with regex - singleton sub params'
+    function: 'run_search_test'
+    tests:
+      - description: 'NODE - REGEX Single sub-parameter exclude singleton search, single value'
+        url: '/api/nodes?hardware_profile.name=HP&ex_hardware_profile.name=m710x&fields=hardware_profile'
+        result_count: 8
+        expected_responses:
+          - name: 'anr0000.docker'
+          - name: 'cbl0000.docker'
+          - name: 'kvm0000.docker'
+          - name: 'log0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
+      - description: 'NODE - REGEX Single sub-parameter exclude singleton search, multi value'
+        url: '/api/nodes?hardware_profile.name=HP,VMware&ex_hardware_profile.name=m710x&fields=hardware_profile'
+        result_count: 11 
+        expected_responses:
+          - name: 'anr0000.docker'
+          - name: 'cbl0000.docker'
+          - name: 'log0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
+          - name: 'pud0000.docker'
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, single/single value'
+        url: '/api/nodes?hardware_profile.name=HP&operating_system.version_number=7.3&ex_hardware_profile.name=m510&fields=hardware_profile,operating_system'
+        result_count: 6
+        expected_responses:
+          - name: 'cbl0000.docker'
+          - name: 'kvm0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
+      - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, multi/single value'
+        url: '/api/nodes?hardware_profile.name=VMware,m710x&operating_system.version_number=6.7&ex_name=emx0000.docker&fields=hardware_profile,operating_system'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pud0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, multi/multi value'
+        url: '/api/nodes?hardware_profile.name=VMware,m710x,Dell&operating_system.version_number=6.7,7.3&ex_name=pud0000.docker&fields=hardware_profile,operating_system'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'emx0000.docker'
+          - name: 'bck0000.docker'
+  search_nodes_regex_list_sub_param:
+    description: '/api/nodes search tests with regex - list sub params'
+    function: 'run_search_test'
+    tests:
+      # tags
+      - description: 'NODE - REGEX Single sub-parameter list search, single value'
+        url: '/api/nodes?tag.name=docker&fields=tags'
+        result_count: 5
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+          - name: 'log0000.docker'
+      - description: 'NODE - REGEX Single sub-parameter list search, multi value'
+        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&fields=tags'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0001.docker'
+          - name: 'cbl0000.docker'
+          - name: 'log0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, single/single value'
+        url: '/api/nodes?tag.name=docker_test_tag_bb&tag.value=docker_test_1&fields=tags'
+        result_count: 1
+        expected_responses:
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/single value'
+        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&tag.value=docker_test_1&fields=tags'
+        result_count: 2
+        expected_responses:
+          - name: 'pup0001.docker'
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/multi value'
+        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&tag.value=docker_test_1,docker_test_2&fields=tags'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0001.docker'
+          - name: 'cbl0000.docker'
+          - name: 'log0000.docker'
+      # node_groups
+      - description: 'NODE - REGEX Single sub-parameter list search, single value'
+        url: '/api/nodes?node_group.name=pup&fields=node_groups'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Single sub-parameter list search, multi value'
+        url: '/api/nodes?node_group.name=pup_docker,cbl_docker&fields=node_groups'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, single/single value'
+        url: '/api/nodes?node_group.name=pup_docker&node_group.owner=ops&fields=node_groups'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/single value'
+        url: '/api/nodes?node_group.name=pup_docker,cbl_docker&node_group.owner=ops&fields=node_groups'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'cbl0000.docker'
+      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/multi value'
+        url: '/api/nodes?node_group.name=pup_docker,log_docker&node_group.owner=ops,security&fields=node_groups'
+        result_count: 4
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+          - name: 'log0000.docker'
+  search_nodes_regex_list_sub_param_exclude:
+    description: '/api/nodes search exclude tests with regex - list sub params'
+    function: 'run_search_test'
+    tests:
+      # tags
+      - description: 'NODE - REGEX Single sub-parameter exclude list search, single value'
+        url: '/api/nodes?tag.name=docker&ex_tag.name=docker_test_tag_bb&fields=tags'
+        result_count: 3
+        expected_responses:
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
+          - name: 'pup0002.docker'
+#      # FIXME: This is only excluding if the tag key and value match in a single tag instead of across all tags, and only the last key=val. Maybe only filtering on the last node in the resutls actually?
+#      - description: 'NODE - REGEX Single sub-parameter exclude list search, multi value'
+#        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&ex_tag.value=docker_test_1&fields=tags'
+#        result_count: 1
+#        expected_responses:
+#          - name: 'log0000.docker'
+#      # FIXME: This is only excluding if the tag key and value match in a single tag instead of across all tags, and only the last key=val. Maybe only filtering on the last node in the resutls actually?
+#      - description: 'NODE - REGEX Multiple sub-parameter exclude list search, single/single value'
+#        url: '/api/nodes?tag.name=docker_test_tag&tag.value=docker_test&ex_tag.value=docker_test_2&fields=tags'
+#        result_count: 1
+#        expected_responses:
+#          - name: 'cbl0000.docker'
+# Stopped here
+#      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/single value'
+#        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&tag.value=docker_test_1&fields=tags'
+#        result_count: 2
+#        expected_responses:
+#          - name: 'pup0001.docker'
+#          - name: 'cbl0000.docker'
+#      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/multi value'
+#        url: '/api/nodes?tag.name=docker_test_tag_aa,docker_test_tag_bb&tag.value=docker_test_1,docker_test_2&fields=tags'
+#        result_count: 3
+#        expected_responses:
+#          - name: 'pup0001.docker'
+#          - name: 'cbl0000.docker'
+#          - name: 'log0000.docker'
+#      # node_groups
+#      - description: 'NODE - REGEX Single sub-parameter list search, single value'
+#        url: '/api/nodes?node_group.name=pup&fields=node_groups'
+#        result_count: 3
+#        expected_responses:
+#          - name: 'pup0000.docker'
+#          - name: 'pup0001.docker'
+#          - name: 'pup0002.docker'
+#      - description: 'NODE - REGEX Single sub-parameter list search, multi value'
+#        url: '/api/nodes?node_group.name=pup_docker,cbl_docker&fields=node_groups'
+#        result_count: 4
+#        expected_responses:
+#          - name: 'pup0000.docker'
+#          - name: 'pup0001.docker'
+#          - name: 'pup0002.docker'
+#          - name: 'cbl0000.docker'
+#      - description: 'NODE - REGEX Multiple sub-parameter list search, single/single value'
+#        url: '/api/nodes?node_group.name=pup_docker&node_group.owner=ops&fields=node_groups'
+#        result_count: 3
+#        expected_responses:
+#          - name: 'pup0000.docker'
+#          - name: 'pup0001.docker'
+#          - name: 'pup0002.docker'
+#      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/single value'
+#        url: '/api/nodes?node_group.name=pup_docker,cbl_docker&node_group.owner=ops&fields=node_groups'
+#        result_count: 4
+#        expected_responses:
+#          - name: 'pup0000.docker'
+#          - name: 'pup0001.docker'
+#          - name: 'pup0002.docker'
+#          - name: 'cbl0000.docker'
+#      - description: 'NODE - REGEX Multiple sub-parameter list search, multi/multi value'
+#        url: '/api/nodes?node_group.name=pup_docker,log_docker&node_group.owner=ops,security&fields=node_groups'
+#        result_count: 4
+#        expected_responses:
+#          - name: 'pup0000.docker'
+#          - name: 'pup0001.docker'
+#          - name: 'pup0002.docker'
+#          - name: 'log0000.docker'
+#
+  search_network_interfaces_regex:
+    description: '/api/network_interfaces search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'NETWORK_INTERFACE - REGEX Single parameter search, single value'
+        url: '/api/network_interfaces?name=eth'
+        result_count: 3
+        expected_responses:
+          - unique_id: '00:11:22:aa:bb:cc'
+          - unique_id: '00:11:22:aa:bb:cd'
+          - unique_id: 'aa:bb:cc:00:11:22'
+      - description: 'NETWORK_INTERFACE - REGEX Multi parameter search, single value'
+        url: '/api/network_interfaces?name=eth.*&unique_id=00:11:22:aa:bb:cc'
+        result_count: 1
+        expected_responses:
+          - name: 'eth0'
+      - description: 'NETWORK_INTERFACE - REGEX Single parameter search, multi value'
+        url: '/api/network_interfaces?name=eth0,eth1'
+        result_count: 3
+        expected_responses:
+          - unique_id: '00:11:22:aa:bb:cc'
+          - unique_id: '00:11:22:aa:bb:cd'
+          - unique_id: 'aa:bb:cc:00:11:22'
+      - description: 'NETWORK_INTERFACE - REGEX Multi parameter search, multi/single value'
+        url: '/api/network_interfaces?name=eth.*,bond0&ip_address_id=1'
+        result_count: 4
+        expected_responses:
+          - unique_id: 'bond0_docker1'
+          - unique_id: '00:11:22:aa:bb:cc'
+          - unique_id: '00:11:22:aa:bb:cd'
+          - unique_id: 'aa:bb:cc:00:11:22'
+  search_ip_addresses_regex:
+    description: '/api/ip_addresses search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'IP_ADDRESS - REGEX Single parameter search, single value'
+        url: '/api/ip_addresses?ip_address=10.100.100.1'
+        result_count: 1
+        expected_responses:
+          - ip_address: '10.100.100.1'
+      - description: 'IP_ADDRESS - REGEX Multi parameter search, single value'
+        url: '/api/ip_addresses?ip_address=10.100.100.*&id=1'
+        result_count: 1
+        expected_responses:
+          - ip_address: '10.100.100.1'
+      - description: 'IP_ADDRESS - REGEX Single parameter search, multi value'
+        url: '/api/ip_addresses?ip_address=10.100.100.1,10.100.101.1'
+        result_count: 2
+        expected_responses:
+          - ip_address: '10.100.100.1'
+          - ip_address: '10.100.101.1'
+      - description: 'IP_ADDRESS - REGEX Multi parameter search, multi/single value'
+        url: '/api/ip_addresses?ip_address=10.100.100.*,10.100.101.*&id=1'
+        result_count: 1
+        expected_responses:
+          - ip_address: '10.100.100.1'
+  search_data_centers_regex:
+    description: '/api/data_centers search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'DATA_CENTER - REGEX Single parameter search, single value'
+        url: '/api/data_centers?name=^test_data_center'
+        result_count: 2
+        expected_responses:
+          - name: 'test_data_center_1'
+          - name: 'test_data_center_2'
+      - description: 'DATA_CENTER - REGEX Single parameter search, multi value'
+        url: '/api/data_centers?name=^test_data_center,^other_test'
+        result_count: 3
+        expected_responses:
+          - name: 'test_data_center_1'
+          - name: 'test_data_center_2'
+          - name: 'other_test_data_center_1'
+  search_physical_locations_regex:
+    description: '/api/physical_locations search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, single value'
+        url: '/api/physical_locations?name=^test_physical_location'
+        result_count: 2
+        expected_responses:
+          - name: 'test_physical_location_1'
+          - name: 'test_physical_location_2'
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+        url: '/api/physical_locations?name=^test_physical_location,^other_test'
+        result_count: 3
+        expected_responses:
+          - name: 'test_physical_location_1'
+          - name: 'test_physical_location_2'
+          - name: 'other_test_physical_location_1'
+  search_physical_racks_regex:
+    description: '/api/physical_racks search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, single value'
+        url: '/api/physical_racks?name=^R90'
+        result_count: 3
+        expected_responses:
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Single parameter search, multi value'
+        url: '/api/physical_racks?name=^R9,^R8'
+        result_count: 4
+        expected_responses:
+          - name: 'R800'
+          - name: 'R900'
+          - name: 'R900'
+          - name: 'R901'
+      - description: 'PHYSICAL_RACK - REGEX Multi parameter search, single value'
+        url: '/api/physical_racks?name=^R9&physical_location.name=test_physical_location_1'
+        result_count: 2
+        expected_responses:
+          - name: 'R900'
+          - name: 'R901'
+  search_physical_elevations_regex:
+    description: '/api/physical_elevations search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_ELEVATION - REGEX Single parameter search, single value'
+        url: '/api/physical_elevations?elevation=^1'
+        result_count: 3
+        expected_responses:
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '1'
+      - description: 'PHYSICAL_LOCATION - REGEX Single parameter search, multi value'
+        url: '/api/physical_elevations?elevation=^1,2'
+        result_count: 6
+        expected_responses:
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '1'
+          - elevation: '2'
+          - elevation: '2'
+          - elevation: '2'
+      - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=^1'
+        result_count: 2
+        expected_responses:
+          - elevation: '1'
+          - elevation: '1'
+      - description: 'PHYSICAL_LOCATION - REGEX Multi parameter search, single value sub elevation'
+        url: '/api/physical_elevations?physical_rack.name=R900&elevation=^4.'
+        result_count: 2
+        expected_responses:
+          - elevation: '4.1'
+          - elevation: '4.10'
+  search_physical_devices_regex:
+    description: '/api/physical_devices search tests with regex'
+    function: 'run_search_test'
+    tests:
+      - description: 'PHYSICAL_DEVICE - REGEX Single parameter search, single value'
+        url: '/api/physical_devices?serial_number=^Z0'
+        result_count: 4
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00002'
+          - serial_number: 'Z00003'
+          - serial_number: 'Z00004'
+      - description: 'PHYSICAL_DEVICE - REGEX Single parameter search, multi value'
+        url: '/api/physical_devices?serial_number=^Z0,^Y0'
+        result_count: 5
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00002'
+          - serial_number: 'Z00003'
+          - serial_number: 'Z00004'
+          - serial_number: 'Y00001'
+      - description: 'PHYSICAL_DEVICE - REGEX Multi parameter search, single value'
+        url: '/api/physical_devices?physical_rack.name=R900&physical_elevation.elevation=1'
+        result_count: 2
+        expected_responses:
+          - serial_number: 'Z00001'
+          - serial_number: 'Z00004'
+  node_enc:
+    description: '/api/enc tests'
+    function: 'run_search_test'
+    tests:
+      - description: 'ENC - No class assigned, data center level param'
+        url: '/api/enc?name=enc0000.docker'
+        result_count: 1
+        expected_responses:
+          - classes: []
+          - parameters:
+              enc_test_tag: 'data_center_level'
+      - description: 'ENC - Class assigned, data center level param'
+        url: '/api/enc?name=enc0001.docker'
+        result_count: 1
+        expected_responses:
+          - classes:
+              - enc_docker
+          - parameters:
+              enc_test_tag: 'data_center_level'
+      - description: 'ENC - Class assigned, fqdn level param'
+        url: '/api/enc?name=enc0002.docker'
+        result_count: 1
+        expected_responses:
+          - classes:
+              - enc_docker
+          - parameters:
+              enc_test_tag: 'fqdn_level'
+      - description: 'ENC - Class assigned, data_center and fqdn level params'
+        url: '/api/enc?name=enc0003.docker'
+        result_count: 1
+        expected_responses:
+          - classes:
+              - enc_docker
+          - parameters:
+              enc_test_tag: 'data_center_level'
+              enc_test_tag_2: 'fqdn_level'
+      - description: 'ENC - Class assigned, alternatte data_center with node_group level param'
+        url: '/api/enc?name=enc0004.docker'
+        result_count: 1
+        expected_responses:
+          - classes:
+              - enc_docker
+          - parameters:
+              enc_test_tag: 'node_group_level'
+      - description: 'ENC - Paramter inspection'
+        url: '/api/enc?name=enc0003.docker&&param_sources=true'
+        result_count: 1
+        expected_responses:
+          - param_sources:
+              enc_test_tag: 'data_center'
+              enc_test_tag_2: 'node'
+          - classes:
+              - enc_docker
+          - parameters:
+              enc_test_tag: 'data_center_level'
+              enc_test_tag_2: 'fqdn_level'
+  # Node registration must be tested last or it hoses the other tests
+  node_registration:
+    description: 'Test node registration'
+    function: 'run_node_registration_test'
+    tests:
+      - test_data: 'single_interface'
+        url: '/api/register'
+      - test_data: 'single_interface_with_dc'
+        url: '/api/register'
+      - test_data: 'multi_interface_bonded'
+        url: '/api/register'
+      - test_data: 'multi_interface_no_bond'
+        url: '/api/register'
+      - test_data: 'single_interface_ec2'
+        url: '/api/register'

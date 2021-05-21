@@ -56,7 +56,7 @@ class Node(Base):
                                  nullable=False)
     ec2_id = Column(INTEGER(unsigned=True), ForeignKey('ec2_instances.id'))
     data_center_id = Column(INTEGER(unsigned=True), ForeignKey('data_centers.id'))
-    uptime = Column(VARCHAR(255), nullable=False)
+    uptime = Column(VARCHAR(255))
     serial_number = Column(VARCHAR(255), ForeignKey('physical_devices.serial_number'))
     os_memory = Column(VARCHAR(255))
     processor_count = Column(Integer)

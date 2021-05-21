@@ -15,6 +15,8 @@
 #
 import logging
 import datetime
+from pytz import timezone
+import pyramid
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -23,6 +25,7 @@ from sqlalchemy import (
     TIMESTAMP,
     Table,
     Text,
+    VARCHAR,
     text,
 )
 from sqlalchemy.dialects.mysql import (
@@ -59,16 +62,17 @@ def check_null_dict(obj):
 
     return obj
 
-def localize_date(obj):
+def localize_date(datetime_obj):
     '''Localize dates stored in UTC in the DB to a timezone.'''
 
     try:
-        utc = arrow.get(obj)
         registry = pyramid.threadlocal.get_current_registry()
         settings = registry.settings
         zone = settings['arsenal.timezone']
+        time_format = "%Y-%m-%d %H:%M:%S %Z%z"
         LOG.debug('Time zone is: %s', zone)
-        return utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss')
+        localized = datetime_obj.astimezone(timezone(zone))
+        return localized.strftime(time_format)
     except:
         return 'Datetime object'
 
@@ -105,7 +109,7 @@ def jsonify(obj):
                 p_type = obj.get(param)
 
         # Handle datetime objects
-        if isinstance(p_type, datetime):
+        if isinstance(p_type, datetime.datetime):
             date = localize_date(p_type)
             resp[param] = date
         else:
@@ -282,10 +286,10 @@ class User(Base):
                     secondary='local_user_group_assignments',
                     backref='users',
                     lazy='dynamic')
-    updated_by = Column(Text, nullable=False)
     created = Column(TIMESTAMP)
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+    updated_by = Column(VARCHAR(200), nullable=False)
 
     @hybrid_property
     def localize_date_created(self):
@@ -351,10 +355,10 @@ class Group(Base):
                     secondary='group_perm_assignments',
                     backref='groups',
                     lazy='dynamic')
-    updated_by = Column(Text, nullable=False)
     created = Column(TIMESTAMP)
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+    updated_by = Column(VARCHAR(200), nullable=False)
 
     @hybrid_property
     def localize_date_created(self):
@@ -477,7 +481,7 @@ class BaseAudit(Base):
     new_value = Column(Text, nullable=False)
     created = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    updated_by = Column(Text, nullable=False)
+    updated_by = Column(VARCHAR(200), nullable=False)
 
     def __json__(self, request):
         return dict(
