@@ -11,6 +11,7 @@ if [ ! -f "${WORKSPACE}/venv/bin/activate" ]; then
   source ${WORKSPACE}/venv/bin/activate
   pip install -U pip setuptools && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple alembic && \
+  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple pyramid && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple paramiko && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple docker-compose && \
   pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple rp-retry==2.0 && \
