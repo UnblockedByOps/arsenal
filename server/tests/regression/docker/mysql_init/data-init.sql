@@ -184,37 +184,37 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (23,20);
 # jenkins-techops = 5
 # puppet-enc      = 6
 # Add user: local_admin to groups: local_admin
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (1, 1);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (1, 1);
 # Add user: hvm to groups: api_register, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 3);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 3);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (3, 2);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (3, 23);
 # Add user: jenkins-techops to groups: api_write, api_regip_delete, tag_a_center_write, data_center_delete, secure_tags, physical_*, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (2, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (7, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (8, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (9, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (10, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (11, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (12, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (13, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (14, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (15, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (16, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (17, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (18, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (19, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (20, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (21, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (22, 5);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 5);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 2);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 3);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 6);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 7);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 8);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 9);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 10);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 11);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 12);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 13);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 14);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 15);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 16);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 17);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 18);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 19);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 20);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 21);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 22);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (5, 23);
 # Add user: kaboom to groups: api_register, node_write, status_write
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 2);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 2);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 2);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 3);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 6);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 23);
 # Add user: puppet-enc to groups: node_write
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 6);
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (6, 6);
 
 #
 # STATUSES

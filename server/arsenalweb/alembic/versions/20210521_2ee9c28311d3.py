@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 9f8d77f36bc8
+Revision ID: 2ee9c28311d3
 Revises: 
-Create Date: 2021-05-21 17:00:25.580447
+Create Date: 2021-05-21 17:17:14.657537
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '9f8d77f36bc8'
+revision = '2ee9c28311d3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -352,8 +352,8 @@ def upgrade():
     )
     op.create_index('idx_physical_rack_id', 'physical_racks', ['id'], unique=False)
     op.create_table('tag_node_group_assignments',
-    sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_tag_node_group_assignments_node_group_id_node_groups')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_group_assignments_tag_id_tags'))
     )
@@ -398,8 +398,8 @@ def upgrade():
     )
     op.create_index('idx_physical_elevation_id', 'physical_elevations', ['id'], unique=True)
     op.create_table('tag_data_center_assignments',
-    sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['data_center_id'], ['data_centers.id'], name=op.f('fk_tag_data_center_assignments_data_center_id_data_centers')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_data_center_assignments_tag_id_tags'))
     )
@@ -453,8 +453,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_assignments_tag_id_tags'))
     )
     op.create_table('tag_physical_device_assignments',
-    sa.Column('physical_device_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('physical_device_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['physical_device_id'], ['physical_devices.id'], name=op.f('fk_tag_physical_device_assignments_physical_device_id_physical_devices')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_physical_device_assignments_tag_id_tags'))
     )

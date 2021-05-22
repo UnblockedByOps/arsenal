@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> 9f8d77f36bc8
+-- Running upgrade  -> 2ee9c28311d3
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -394,8 +394,8 @@ CREATE TABLE physical_racks (
 CREATE INDEX idx_physical_rack_id ON physical_racks (id);
 
 CREATE TABLE tag_node_group_assignments (
-    node_group_id INTEGER UNSIGNED, 
     tag_id INTEGER UNSIGNED, 
+    node_group_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
     CONSTRAINT fk_tag_node_group_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
@@ -448,8 +448,8 @@ CREATE TABLE physical_elevations (
 CREATE UNIQUE INDEX idx_physical_elevation_id ON physical_elevations (id);
 
 CREATE TABLE tag_data_center_assignments (
-    data_center_id INTEGER UNSIGNED, 
     tag_id INTEGER UNSIGNED, 
+    data_center_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_data_center_assignments_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
     CONSTRAINT fk_tag_data_center_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
@@ -511,11 +511,11 @@ CREATE TABLE tag_node_assignments (
 );
 
 CREATE TABLE tag_physical_device_assignments (
-    physical_device_id INTEGER UNSIGNED, 
     tag_id INTEGER UNSIGNED, 
+    physical_device_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_physical_device_assignments_physical_device_id_ph_6dc6 FOREIGN KEY(physical_device_id) REFERENCES physical_devices (id), 
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
-INSERT INTO alembic_version (version_num) VALUES ('9f8d77f36bc8');
+INSERT INTO alembic_version (version_num) VALUES ('2ee9c28311d3');
 

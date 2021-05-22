@@ -233,12 +233,12 @@ node_group_assignments = Table('node_group_assignments',
 
 tag_data_center_assignments = Table('tag_data_center_assignments',
                                     Base.metadata,
-                                    Column('data_center_id',
-                                           INTEGER(unsigned=True),
-                                           ForeignKey('data_centers.id')),
                                     Column('tag_id',
                                            INTEGER(unsigned=True),
-                                           ForeignKey('tags.id'))
+                                           ForeignKey('tags.id')),
+                                    Column('data_center_id',
+                                           INTEGER(unsigned=True),
+                                           ForeignKey('data_centers.id'))
                                    )
 
 tag_node_assignments = Table('tag_node_assignments',
@@ -253,22 +253,22 @@ tag_node_assignments = Table('tag_node_assignments',
 
 tag_node_group_assignments = Table('tag_node_group_assignments',
                                    Base.metadata,
-                                   Column('node_group_id',
-                                          INTEGER(unsigned=True),
-                                          ForeignKey('node_groups.id')),
                                    Column('tag_id',
                                           INTEGER(unsigned=True),
-                                          ForeignKey('tags.id'))
+                                          ForeignKey('tags.id')),
+                                   Column('node_group_id',
+                                          INTEGER(unsigned=True),
+                                          ForeignKey('node_groups.id'))
                                   )
 
 tag_physical_device_assignments = Table('tag_physical_device_assignments',
                                         Base.metadata,
-                                        Column('physical_device_id',
-                                               INTEGER(unsigned=True),
-                                               ForeignKey('physical_devices.id')),
                                         Column('tag_id',
                                                INTEGER(unsigned=True),
-                                               ForeignKey('tags.id'))
+                                               ForeignKey('tags.id')),
+                                        Column('physical_device_id',
+                                               INTEGER(unsigned=True),
+                                               ForeignKey('physical_devices.id'))
                                        )
 
 

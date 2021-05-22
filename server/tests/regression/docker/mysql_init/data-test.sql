@@ -395,8 +395,8 @@ INSERT INTO network_interfaces_audit VALUES (3, 3, 'unique_id', 'created', '00:1
 INSERT INTO network_interfaces_audit VALUES (4, 4, 'unique_id', 'created', 'aa:bb:cc:00:11:22', NOW(), 'Admin');
 #
 # network_interface assignments
-#                   network_interface_id------|
-#                   node_id----------------|  |
+#                          network_interface_id------|
+#                          node_id----------------|  |
 INSERT INTO network_interface_assignments VALUES (1, 1);
 INSERT INTO network_interface_assignments VALUES (1, 2);
 INSERT INTO network_interface_assignments VALUES (1, 3);
