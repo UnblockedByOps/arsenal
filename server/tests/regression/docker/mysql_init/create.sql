@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> 65be7e220ae7
+-- Running upgrade  -> 9f8d77f36bc8
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -504,8 +504,8 @@ CREATE INDEX idx_physical_device_id ON physical_devices (id);
 CREATE UNIQUE INDEX idx_physical_device_serial_number ON physical_devices (serial_number);
 
 CREATE TABLE tag_node_assignments (
-    node_id INTEGER UNSIGNED, 
     tag_id INTEGER UNSIGNED, 
+    node_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_node_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id), 
     CONSTRAINT fk_tag_node_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
@@ -517,5 +517,5 @@ CREATE TABLE tag_physical_device_assignments (
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
-INSERT INTO alembic_version (version_num) VALUES ('65be7e220ae7');
+INSERT INTO alembic_version (version_num) VALUES ('9f8d77f36bc8');
 

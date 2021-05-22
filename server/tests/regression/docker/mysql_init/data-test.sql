@@ -320,18 +320,18 @@ INSERT INTO node_group_assignments VALUES (15, 9);
 
 # Test tags
 #----------------------------------------------
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (1,  'docker_test_tag_a',  'docker_test_1',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (2,  'docker_test_tag_a',  'docker_test_2',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (3,  'docker_test_tag_b',  'docker_test_1',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (4,  'docker_test_tag_b',  'docker_test_2',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (5,  'docker_test_tag_aa', 'docker_test_1',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (6,  'docker_test_tag_aa', 'docker_test_2',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (7,  'docker_test_tag_bb', 'docker_test_1',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (8,  'docker_test_tag_bb', 'docker_test_2',     NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (9,  'enc_test_tag',       'node_group_level',  NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (10, 'enc_test_tag',       'data_center_level', NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (11, 'enc_test_tag',       'fqdn_level',        NOW(), NOW(), 'Admin');
-INSERT INTO tags (id,name,value,updated_by,created,updated) VALUES (12, 'enc_test_tag_2',     'fqdn_level',        NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (1,  'docker_test_tag_a',  'docker_test_1',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (2,  'docker_test_tag_a',  'docker_test_2',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (3,  'docker_test_tag_b',  'docker_test_1',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (4,  'docker_test_tag_b',  'docker_test_2',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (5,  'docker_test_tag_aa', 'docker_test_1',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (6,  'docker_test_tag_aa', 'docker_test_2',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (7,  'docker_test_tag_bb', 'docker_test_1',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (8,  'docker_test_tag_bb', 'docker_test_2',     NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (9,  'enc_test_tag',       'node_group_level',  NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (10, 'enc_test_tag',       'data_center_level', NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (11, 'enc_test_tag',       'fqdn_level',        NOW(), NOW(), 'Admin');
+INSERT INTO tags (id,name,value,created,updated,updated_by) VALUES (12, 'enc_test_tag_2',     'fqdn_level',        NOW(), NOW(), 'Admin');
 INSERT INTO tags_audit VALUES (1,   1, 'name', 'created', 'docker_test_tag_a',  NOW(), 'Admin');
 INSERT INTO tags_audit VALUES (2,   2, 'name', 'created', 'docker_test_tag_a',  NOW(), 'Admin');
 INSERT INTO tags_audit VALUES (3,   3, 'name', 'created', 'docker_test_tag_b',  NOW(), 'Admin');

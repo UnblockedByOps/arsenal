@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 65be7e220ae7
+Revision ID: 9f8d77f36bc8
 Revises: 
-Create Date: 2021-05-21 16:23:58.879272
+Create Date: 2021-05-21 17:00:25.580447
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '65be7e220ae7'
+revision = '9f8d77f36bc8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -447,8 +447,8 @@ def upgrade():
     op.create_index('idx_physical_device_id', 'physical_devices', ['id'], unique=False)
     op.create_index('idx_physical_device_serial_number', 'physical_devices', ['serial_number'], unique=True)
     op.create_table('tag_node_assignments',
-    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_tag_node_assignments_node_id_nodes')),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_assignments_tag_id_tags'))
     )

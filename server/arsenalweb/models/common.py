@@ -243,12 +243,12 @@ tag_data_center_assignments = Table('tag_data_center_assignments',
 
 tag_node_assignments = Table('tag_node_assignments',
                              Base.metadata,
-                             Column('node_id',
-                                    INTEGER(unsigned=True),
-                                    ForeignKey('nodes.id')),
                              Column('tag_id',
                                     INTEGER(unsigned=True),
-                                    ForeignKey('tags.id'))
+                                    ForeignKey('tags.id')),
+                             Column('node_id',
+                                    INTEGER(unsigned=True),
+                                    ForeignKey('nodes.id'))
                             )
 
 tag_node_group_assignments = Table('tag_node_group_assignments',

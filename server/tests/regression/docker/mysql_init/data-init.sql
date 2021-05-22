@@ -31,33 +31,33 @@ INSERT INTO users VALUES (6, 'puppet-enc', 'Puppet Node Classifier', 'Bot', 'Vf7
 #
 # database groups
 ###########################################################################
-INSERT INTO arsenal.groups VALUES (1, 'local_admin',               NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (2, 'api_write',                 NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (3, 'api_register',              NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (1, 'local_admin',               NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (2, 'api_write',                 NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (3, 'api_register',              NOW(), NOW(), 'Admin');
 # Set this to whatever system group you want to have admin access (wheel, arsenal_admins, etc.)
-INSERT INTO arsenal.groups VALUES (4, 'arsenal_admins',            NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (4, 'arsenal_admins',            NOW(), NOW(), 'Admin');
 # For devel on mac
-# INSERT INTO arsenal.groups VALUES (5, 'admin',                     NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (6, 'node_write',                NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (7, 'node_delete',               NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (8, 'node_group_write',          NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (9, 'node_group_delete',         NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (10,'tag_write',                 NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (11,'tag_delete',                NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (12,'data_center_write',         NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (13,'data_center_delete',        NOW(), NOW(), 'Admin');
+# INSERT INTO groups VALUES (5, 'admin',                     NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (6, 'node_write',                NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (7, 'node_delete',               NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (8, 'node_group_write',          NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (9, 'node_group_delete',         NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (10,'tag_write',                 NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (11,'tag_delete',                NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (12,'data_center_write',         NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (13,'data_center_delete',        NOW(), NOW(), 'Admin');
 # This is a special local group that is not assigned any permissions via route, but
 # members of this group will be able to write secure tags.
-INSERT INTO arsenal.groups VALUES (14,'secure_tags',               NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (15,'physical_device_write',     NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (16,'physical_device_delete',    NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (17,'physical_location_write',   NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (18,'physical_location_delete',  NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (19,'physical_rack_write',       NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (20,'physical_rack_delete',      NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (21,'physical_elevation_write',  NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (22,'physical_elevation_delete', NOW(), NOW(), 'Admin');
-INSERT INTO arsenal.groups VALUES (23,'status_write',              NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (14,'secure_tags',               NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (15,'physical_device_write',     NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (16,'physical_device_delete',    NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (17,'physical_location_write',   NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (18,'physical_location_delete',  NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (19,'physical_rack_write',       NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (20,'physical_rack_delete',      NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (21,'physical_elevation_write',  NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (22,'physical_elevation_delete', NOW(), NOW(), 'Admin');
+INSERT INTO groups VALUES (23,'status_write',              NOW(), NOW(), 'Admin');
 
 # Group permissions that can be assigned to groups
 ###########################################################################
