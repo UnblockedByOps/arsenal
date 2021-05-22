@@ -6,7 +6,7 @@ CMD ["apachectl", "-D", "FOREGROUND"]
 
 RUN yum install -y \
   httpd \
-  mod_wsgi \
+  rh-python36-mod_wsgi \
   mod_ssl \
   rh-python36 \
   gcc \
