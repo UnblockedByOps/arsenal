@@ -2,20 +2,21 @@ FROM docker.rp-core.com/devops/docker_centos_base:4_7.4
 
 EXPOSE 80
 EXPOSE 443
-CMD ["apachectl", "-D", "FOREGROUND"]
+CMD ["/opt/rh/httpd24/root/usr/sbin/apachectl", "-D", "FOREGROUND"]
 
 RUN yum install -y \
-  httpd \
+  rh-python36 \
   rh-python36-mod_wsgi \
   mod_ssl \
-  rh-python36 \
   gcc \
   openldap-devel \
   mariadb-devel
 COPY conf/arsenal.wsgi /app/arsenal_web/conf/arsenal.wsgi
 COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
-COPY conf/arsenal-wsgi.conf /etc/httpd/conf.d/arsenal-wsgi.conf
+
+COPY conf/arsenal-wsgi.conf /opt/rh/httpd24/root/etc/httpd/conf.d/arsenal-wsgi.conf
+
 COPY conf/ssl/server.crt /etc/pki/tls/certs/server.crt
 COPY conf/ssl/server.key /etc/pki/tls/private/server.key
 RUN /opt/rh/rh-python36/root/bin/virtualenv --no-setuptools /app/arsenal_web/venv && \
