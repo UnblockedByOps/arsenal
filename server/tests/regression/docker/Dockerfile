@@ -2,7 +2,8 @@ FROM docker.rp-core.com/devops/docker_centos_base:4_7.4
 
 EXPOSE 80
 EXPOSE 443
-CMD ["/opt/rh/httpd24/root/usr/sbin/httpd", "-D", "FOREGROUND"]
+#CMD ["/opt/rh/httpd24/root/usr/sbin/httpd", "-D", "FOREGROUND"]
+CMD ["scl", "enable", "httpd24", "--" "/opt/rh/httpd24/root/usr/sbin/apachectl", "-D", "FOREGROUND"]
 
 RUN yum install -y \
   rh-python36 \
