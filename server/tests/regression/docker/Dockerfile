@@ -1,4 +1,4 @@
-FROM docker.rp-core.com/devops/docker_centos_base:1_7.8
+FROM docker.rp-core.com/devops/docker_centos_base:2_7.8
 
 EXPOSE 80
 EXPOSE 443
