@@ -73,6 +73,7 @@ requires = [
     'urllib3==1.26.4',
     'venusian==3.0.0',
     'waitress==2.0.0',
+    'wheel==0.36.2',
     'zipp==3.4.1',
     'zope.deprecation==4.4.0',
     'zope.interface==5.4.0',
