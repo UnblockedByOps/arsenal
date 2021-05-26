@@ -35,7 +35,7 @@ COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
 COPY conf/ssl/server.crt /etc/pki/tls/certs/server.crt
 COPY conf/ssl/server.key /etc/pki/tls/private/server.key
-RUN rm -f /opt/rh/httpd24/root/etc/httpd/conf.d/*.conf
+#RUN rm -f /opt/rh/httpd24/root/etc/httpd/conf.d/*.conf
 COPY conf/arsenal-wsgi.conf /opt/rh/httpd24/root/etc/httpd/conf.d/arsenal-wsgi.conf
 
 RUN /opt/rh/rh-python38/root/usr/local/bin/virtualenv /app/arsenal_web/venv && \
