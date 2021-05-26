@@ -4,7 +4,8 @@ EXPOSE 80
 EXPOSE 443
 #CMD ["/opt/rh/httpd24/root/usr/sbin/httpd", "-D", "FOREGROUND"]
 #CMD ["/opt/rh/httpd24/root/usr/sbin/apachectl", "-D", "FOREGROUND"]
-CMD ["/usr/sbin/service", "httpd24-httpd", "start"]
+#CMD ["/usr/sbin/service", "httpd24-httpd", "start"]
+CMD ["/usr/bin/run-httpd"]
 
 RUN yum install -y \
   gcc \
@@ -17,6 +18,7 @@ RUN yum install -y \
   rh-python38-python-devel \
   rh-python38-python-mod_wsgi
 RUN /opt/rh/rh-python38/root/usr/bin/pip3 install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple virtualenv==20.4.7
+COPY bin/run-httpd /usr/bin/run-httpd
 COPY conf/arsenal.wsgi /app/arsenal_web/conf/arsenal.wsgi
 COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
@@ -41,3 +43,4 @@ RUN /opt/rh/rh-python38/root/usr/local/bin/virtualenv /app/arsenal_web/venv && \
 ARG ARSENAL_VERSION
 RUN source /app/arsenal_web/venv/bin/activate && \
   pip3 install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple arsenalweb${ARSENAL_VERSION}
+
