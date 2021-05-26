@@ -33,9 +33,10 @@ RUN /opt/rh/rh-python38/root/usr/bin/pip3 install --trusted-host pypi.las2.fanop
 COPY conf/arsenal.wsgi /app/arsenal_web/conf/arsenal.wsgi
 COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
-COPY conf/arsenal-wsgi.conf /opt/rh/httpd24/root/etc/httpd/conf.d/arsenal-wsgi.conf
 COPY conf/ssl/server.crt /etc/pki/tls/certs/server.crt
 COPY conf/ssl/server.key /etc/pki/tls/private/server.key
+RUN rm -f /opt/rh/httpd24/root/etc/httpd/conf.d/*.conf
+COPY conf/arsenal-wsgi.conf /opt/rh/httpd24/root/etc/httpd/conf.d/arsenal-wsgi.conf
 
 RUN /opt/rh/rh-python38/root/usr/local/bin/virtualenv /app/arsenal_web/venv && \
   source /app/arsenal_web/venv/bin/activate && \
@@ -50,8 +51,8 @@ RUN /opt/rh/rh-python38/root/usr/local/bin/virtualenv /app/arsenal_web/venv && \
 # If you're testing a tag:
 #   '==1.2'
 
-RUN cp /opt/rh/httpd24/root/usr/lib64/libnghttp2-httpd24.so.14.4.1 /opt/rh/httpd24/root/usr/lib64/httpd/
-RUN ln -sf /opt/rh/httpd24/root/usr/lib64/httpd/libnghttp2-httpd24.so.14.4.1 /opt/rh/httpd24/root/usr/lib64/httpd/libnghttp2-httpd24.so.14
+#RUN cp /opt/rh/httpd24/root/usr/lib64/libnghttp2-httpd24.so.14.4.1 /opt/rh/httpd24/root/usr/lib64/httpd/
+#RUN ln -sf /opt/rh/httpd24/root/usr/lib64/httpd/libnghttp2-httpd24.so.14.4.1 /opt/rh/httpd24/root/usr/lib64/httpd/libnghttp2-httpd24.so.14
 
 ARG ARSENAL_VERSION
 RUN source /app/arsenal_web/venv/bin/activate && \
