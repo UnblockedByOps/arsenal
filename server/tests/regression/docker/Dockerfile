@@ -2,8 +2,8 @@ FROM docker.rp-core.com/devops/docker_centos_base:2_7.8
 
 EXPOSE 80
 EXPOSE 443
-CMD ["/opt/rh/httpd24/root/usr/sbin/httpd", "-D", "FOREGROUND"]
-#CMD ["/usr/bin/scl", "enable", "httpd24", "--" "/opt/rh/httpd24/root/usr/sbin/apachectl", "-D", "FOREGROUND"]
+#CMD ["/opt/rh/httpd24/root/usr/sbin/httpd", "-D", "FOREGROUND"]
+CMD ["/opt/rh/httpd24/root/usr/sbin/apachectl", "-D", "FOREGROUND"]
 
 RUN yum install -y \
   gcc \
