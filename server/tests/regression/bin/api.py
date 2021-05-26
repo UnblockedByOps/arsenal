@@ -181,7 +181,7 @@ def check_response_content(resp, exp_responses):
         test_fail = False
         results = resp['results']
         for resp in exp_responses:
-            for key, val in resp.iteritems():
+            for key, val in resp.items():
                 if not any(resp.get(key, None) == val for resp in results):
                     LOG.error('    key error: {0}: {1} expected, but not found in '
                               'results!'.format(key, val))
