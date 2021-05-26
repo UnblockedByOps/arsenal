@@ -1,0 +1,34 @@
+# Base Repos
+# This file is managed via Puppet. Do not modify locally!
+
+[CentOS-7.8.2003-x86_64]
+name=CentOS-7.8.2003-x86_64
+baseurl=http://yumcache.las2.fanops.net/cobbler/ks_mirror/CentOS-7.8.2003-x86_64
+enabled=1
+gpgcheck=0
+priority=1
+metadata_expire=15m
+
+[CentOS-7.8.2003-x86_64-updates]
+name=CentOS-7.8.2003-x86_64-updates
+baseurl=http://yumcache.las2.fanops.net/cobbler/repo_mirror/CentOS-7.8.2003-x86_64-updates
+enabled=1
+gpgcheck=0
+priority=2
+metadata_expire=15m
+
+[CentOS-7.8.2003-x86_64-centosplus]
+name=CentOS-7.8.2003-x86_64-centosplus
+baseurl=http://yumcache.las2.fanops.net/cobbler/repo_mirror/CentOS-7.8.2003-x86_64-centosplus
+enabled=1
+gpgcheck=0
+priority=3
+metadata_expire=15m
+
+[CentOS-7.8.2003-x86_64-extras]
+name=CentOS-7.8.2003-x86_64-extras
+baseurl=http://yumcache.las2.fanops.net/cobbler/repo_mirror/CentOS-7.8.2003-x86_64-extras
+enabled=1
+gpgcheck=0
+priority=3
+metadata_expire=15m

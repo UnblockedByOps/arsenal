@@ -1,0 +1,30 @@
+# TRP Repo
+# This file is managed via Puppet. Do not modify locally!
+
+# All systems have our production repos available.
+[Operations-7-x86_64]
+name=Operations
+baseurl=http://yumcache.las2.fanops.net/repo/Operations-7-x86_64
+enabled=1
+priority=99
+gpgcheck=0
+metadata_expire=6h
+
+[TRP-7-PROD]
+name=TRP-7-PROD
+baseurl=http://yumcache.las2.fanops.net/repo/TRP-7-PROD
+enabled=1
+priority=99
+gpgcheck=0
+metadata_expire=60
+
+# The TRP-PROD-archive repo is disabled by default in production to prevent
+# ancient packages from accidently being deployed. Set enabled=1 to enable.
+[TRP-7-PROD-archive]
+name=TRP-7-PROD-archive
+baseurl=http://yumcache.las2.fanops.net/repo/archive/TRP-7-PROD
+enabled=0
+priority=99
+gpgcheck=0
+metadata_expire=7d
+

@@ -1,0 +1,6 @@
+[CentOS-7-x86_64-SCL]
+name=CentOS-7-x86_64-SCL
+baseurl=http://yumcache.las2.fanops.net/cobbler/repo_mirror/CentOS-7-x86_64-SCL
+enabled=1
+priority=99
+gpgcheck=0
