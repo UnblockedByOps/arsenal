@@ -15,6 +15,7 @@
 #
 import logging
 import datetime
+from passlib.hash import sha512_crypt
 from pytz import timezone
 import pyramid
 from sqlalchemy import (
@@ -291,12 +292,18 @@ class User(Base):
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
     updated_by = Column(VARCHAR(200), nullable=False)
 
-    def check_password(self, pw):
-        LOG.debug('Checking password...')
-        return True
-        if self.password_hash is not None:
-            expected_hash = self.password_hash.encode('utf8')
-            return bcrypt.checkpw(pw.encode('utf8'), expected_hash)
+    def check_password(self, password):
+        '''Check if the user's password matches what's in the DB.'''
+
+        LOG.debug('Checking password against local DB...')
+        try:
+            if sha512_crypt.verify(password, self.password):
+                LOG.debug('Successfully authenticated via local DB')
+                return True
+        except Exception as ex:
+            LOG.error('%s (%s)', Exception, ex)
+
+        LOG.debug('Bad password via local DB for user: %s', self.name)
         return False
 
     @hybrid_property

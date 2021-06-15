@@ -14,12 +14,8 @@
 #
 import logging
 from pyramid.view import view_config
-from pyramid.response import Response
-from sqlalchemy.exc import SQLAlchemyError
 from pyramid.httpexceptions import (
     HTTPForbidden,
-    HTTPNotFound,
-    HTTPSeeOther,
 )
 from arsenalweb.views import site_layout
 

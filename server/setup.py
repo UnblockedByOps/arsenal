@@ -45,6 +45,7 @@ requires = [
     'mysqlclient==2.0.3',
     'packaging==20.9',
     'pam==0.2.0',
+    'passlib==1.7.4',
     'plaster-pastedeploy==0.7',
     'plaster==1.0',
     'pluggy==0.13.1',
