@@ -115,7 +115,6 @@ ro_cmd="${arsenal_cmd} --debug --server ${server} -y -l readonly -s ${ro_conf} -
 # Create node
 validate_command "${rw_cmd} nodes create --name fopd-TEST8675.internal --unique_id i-123456 --status_id 1" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields all" 0 "string" "name: fopd-TEST8675.internal"
-exit 0
 # Delete node by name
 validate_command "${rw_cmd} nodes delete --name fopd-TEST8675.internal" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields all" 0 "string" "No results found for search."
