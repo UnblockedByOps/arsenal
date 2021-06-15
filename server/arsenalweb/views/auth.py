@@ -103,8 +103,8 @@ def login(request):
         user_id = authenticate_user(request)
         LOG.debug('Authenticated user_id is: %s for user: %s', user_id, login_name)
         if user_id:
-            LOG.debug('Setting csrf token.')
-            new_csrf_token(request)
+    #        LOG.debug('Setting csrf token.')
+    #        new_csrf_token(request)
             LOG.debug('Setting headers.')
             headers = remember(request, user_id)
             LOG.debug('headers are: %s', headers)
