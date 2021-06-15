@@ -1,0 +1,308 @@
+<!--!
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang="en-US"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      metal:define-macro="layout">
+  <head profile="http://www.w3.org/2005/10/profile">
+    <link rel="icon"
+        type="image/png"
+        href="/static/img/favico.png?v=3">
+    <title>Arsenal: ${page_title_name}</title>
+    <link href="/static/css/arsenal.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/jquery-2.1.3.min.js"></script>
+    <script src="/static/js/jquery-ui.min.js"></script>
+    <script src="/static/js/jquery.dragtable.js"></script>
+    <script src="/static/js/jquery.tablesorter.min.js"></script>
+    <script src="/static/js/resizable.js"></script>
+  </head>
+  <body>
+
+    <script>
+      $(document).ready(function() {
+        // Table Sorting
+        $("#searchResultsTable").tablesorter({
+            sortList: [[0,0]]
+        });
+
+        // Column dragging
+        $('#searchResultsTable').dragtable({
+            maxMovingRows:1,
+            dragHandle:'.drag-handle',
+            persistState: function(table) {
+              if (!window.sessionStorage) return;
+              var ss = window.sessionStorage;
+              table.el.find('th').each(function(i) {
+                if(this.id != '') {table.sortOrder[this.id]=i;}
+              });
+              ss.setItem('tableorder',JSON.stringify(table.sortOrder));
+            },
+            restoreState: eval('(' + window.sessionStorage.getItem('tableorder') + ')')
+        });
+
+        // Main menu overlay
+        function overlay() {
+          var over = '<div id="overlay"></div>';
+          if($("#overlay").length == 0) {
+            $(over).appendTo('body');
+          }
+        }
+        function no_overlay() {
+          $('#overlay').remove();
+        }
+
+            $('#main_menu_btn').click(function(){
+              $('ul.main_menu li.main_menu:hover ul.main_menu').css( { 'opacity': '1', 'visibility': 'visible' });
+              overlay();
+            });
+            $('#main_menu').mouseleave(function(){
+              $('ul.main_menu ul.main_menu').css( { 'opacity': '0', 'visibility': 'hidden' });
+              no_overlay();
+            });
+
+        
+        // Keep the menu button border on sub-menu
+        $( "#border_hover" ).hover(
+          function() {
+            $( '#main_menu_btn' ).addClass( "main_menu_btn_border" );
+          }, function() {
+            $( '#main_menu_btn' ).removeClass( "main_menu_btn_border" );
+          }
+        );
+
+        // lower pane ajax loader
+        $('.lower_pane').click(function(event){
+            event.preventDefault();
+            var url = $(this).attr('href');
+            $.ajax({
+                url: url,
+                success: function(result){
+                  $("#content_insert").html(result);
+                },
+                error: function (jXHR, textStatus, errorThrown) {
+                  $("#content_insert").html(errorThrown);
+                }
+            });
+        });
+        $(document).ajaxStart(function() {
+          $("#select_object").hide();
+          $("#content_insert").html('<div id="loading_image_c"><img src="/static/img/ajax-loader.gif"></div>');
+        });
+
+        // Sliding menus
+        function SlideMenu(menu_name) {
+            this.menu_name = menu_name;
+        
+            function _overlay() {
+              var over = '<div id="overlay_sub"></div>';
+              if($("#overlay_sub").length == 0) {
+                $(over).appendTo('body');
+              } else {
+                $('#overlay_sub').remove();
+              }
+            }
+            function _no_overlay() {
+              $('#overlay_sub').remove();
+            }
+        
+            // Menu for selecting columns to show
+            $('#' + menu_name + '_btn').click(function(){
+              $('.' + menu_name).slideToggle();
+              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-up.png)', 'border-radius': '4px 4px 0 0', 'border-bottom': '0' });
+              _overlay();
+            });
+            $('.' + menu_name + '_p').mouseleave(function(){
+              $('.' + menu_name).slideUp('slow');
+              $('#' + menu_name + '_btn').css( { 'background-image': 'url(/static/img/select-arrow-down.png)', 'border-radius': '4px', 'border': '1px solid #7BBEEB' });
+              _no_overlay();
+            });
+        
+            // Maybe this shouldbe outside the function?
+            $('.' + menu_name + '_content :checkbox').change(function(){
+              var cols = $(this).attr("name").split("-", 2);
+              $(".sr-" + cols[1]).toggle('slide', {
+                    direction: 'left'
+                }, 500);
+              console.log(".sr_" + cols[1]);
+        
+                if ($(this).is(':checked')) {
+                    // do something
+                    // alert( $(this).attr("name") );
+                    localStorage[".sr-" + cols[1]] = false;
+                } else {
+                    localStorage[".sr-" + cols[1]] = true;
+                    // do something else
+                }
+            });
+            // alert( ${column_selectors}[0]['name'] );
+            var arrayLength = ${column_selectors}.length;
+            for (var i = 0; i < arrayLength; i++) {
+                //console.log(${column_selectors}[i]['name']);
+                var mycheck = localStorage[".sr-" + ${column_selectors}[i]['name']]
+                if (mycheck) {
+                  console.log(${column_selectors}[i]['name']);
+                } else {
+                  console.log('nope' + ${column_selectors}[i]['name']);
+                }
+            }
+        
+        }
+        
+        new SlideMenu("columns_menu");
+
+      });
+    </script>
+
+    <div id="top_bg"></div>
+
+    <div id="top">
+      <div id='top1'>
+        <div id="top1_left">
+          <div id='logo_container'>
+            <a href='/'><img border="0" src="/static/img/logo-white-small.png"></a>
+          </div> <!-- logo_container -->
+        </div> <!-- top1_left -->
+
+        <form id="search_form" action="/search" method="POST">
+        <div id="top1_right">
+          <div id="search_outer_c">
+            <div id="search_inner_c">
+              <div id="search_left_c">
+                <div id="search_select_c">
+                  <select name="object_type">
+                    <option>data_centers</option>
+                    <option>hardware_profiles</option>
+                    <option>ip_addresses</option>
+                    <option>network_interfaces</option>
+                    <option selected="selected">nodes</option>
+                    <option>node_groups</option>
+                    <option>operating_systems</option>
+                    <option>physical_devices</option>
+                    <option>physical_elevations</option>
+                    <option>physical_locations</option>
+                    <option>physical_racks</option>
+                    <option>tags</option>
+                  </select>
+                </div> <!-- search_select_c -->
+              </div> <!-- search_left_c -->
+              <div id="search_middle_c">
+                  <input id="search_box" type="text" name="search_terms">
+              </div> <!-- search_middle_c -->
+              <div id="search_right_c">
+                  <input type="submit" id="search_bar_btn" value="" alt="search">
+              </div> <!-- search_right_c -->
+            </div> <!-- search_inner_c -->
+          </div> <!-- search_outer_c -->
+        </div> <!-- top1_right -->
+        </form>
+      </div> <!-- top1 -->
+      <div id='top2'>
+        <div id='main_menu'>
+          <ul class="main_menu">
+            <li class="main_menu">
+              <span id="main_menu_btn">Menu</span>
+              <ul id='border_hover' class="main_menu">
+                <li>
+                  <div>
+                    <div class="menu_group">
+                      <h3>Objects</h3>
+                      <a href="/data_centers">data_centers</a><br/>
+                      <a href="/ip_addresses">ip_addresses</a><br/>
+                      <a href="/network_interfaces">network_interfaces</a><br/>
+                      <a href="/node_groups">node groups</a><br/>
+                      <a href="/nodes">nodes</a><br/>
+                      <a href="/physical_devices">physical_devices</a><br/>
+                      <a href="/physical_elevations">physical_elevations</a><br/>
+                      <a href="/physical_locations">physical_locations</a><br/>
+                      <a href="/physical_racks">physical_racks</a><br/>
+                      <a href="/tags">tags</a><br/>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="menu_group">
+                      <h3>Meta Objects</h3>
+                      <a href="/hardware_profiles">hardware profiles</a><br/>
+                      <a href="/operating_systems">operating systems</a><br/>
+                      <a href="/statuses">statuses</a><br/>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="menu_group">
+                      <h3>Admin</h3>
+                      <a href="/users">users</a><br/>
+                      <a href="/groups">groups</a><br/>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div> <!-- main_menu -->
+      </div> <!-- top2 -->
+    </div> <!-- top -->
+
+
+    <div id="main_c">
+      <div id='heading_text_c'>
+        <div id='page_title'><span class='page_title_type'>${page_title_type}</span><a tal:attributes="href '/{0}'.format(page_title_name)" ><span class='page_title_name'>${page_title_name}</span></a></div>
+      </div>
+      <div tal:condition="not (page_title_name == 'Home')" id='heading_menu_1_c'>
+        <div class="columns_menu_p slide_menu_c" id="columns_menu_c">
+          <div id="columns_menu_btn" class="slide_menu_btn">Columns</div>
+          <div class="columns_menu slide_menu">
+            <p>Select the columns you wish to display:</p>
+            <ul>
+              <li tal:repeat="item column_selectors" class="columns_menu_content">
+                <input type="checkbox" id="cm-${item['name']}" name="cm-${item['name']}" checked="checked"/>
+                <label for="cm-${item['name']}">${item['pretty_name']}</label>
+              </li>
+            </ul>
+          </div> <!-- columns_menu -->
+        </div> <!-- columns_menu_c -->
+      </div> <!-- heading_menu_1_c -->
+
+      <div tal:condition="not (page_title_name == 'Home')" id='heading_menu_last_c'>
+        <!!-- Results navigation -->
+        <div id="pag_container">
+          <a tal:attributes="class 'pag_buttons disable' if offset == 0 else 'pag_buttons' ; href '%s' % (nav_urls['nav_start'])">
+            <div class="pag_buttons_c"><img src='/static/img/nav-le.gif' border='0'></div>
+          </a>
+
+          <a tal:attributes="class 'pag_buttons disable' if offset == 0 else 'pag_buttons' ;href '%s' % (nav_urls['nav_prev'])">
+            <div class="pag_buttons_c"><img src='/static/img/nav-l.gif' border='0'></div>
+          </a>
+          <div class="pag_content">
+            <span tal:content="'%d-%d of %d' % (offset+1, min((offset+perpage),total), total)">
+              11-20 of 123
+            </span>
+          </div>
+          <a tal:attributes="class 'pag_buttons disable' if nav_urls['next_disable'] else 'pag_buttons' ; href '%s' % (nav_urls['nav_next'])">
+            <div class="pag_buttons_c"><img src='/static/img/nav-r.gif' border='0'></div>
+          </a>
+          <a tal:attributes="class 'pag_buttons disable' if nav_urls['next_disable'] else 'pag_buttons'; href '%s' % (nav_urls['nav_end'])">
+            <div class="pag_buttons_c"><img src='/static/img/nav-re.gif' border='0'></div>
+          </a>
+        </div>
+      </div> <!-- heading_menu_last_c -->
+
+      <div metal:define-slot="content"> </div>
+
+    </div> <!-- main_c -->
+
+  </body>
+</html>

@@ -1,0 +1,164 @@
+/*
+   Copyright 2015 CityGrid Media, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+@import url(//fonts.googleapis.com/css?family=Roboto);
+@import url(//fonts.googleapis.com/css?family=Audiowide); /* Monospace */
+@import url(//fonts.googleapis.com/css?family=Inconsolata); /* Monospace */
+
+/*
+Dark to light
+042e63
+7bbeeb
+a0aec1
+dbe8f9
+*/
+
+html, body {
+    height:99%;
+    width:99%;
+}
+
+body {
+    font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    font-size: 80%;
+    color: #000000;
+    background: #FFFFFF;
+}
+
+.mono {
+    font-family: "Inconsolata", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* START Page Title */
+#page_title_s {
+    display: table;
+    margin: 0 auto;
+    padding: 10px 0 0 20px;
+}
+.page_title_name_s {
+    font-family: "Audiowide", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 150%;
+    color: #042e63;
+}
+.page_title_type_s {
+    font-family: "Inconsolata", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 150%;
+    color: #7bbeeb;
+}
+/* END Page Title */
+
+/* START Title */
+#title {
+  display: table;
+  margin: 0 auto;
+  margin-bottom:50px;
+}
+.title_type {
+  background: #042e63;
+  color: #fff;
+  border-radius: 2px 0 0 2px;
+}
+.title_name {
+  background: #f6f6f6;
+  border-radius: 0 2px 2px 0;
+}
+.title_type,
+.title_name {
+  position:relative;
+  top:20px;
+  padding:5px 15px;
+  font-size: 2em;
+  font-weight: bold;
+}
+/* END Title */
+
+/* CSS Tabs */
+.tabs input[type=radio] {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+}
+.tabs {
+  width: 850px;
+  float: none;
+  list-style: none;
+  position: relative;
+  padding: 0;
+  margin: 25px auto;
+}
+.tabs li{
+  float: left;
+}
+.tabs label {
+    display: block;
+    padding: 10px 20px;
+    border-radius: 2px 2px 0 0;
+    color: #042e63;
+    font-size: 16px;
+    font-weight: normal;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    position: relative;
+    top: 3px;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    -o-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+.tabs label:hover {
+  background: rgba(4, 46, 99,0.5);
+  top: 0;
+}
+ 
+[id^=tab]:checked + label {
+  background: #042e63;
+  color: white;
+  top: 0;
+}
+ 
+[id^=tab]:checked ~ [id^=tab-content] {
+    display: block;
+}
+.tab-content{
+  z-index: 2;
+  display: none;
+  text-align: left;
+  width: 100%;
+  font-size: 20px;
+  line-height: 140%;
+  padding-top: 10px;
+  background: #f8f8f8;
+  border-top: thin solid #042e63;
+  padding: 15px;
+  color: #000;
+  position: absolute;
+  top: 39px;
+  left: 0;
+  box-sizing: border-box;
+  -webkit-animation-duration: 0.5s;
+  -o-animation-duration: 0.5s;
+  -moz-animation-duration: 0.5s;
+  animation-duration: 0.5s;
+}
+
+#singleton {
+  margin-top: 15px;
+}
+
+#contentFrame {
+  width: 900px;
+  height: 750px;
+}

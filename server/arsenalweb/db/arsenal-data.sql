@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-# use arsenal_performance;
-use arsenal;
+# use arsenal;
+use arsenal3;
 
 # Initial Admin password is 'password'
 INSERT INTO users VALUES (1, 'admin', 'Admin', 'Superuser', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
@@ -152,7 +152,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (10,8);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (101,8);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (103,8);
 #  tag_delete
-INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (11,9,;
+INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (11,9);
 #  data_center_write
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (12,10);
 #  data_center_delete
@@ -220,7 +220,7 @@ INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 5);
 # Add user: kaboom to groups: api_register, node_write, status_write
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (3, 2);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 2);
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 20);
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 2);
 # Add user: puppet-enc to groups: node_write, node_group_write, secure_tags
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (6, 6);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (8, 6);

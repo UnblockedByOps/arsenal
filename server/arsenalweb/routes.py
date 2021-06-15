@@ -3,10 +3,10 @@ def includeme(config):
 
     config.add_route('home', '/')
 
-    config.add_route('user_management', '/user_management')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('signup', '/signup')
+    config.add_route('user_management', '/user_management')
 
     config.add_route('healthcheck', '/healthcheck')
     config.add_route('help', '/help')
