@@ -186,7 +186,7 @@ class Authorization(object):
                 LOG.debug('Resp is: %s', resp)
                 LOG.debug('Resp dir is: %s', dir(resp))
                 LOG.debug('Resp headers: %s', resp.headers)
-                LOG.debug('Resp cookies: %s', resp.cookies)
+                LOG.debug('Resp cookies: %s', dir(resp.cookies))
                 LOG.debug('Cookies are: %s', self.session.cookies)
                 LOG.debug('Cookies are: %s', self.cookies)
                 try:
