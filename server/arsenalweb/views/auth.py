@@ -107,6 +107,7 @@ def login(request):
             new_csrf_token(request)
             LOG.debug('Setting headers.')
             headers = remember(request, user_id)
+            LOG.debug('headers are: %s', headers)
             LOG.debug('Returning redirect.')
             return HTTPSeeOther(location=next_url, headers=headers)
 
