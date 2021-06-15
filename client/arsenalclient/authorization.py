@@ -183,8 +183,9 @@ class Authorization(object):
                 LOG.debug('Authentication successful for user: {0}'.format(self.user_login))
 
                 self.cookies = self.session.cookies.get_dict()
-                LOG.debug('Cookies are: {0}'.format(self.session.cookies))
-                LOG.debug('Cookies are: {0}'.format(self.cookies))
+                LOG.debug('Resp is: %s', self.session.cookies)
+                LOG.debug('Cookies are: %s', self.session.cookies)
+                LOG.debug('Cookies are: %s', self.cookies)
                 try:
                     self.write_cookie(self.cookies)
                 except Exception as ex:
