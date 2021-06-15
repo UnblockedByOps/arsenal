@@ -106,8 +106,8 @@ if [[ -z "$server" ]] ; then
 fi
 
 search_cmd="${arsenal_cmd} --server ${server}"
-rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf} -k ${rw_cookie}"
-ro_cmd="${arsenal_cmd} --server ${server} -y -l readonly -s ${ro_conf} -k ${ro_cookie}"
+rw_cmd="${arsenal_cmd} --debug --server ${server} -y -l jenkins-techops -s ${rw_conf} -k ${rw_cookie}"
+ro_cmd="${arsenal_cmd} --debug --server ${server} -y -l readonly -s ${ro_conf} -k ${ro_cookie}"
 
 #
 # Add and manipulate objects
