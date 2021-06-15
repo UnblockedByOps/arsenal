@@ -172,6 +172,7 @@ def includeme(config):
     settings = config.get_settings()
 
     config.set_csrf_storage_policy(CookieCSRFStoragePolicy())
-    config.set_default_csrf_options(require_csrf=True)
+    # FIXME: Set this to true once the client can support it.
+    config.set_default_csrf_options(require_csrf=False)
 
     config.set_security_policy(ArsenalSecurityPolicy(settings['arsenal.cookie_token']))
