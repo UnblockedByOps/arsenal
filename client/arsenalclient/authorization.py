@@ -183,7 +183,8 @@ class Authorization(object):
                 LOG.debug('Authentication successful for user: {0}'.format(self.user_login))
 
                 self.cookies = self.session.cookies.get_dict()
-                LOG.debug('Resp is: %s', self.session.cookies)
+                LOG.debug('Resp is: %s', resp)
+                LOG.debug('Resp dir is: %s', dir(resp))
                 LOG.debug('Cookies are: %s', self.session.cookies)
                 LOG.debug('Cookies are: %s', self.cookies)
                 try:
