@@ -101,9 +101,13 @@ def login(request):
     if request.method == 'POST':
         login_name = request.params['login']
         user_id = authenticate_user(request)
+        LOG.debug('Authenticated user_id is: %s for user: %s', user_id, login_name)
         if user_id:
+            LOG.debug('Setting csrf token.')
             new_csrf_token(request)
+            LOG.debug('Setting headers.')
             headers = remember(request, user_id)
+            LOG.debug('Returning redirect.')
             return HTTPSeeOther(location=next_url, headers=headers)
 
         message = 'Failed login'
