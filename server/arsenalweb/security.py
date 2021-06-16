@@ -23,7 +23,6 @@ from pyramid.authorization import (
     Everyone,
 )
 from pyramid.csrf import CookieCSRFStoragePolicy
-from pyramid.request import RequestLocalCache
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import models
@@ -34,11 +33,10 @@ LOG = logging.getLogger(__name__)
 def global_groupfinder(request, userid):
     '''Wraps all groupfinders (ldap, pam and db) for the security policy.'''
 
-
     name, first_name, last_name, principals = db_groupfinder(request, userid)
 
     if not name and request.registry.settings['arsenal.use_pam']:
-        name, first_name, last_name, principals = pam_groupfinder(request)
+        name, first_name, last_name, principals = pam_groupfinder(request, userid)
 
     if not name and request.registry.settings['arsenal.use_ldap']:
         name, first_name, last_name, principals = ldap_groupfinder()
@@ -65,12 +63,13 @@ def db_groupfinder(request, userid):
         LOG.debug('No DB principals for: %s', userid)
     except Exception as ex:
         LOG.error('%s (%s)', Exception, ex)
+        raise
 
     if name:
         LOG.debug('DB principals for user: %s are: %s', userid, principals)
     return name, first_name, last_name, principals
 
-def pam_groupfinder(request):
+def pam_groupfinder(request, userid):
     '''Queries PAM for a list of groups the user belongs to. Returns basic user
        attributes and a list of group principals (empty if no groups) or None if the user
        doesn't exist.'''
@@ -81,16 +80,17 @@ def pam_groupfinder(request):
     principals = None
 
     try:
-        name = pwd.getpwnam(request.identity['name'])[0]
+        name = pwd.getpwuid(userid)[0]
         first_name = name
-        groups = ['group:' + g.gr_name for g in grp.getgrall() if name in g.gr_mem]
+        principals = ['group:' + g.gr_name for g in grp.getgrall() if name in g.gr_mem]
         # Also add the user's default group
         gid = pwd.getpwnam(name).pw_gid
-        groups.append(grp.getgrgid(gid).gr_name)
+        principals.append(grp.getgrgid(gid).gr_name)
     except KeyError:
         LOG.debug('No DB principals for: %s', request.identity['name'])
     except Exception as ex:
         LOG.error('%s (%s)', Exception, ex)
+        raise
 
     if name:
         LOG.debug('PAM principals for user: %s are: %s', name, principals)
@@ -133,6 +133,8 @@ class ArsenalSecurityPolicy:
                 'groups': groups,
             }
 
+        return None
+
     def authenticated_userid(self, request):
         '''Get authenticated user id. defer to the identity logic to determine if the user
         is logged in and return None if they are not.'''
@@ -140,6 +142,8 @@ class ArsenalSecurityPolicy:
         identity = request.identity
         if identity is not None:
             return identity['userid']
+
+        return None
 
     def permits(self, request, context, permission):
         '''Use the identity to build a list of principals, and pass them
