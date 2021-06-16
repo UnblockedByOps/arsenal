@@ -43,23 +43,6 @@ def get_settings(global_config, settings):
 
     return settings
 
-def get_db_session(settings):
-    '''Load all the group based ACLs from the database at startup.'''
-
-    engine = get_engine(settings)
-    session_factory = get_session_factory(engine)
-    with transaction.manager:
-        dbsession = get_tm_session(session_factory, transaction.manager)
-
-        LOG.info('User : %s', dir(User.registry))
-
-        query = dbsession.query(User)
-        one = query.filter(User.name == 'admin').one()
-        LOG.info('user id: %s', one.id)
-        LOG.info('user name: %s', one.name)
-        LOG.info('one first_name: %s', one.first_name)
-        LOG.info('one last_name: %s', one.last_name)
-
 def main(global_config, **settings):
     '''This function returns a Pyramid WSGI application.'''
 

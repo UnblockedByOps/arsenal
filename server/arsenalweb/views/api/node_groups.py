@@ -106,7 +106,7 @@ def nodes_to_node_groups(dbsession, node_group, nodes, action, user):
     resp = {node_group.name: []}
     try:
         for node_id in nodes:
-            node = find_node_by_id(node_id)
+            node = find_node_by_id(dbsession, node_id)
             resp[node_group.name].append(node.name)
 
             utcnow = datetime.utcnow()
