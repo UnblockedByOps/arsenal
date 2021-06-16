@@ -153,7 +153,7 @@ def manage_tags(dbsession, tag, tagable_type, tagables, action, user):
         tag_kv = '{0}={1}'.format(tag.name, tag.value)
         resp = {tag_kv: []}
         for tagable_id in tagables:
-            tagable = find_by_id(tagable_id)
+            tagable = find_by_id(dbsession, tagable_id)
 
             try:
                 resp[tag_kv].append(tagable.name)

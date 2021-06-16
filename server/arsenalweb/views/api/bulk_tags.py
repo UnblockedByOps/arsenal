@@ -33,14 +33,14 @@ from arsenalweb.views.api.nodes import (
 
 LOG = logging.getLogger(__name__)
 
-def remove_tags(request, node_ids, user):
+def remove_tags(dbsession, node_ids, user):
     '''Remove all tags from a list of node_ids.'''
 
     resp = {'nodes': []}
     try:
         for node_id in node_ids:
 
-            node = find_node_by_id(node_id)
+            node = find_node_by_id(dbsession, node_id)
             LOG.debug('Removing all tags from node: %s '
                       'tags: %s', node.name, [ng.name for ng in node.tags])
             resp['nodes'].append(node.name)
@@ -56,7 +56,7 @@ def remove_tags(request, node_ids, user):
                                       new_value='deleted',
                                       updated_by=user['name'],
                                       created=utcnow)
-                    request.debsession.add(audit)
+                    dbsession.add(audit)
                     LOG.debug('Trying to remove tag: %s=%s from '
                               'node: %s', tag.name, tag.value, node.name)
                     node.tags.remove(tag)
@@ -64,14 +64,14 @@ def remove_tags(request, node_ids, user):
                               'node: %s', tag.name, tag.value, node.name)
                 except (ValueError, AttributeError) as ex:
                     LOG.debug('Died removing tag: %s', ex)
-                    request.debsession.remove(audit)
+                    dbsession.remove(audit)
                 except Exception as ex:
                     LOG.debug('Died removing tag: %s', ex)
-                    request.debsession.remove(audit)
+                    dbsession.remove(audit)
 
             LOG.debug('Final tags: %s', [tag.name for tag in node.tags])
-            request.debsession.add(node)
-        request.debsession.flush()
+            dbsession.add(node)
+        dbsession.flush()
 
     except (NoResultFound, AttributeError):
         return api_404(msg='tag not found')
@@ -97,7 +97,7 @@ def api_b_tagss_deassign(request):
         LOG.debug('Updating %s', request.url)
 
         try:
-            resp = remove_tags(request, node_ids, user)
+            resp = remove_tags(request.dbsession, node_ids, user)
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(payload)
             return api_400(msg=msg)

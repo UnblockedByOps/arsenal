@@ -40,7 +40,7 @@ def remove_node_groups(dbsession, node_ids, user):
     try:
         for node_id in node_ids:
 
-            node = find_node_by_id(node_id)
+            node = find_node_by_id(dbsession, node_id)
             LOG.debug('Removing all node_groups from node: %s '
                       'node_groups: %s', node.name, [ng.name for ng in node.node_groups])
             resp['nodes'].append(node.name)
