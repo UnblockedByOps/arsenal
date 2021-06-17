@@ -86,7 +86,7 @@ def create_data_center(dbsession, name=None, updated_by=None, **kwargs):
         try:
             stat = kwargs['status']
             LOG.debug('status keyword sent: %s', stat)
-            my_status = find_status_by_name(request, stat)
+            my_status = find_status_by_name(dbsession, stat)
             kwargs['status_id'] = my_status.id
             del kwargs['status']
         except KeyError:
@@ -201,13 +201,11 @@ def api_data_centers_write(request):
         ]
         params = collect_params(request, req_params, opt_params)
 
-        LOG.debug('Searching for data_center name: %s', params['name'])
-
         try:
-            data_center = find_data_center_by_name(request, params['name'])
-            update_data_center(request, data_center, **params)
+            data_center = find_data_center_by_name(request.dbsession, params['name'])
+            update_data_center(request.dbsession, data_center, **params)
         except NoResultFound:
-            data_center = create_data_center(request, **params)
+            data_center = create_data_center(request.dbsession, **params)
 
         return data_center
 
