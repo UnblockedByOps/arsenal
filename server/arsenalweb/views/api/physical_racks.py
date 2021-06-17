@@ -246,7 +246,7 @@ def api_physical_racks_write(request):
                                                                params['physical_location_id'])
                 resp = update_physical_rack(request.dbsession, physical_rack, **params)
             except NoResultFound:
-                resp = create_physical_rack(**params)
+                resp = create_physical_rack(request.dbsession, **params)
         except NoResultFound:
             msg = 'physical_location not found: {0} unable to create ' \
                   'rack: {1}'.format(params['physical_location'], params['name'])
