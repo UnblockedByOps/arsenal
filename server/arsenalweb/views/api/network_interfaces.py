@@ -173,6 +173,7 @@ def update_net_if(dbsession,
     try:
         # Convert everything that is defined to a string.
         my_attribs = locals().copy()
+        my_attribs.pop('dbsession')
         my_attribs.pop('net_if')
         for my_attr in my_attribs:
             if my_attribs.get(my_attr):

@@ -197,8 +197,7 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                         if my_obj.physical_device:
 
                             try:
-                                pd_status = getattr(settings,
-                                                    'arsenal.node_hw_map.{0}'.format(status.name))
+                                pd_status = settings['arsenal.node_hw_map.{0}'.format(status.name)]
                                 av = find_status_by_name(dbsession, pd_status)
                                 final_status_id = av.id
 
@@ -207,7 +206,8 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                                     'updated_by': user,
                                 }
 
-                                update_physical_device(my_obj.physical_device,
+                                update_physical_device(dbsession,
+                                                       my_obj.physical_device,
                                                        **pd_params)
 
                             except AttributeError:

@@ -209,7 +209,9 @@ def process_network_interfaces(dbsession, network_interfaces, user):
                     del interface['ip_address']
                 except KeyError:
                     pass
-                updated_net_if = update_net_if(net_if, updated_by=user,
+                updated_net_if = update_net_if(dbsession,
+                                               net_if,
+                                               updated_by=user,
                                                **interface)
                 net_if_list.append(updated_net_if)
             except NoResultFound:
@@ -222,7 +224,8 @@ def process_network_interfaces(dbsession, network_interfaces, user):
                     del interface['ip_address']
                 except KeyError:
                     pass
-                net_if = create_net_if(updated_by=user,
+                net_if = create_net_if(dbsession,
+                                       updated_by=user,
                                        **interface)
                 net_if_list.append(net_if)
 
