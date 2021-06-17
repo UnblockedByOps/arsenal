@@ -234,7 +234,7 @@ def convert_names_to_ids(dbsession, params):
             except TypeError:
                 physical_location = params['physical_location']
 
-            physical_location = find_physical_location_by_name(physical_location)
+            physical_location = find_physical_location_by_name(dbsession, physical_location)
             params['physical_location_id'] = physical_location.id
             LOG.debug('physical_location_id: %s', params['physical_location_id'])
             del params['physical_location']
