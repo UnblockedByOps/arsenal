@@ -39,6 +39,15 @@ class DataCenter(Base):
     '''Arsenal DataCenter object.'''
 
     __tablename__ = 'data_centers'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
@@ -103,3 +112,11 @@ class DataCenterAudit(BaseAudit):
     '''Arsenal DataCenterAudit object.'''
 
     __tablename__ = 'data_centers_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

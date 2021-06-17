@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 2ee9c28311d3
+Revision ID: e55025733f2f
 Revises: 
-Create Date: 2021-05-21 17:17:14.657537
+Create Date: 2021-06-17 15:25:27.180317
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '2ee9c28311d3'
+revision = 'e55025733f2f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,7 +25,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_data_centers_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_data_centers_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('ec2_instances',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -41,7 +45,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_ec2_instances'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_ec2_instances')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_ec2_id', 'ec2_instances', ['id'], unique=False)
     op.create_index('idx_ec2_instance_id', 'ec2_instances', ['instance_id'], unique=True)
@@ -53,13 +61,21 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_ec2_instances_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_ec2_instances_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('group_perms',
     sa.Column('id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_group_perms'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_group_perms')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_group_perms_unique', 'group_perms', ['name'], unique=True, mysql_length=255)
     op.create_table('groups',
@@ -68,7 +84,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=True),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_groups'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_groups')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_group_name_unique', 'groups', ['name'], unique=True, mysql_length=255)
     op.create_table('hardware_profiles',
@@ -81,7 +101,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_hardware_profiles'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_hardware_profiles')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_hardware_profile_id', 'hardware_profiles', ['id'], unique=False)
     op.create_index('idx_uniq_hardware_profile', 'hardware_profiles', ['name'], unique=True)
@@ -93,7 +117,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_hardware_profiles_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_hardware_profiles_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('ip_addresses',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -101,7 +129,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_ip_address_uniq', 'ip_addresses', ['ip_address'], unique=True)
     op.create_table('ip_addresses_audit',
@@ -112,7 +144,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_ip_addresses_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('network_interfaces_audit',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -122,7 +158,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_network_interfaces_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_network_interfaces_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('node_groups',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -133,7 +173,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_node_groups'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_node_groups')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_node_group_id', 'node_groups', ['id'], unique=False)
     op.create_index('idx_unique_node_group_name', 'node_groups', ['name'], unique=True)
@@ -145,7 +189,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_node_groups_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_node_groups_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('nodes_audit',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -155,7 +203,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('operating_systems',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -167,7 +219,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_operating_systems'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_operating_systems')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_operating_systems_id', 'operating_systems', ['id'], unique=False)
     op.create_index('idx_operating_systems_uniq', 'operating_systems', ['name'], unique=True)
@@ -179,7 +235,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_operating_systems_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_operating_systems_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('physical_devices_audit',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -189,7 +249,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_devices_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_devices_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('physical_elevations_audit',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -199,7 +263,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_elevations_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_elevations_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('physical_locations',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -216,7 +284,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_locations'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_locations')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_physical_location_id', 'physical_locations', ['id'], unique=False)
     op.create_index('idx_physical_location_name', 'physical_locations', ['name'], unique=True)
@@ -228,7 +300,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_locations_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_locations_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('physical_racks_audit',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -238,7 +314,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_racks_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_racks_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('statuses',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -247,7 +327,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=False),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_statuses'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_statuses')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_status_name_id', 'statuses', ['id'], unique=False)
     op.create_index('idx_status_name_uniq', 'statuses', ['name'], unique=True)
@@ -259,7 +343,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_statuses_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_statuses_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('tags',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -269,7 +357,11 @@ def upgrade():
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_tags')),
-    sa.UniqueConstraint('name', 'value', name='idx_uniq_tag')
+    sa.UniqueConstraint('name', 'value', name='idx_uniq_tag'),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_tag_id', 'tags', ['id'], unique=False)
     op.create_table('tags_audit',
@@ -280,7 +372,11 @@ def upgrade():
     sa.Column('new_value', sa.Text(), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_tags_audit'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_tags_audit')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('users',
     sa.Column('id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=False),
@@ -292,7 +388,11 @@ def upgrade():
     sa.Column('created', sa.TIMESTAMP(), nullable=True),
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_users'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_user_name_unique', 'users', ['name'], unique=True, mysql_length=255)
     op.create_table('data_centers',
@@ -303,7 +403,11 @@ def upgrade():
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], name=op.f('fk_data_centers_status_id_statuses')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_data_centers'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_data_centers')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_data_center_id', 'data_centers', ['id'], unique=False)
     op.create_index('idx_unique_data_center_name', 'data_centers', ['name'], unique=True)
@@ -333,7 +437,11 @@ def upgrade():
     sa.Column('updated', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.ForeignKeyConstraint(['ip_address_id'], ['ip_addresses.id'], name=op.f('fk_network_interfaces_ip_address_id_ip_addresses')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_network_interfaces'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_network_interfaces')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_network_interface_id', 'network_interfaces', ['id'], unique=False)
     op.create_index('idx_unique_network_interface_unique_id', 'network_interfaces', ['unique_id'], unique=True)
@@ -348,7 +456,11 @@ def upgrade():
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.ForeignKeyConstraint(['physical_location_id'], ['physical_locations.id'], name=op.f('fk_physical_racks_physical_location_id_physical_locations')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_racks')),
-    sa.UniqueConstraint('name', 'physical_location_id', name='idx_physical_rack_location')
+    sa.UniqueConstraint('name', 'physical_location_id', name='idx_physical_rack_location'),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_physical_rack_id', 'physical_racks', ['id'], unique=False)
     op.create_table('tag_node_group_assignments',
@@ -379,7 +491,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['hardware_profile_id'], ['hardware_profiles.id'], name=op.f('fk_nodes_hardware_profile_id_hardware_profiles')),
     sa.ForeignKeyConstraint(['operating_system_id'], ['operating_systems.id'], name=op.f('fk_nodes_operating_system_id_operating_systems')),
     sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], name=op.f('fk_nodes_status_id_statuses')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_nodes')),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_node_ec2_id', 'nodes', ['ec2_id'], unique=True)
     op.create_index('idx_node_id', 'nodes', ['id'], unique=False)
@@ -394,7 +510,11 @@ def upgrade():
     sa.Column('updated_by', sa.VARCHAR(length=200), nullable=False),
     sa.ForeignKeyConstraint(['physical_rack_id'], ['physical_racks.id'], name=op.f('fk_physical_elevations_physical_rack_id_physical_racks')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_elevations')),
-    sa.UniqueConstraint('elevation', 'physical_rack_id', name='idx_physical_elevation_location')
+    sa.UniqueConstraint('elevation', 'physical_rack_id', name='idx_physical_elevation_location'),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_physical_elevation_id', 'physical_elevations', ['id'], unique=True)
     op.create_table('tag_data_center_assignments',
@@ -442,7 +562,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['physical_rack_id'], ['physical_racks.id'], name=op.f('fk_physical_devices_physical_rack_id_physical_racks')),
     sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], name=op.f('fk_physical_devices_status_id_statuses')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_physical_devices')),
-    sa.UniqueConstraint('physical_rack_id', 'physical_elevation_id', name='idx_physical_device_rack_elevation')
+    sa.UniqueConstraint('physical_rack_id', 'physical_elevation_id', name='idx_physical_device_rack_elevation'),
+    mariadb_charset='utf8',
+    mariadb_collate='utf8_bin',
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_index('idx_physical_device_id', 'physical_devices', ['id'], unique=False)
     op.create_index('idx_physical_device_serial_number', 'physical_devices', ['serial_number'], unique=True)

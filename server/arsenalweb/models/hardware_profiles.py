@@ -40,6 +40,15 @@ class HardwareProfile(Base):
     '''Arsenal HardwareProfile object.'''
 
     __tablename__ = 'hardware_profiles'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     model = Column(VARCHAR(255), nullable=False)
@@ -110,3 +119,11 @@ class HardwareProfileAudit(BaseAudit):
     '''Arsenal HardwareProfileAudit object.'''
 
     __tablename__ = 'hardware_profiles_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

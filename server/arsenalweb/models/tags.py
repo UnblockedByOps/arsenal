@@ -38,6 +38,16 @@ class Tag(Base):
     '''Arsenal Tag object.'''
 
     __tablename__ = 'tags'
+    __table_args__ = (
+        UniqueConstraint('name', 'value', name='idx_uniq_tag'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     value = Column(VARCHAR(255), nullable=False)
@@ -45,8 +55,6 @@ class Tag(Base):
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
     updated_by = Column(VARCHAR(200), nullable=False)
-    __table_args__ = (UniqueConstraint('name', 'value', name='idx_uniq_tag'),
-                     )
 
 
     def __json__(self, request):
@@ -109,3 +117,11 @@ class TagAudit(BaseAudit):
     '''Arsenal TagAudit object.'''
 
     __tablename__ = 'tags_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

@@ -39,6 +39,18 @@ class PhysicalElevation(Base):
     '''Arsenal PhysicalElevation object.'''
 
     __tablename__ = 'physical_elevations'
+    __table_args__ = (
+        UniqueConstraint('elevation',
+                         'physical_rack_id',
+                         name='idx_physical_elevation_location'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     elevation = Column(VARCHAR(11), nullable=False)
     physical_rack_id = Column(INTEGER(unsigned=True),
@@ -53,10 +65,6 @@ class PhysicalElevation(Base):
     physical_device = relationship('PhysicalDevice',
                                    primaryjoin='PhysicalElevation.id==PhysicalDevice.physical_elevation_id',
                                    backref='physical_elevation')
-    __table_args__ = (UniqueConstraint('elevation',
-                                       'physical_rack_id',
-                                       name='idx_physical_elevation_location'),
-                     )
 
     def __json__(self, request):
         try:
@@ -114,3 +122,11 @@ class PhysicalElevationAudit(BaseAudit):
     '''Arsenal PhysicalElevationAudit object.'''
 
     __tablename__ = 'physical_elevations_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

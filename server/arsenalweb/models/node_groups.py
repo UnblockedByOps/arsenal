@@ -40,6 +40,15 @@ class NodeGroup(Base):
     '''Arsenal NodeGroup object.'''
 
     __tablename__ = 'node_groups'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     owner = Column(VARCHAR(255), nullable=False)
@@ -118,3 +127,11 @@ class NodeGroupAudit(BaseAudit):
     '''Arsenal NodeGroupAudit object.'''
 
     __tablename__ = 'node_groups_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

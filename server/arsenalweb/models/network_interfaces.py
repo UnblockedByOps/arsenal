@@ -40,6 +40,15 @@ class NetworkInterface(Base):
     '''Arsenal NetworkInterface object.'''
 
     __tablename__ = 'network_interfaces'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     unique_id = Column(VARCHAR(255), nullable=False)
@@ -113,3 +122,11 @@ class NetworkInterfaceAudit(BaseAudit):
     '''Arsenal NetworkInterfaceAudit object.'''
 
     __tablename__ = 'network_interfaces_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

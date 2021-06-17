@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> 2ee9c28311d3
+-- Running upgrade  -> e55025733f2f
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -16,7 +16,7 @@ CREATE TABLE data_centers_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_data_centers_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE ec2_instances (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -33,7 +33,7 @@ CREATE TABLE ec2_instances (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_ec2_instances PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_ec2_id ON ec2_instances (id);
 
@@ -48,14 +48,14 @@ CREATE TABLE ec2_instances_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_ec2_instances_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE group_perms (
     id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
     name TEXT NOT NULL, 
     created TIMESTAMP NOT NULL, 
     CONSTRAINT pk_group_perms PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_group_perms_unique ON group_perms (name(255));
 
@@ -66,7 +66,7 @@ CREATE TABLE `groups` (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_groups PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_group_name_unique ON `groups` (name(255));
 
@@ -81,7 +81,7 @@ CREATE TABLE hardware_profiles (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_hardware_profiles PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_hardware_profile_id ON hardware_profiles (id);
 
@@ -96,7 +96,7 @@ CREATE TABLE hardware_profiles_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_hardware_profiles_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE ip_addresses (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -105,7 +105,7 @@ CREATE TABLE ip_addresses (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_ip_addresses PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_ip_address_uniq ON ip_addresses (ip_address);
 
@@ -118,7 +118,7 @@ CREATE TABLE ip_addresses_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_ip_addresses_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE network_interfaces_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -129,7 +129,7 @@ CREATE TABLE network_interfaces_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_network_interfaces_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE node_groups (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -141,7 +141,7 @@ CREATE TABLE node_groups (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_node_groups PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_node_group_id ON node_groups (id);
 
@@ -156,7 +156,7 @@ CREATE TABLE node_groups_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_node_groups_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE nodes_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -167,7 +167,7 @@ CREATE TABLE nodes_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_nodes_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE operating_systems (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -180,7 +180,7 @@ CREATE TABLE operating_systems (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_operating_systems PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_operating_systems_id ON operating_systems (id);
 
@@ -195,7 +195,7 @@ CREATE TABLE operating_systems_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_operating_systems_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE physical_devices_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -206,7 +206,7 @@ CREATE TABLE physical_devices_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_physical_devices_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE physical_elevations_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -217,7 +217,7 @@ CREATE TABLE physical_elevations_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_physical_elevations_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE physical_locations (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -235,7 +235,7 @@ CREATE TABLE physical_locations (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_physical_locations PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_physical_location_id ON physical_locations (id);
 
@@ -250,7 +250,7 @@ CREATE TABLE physical_locations_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_physical_locations_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE physical_racks_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -261,7 +261,7 @@ CREATE TABLE physical_racks_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_physical_racks_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE statuses (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -271,7 +271,7 @@ CREATE TABLE statuses (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_statuses PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_status_name_id ON statuses (id);
 
@@ -286,7 +286,7 @@ CREATE TABLE statuses_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_statuses_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE tags (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -297,7 +297,7 @@ CREATE TABLE tags (
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_tags PRIMARY KEY (id), 
     CONSTRAINT idx_uniq_tag UNIQUE (name, value)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_tag_id ON tags (id);
 
@@ -310,7 +310,7 @@ CREATE TABLE tags_audit (
     created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_tags_audit PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE users (
     id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -323,7 +323,7 @@ CREATE TABLE users (
     updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_users PRIMARY KEY (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_user_name_unique ON users (name(255));
 
@@ -336,7 +336,7 @@ CREATE TABLE data_centers (
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_data_centers PRIMARY KEY (id), 
     CONSTRAINT fk_data_centers_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_data_center_id ON data_centers (id);
 
@@ -371,7 +371,7 @@ CREATE TABLE network_interfaces (
     updated_by VARCHAR(200) NOT NULL, 
     CONSTRAINT pk_network_interfaces PRIMARY KEY (id), 
     CONSTRAINT fk_network_interfaces_ip_address_id_ip_addresses FOREIGN KEY(ip_address_id) REFERENCES ip_addresses (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_network_interface_id ON network_interfaces (id);
 
@@ -389,7 +389,7 @@ CREATE TABLE physical_racks (
     CONSTRAINT pk_physical_racks PRIMARY KEY (id), 
     CONSTRAINT fk_physical_racks_physical_location_id_physical_locations FOREIGN KEY(physical_location_id) REFERENCES physical_locations (id), 
     CONSTRAINT idx_physical_rack_location UNIQUE (name, physical_location_id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_physical_rack_id ON physical_racks (id);
 
@@ -423,7 +423,7 @@ CREATE TABLE nodes (
     CONSTRAINT fk_nodes_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
     CONSTRAINT fk_nodes_operating_system_id_operating_systems FOREIGN KEY(operating_system_id) REFERENCES operating_systems (id), 
     CONSTRAINT fk_nodes_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_node_ec2_id ON nodes (ec2_id);
 
@@ -443,7 +443,7 @@ CREATE TABLE physical_elevations (
     CONSTRAINT pk_physical_elevations PRIMARY KEY (id), 
     CONSTRAINT fk_physical_elevations_physical_rack_id_physical_racks FOREIGN KEY(physical_rack_id) REFERENCES physical_racks (id), 
     CONSTRAINT idx_physical_elevation_location UNIQUE (elevation, physical_rack_id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE UNIQUE INDEX idx_physical_elevation_id ON physical_elevations (id);
 
@@ -497,7 +497,7 @@ CREATE TABLE physical_devices (
     CONSTRAINT fk_physical_devices_physical_rack_id_physical_racks FOREIGN KEY(physical_rack_id) REFERENCES physical_racks (id), 
     CONSTRAINT fk_physical_devices_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id), 
     CONSTRAINT idx_physical_device_rack_elevation UNIQUE (physical_rack_id, physical_elevation_id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE INDEX idx_physical_device_id ON physical_devices (id);
 
@@ -517,5 +517,5 @@ CREATE TABLE tag_physical_device_assignments (
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
-INSERT INTO alembic_version (version_num) VALUES ('2ee9c28311d3');
+INSERT INTO alembic_version (version_num) VALUES ('e55025733f2f');
 

@@ -37,6 +37,15 @@ class IpAddress(Base):
     '''Arsenal IpAddress object.'''
 
     __tablename__ = 'ip_addresses'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     ip_address = Column(VARCHAR(255), nullable=False)
     created = Column(TIMESTAMP, nullable=False)
@@ -89,3 +98,11 @@ class IpAddressAudit(BaseAudit):
     '''Arsenal IpAddressAudit object.'''
 
     __tablename__ = 'ip_addresses_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

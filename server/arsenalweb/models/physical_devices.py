@@ -42,6 +42,18 @@ class PhysicalDevice(Base):
     '''Arsenal PhysicalDevice object.'''
 
     __tablename__ = 'physical_devices'
+    __table_args__ = (
+        UniqueConstraint('physical_rack_id',
+                         'physical_elevation_id',
+                         name='idx_physical_device_rack_elevation'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     serial_number = Column(VARCHAR(255), nullable=False)
     physical_location_id = Column(INTEGER(unsigned=True),
@@ -80,10 +92,6 @@ class PhysicalDevice(Base):
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
     updated_by = Column(VARCHAR(200), nullable=False)
-    __table_args__ = (UniqueConstraint('physical_rack_id',
-                                       'physical_elevation_id',
-                                       name='idx_physical_device_rack_elevation'),
-                     )
 
 
     def __json__(self, request):
@@ -154,3 +162,11 @@ class PhysicalDeviceAudit(BaseAudit):
     '''Arsenal PhysicalDeviceAudit object.'''
 
     __tablename__ = 'physical_devices_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

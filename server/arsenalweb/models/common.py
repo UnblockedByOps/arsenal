@@ -277,6 +277,15 @@ class User(Base):
     '''Arsenal User object.'''
 
     __tablename__ = 'users'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False) # email address
     first_name = Column(Text, nullable=True)
@@ -366,6 +375,15 @@ class Group(Base):
     '''Arsenal Group object.'''
 
     __tablename__ = 'groups'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
     group_perms = relationship('GroupPerm',
@@ -439,6 +457,15 @@ class GroupPerm(Base):
     '''Arsenal GroupPerm object.'''
 
     __tablename__ = 'group_perms'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
     name = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)

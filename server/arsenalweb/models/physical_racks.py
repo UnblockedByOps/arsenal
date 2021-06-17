@@ -40,6 +40,16 @@ class PhysicalRack(Base):
     '''Arsenal PhysicalRack object.'''
 
     __tablename__ = 'physical_racks'
+    __table_args__ = (
+        UniqueConstraint('name', 'physical_location_id', name='idx_physical_rack_location'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     physical_location_id = Column(INTEGER(unsigned=True),
@@ -54,9 +64,6 @@ class PhysicalRack(Base):
 
     physical_location = relationship('PhysicalLocation',
                                      backref=backref('physical_racks', lazy='dynamic'))
-    __table_args__ = (UniqueConstraint('name', 'physical_location_id',
-                                       name='idx_physical_rack_location'),
-                     )
 
     def __json__(self, request):
         try:
@@ -104,3 +111,11 @@ class PhysicalRackAudit(BaseAudit):
     '''Arsenal PhysicalRackAudit object.'''
 
     __tablename__ = 'physical_racks_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

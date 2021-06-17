@@ -38,6 +38,15 @@ class OperatingSystem(Base):
     '''Arsenal OperatingSystem object.'''
 
     __tablename__ = 'operating_systems'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
     id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
     name = Column(VARCHAR(255), nullable=False)
     variant = Column(VARCHAR(255), nullable=False)
@@ -104,3 +113,11 @@ class OperatingSystemAudit(BaseAudit):
     '''Arsenal OperatingSystemAudit object.'''
 
     __tablename__ = 'operating_systems_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
