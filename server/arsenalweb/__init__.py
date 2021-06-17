@@ -47,7 +47,7 @@ def main(global_config, **settings):
     '''This function returns a Pyramid WSGI application.'''
 
     settings = get_settings(global_config['__file__'], settings)
-    LOG.debug('Some setting: %s', settings['arsenal.node_hw_map.hibernating'])
+    LOG.debug('Some setting: %s', settings['arsenal.node_hw_map.setup'])
 
     with Configurator(settings=settings, root_factory=RootFactory) as config:
         config.include('pyramid_chameleon')
