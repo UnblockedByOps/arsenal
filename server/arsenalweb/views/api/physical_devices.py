@@ -248,7 +248,8 @@ def convert_names_to_ids(dbsession, params):
                 physical_rack_name = params['physical_rack']['name']
             except TypeError:
                 physical_rack_name = params['physical_rack']
-            physical_rack = find_physical_rack_by_name_loc(physical_rack_name,
+            physical_rack = find_physical_rack_by_name_loc(dbsession,
+                                                           physical_rack_name,
                                                            params['physical_location_id'])
             params['physical_rack_id'] = physical_rack.id
             del params['physical_rack']
@@ -262,7 +263,8 @@ def convert_names_to_ids(dbsession, params):
                 physical_elevation_el = params['physical_elevation']['elevation']
             except TypeError:
                 physical_elevation_el = params['physical_elevation']
-            physical_elevation = find_physical_elevation_by_elevation(physical_elevation_el,
+            physical_elevation = find_physical_elevation_by_elevation(dbsession,
+                                                                      physical_elevation_el,
                                                                       params['physical_rack_id'])
             params['physical_elevation_id'] = physical_elevation.id
             del params['physical_elevation']
