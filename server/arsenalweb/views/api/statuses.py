@@ -210,7 +210,7 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                                                        my_obj.physical_device,
                                                        **pd_params)
 
-                            except AttributeError:
+                            except KeyError:
                                 LOG.debug('No physical_device status map attribute defined in '
                                           'config for node status: %s', status.name)
 
