@@ -151,7 +151,7 @@ class Tags(ArsenalInterface):
                 resp = self.create(params)
                 if resp['http_status']['code'] != 200:
                     LOG.error('Tag creation failed, unable to continue.')
-                    return
+                    return resp
                 this_tag = resp['results'][0]
 
         LOG.info('{0} tag: {1}={2}'.format(msg,
