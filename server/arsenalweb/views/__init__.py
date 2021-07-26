@@ -45,6 +45,8 @@ def _api_get(request, uri, payload=None):
         payload = {'fields': 'all'}
 
     verify_ssl = request.registry.settings['arsenal.verify_ssl']
+    if verify_ssl == 'False':
+        verify_ssl = False
     api_protocol = request.registry.settings['arsenal.api_protocol']
     api_host = request.host
 
