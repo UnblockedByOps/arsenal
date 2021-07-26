@@ -112,7 +112,7 @@ def view_render_rack(request):
                 # Get the list of u to be deleted
                 start = int(device['physical_elevation']['elevation']) + 1
                 end = start + device['hardware_profile']['rack_u'] - 1
-                for delete_me in xrange(start, end):
+                for delete_me in range(start, end):
                     LOG.info('Delete physical_elevation from the list: {0}'.format(delete_me))
                     physical_devices = [i for i in physical_devices if not (int(i['physical_elevation']['elevation']) == delete_me)]
 
