@@ -11,4 +11,3 @@ def notfound_view(request):
         'column_selectors': {},
         'page_title_type': 'none',
     }
-
