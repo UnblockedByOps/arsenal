@@ -107,7 +107,7 @@ def view_render_rack(request):
         try:
             physical_devices = sorted(my_physical_devices, key=lambda k: int(k['physical_elevation']['elevation']), reverse=True)
         except ValueError:
-            physical_devices = sorted(my_physical_devices, key=lambda k: k['physical_elevation']['elevation'], reverse=True)
+            physical_devices = sorted(my_physical_devices, key=lambda k: float(k['physical_elevation']['elevation']), reverse=True)
 
         # Remove rack elevations occupied by a device greater than 1 U
         for device in physical_devices:
