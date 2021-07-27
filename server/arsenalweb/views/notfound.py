@@ -6,7 +6,7 @@ def notfound_view(request):
     request.response.status = 404
     return {
         'error': 'Page not found.',
-        'layout': site_layout('max'),
+        'layout': site_layout('min'),
         'page_title_name': '404 Not Found',
         'column_selectors': {},
         'page_title_type': 'none',
