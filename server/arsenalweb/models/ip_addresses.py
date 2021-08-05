@@ -50,8 +50,9 @@ class IpAddress(Base):
     ip_address = Column(VARCHAR(255), nullable=False)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
-                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    updated_by = Column(VARCHAR(200), nullable=False)
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def __json__(self, request):
         try:

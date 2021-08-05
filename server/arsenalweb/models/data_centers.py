@@ -54,9 +54,10 @@ class DataCenter(Base):
     status = relationship('Status', backref='data_centers', lazy='joined')
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
-                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
 
-    updated_by = Column(VARCHAR(200), nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
     tags = relationship('Tag',
                         secondary='tag_data_center_assignments',
                         backref='data_centers',

@@ -1,18 +1,3 @@
-#  Copyright 2015 CityGrid Media, LLC
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
-
 use arsenal;
 
 CREATE TABLE alembic_version (
@@ -20,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> e55025733f2f
+-- Running upgrade  -> ebec51a6feab
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -28,8 +13,8 @@ CREATE TABLE data_centers_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_data_centers_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -45,8 +30,8 @@ CREATE TABLE ec2_instances (
     reservation_id VARCHAR(255) NOT NULL, 
     security_groups VARCHAR(255) NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_ec2_instances PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -60,8 +45,8 @@ CREATE TABLE ec2_instances_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_ec2_instances_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -77,9 +62,9 @@ CREATE UNIQUE INDEX idx_group_perms_unique ON group_perms (name(255));
 CREATE TABLE `groups` (
     id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
     name TEXT NOT NULL, 
-    created TIMESTAMP NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_groups PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -93,8 +78,8 @@ CREATE TABLE hardware_profiles (
     rack_u INTEGER NOT NULL, 
     rack_color TEXT NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_hardware_profiles PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -108,8 +93,8 @@ CREATE TABLE hardware_profiles_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_hardware_profiles_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -117,8 +102,8 @@ CREATE TABLE ip_addresses (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
     ip_address VARCHAR(255) NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_ip_addresses PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -130,8 +115,8 @@ CREATE TABLE ip_addresses_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_ip_addresses_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -141,8 +126,8 @@ CREATE TABLE network_interfaces_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_network_interfaces_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -153,8 +138,8 @@ CREATE TABLE node_groups (
     description TEXT NOT NULL, 
     notes_url TEXT, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_node_groups PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -168,8 +153,8 @@ CREATE TABLE node_groups_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_node_groups_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -179,8 +164,8 @@ CREATE TABLE nodes_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_nodes_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -192,8 +177,8 @@ CREATE TABLE operating_systems (
     architecture VARCHAR(255) NOT NULL, 
     description TEXT NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_operating_systems PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -207,8 +192,8 @@ CREATE TABLE operating_systems_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_operating_systems_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -218,8 +203,8 @@ CREATE TABLE physical_devices_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_devices_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -229,8 +214,8 @@ CREATE TABLE physical_elevations_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_elevations_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -247,8 +232,8 @@ CREATE TABLE physical_locations (
     contact_name TEXT, 
     phone_number TEXT, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_locations PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -262,8 +247,8 @@ CREATE TABLE physical_locations_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_locations_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -273,8 +258,8 @@ CREATE TABLE physical_racks_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_racks_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -283,8 +268,8 @@ CREATE TABLE statuses (
     name VARCHAR(255) NOT NULL, 
     description TEXT NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_statuses PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -298,8 +283,8 @@ CREATE TABLE statuses_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_statuses_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -308,8 +293,8 @@ CREATE TABLE tags (
     name VARCHAR(255) NOT NULL, 
     value VARCHAR(255) NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_tags PRIMARY KEY (id), 
     CONSTRAINT idx_uniq_tag UNIQUE (name, value)
 )CHARSET=utf8 COLLATE utf8_bin;
@@ -322,8 +307,8 @@ CREATE TABLE tags_audit (
     field TEXT NOT NULL, 
     old_value TEXT NOT NULL, 
     new_value TEXT NOT NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_tags_audit PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -334,9 +319,9 @@ CREATE TABLE users (
     last_name TEXT, 
     salt TEXT NOT NULL, 
     password TEXT NOT NULL, 
-    created TIMESTAMP NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_users PRIMARY KEY (id)
 )CHARSET=utf8 COLLATE utf8_bin;
 
@@ -347,8 +332,8 @@ CREATE TABLE data_centers (
     name VARCHAR(255) NOT NULL, 
     status_id INTEGER UNSIGNED NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_data_centers PRIMARY KEY (id), 
     CONSTRAINT fk_data_centers_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
 )CHARSET=utf8 COLLATE utf8_bin;
@@ -382,8 +367,8 @@ CREATE TABLE network_interfaces (
     port_switch TEXT, 
     port_vlan TEXT, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_network_interfaces PRIMARY KEY (id), 
     CONSTRAINT fk_network_interfaces_ip_address_id_ip_addresses FOREIGN KEY(ip_address_id) REFERENCES ip_addresses (id)
 )CHARSET=utf8 COLLATE utf8_bin;
@@ -399,8 +384,8 @@ CREATE TABLE physical_racks (
     server_subnet VARCHAR(255), 
     oob_subnet VARCHAR(255), 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_racks PRIMARY KEY (id), 
     CONSTRAINT fk_physical_racks_physical_location_id_physical_locations FOREIGN KEY(physical_location_id) REFERENCES physical_locations (id), 
     CONSTRAINT idx_physical_rack_location UNIQUE (name, physical_location_id)
@@ -429,9 +414,9 @@ CREATE TABLE nodes (
     os_memory VARCHAR(255), 
     processor_count INTEGER, 
     last_registered TIMESTAMP NULL, 
-    created TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_nodes PRIMARY KEY (id), 
     CONSTRAINT fk_nodes_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
     CONSTRAINT fk_nodes_ec2_id_ec2_instances FOREIGN KEY(ec2_id) REFERENCES ec2_instances (id), 
@@ -453,8 +438,8 @@ CREATE TABLE physical_elevations (
     elevation VARCHAR(11) NOT NULL, 
     physical_rack_id INTEGER UNSIGNED NOT NULL, 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_elevations PRIMARY KEY (id), 
     CONSTRAINT fk_physical_elevations_physical_rack_id_physical_racks FOREIGN KEY(physical_rack_id) REFERENCES physical_racks (id), 
     CONSTRAINT idx_physical_elevation_location UNIQUE (elevation, physical_rack_id)
@@ -503,8 +488,8 @@ CREATE TABLE physical_devices (
     oob_ip_address VARCHAR(255), 
     oob_mac_address VARCHAR(255), 
     created TIMESTAMP NOT NULL, 
-    updated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
-    updated_by VARCHAR(200) NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
     CONSTRAINT pk_physical_devices PRIMARY KEY (id), 
     CONSTRAINT fk_physical_devices_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
     CONSTRAINT fk_physical_devices_physical_elevation_id_physical_elevations FOREIGN KEY(physical_elevation_id) REFERENCES physical_elevations (id), 
@@ -532,5 +517,5 @@ CREATE TABLE tag_physical_device_assignments (
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
 
-INSERT INTO alembic_version (version_num) VALUES ('e55025733f2f');
+INSERT INTO alembic_version (version_num) VALUES ('ebec51a6feab');
 

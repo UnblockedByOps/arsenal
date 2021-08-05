@@ -296,10 +296,11 @@ class User(Base):
                     secondary='local_user_group_assignments',
                     backref='users',
                     lazy='dynamic')
-    created = Column(TIMESTAMP)
+    created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
-                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    updated_by = Column(VARCHAR(200), nullable=False)
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def check_password(self, password):
         '''Check if the user's password matches what's in the DB.'''
@@ -390,10 +391,11 @@ class Group(Base):
                     secondary='group_perm_assignments',
                     backref='groups',
                     lazy='dynamic')
-    created = Column(TIMESTAMP)
+    created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
-                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    updated_by = Column(VARCHAR(200), nullable=False)
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     @hybrid_property
     def localize_date_created(self):
@@ -526,8 +528,9 @@ class BaseAudit(Base):
     old_value = Column(Text, nullable=False)
     new_value = Column(Text, nullable=False)
     created = Column(TIMESTAMP,
-                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
-    updated_by = Column(VARCHAR(200), nullable=False)
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def __json__(self, request):
         return dict(
