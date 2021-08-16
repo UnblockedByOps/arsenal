@@ -189,7 +189,9 @@ local_user_group_assignments = Table('local_user_group_assignments',
                                              ForeignKey('users.id')),
                                       Column('group_id',
                                              MEDIUMINT(9, unsigned=True),
-                                             ForeignKey('groups.id'))
+                                             ForeignKey('groups.id')),
+                                     mysql_charset='utf8',
+                                     mysql_collate='utf8_bin'
                                      )
 
 group_perm_assignments = Table('group_perm_assignments',
@@ -199,7 +201,9 @@ group_perm_assignments = Table('group_perm_assignments',
                                        ForeignKey('groups.id')),
                                 Column('perm_id',
                                        MEDIUMINT(9, unsigned=True),
-                                       ForeignKey('group_perms.id'))
+                                       ForeignKey('group_perms.id')),
+                                mysql_charset='utf8',
+                                mysql_collate='utf8_bin'
                                )
 
 hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
@@ -209,7 +213,9 @@ hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
                                          ForeignKey('nodes.id')),
                                   Column('guest_vm_id',
                                          INTEGER(unsigned=True),
-                                         ForeignKey('nodes.id'))
+                                         ForeignKey('nodes.id')),
+                                 mysql_charset='utf8',
+                                 mysql_collate='utf8_bin'
                                  )
 
 network_interface_assignments = Table('network_interface_assignments',
@@ -219,7 +225,9 @@ network_interface_assignments = Table('network_interface_assignments',
                                              ForeignKey('nodes.id')),
                                       Column('network_interface_id',
                                              INTEGER(unsigned=True),
-                                             ForeignKey('network_interfaces.id'))
+                                             ForeignKey('network_interfaces.id')),
+                                      mysql_charset='utf8',
+                                      mysql_collate='utf8_bin'
                                      )
 
 node_group_assignments = Table('node_group_assignments',
@@ -229,7 +237,9 @@ node_group_assignments = Table('node_group_assignments',
                                       ForeignKey('nodes.id')),
                                Column('node_group_id',
                                       INTEGER(unsigned=True),
-                                      ForeignKey('node_groups.id'))
+                                      ForeignKey('node_groups.id')),
+                               mysql_charset='utf8',
+                               mysql_collate='utf8_bin'
                               )
 
 tag_data_center_assignments = Table('tag_data_center_assignments',
@@ -239,7 +249,9 @@ tag_data_center_assignments = Table('tag_data_center_assignments',
                                            ForeignKey('tags.id')),
                                     Column('data_center_id',
                                            INTEGER(unsigned=True),
-                                           ForeignKey('data_centers.id'))
+                                           ForeignKey('data_centers.id')),
+                                    mysql_charset='utf8',
+                                    mysql_collate='utf8_bin'
                                    )
 
 tag_node_assignments = Table('tag_node_assignments',
@@ -249,7 +261,9 @@ tag_node_assignments = Table('tag_node_assignments',
                                     ForeignKey('tags.id')),
                              Column('node_id',
                                     INTEGER(unsigned=True),
-                                    ForeignKey('nodes.id'))
+                                    ForeignKey('nodes.id')),
+                             mysql_charset='utf8',
+                             mysql_collate='utf8_bin'
                             )
 
 tag_node_group_assignments = Table('tag_node_group_assignments',
@@ -259,7 +273,9 @@ tag_node_group_assignments = Table('tag_node_group_assignments',
                                           ForeignKey('tags.id')),
                                    Column('node_group_id',
                                           INTEGER(unsigned=True),
-                                          ForeignKey('node_groups.id'))
+                                          ForeignKey('node_groups.id')),
+                                   mysql_charset='utf8',
+                                   mysql_collate='utf8_bin'
                                   )
 
 tag_physical_device_assignments = Table('tag_physical_device_assignments',
@@ -269,7 +285,9 @@ tag_physical_device_assignments = Table('tag_physical_device_assignments',
                                                ForeignKey('tags.id')),
                                         Column('physical_device_id',
                                                INTEGER(unsigned=True),
-                                               ForeignKey('physical_devices.id'))
+                                               ForeignKey('physical_devices.id')),
+                                        mysql_charset='utf8',
+                                        mysql_collate='utf8_bin'
                                        )
 
 

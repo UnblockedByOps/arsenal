@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> ebec51a6feab
+-- Running upgrade  -> b1bf5df56a22
 
 CREATE TABLE data_centers_audit (
     id INTEGER NOT NULL AUTO_INCREMENT, 
@@ -347,14 +347,14 @@ CREATE TABLE group_perm_assignments (
     perm_id MEDIUMINT(9) UNSIGNED, 
     CONSTRAINT fk_group_perm_assignments_group_id_groups FOREIGN KEY(group_id) REFERENCES `groups` (id), 
     CONSTRAINT fk_group_perm_assignments_perm_id_group_perms FOREIGN KEY(perm_id) REFERENCES group_perms (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE local_user_group_assignments (
     user_id MEDIUMINT(9) UNSIGNED, 
     group_id MEDIUMINT(9) UNSIGNED, 
     CONSTRAINT fk_local_user_group_assignments_group_id_groups FOREIGN KEY(group_id) REFERENCES `groups` (id), 
     CONSTRAINT fk_local_user_group_assignments_user_id_users FOREIGN KEY(user_id) REFERENCES users (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE network_interfaces (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -398,7 +398,7 @@ CREATE TABLE tag_node_group_assignments (
     node_group_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
     CONSTRAINT fk_tag_node_group_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE nodes (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -452,28 +452,28 @@ CREATE TABLE tag_data_center_assignments (
     data_center_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_data_center_assignments_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
     CONSTRAINT fk_tag_data_center_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE hypervisor_vm_assignments (
     hypervisor_id INTEGER UNSIGNED, 
     guest_vm_id INTEGER UNSIGNED, 
     CONSTRAINT fk_hypervisor_vm_assignments_guest_vm_id_nodes FOREIGN KEY(guest_vm_id) REFERENCES nodes (id), 
     CONSTRAINT fk_hypervisor_vm_assignments_hypervisor_id_nodes FOREIGN KEY(hypervisor_id) REFERENCES nodes (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE network_interface_assignments (
     node_id INTEGER UNSIGNED, 
     network_interface_id INTEGER UNSIGNED, 
     CONSTRAINT fk_network_interface_assignments_network_interface_id_ne_7ba3 FOREIGN KEY(network_interface_id) REFERENCES network_interfaces (id), 
     CONSTRAINT fk_network_interface_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE node_group_assignments (
     node_id INTEGER UNSIGNED, 
     node_group_id INTEGER UNSIGNED, 
     CONSTRAINT fk_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
     CONSTRAINT fk_node_group_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE physical_devices (
     id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
@@ -508,14 +508,14 @@ CREATE TABLE tag_node_assignments (
     node_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_node_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id), 
     CONSTRAINT fk_tag_node_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
 CREATE TABLE tag_physical_device_assignments (
     tag_id INTEGER UNSIGNED, 
     physical_device_id INTEGER UNSIGNED, 
     CONSTRAINT fk_tag_physical_device_assignments_physical_device_id_ph_6dc6 FOREIGN KEY(physical_device_id) REFERENCES physical_devices (id), 
     CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
-);
+)CHARSET=utf8 COLLATE utf8_bin;
 
-INSERT INTO alembic_version (version_num) VALUES ('ebec51a6feab');
+INSERT INTO alembic_version (version_num) VALUES ('b1bf5df56a22');
 

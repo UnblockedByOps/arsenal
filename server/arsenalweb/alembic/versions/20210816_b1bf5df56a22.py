@@ -1,8 +1,8 @@
 """init
 
-Revision ID: ebec51a6feab
+Revision ID: b1bf5df56a22
 Revises: 
-Create Date: 2021-08-05 09:32:22.263028
+Create Date: 2021-08-16 14:01:26.215247
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'ebec51a6feab'
+revision = 'b1bf5df56a22'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -415,13 +415,17 @@ def upgrade():
     sa.Column('group_id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=True),
     sa.Column('perm_id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], name=op.f('fk_group_perm_assignments_group_id_groups')),
-    sa.ForeignKeyConstraint(['perm_id'], ['group_perms.id'], name=op.f('fk_group_perm_assignments_perm_id_group_perms'))
+    sa.ForeignKeyConstraint(['perm_id'], ['group_perms.id'], name=op.f('fk_group_perm_assignments_perm_id_group_perms')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('local_user_group_assignments',
     sa.Column('user_id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=True),
     sa.Column('group_id', mysql.MEDIUMINT(display_width=9, unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], name=op.f('fk_local_user_group_assignments_group_id_groups')),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_local_user_group_assignments_user_id_users'))
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_local_user_group_assignments_user_id_users')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('network_interfaces',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -467,7 +471,9 @@ def upgrade():
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_tag_node_group_assignments_node_group_id_node_groups')),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_group_assignments_tag_id_tags'))
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_group_assignments_tag_id_tags')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('nodes',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -521,25 +527,33 @@ def upgrade():
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('data_center_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['data_center_id'], ['data_centers.id'], name=op.f('fk_tag_data_center_assignments_data_center_id_data_centers')),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_data_center_assignments_tag_id_tags'))
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_data_center_assignments_tag_id_tags')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('hypervisor_vm_assignments',
     sa.Column('hypervisor_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('guest_vm_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['guest_vm_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_guest_vm_id_nodes')),
-    sa.ForeignKeyConstraint(['hypervisor_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_hypervisor_id_nodes'))
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['nodes.id'], name=op.f('fk_hypervisor_vm_assignments_hypervisor_id_nodes')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('network_interface_assignments',
     sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('network_interface_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['network_interface_id'], ['network_interfaces.id'], name=op.f('fk_network_interface_assignments_network_interface_id_network_interfaces')),
-    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_network_interface_assignments_node_id_nodes'))
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_network_interface_assignments_node_id_nodes')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('node_group_assignments',
     sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('node_group_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_group_id'], ['node_groups.id'], name=op.f('fk_node_group_assignments_node_group_id_node_groups')),
-    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_node_group_assignments_node_id_nodes'))
+    sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_node_group_assignments_node_id_nodes')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('physical_devices',
     sa.Column('id', mysql.INTEGER(unsigned=True), nullable=False),
@@ -574,13 +588,17 @@ def upgrade():
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('node_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['node_id'], ['nodes.id'], name=op.f('fk_tag_node_assignments_node_id_nodes')),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_assignments_tag_id_tags'))
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_node_assignments_tag_id_tags')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     op.create_table('tag_physical_device_assignments',
     sa.Column('tag_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.Column('physical_device_id', mysql.INTEGER(unsigned=True), nullable=True),
     sa.ForeignKeyConstraint(['physical_device_id'], ['physical_devices.id'], name=op.f('fk_tag_physical_device_assignments_physical_device_id_physical_devices')),
-    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_physical_device_assignments_tag_id_tags'))
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], name=op.f('fk_tag_physical_device_assignments_tag_id_tags')),
+    mysql_charset='utf8',
+    mysql_collate='utf8_bin'
     )
     # ### end Alembic commands ###
 
