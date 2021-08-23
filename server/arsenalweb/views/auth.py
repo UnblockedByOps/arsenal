@@ -141,7 +141,14 @@ def forbidden_view(exc, request):
     # Need to send the client a 401 so it can send a user/pass to auth.
     # Without this the client just gets the login page with a 200 and
     # thinks the command was successful.
-    if request.path_info.split('/')[1][:3] == 'api' and not request.is_authenticated:
+    is_api = False
+    is_enc = False
+    if request.path_info.split('/')[1][:3] == 'api':
+        is_api = True
+    if request.path_info.split('/')[2][:3] == 'enc':
+        is_enc = True
+
+    if is_api and not is_enc and not request.is_authenticated:
         LOG.debug('request came from the api, sending request to re-auth')
         return HTTPUnauthorized()
 
