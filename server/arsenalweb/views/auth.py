@@ -148,6 +148,10 @@ def forbidden_view(exc, request):
     if request.path_info.split('/')[2][:3] == 'enc':
         is_enc = True
 
+    foo = request.path_info.split('/')[2][:3]
+
+    LOG.debug('FOO IS: %s', foo)
+
     if is_api and not is_enc and not request.is_authenticated:
         LOG.debug('request came from the api, sending request to re-auth')
         return HTTPUnauthorized()
