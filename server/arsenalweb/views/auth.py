@@ -3,6 +3,7 @@ import pam
 from pwd import getpwnam
 from pyramid.csrf import new_csrf_token
 from pyramid.httpexceptions import HTTPSeeOther
+from pyramid.httpexceptions import HTTPUnauthorized
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.security import (
     remember,
@@ -135,7 +136,14 @@ def logout(request):
 
 @forbidden_view_config(renderer='arsenalweb:templates/403.pt')
 def forbidden_view(exc, request):
-    '''Handleo forbidden requests.'''
+    '''Handle forbidden requests.'''
+
+    # Need to send the client a 401 so it can send a user/pass to auth.
+    # Without this the client just gets the login page with a 200 and
+    # thinks the command was successful.
+    if request.path_info.split('/')[1][:3] == 'api' and not request.is_authenticated:
+        LOG.debug('request came from the api, sending request to re-auth')
+        return HTTPUnauthorized()
 
     if not request.is_authenticated:
         next_url = request.route_url('login', _query={'next': request.url})

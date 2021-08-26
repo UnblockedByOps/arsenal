@@ -458,7 +458,7 @@ validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "strin
 # Set the status to an assignable status
 validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
 # Now it should get the node group
-validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
+validate_command "${rw_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
 #
 # Clean up
 #

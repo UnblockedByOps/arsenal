@@ -80,14 +80,18 @@ def pam_groupfinder(request, userid):
     principals = None
 
     try:
-        name = pwd.getpwuid(userid)[0]
+        try:
+            name = pwd.getpwuid(userid)[0]
+        # handle cookie conversion from name to id.
+        except TypeError:
+            name = userid
         first_name = name
         principals = ['group:' + g.gr_name for g in grp.getgrall() if name in g.gr_mem]
         # Also add the user's default group
         gid = pwd.getpwnam(name).pw_gid
         principals.append(grp.getgrgid(gid).gr_name)
     except KeyError:
-        LOG.debug('No DB principals for: %s', request.identity['name'])
+        LOG.debug('No PAM principals for: %s', request.identity['name'])
     except Exception as ex:
         LOG.error('%s (%s)', Exception, ex)
         raise
