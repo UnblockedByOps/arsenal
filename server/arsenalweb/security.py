@@ -33,6 +33,8 @@ LOG = logging.getLogger(__name__)
 def global_groupfinder(request, userid):
     '''Wraps all groupfinders (ldap, pam and db) for the security policy.'''
 
+    LOG.debug('Running global_groupfinder for userid: %s', userid)
+
     name, first_name, last_name, principals = db_groupfinder(request, userid)
 
     if not name and request.registry.settings['arsenal.use_pam']:
@@ -84,6 +86,7 @@ def pam_groupfinder(request, userid):
             name = pwd.getpwuid(userid)[0]
         # handle cookie conversion from name to id.
         except TypeError:
+            LOG.debug('userid is a string from an old style cookie: %s', userid)
             name = userid
         first_name = name
         principals = ['group:' + g.gr_name for g in grp.getgrall() if name in g.gr_mem]
@@ -121,21 +124,25 @@ class ArsenalSecurityPolicy:
             return None
 
         userid = identity['userid']  # identical to the deprecated request.unauthenticated_userid
+        # Return None if it's a string, which means an old style cookie. This
+        # will force re-authentication and write a new style cookie with an int
+        # id.
+        if not isinstance(userid, str):
 
-        # verify the userid, just like we did before with groupfinder
-        name, first_name, last_name, principals = global_groupfinder(request, userid)
-        groups = [gr.split(':')[1] for gr in principals if gr.startswith('group:')]
+            # verify the userid, just like we did before with groupfinder
+            name, first_name, last_name, principals = global_groupfinder(request, userid)
+            groups = [gr.split(':')[1] for gr in principals if gr.startswith('group:')]
 
-        # assuming the userid is valid, return a map with userid and principals
-        if principals is not None:
-            return {
-                'userid': userid,
-                'name': name,
-                'first_name': first_name,
-                'last_name': last_name,
-                'principals': principals,
-                'groups': groups,
-            }
+            # assuming the userid is valid, return a map with userid and principals
+            if principals is not None:
+                return {
+                    'userid': userid,
+                    'name': name,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'principals': principals,
+                    'groups': groups,
+                }
 
         return None
 
