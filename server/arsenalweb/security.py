@@ -121,8 +121,9 @@ class ArsenalSecurityPolicy:
             return None
 
         userid = identity['userid']  # identical to the deprecated request.unauthenticated_userid
-        # Return None ifi t's a string, which means and old style cookie. This
-        # will force re-authentication and write a new style cookie.
+        # Return None if it's a string, which means an old style cookie. This
+        # will force re-authentication and write a new style cookie with an int
+        # id.
         if not isinstance(userid, str):
 
             # verify the userid, just like we did before with groupfinder
