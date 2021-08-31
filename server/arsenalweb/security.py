@@ -127,22 +127,22 @@ class ArsenalSecurityPolicy:
         # Return None if it's a string, which means an old style cookie. This
         # will force re-authentication and write a new style cookie with an int
         # id.
-#        if not isinstance(userid, str):
+        if not isinstance(userid, str):
 
-        # verify the userid, just like we did before with groupfinder
-        name, first_name, last_name, principals = global_groupfinder(request, userid)
-        groups = [gr.split(':')[1] for gr in principals if gr.startswith('group:')]
+            # verify the userid, just like we did before with groupfinder
+            name, first_name, last_name, principals = global_groupfinder(request, userid)
+            groups = [gr.split(':')[1] for gr in principals if gr.startswith('group:')]
 
-        # assuming the userid is valid, return a map with userid and principals
-        if principals is not None:
-            return {
-                'userid': userid,
-                'name': name,
-                'first_name': first_name,
-                'last_name': last_name,
-                'principals': principals,
-                'groups': groups,
-            }
+            # assuming the userid is valid, return a map with userid and principals
+            if principals is not None:
+                return {
+                    'userid': userid,
+                    'name': name,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'principals': principals,
+                    'groups': groups,
+                }
 
         return None
 
