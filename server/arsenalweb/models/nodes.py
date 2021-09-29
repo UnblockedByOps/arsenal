@@ -35,6 +35,7 @@ from arsenalweb.models.common import (
     get_name_id_list,
     hypervisor_vm_assignments,
     jsonify,
+    localize_date,
 )
 
 LOG = logging.getLogger(__name__)
@@ -133,9 +134,9 @@ class Node(Base):
                     guest_vms=get_name_id_list(self.guest_vms),
                     hypervisor=get_name_id_list(self.hypervisor),
                     physical_device=self.physical_device,
-                    last_registered=self.last_registered,
-                    created=self.created,
-                    updated=self.updated,
+                    last_registered=localize_date(self.last_registered),
+                    created=localize_date(self.created),
+                    updated=localize_date(self.updated),
                     updated_by=self.updated_by,
                     )
 

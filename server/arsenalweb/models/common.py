@@ -16,7 +16,8 @@
 import logging
 import datetime
 from passlib.hash import sha512_crypt
-from pytz import timezone
+#from pytz import timezone
+import pytz
 import pyramid
 from sqlalchemy import (
     Column,
@@ -66,14 +67,21 @@ def check_null_dict(obj):
 def localize_date(datetime_obj):
     '''Localize dates stored in UTC in the DB to a timezone.'''
 
+    LOG.debug('START Datetime object is: %s', type(datetime_obj))
+    # dates are stored in the DB in UTC but the datetime object needs to be
+    # made UTC aware.
+    datetime_obj.replace(tzinfo=None).astimezone(tz=pytz.utc)
     try:
         registry = pyramid.threadlocal.get_current_registry()
         settings = registry.settings
         zone = settings['arsenal.timezone']
         time_format = "%Y-%m-%d %H:%M:%S %Z%z"
         LOG.debug('Time zone is: %s', zone)
-        localized = datetime_obj.astimezone(timezone(zone))
-        return localized.strftime(time_format)
+        local_tz = pytz.timezone(zone)
+        localized = datetime_obj.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        formatted = localized.strftime(time_format)
+        LOG.debug('Formatted Datetime object is: %s', formatted)
+        return formatted
     except:
         return 'Datetime object'
 
