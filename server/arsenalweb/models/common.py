@@ -16,7 +16,6 @@
 import logging
 import datetime
 from passlib.hash import sha512_crypt
-#from pytz import timezone
 import pytz
 import pyramid
 from sqlalchemy import (
