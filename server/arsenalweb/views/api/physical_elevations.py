@@ -17,9 +17,6 @@ import logging
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
@@ -33,9 +30,6 @@ from arsenalweb.views.api.physical_racks import (
 from arsenalweb.views.api.physical_locations import (
     find_physical_location_by_name,
     )
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.physical_elevations import (
     PhysicalElevation,
     PhysicalElevationAudit,
@@ -45,28 +39,29 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_physical_elevation_by_elevation(elevation, physical_rack_id):
+def find_physical_elevation_by_elevation(dbsession, elevation, physical_rack_id):
     '''Find a physical_elevation by elevation and physical_rack_id. Returns
     a physical_elevation object if found, raises NoResultFound otherwise.'''
 
-    LOG.debug('Searching for physical_elevation by elevation: {0} '
-              'physical_rack_id: {1}'.format(elevation, physical_rack_id))
-    physical_elevation = DBSession.query(PhysicalElevation)
+    LOG.debug('Searching for physical_elevation by elevation: %s '
+              'physical_rack_id: %s', elevation, physical_rack_id)
+    physical_elevation = dbsession.query(PhysicalElevation)
     physical_elevation = physical_elevation.filter(PhysicalElevation.elevation == elevation)
     physical_elevation = physical_elevation.filter(PhysicalElevation.physical_rack_id == physical_rack_id)
 
     return physical_elevation.one()
 
-def find_physical_elevation_by_id(physical_elevation_id):
+def find_physical_elevation_by_id(dbsession, physical_elevation_id):
     '''Find a physical_elevation by id.'''
 
-    LOG.debug('Searching for physical_elevation by id: {0}'.format(physical_elevation_id))
-    physical_elevation = DBSession.query(PhysicalElevation)
+    LOG.debug('Searching for physical_elevation by id: %s', physical_elevation_id)
+    physical_elevation = dbsession.query(PhysicalElevation)
     physical_elevation = physical_elevation.filter(PhysicalElevation.id == physical_elevation_id)
 
     return physical_elevation.one()
 
-def create_physical_elevation(elevation=None,
+def create_physical_elevation(dbsession,
+                              elevation=None,
                               physical_rack_id=None,
                               updated_by=None,
                               **kwargs):
@@ -85,8 +80,8 @@ def create_physical_elevation(elevation=None,
     '''
 
     try:
-        LOG.info('Creating new physical_elevation name: {0} physical_rack_id: '
-                 '{1}'.format(elevation, physical_rack_id))
+        LOG.info('Creating new physical_elevation name: %s physical_rack_id: '
+                 '%s', elevation, physical_rack_id)
 
         utcnow = datetime.utcnow()
 
@@ -97,8 +92,8 @@ def create_physical_elevation(elevation=None,
                                                updated=utcnow,
                                                **kwargs)
 
-        DBSession.add(physical_elevation)
-        DBSession.flush()
+        dbsession.add(physical_elevation)
+        dbsession.flush()
 
         audit = PhysicalElevationAudit(object_id=physical_elevation.id,
                                        field='elevation',
@@ -106,8 +101,8 @@ def create_physical_elevation(elevation=None,
                                        new_value=physical_elevation.elevation,
                                        updated_by=updated_by,
                                        created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return api_200(results=physical_elevation)
 
@@ -117,7 +112,7 @@ def create_physical_elevation(elevation=None,
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_physical_elevation(physical_elevation, **kwargs):
+def update_physical_elevation(dbsession, physical_elevation, **kwargs):
     '''Update an existing physical_elevation.
 
     Required params:
@@ -132,7 +127,7 @@ def update_physical_elevation(physical_elevation, **kwargs):
     '''
 
     try:
-        LOG.info('Updating physical_elevation: {0}'.format(physical_elevation.elevation))
+        LOG.info('Updating physical_elevation: %s', physical_elevation.elevation)
 
         utcnow = datetime.utcnow()
 
@@ -147,29 +142,29 @@ def update_physical_elevation(physical_elevation, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Types old_value: {0} new_value: {1}'.format(type(old_value),
-                                                                       type(new_value)))
-                LOG.debug('Updating physical_elevation: {0} attribute: '
-                          '{1} new_value: {2}'.format(physical_elevation.elevation,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Types old_value: %s new_value: %s', type(old_value),
+                                                               type(new_value))
+                LOG.debug('Updating physical_elevation: %s attribute: '
+                          '%s new_value: %s', physical_elevation.elevation,
+                                              attribute,
+                                              new_value)
                 audit = PhysicalElevationAudit(object_id=physical_elevation.id,
                                                field=attribute,
                                                old_value=old_value,
                                                new_value=new_value,
                                                updated_by=kwargs['updated_by'],
                                                created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(physical_elevation, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return api_200(results=physical_elevation)
 
     except Exception as ex:
         msg = 'Error updating physical_elevation name: {0} updated_by: {1} exception: ' \
               '{2}'.format(physical_elevation.elevation,
-                           my_attribs['updated_by'],
+                           kwargs['updated_by'],
                            repr(ex))
         LOG.error(msg)
         raise
@@ -184,7 +179,7 @@ def api_physical_elevations_schema(request):
 
     return physical_elevation
 
-@view_config(route_name='api_physical_elevations', permission='physical_elevation_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_elevations', permission='physical_elevation_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_elevations_write(request):
     '''Process write requests for /api/physical_elevations route.'''
 
@@ -198,20 +193,22 @@ def api_physical_elevations_write(request):
         params = collect_params(request, req_params, opt_params)
 
         try:
-            physical_location = find_physical_location_by_name(params['physical_location'])
+            physical_location = find_physical_location_by_name(request.dbsession, params['physical_location'])
             del params['physical_location']
 
-            physical_rack = find_physical_rack_by_name_loc(params['physical_rack'],
+            physical_rack = find_physical_rack_by_name_loc(request.dbsession,
+                                                           params['physical_rack'],
                                                            physical_location.id)
             params['physical_rack_id'] = physical_rack.id
             del params['physical_rack']
 
             try:
-                physical_el = find_physical_elevation_by_elevation(params['elevation'],
+                physical_el = find_physical_elevation_by_elevation(request.dbsession,
+                                                                   params['elevation'],
                                                                    params['physical_rack_id'])
-                resp = update_physical_elevation(physical_el, **params)
+                resp = update_physical_elevation(request.dbsession, physical_el, **params)
             except NoResultFound:
-                resp = create_physical_elevation(**params)
+                resp = create_physical_elevation(request.dbsession, **params)
         except:
             raise
 
@@ -222,20 +219,19 @@ def api_physical_elevations_write(request):
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_physical_elevation_r', permission='physical_elevation_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_elevation_r', permission='physical_elevation_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_elevation_r', permission='physical_elevation_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_elevation_r', permission='physical_elevation_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_elevation_write_attrib(request):
     '''Process write requests for the /api/physical_elevations/{id}/{resource} route.'''
 
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the physical_elevation, then figure out what to do to it.
-    physical_elevation = find_physical_elevation_by_id(request.matchdict['id'])
-    LOG.debug('physical_elevation is: {0}'.format(physical_elevation))
+    physical_elevation = find_physical_elevation_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('physical_elevation is: %s', physical_elevation)
 
     # List of resources allowed
     resources = [
@@ -250,9 +246,9 @@ def api_physical_elevation_write_attrib(request):
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating physical_elevations: {0} exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating physical_elevations: %s exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()
 
-    return resp
+    return []

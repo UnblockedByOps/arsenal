@@ -43,7 +43,7 @@
           <input type="radio" checked name="tabs" id="tab1">
           <label for="tab1">Status</label>
           <div id="tab-content1" class="tab-content">
-            <a tal:attributes="href '/nodes?status_id={0}'.format(status.id)">Search for nodes with this status</a><br>
+            <a tal:attributes="href '/nodes?status_id=^{0}$'.format(status.id)">Search for nodes with this status</a><br>
             <table>
                 <tr>
                     <td>Name</td><td><span class="mono">${status.name}</span></td>

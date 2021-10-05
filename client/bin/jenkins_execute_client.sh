@@ -6,7 +6,7 @@ set -o pipefail
 REGRESSION_DIR="${WORKSPACE}/server/tests/regression"
 CLIENT_DIR="${WORKSPACE}/client"
 CLIENT3_DIR="${WORKSPACE}/client3"
-ARSENAL_SERVER="localhost:4443"
+ARSENAL_SERVER="127.0.0.1:4443"
 
 check_arsenal_ready () {
     # Make sure arsenal is up before proceeding.

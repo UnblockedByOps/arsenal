@@ -17,18 +17,12 @@ import logging
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
     api_500,
     api_501,
     collect_params,
-    )
-from arsenalweb.models.common import (
-    DBSession,
     )
 from arsenalweb.models.physical_locations import (
     PhysicalLocation,
@@ -39,26 +33,27 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_physical_location_by_name(name):
+def find_physical_location_by_name(dbsession, name):
     '''Find a physical_location by name. Returns a physical_location object if found,
     raises NoResultFound otherwise.'''
 
-    LOG.debug('Searching for physical_location by name: {0}'.format(name))
-    physical_location = DBSession.query(PhysicalLocation)
+    LOG.debug('Searching for physical_location by name: %s', name)
+    physical_location = dbsession.query(PhysicalLocation)
     physical_location = physical_location.filter(PhysicalLocation.name == name)
 
     return physical_location.one()
 
-def find_physical_location_by_id(physical_location_id):
+def find_physical_location_by_id(dbsession, physical_location_id):
     '''Find a physical_location by id.'''
 
-    LOG.debug('Searching for physical_location by id: {0}'.format(physical_location_id))
-    physical_location = DBSession.query(PhysicalLocation)
+    LOG.debug('Searching for physical_location by id: %s', physical_location_id)
+    physical_location = dbsession.query(PhysicalLocation)
     physical_location = physical_location.filter(PhysicalLocation.id == physical_location_id)
 
     return physical_location.one()
 
-def create_physical_location(name=None,
+def create_physical_location(dbsession,
+                             name=None,
                              updated_by=None,
                              **kwargs):
     '''Create a new physical_location.
@@ -82,7 +77,7 @@ def create_physical_location(name=None,
     '''
 
     try:
-        LOG.info('Creating new physical_location name: {0}'.format(name))
+        LOG.info('Creating new physical_location name: %s', name)
 
         utcnow = datetime.utcnow()
 
@@ -92,8 +87,8 @@ def create_physical_location(name=None,
                                              updated=utcnow,
                                              **kwargs)
 
-        DBSession.add(physical_location)
-        DBSession.flush()
+        dbsession.add(physical_location)
+        dbsession.flush()
 
         audit = PhysicalLocationAudit(object_id=physical_location.id,
                                       field='name',
@@ -101,8 +96,8 @@ def create_physical_location(name=None,
                                       new_value=physical_location.name,
                                       updated_by=updated_by,
                                       created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return api_200(results=physical_location)
 
@@ -112,7 +107,7 @@ def create_physical_location(name=None,
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_physical_location(physical_location, **kwargs):
+def update_physical_location(dbsession, physical_location, **kwargs):
     '''Update an existing physical_location.
 
     Required params:
@@ -140,7 +135,7 @@ def update_physical_location(physical_location, **kwargs):
             if my_attribs.get(my_attr):
                 my_attribs[my_attr] = str(my_attribs[my_attr])
 
-        LOG.info('Updating physical_location: {0}'.format(physical_location.name))
+        LOG.info('Updating physical_location: %s', physical_location.name)
 
         utcnow = datetime.utcnow()
 
@@ -155,20 +150,20 @@ def update_physical_location(physical_location, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating physical_location: {0} attribute: '
-                          '{1} new_value: {2}'.format(physical_location.name,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating physical_location: %s attribute: '
+                          '%s new_value: %s', physical_location.name,
+                                              attribute,
+                                              new_value)
                 audit = PhysicalLocationAudit(object_id=physical_location.id,
                                               field=attribute,
                                               old_value=old_value,
                                               new_value=new_value,
                                               updated_by=my_attribs['updated_by'],
                                               created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(physical_location, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return api_200(results=physical_location)
 
@@ -190,7 +185,7 @@ def api_physical_locations_schema(request):
 
     return physical_location
 
-@view_config(route_name='api_physical_locations', permission='physical_location_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_locations', permission='physical_location_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_locations_write(request):
     '''Process write requests for /api/physical_locations route.'''
 
@@ -212,10 +207,10 @@ def api_physical_locations_write(request):
         params = collect_params(request, req_params, opt_params)
 
         try:
-            physical_location = find_physical_location_by_name(params['name'])
-            resp = update_physical_location(physical_location, **params)
+            physical_location = find_physical_location_by_name(request.dbsession, params['name'])
+            resp = update_physical_location(request.dbsession, physical_location, **params)
         except NoResultFound:
-            resp = create_physical_location(**params)
+            resp = create_physical_location(request.dbsession, **params)
 
         return resp
 
@@ -224,20 +219,19 @@ def api_physical_locations_write(request):
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_physical_location_r', permission='physical_location_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_location_r', permission='physical_location_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_location_r', permission='physical_location_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_location_r', permission='physical_location_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_location_write_attrib(request):
     '''Process write requests for the /api/physical_locations/{id}/{resource} route.'''
 
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the physical_location, then figure out what to do to it.
-    physical_location = find_physical_location_by_id(request.matchdict['id'])
-    LOG.debug('physical_location is: {0}'.format(physical_location))
+    physical_location = find_physical_location_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('physical_location is: %s', physical_location)
 
     # List of resources allowed
     resources = [
@@ -252,9 +246,9 @@ def api_physical_location_write_attrib(request):
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating physical_locations: {0} exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating physical_locations: %s exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()
 
-    return resp
+    return []

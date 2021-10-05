@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -38,7 +37,7 @@ def view_all_audit(request):
     '''Handle requests for the overall object type audit UI route.'''
 
     page_title_type = 'objects/'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     meta = {
@@ -119,7 +118,7 @@ def view_all_audit(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

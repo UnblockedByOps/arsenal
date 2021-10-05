@@ -35,7 +35,7 @@
       </div>
       
       <div id="login_b" class="login_b">
-          <h2 class="error" tal:condition="error" tal:content="error"/>
+          <h2 class="lrror" tal:condition="error" tal:content="error"/>
   
           <p class="login">
             <form class="login" action="/login" method="POST">
@@ -44,7 +44,8 @@
               <br/>
               <br/>
               <input type="hidden" name="form.submitted"/>
-              <input type="hidden" name="return_url" value="${return_url}"/>
+              <input type="hidden" name="next_url" value="${next_url}"/>
+              <input type="hidden" name="csrf_token" value="${get_csrf_token()}"/>
               <input class="button" type="submit" name="submit" value="Log In"/>
             </form>
           </p>

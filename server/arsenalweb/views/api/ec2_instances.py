@@ -21,9 +21,6 @@ from arsenalweb.views.api.common import (
     api_500,
     collect_params,
     )
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.ec2_instances import (
     Ec2Instance,
     Ec2InstanceAudit,
@@ -32,16 +29,16 @@ from arsenalweb.models.ec2_instances import (
 LOG = logging.getLogger(__name__)
 
 
-def find_ec2_instance_by_id(instance_id):
+def find_ec2_instance_by_id(dbsession, instance_id):
     '''Find an ec2_instance by it's instance_id. Returns an ec2_instance if found,
     raises NoResultFound otherwise.'''
 
-    LOG.debug('Searching for ec2_instance by instance_id: {0}'.format(instance_id))
-    ec2 = DBSession.query(Ec2Instance)
+    LOG.debug('Searching for ec2_instance by instance_id: %s', instance_id)
+    ec2 = dbsession.query(Ec2Instance)
     ec2 = ec2.filter(Ec2Instance.instance_id == instance_id)
     return ec2.one()
 
-def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
+def create_ec2_instance(dbsession, instance_id=None, updated_by=None, **kwargs):
     '''Create a new ec2_instance.
 
     Required params:
@@ -63,7 +60,7 @@ def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
     '''
 
     try:
-        LOG.info('Creating new ec2_instance id: {0}'.format(instance_id))
+        LOG.info('Creating new ec2_instance id: %s', instance_id)
 
         utcnow = datetime.utcnow()
 
@@ -73,8 +70,8 @@ def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
                           updated=utcnow,
                           **kwargs)
 
-        DBSession.add(ec2)
-        DBSession.flush()
+        dbsession.add(ec2)
+        dbsession.flush()
 
         audit = Ec2InstanceAudit(object_id=ec2.id,
                                  field='instance_id',
@@ -82,8 +79,8 @@ def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
                                  new_value=ec2.instance_id,
                                  updated_by=updated_by,
                                  created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return ec2
     except Exception as ex:
@@ -92,7 +89,7 @@ def create_ec2_instance(instance_id=None, updated_by=None, **kwargs):
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_ec2_instance(ec2, **kwargs):
+def update_ec2_instance(dbsession, ec2, **kwargs):
     '''Update an existing ec2_instance.
 
     Required params:
@@ -119,7 +116,7 @@ def update_ec2_instance(ec2, **kwargs):
             if my_attribs.get(my_attr):
                 my_attribs[my_attr] = str(my_attribs[my_attr])
 
-        LOG.info('Updating ec2_instance ec2_instance_id={0}'.format(ec2.instance_id))
+        LOG.info('Updating ec2_instance ec2_instance_id: %s', ec2.instance_id)
 
         utcnow = datetime.utcnow()
 
@@ -134,26 +131,24 @@ def update_ec2_instance(ec2, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating ec2_instance: {0} attribute: '
-                          '{1} new_value: {2}'.format(ec2.instance_id,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating ec2_instance: %s attribute: '
+                          '%s new_value: %s', ec2.instance_id, attribute, new_value)
                 audit = Ec2InstanceAudit(object_id=ec2.id,
                                          field=attribute,
                                          old_value=old_value,
                                          new_value=new_value,
                                          updated_by=my_attribs['updated_by'],
                                          created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(ec2, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return ec2
 
     except Exception as ex:
-        LOG.error('Error updating ec2_instance instance_id={0},'
-                  'exception={1}'.format(ec2.instance_id, repr(ex)))
+        LOG.error('Error updating ec2_instance instance_id: %s'
+                  'exception: %s', ec2.instance_id, repr(ex))
         raise
 
 @view_config(route_name='api_ec2_instances', request_method='GET', request_param='schema=true', renderer='json')
@@ -165,7 +160,7 @@ def api_ec2_instances_schema(request):
 
     return ec2
 
-@view_config(route_name='api_ec2_instances', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_ec2_instances', permission='api_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_ec2_instance_write(request):
     '''Process write requests for /api/ec2_instances route.'''
 
@@ -185,13 +180,13 @@ def api_ec2_instance_write(request):
         ]
         params = collect_params(request, req_params, opt_params)
 
-        LOG.debug('Searching for ec2_instance id: {0}'.format(params['instance_id']))
+        LOG.debug('Searching for ec2_instance id: %s', params['instance_id'])
 
         try:
-            ec2 = find_ec2_instance_by_id(params['instance_id'])
-            ec2 = update_ec2_instance(ec2, **params)
+            ec2 = find_ec2_instance_by_id(request.debsession, params['instance_id'])
+            ec2 = update_ec2_instance(request.dbsession, ec2, **params)
         except NoResultFound:
-            ec2 = create_ec2_instance(**params)
+            ec2 = create_ec2_instance(request.dbsession, **params)
 
         return ec2
 

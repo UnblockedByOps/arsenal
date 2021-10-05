@@ -16,38 +16,39 @@
 import logging
 import json
 from pyramid.view import view_config
-from arsenalweb.models.common import (
-    DBSession,
-    )
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
-from arsenalweb.views.api.common import (
-    api_200,
-    api_400,
-    api_404,
-    api_500,
-    api_501,
-    collect_params,
-    )
-from arsenalweb.views.api.hardware_profiles import (
-    get_hardware_profile,
-    create_hardware_profile,
-    )
-from arsenalweb.views.api.operating_systems import (
-    get_operating_system,
-    create_operating_system,
-    )
-from arsenalweb.views.api.tags import (
-    manage_tags,
-    )
+#from arsenalweb.views.api.common import (
+#    api_200,
+#    api_400,
+#    api_404,
+#    api_500,
+#    api_501,
+#    collect_params,
+#    )
+#from arsenalweb.views.api.hardware_profiles import (
+#    get_hardware_profile,
+#    create_hardware_profile,
+#    )
+#from arsenalweb.views.api.operating_systems import (
+#    get_operating_system,
+#    create_operating_system,
+#    )
+#from arsenalweb.views.api.tags import (
+#    manage_tags,
+#    )
 
 LOG = logging.getLogger(__name__)
 
-@view_config(route_name='api_testing', request_method='GET', renderer='json')
-@view_config(route_name='api_testing', request_method='PUT', renderer='json')
-def api_node_schema(request):
+@view_config(route_name='api_testing', request_method='GET', renderer='json', require_csrf=False)
+@view_config(route_name='api_testing', request_method='PUT', renderer='json', require_csrf=False)
+def api_test(request):
     '''An endpoint for quick tests'''
+
+    user = request.identity
+    LOG.debug('IDENTITY userid: %s', user['userid'])
+    LOG.debug('IDENTITY first_name: %s', user['first_name'])
+    LOG.debug('IDENTITY last_name: %s', user['last_name'])
+    LOG.debug('IDENTITY principals: %s', user['principals'])
+    LOG.debug('IDENTITY groups: %s', user['groups'])
 
 #    my_ip = '10.255.251.24'
 #    query = DBSession.query(NetworkInterface)

@@ -17,10 +17,13 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
+    Index,
     TIMESTAMP,
-    Text,
+    UniqueConstraint,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
@@ -39,43 +42,57 @@ class PhysicalDevice(Base):
     '''Arsenal PhysicalDevice object.'''
 
     __tablename__ = 'physical_devices'
-    id = Column(Integer, primary_key=True, nullable=False)
-    serial_number = Column(Text, nullable=False)
-    physical_location_id = Column(Integer,
+    __table_args__ = (
+        UniqueConstraint('physical_rack_id',
+                         'physical_elevation_id',
+                         name='idx_physical_device_rack_elevation'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    serial_number = Column(VARCHAR(255), nullable=False)
+    physical_location_id = Column(INTEGER(unsigned=True),
                                   ForeignKey('physical_locations.id'),
                                   nullable=False)
     physical_location = relationship('PhysicalLocation',
                                      backref='physical_devices',
                                      lazy='joined')
-    physical_rack_id = Column(Integer,
+    physical_rack_id = Column(INTEGER(unsigned=True),
                               ForeignKey('physical_racks.id'),
                               nullable=False)
     physical_rack = relationship('PhysicalRack',
                                  backref='physical_devices',
                                  lazy='joined')
-    physical_elevation_id = Column(Integer,
+    physical_elevation_id = Column(INTEGER(unsigned=True),
                                    ForeignKey('physical_elevations.id'),
                                    nullable=False)
-    status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
+    status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
     status = relationship('Status', backref='physical_devices', lazy='joined')
-    mac_address_1 = Column(Text, nullable=False)
-    mac_address_2 = Column(Text, nullable=True)
-    hardware_profile_id = Column(Integer,
+    mac_address_1 = Column(VARCHAR(255), nullable=False)
+    mac_address_2 = Column(VARCHAR(255), nullable=True)
+    hardware_profile_id = Column(INTEGER(unsigned=True),
                                  ForeignKey('hardware_profiles.id'),
                                  nullable=False)
     hardware_profile = relationship('HardwareProfile',
                                     backref=backref('physical_devices'),
                                     lazy='joined')
-    oob_ip_address = Column(Text, nullable=True)
-    oob_mac_address = Column(Text, nullable=True)
+    oob_ip_address = Column(VARCHAR(255), nullable=True)
+    oob_mac_address = Column(VARCHAR(255), nullable=True)
     tags = relationship('Tag',
                         secondary='tag_physical_device_assignments',
                         backref='physical_devices',
                         lazy='dynamic')
 
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
 
     def __json__(self, request):
@@ -110,25 +127,24 @@ class PhysicalDevice(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return these fields, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], default_keys=['id',
-                                                              'serial_number',
-                                                             ])
+            # Always return these fields, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], default_keys=['id',
+                                                          'serial_number',
+                                                         ])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                if 'node' in my_fields:
-                    resp['node'] = get_name_id_dict(self.nodes)
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
+            if 'node' in my_fields:
+                resp['node'] = get_name_id_dict(self.nodes)
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
@@ -139,7 +155,19 @@ class PhysicalDevice(Base):
             return resp
 
 
+Index('idx_physical_device_id', PhysicalDevice.id, unique=False)
+Index('idx_physical_device_serial_number', PhysicalDevice.serial_number, unique=True)
+
+
 class PhysicalDeviceAudit(BaseAudit):
     '''Arsenal PhysicalDeviceAudit object.'''
 
     __tablename__ = 'physical_devices_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

@@ -18,14 +18,8 @@ from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.nodes import (
     NodeAudit,
-    )
-from arsenalweb.views import (
-    get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
     api_200,
@@ -39,46 +33,45 @@ from arsenalweb.views.api.nodes import (
 
 LOG = logging.getLogger(__name__)
 
-def remove_tags(node_ids, auth_user):
+def remove_tags(dbsession, node_ids, user):
     '''Remove all tags from a list of node_ids.'''
 
     resp = {'nodes': []}
     try:
         for node_id in node_ids:
 
-            node = find_node_by_id(node_id)
-            LOG.debug('Removing all tags from node: {0} '
-                      'tags: {1}'.format(node.name,
-                                         [ng.name for ng in node.tags]))
+            node = find_node_by_id(dbsession, node_id)
+            LOG.debug('Removing all tags from node: %s '
+                      'tags: %s', node.name, [ng.name for ng in node.tags])
             resp['nodes'].append(node.name)
             utcnow = datetime.utcnow()
 
-            LOG.debug('tag objects: {0}'.format(node.tags))
+            LOG.debug('tag objects: %s', node.tags)
             for tag in list(node.tags):
-                LOG.debug('Removing tag: {0}={1}'.format(tag.name, tag.value))
+                LOG.debug('Removing tag: %s=%s', tag.name, tag.value)
                 try:
                     audit = NodeAudit(object_id=node.id,
                                       field='tag',
                                       old_value='{0}={1}'.format(tag.name, tag.value),
                                       new_value='deleted',
-                                      updated_by=auth_user['user_id'],
+                                      updated_by=user['name'],
                                       created=utcnow)
-                    DBSession.add(audit)
-                    LOG.debug('Trying to remove tag: {0}={1} from '
-                              'node: {2}'.format(tag.name, tag.value, node.name))
+                    dbsession.add(audit)
+                    LOG.debug('Trying to remove tag: %s=%s from '
+                              'node: %s', tag.name, tag.value, node.name)
                     node.tags.remove(tag)
-                    LOG.debug('Successfully removed tag: {0}={1} from '
-                              'node: {2}'.format(tag.name, tag.value, node.name))
+                    LOG.debug('Successfully removed tag: %s=%s from '
+                              'node: %s', tag.name, tag.value, node.name)
                 except (ValueError, AttributeError) as ex:
-                    LOG.debug('Died removing tag: {0}'.format(ex))
-                    DBSession.remove(audit)
+                    LOG.debug('Died removing tag: %s', ex)
+                    dbsession.remove(audit)
                 except Exception as ex:
-                    LOG.debug('Died removing tag: {0}'.format(ex))
-                    DBSession.remove(audit)
+                    LOG.debug('Died removing tag: %s', ex)
+                    dbsession.remove(audit)
 
-            LOG.debug('Final tags: {0}'.format([tag.name for tag in node.tags]))
-            DBSession.add(node)
-        DBSession.flush()
+            LOG.debug('Final tags: %s', [tag.name for tag in node.tags])
+            dbsession.add(node)
+        dbsession.flush()
 
     except (NoResultFound, AttributeError):
         return api_404(msg='tag not found')
@@ -86,12 +79,12 @@ def remove_tags(node_ids, auth_user):
         msg = 'Bad request: node_id is not unique: {0}'.format(node_id)
         return api_400(msg=msg)
     except Exception as ex:
-        LOG.error('Error removing all tags from node. exception={0}'.format(ex))
+        LOG.error('Error removing all tags from node. exception: %s', ex)
         return api_500()
 
     return resp
 
-@view_config(route_name='api_b_tags_deassign', permission='tag_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_b_tags_deassign', permission='tag_delete', request_method='DELETE', renderer='json', require_csrf=False)
 def api_b_tagss_deassign(request):
     '''Process delete requests for the /api/bulk/tags/deassign route.
     Takes a list of nodes and deassigns all tags from them.'''
@@ -99,22 +92,22 @@ def api_b_tagss_deassign(request):
     try:
         payload = request.json_body
         node_ids = payload['node_ids']
-        auth_user = get_authenticated_user(request)
+        user = request.identity
 
-        LOG.debug('Updating {0}'.format(request.url))
+        LOG.debug('Updating %s', request.url)
 
         try:
-            resp = remove_tags(node_ids, auth_user)
+            resp = remove_tags(request.dbsession, node_ids, user)
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(payload)
             return api_400(msg=msg)
         except Exception as ex:
             LOG.error('Error removing all tags from '
-                      'node={0},exception={1}'.format(request.url, ex))
+                      'node: %s exception: %s', request.url, ex)
             return api_500(msg=str(ex))
 
         return api_200(results=resp)
 
     except Exception as ex:
-        LOG.error('Error updating tags={0},exception={1}'.format(request.url, ex))
+        LOG.error('Error updating tags: %s exception: %s', request.url, ex)
         return api_500(msg=str(ex))

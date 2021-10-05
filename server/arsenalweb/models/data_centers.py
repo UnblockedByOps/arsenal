@@ -17,10 +17,12 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
+    Index,
     TIMESTAMP,
-    Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from arsenalweb.models.common import (
     Base,
@@ -37,13 +39,25 @@ class DataCenter(Base):
     '''Arsenal DataCenter object.'''
 
     __tablename__ = 'data_centers'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text, nullable=False)
-    status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    name = Column(VARCHAR(255), nullable=False)
+    status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
     status = relationship('Status', backref='data_centers', lazy='joined')
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+
+    updated_by = Column(VARCHAR(255), nullable=False)
     tags = relationship('Tag',
                         secondary='tag_data_center_assignments',
                         backref='data_centers',
@@ -68,22 +82,21 @@ class DataCenter(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return name and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except KeyError:
@@ -92,7 +105,19 @@ class DataCenter(Base):
             return resp
 
 
+Index('idx_data_center_id', DataCenter.id, unique=False)
+Index('idx_unique_data_center_name', DataCenter.name, unique=True)
+
+
 class DataCenterAudit(BaseAudit):
     '''Arsenal DataCenterAudit object.'''
 
     __tablename__ = 'data_centers_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

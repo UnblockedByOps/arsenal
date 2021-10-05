@@ -26,7 +26,7 @@ def error(exc, request):
     page_title = 'Internal Server Error'
 
     return {
-        'error': exc.message,
+        'error': str(exc),
         'layout': site_layout('min'),
         'page_title_name': page_title,
     }

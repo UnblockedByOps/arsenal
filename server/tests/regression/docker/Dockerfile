@@ -1,29 +1,16 @@
-FROM docker.rp-core.com/devops/docker_centos_base:1_7.3
-
-EXPOSE 80
-EXPOSE 443
-CMD ["apachectl", "-D", "FOREGROUND"]
+FROM docker.rp-core.com/magnite/docker_arsenalweb_base:2_master
 
 COPY conf/arsenal.wsgi /app/arsenal_web/conf/arsenal.wsgi
 COPY conf/arsenal_secrets.ini /app/arsenal_web/conf/arsenal_secrets.ini
 COPY conf/arsenal-web.ini /app/arsenal_web/conf/arsenal-web.ini
-RUN yum install -y \
-  httpd \
-  mod_wsgi \
-  mod_ssl \
-  python-virtualenv \
-  python-devel \
-  gcc \
-  openldap-devel \
-  python-pip
-COPY conf/arsenal-wsgi.conf /etc/httpd/conf.d/arsenal-wsgi.conf
 COPY conf/ssl/server.crt /etc/pki/tls/certs/server.crt
 COPY conf/ssl/server.key /etc/pki/tls/private/server.key
-RUN /usr/bin/virtualenv --no-setuptools /app/arsenal_web/venv && \
+COPY conf/arsenal-wsgi.conf /opt/rh/httpd24/root/etc/httpd/conf.d/arsenal-wsgi.conf
+
+RUN /opt/rh/rh-python38/root/usr/local/bin/virtualenv /app/arsenal_web/venv && \
   source /app/arsenal_web/venv/bin/activate && \
-  pip install setuptools==44.0.0 && \
-  pip install --upgrade pip==10.0.1 && \
-  pip install https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-1.2.3.tar.gz
+  pip3 install --upgrade setuptools && \
+  pip3 install --upgrade pip
 
 # Valid values for ARSENAL_VERSION are as follows:
 #
@@ -32,7 +19,6 @@ RUN /usr/bin/virtualenv --no-setuptools /app/arsenal_web/venv && \
 #
 # If you're testing a tag:
 #   '==1.2'
-#
 ARG ARSENAL_VERSION
 RUN source /app/arsenal_web/venv/bin/activate && \
-  pip install --trusted-host pypi -i http://pypi/nexus/repository/pypi-all/simple arsenalweb${ARSENAL_VERSION}
+  pip3 install --trusted-host pypi.las2.fanops.net -i http://pypi.las2.fanops.net/nexus/repository/pypi-all/simple arsenalweb${ARSENAL_VERSION}

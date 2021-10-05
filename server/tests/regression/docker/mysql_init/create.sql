@@ -1,662 +1,521 @@
-#  Copyright 2015 CityGrid Media, LLC
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
 use arsenal;
 
-###
-### TABLE: tags
-###   This contains definitions of tags which are key/value pairs that
-###   are associated with a node, nodegroup or other object (examples?),
-###
-DROP TABLE IF EXISTS `tags`;
-CREATE TABLE `tags` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `value`                  varchar(255) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_tag_id on tags (id);
-CREATE UNIQUE INDEX idx_uniq_tag on tags (name, value);
+CREATE TABLE alembic_version (
+    version_num VARCHAR(32) NOT NULL, 
+    CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+);
 
-###
-### TABLE: tag_node_assignments
-###   This contains assignments of tags to nodes object_type.
-###
-DROP TABLE IF EXISTS `tag_node_assignments`;
-CREATE TABLE `tag_node_assignments` (
-  `tag_id`                     int(11) UNSIGNED,
-  `node_id`                    int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+-- Running upgrade  -> b1bf5df56a22
 
-###
-### TABLE: tag_node_group_assignments
-###   This contains assignments of tags to node_groups object_type.
-###
-DROP TABLE IF EXISTS `tag_node_group_assignments`;
-CREATE TABLE `tag_node_group_assignments` (
-  `tag_id`                        int(11) UNSIGNED,
-  `node_group_id`                 int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE data_centers_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_data_centers_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: tag_data_center_assignments
-###   This contains assignments of tags to data_centers object_type.
-###
-DROP TABLE IF EXISTS `tag_data_center_assignments`;
-CREATE TABLE `tag_data_center_assignments` (
-  `tag_id`                        int(11) UNSIGNED,
-  `data_center_id`                 int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE ec2_instances (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    account_id VARCHAR(255) NOT NULL, 
+    ami_id VARCHAR(255) NOT NULL, 
+    hostname VARCHAR(255) NOT NULL, 
+    instance_id VARCHAR(255) NOT NULL, 
+    instance_type VARCHAR(255) NOT NULL, 
+    availability_zone VARCHAR(255) NOT NULL, 
+    profile VARCHAR(255) NOT NULL, 
+    reservation_id VARCHAR(255) NOT NULL, 
+    security_groups VARCHAR(255) NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_ec2_instances PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: tag_physical_device_assignments
-###   This contains assignments of tags to physical_devices object_type.
-###
-DROP TABLE IF EXISTS `tag_physical_device_assignments`;
-CREATE TABLE `tag_physical_device_assignments` (
-  `tag_id`                        int(11) UNSIGNED,
-  `physical_device_id`            int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_ec2_id ON ec2_instances (id);
 
-###
-### TABLE: data_centers
-###   The data_centers table.
-###
-### Address fields based on:
-### https://www.drupal.org/project/address
-###
-DROP TABLE IF EXISTS `data_centers`;
-CREATE TABLE `data_centers` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `status_id`              int(11) NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_data_center_id on data_centers (id);
-CREATE UNIQUE INDEX idx_unique_data_center_name on data_centers (name);
+CREATE UNIQUE INDEX idx_ec2_instance_id ON ec2_instances (instance_id);
 
-###
-### TABLE: hardware_profiles
-###   This contains definitions of hardware_profiles that are associated
-###   a node.
-###
-DROP TABLE IF EXISTS `hardware_profiles`;
-CREATE TABLE `hardware_profiles` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `manufacturer`           varchar(255) COLLATE utf8_bin NOT NULL,
-  `model`                  varchar(255) COLLATE utf8_bin NOT NULL,
-  `rack_u`                 int(11) COLLATE utf8_bin NOT NULL,
-  `rack_color`             varchar(255) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_uniq_hardware_profile on hardware_profiles (name);
+CREATE TABLE ec2_instances_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_ec2_instances_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: ip_addresses
-###   The ip_addresses table.
-###
-DROP TABLE IF EXISTS `ip_addresses`;
-CREATE TABLE `ip_addresses` (
-      `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `ip_address`             varchar(255) COLLATE utf8_bin NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_ip_address_uniq on ip_addresses (ip_address);
+CREATE TABLE group_perms (
+    id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    CONSTRAINT pk_group_perms PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: network_interface_assignments
-###   This contains assignments of network_interfaces to nodes.
-###
-DROP TABLE IF EXISTS `network_interface_assignments`;
-CREATE TABLE `network_interface_assignments` (
-  `node_id`                   int(11) UNSIGNED,
-  `network_interface_id`      int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_group_perms_unique ON group_perms (name(255));
 
-###
-### TABLE: network_interfaces
-###   This contains definitions of network_interfaces that are associated
-###   to a node.
-###
-DROP TABLE IF EXISTS `network_interfaces`;
-CREATE TABLE `network_interfaces` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `unique_id`              varchar(255) COLLATE utf8_bin NOT NULL,
-  `ip_address_id`          int(11),
-  `bond_master`            text,
-  `port_description`       text,
-  `port_number`            text,
-  `port_switch`            text,
-  `port_vlan`              text,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_network_interface_id on network_interfaces (id);
-CREATE UNIQUE INDEX idx_unique_network_interface_unique_id on network_interfaces (unique_id);
-
-###
-### TABLE: node_group_assignments
-###   This contains assignments of node_groups to nodes.
-###
-DROP TABLE IF EXISTS `node_group_assignments`;
-CREATE TABLE `node_group_assignments` (
-  `node_id`                   int(11) UNSIGNED,
-  `node_group_id`             int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-###
-### TABLE: node_groups
-###   The node_groups table.
-###
-DROP TABLE IF EXISTS `node_groups`;
-CREATE TABLE `node_groups` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `owner`                  varchar(255) COLLATE utf8_bin NOT NULL,
-  `description`            text NOT NULL,
-  `notes_url`              text,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_node_group_id on node_groups (id);
-CREATE UNIQUE INDEX idx_unique_node_group_name on node_groups (name);
-
-
-###
-### TABLE: nodes
-###   The nodes table.
-###
-DROP TABLE IF EXISTS `nodes`;
-CREATE TABLE `nodes` (
-  `id`                                int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                              varchar(255) COLLATE utf8_bin NOT NULL,
-  `unique_id`                         varchar(255) DEFAULT NULL,
-  `status_id`                         int(11) NOT NULL,
-  `serial_number`                     varchar(255) DEFAULT NULL,
-  `hardware_profile_id`               int(11) DEFAULT NULL,
-  `operating_system_id`               int(11) DEFAULT NULL,
-  `processor_manufacturer`            varchar(255) DEFAULT NULL,
-  `processor_model`                   varchar(255) DEFAULT NULL,
-  `processor_speed`                   varchar(255) DEFAULT NULL,  # Questionable
-  `processor_socket_count`            int(11) DEFAULT NULL,  # Questionable
-  `processor_count`                   int(11) DEFAULT NULL,
-  `physical_memory`                   varchar(255) DEFAULT NULL,
-  `os_memory`                         varchar(255) DEFAULT NULL,
-  `console_type`                      varchar(255) DEFAULT NULL,
-  `kernel_version`                    varchar(255) DEFAULT NULL,
-  `processor_core_count`              int(11) DEFAULT NULL,
-  `os_processor_count`                int(11) DEFAULT NULL,
-  `asset_tag`                         varchar(255) DEFAULT NULL,
-  `timezone`                          varchar(255) DEFAULT NULL,
-  `virtualarch`                       varchar(255) DEFAULT NULL,
-  `uptime`                            varchar(255) DEFAULT NULL,
-  `puppet_version`                    varchar(255) DEFAULT NULL,
-  `facter_version`                    varchar(255) DEFAULT NULL,
-  `ec2_id`                            int(11) DEFAULT NULL,
-  `data_center_id`                    int(11) DEFAULT NULL,
-  `updated_by`                        varchar(200) COLLATE utf8_bin NOT NULL,
-  `last_registered`                   timestamp DEFAULT CURRENT_TIMESTAMP,
-  `created`                           timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                           timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_node_id on nodes (id);
-CREATE INDEX idx_node_name on nodes (name);
-CREATE UNIQUE INDEX idx_node_ec2_id on nodes (ec2_id);
-
-###
-### TABLE: ec2_instances
-###   The ec2_instances table. This contains alll the ec2 facts for a given
-###   node. In the future there could be more tables for various
-###   cloud providers.
-###
-DROP TABLE IF EXISTS `ec2_instances`;
-CREATE TABLE `ec2_instances` (
-  `id`                            int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `account_id`                    varchar(255) DEFAULT NULL,
-  `ami_id`                        varchar(255) NOT NULL,
-  `hostname`                      varchar(255) NOT NULL,
-  `instance_id`                   varchar(255) NOT NULL,
-  `instance_type`                 varchar(255) NOT NULL,
-  `availability_zone`             varchar(255) DEFAULT NULL,
-  `profile`                       varchar(255) DEFAULT NULL,
-  `reservation_id`                varchar(255) DEFAULT NULL,
-  `security_groups`               varchar(255) DEFAULT NULL,
-  `created`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updated_by`                    varchar(200) COLLATE utf8_bin NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_ec2_id on ec2_instances (id);
-CREATE UNIQUE INDEX idx_ec2_instance_id on ec2_instances (instance_id);
-
-###
-### TABLE: physical_locations
-###   The physical_locations table.
-###
-DROP TABLE IF EXISTS `physical_locations`;
-CREATE TABLE `physical_locations` (
-  `id`              int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`            varchar(255) COLLATE utf8_bin NOT NULL,
-  `provider`        text,
-  `address_1`       text,
-  `address_2`       text,
-  `city`            text,
-  `admin_area`      text,
-  `country`         text,
-  `postal_code`     text,
-  `contact_name`    text,
-  `phone_number`    text,
-  `updated_by`      varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`         timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`         timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_physical_location_id on physical_locations (id);
-CREATE UNIQUE INDEX idx_physical_location_name on physical_locations (name);
-
-###
-### TABLE: physical_racks
-###   The physical_racks table.
-###
-DROP TABLE IF EXISTS `physical_racks`;
-CREATE TABLE `physical_racks` (
-  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                    varchar(255) NOT NULL,
-  `physical_location_id`    int(11) NOT NULL,
-  `server_subnet`           varchar(255) DEFAULT NULL,
-  `oob_subnet`              varchar(255) DEFAULT NULL,
-  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_physical_rack_id on physical_racks (id);
-CREATE UNIQUE INDEX idx_physical_rack_location on physical_racks (name, physical_location_id);
-
-###
-### TABLE: physical_elevation
-###   The physical_elevation table.
-###
-DROP TABLE IF EXISTS `physical_elevations`;
-CREATE TABLE `physical_elevations` (
-  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `elevation`               varchar(11) NOT NULL,
-  `physical_rack_id`        int(11) NOT NULL,
-  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_physical_elevation_id on physical_elevations (id);
-CREATE UNIQUE INDEX idx_physical_elevation_location on physical_elevations (elevation, physical_rack_id);
-
-###
-### TABLE: physical_devices
-###   The physical_devices table.
-###
-DROP TABLE IF EXISTS `physical_devices`;
-CREATE TABLE `physical_devices` (
-  `id`                      int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `serial_number`           varchar(255) NOT NULL,
-  `physical_elevation_id`   int(11) NOT NULL,
-  `physical_location_id`    int(10) NOT NULL,
-  `physical_rack_id`        int(10) NOT NULL,
-  `mac_address_1`           varchar(255) NOT NULL,
-  `mac_address_2`           varchar(255) DEFAULT NULL,
-  `hardware_profile_id`     int(11) NOT NULL,
-  `oob_ip_address`          varchar(255) DEFAULT NULL,
-  `oob_mac_address`         varchar(255) DEFAULT NULL,
-  `status_id`               int(11) NOT NULL,
-  `updated_by`              varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE INDEX idx_physical_device_id on physical_devices (id);
-CREATE UNIQUE INDEX idx_physical_device_serial_number on physical_devices (serial_number);
-CREATE UNIQUE INDEX idx_physical_device_rack_elevation on physical_devices (physical_rack_id, physical_elevation_id);
-
-###
-### TABLE: statuses
-###   The statuses table.
-###
-DROP TABLE IF EXISTS `statuses`;
-CREATE TABLE `statuses` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `description`            text NOT NULL,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_status_name_uniq on statuses (name);
-
-
-###
-### TABLE: operating_systems
-###   The operating_systems table.
-###
-DROP TABLE IF EXISTS `operating_systems`;
-CREATE TABLE `operating_systems` (
-  `id`                     int(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(255) COLLATE utf8_bin NOT NULL,
-  `variant`                varchar(255) COLLATE utf8_bin NOT NULL,
-  `version_number`         varchar(255) COLLATE utf8_bin NOT NULL,
-  `architecture`           varchar(255) COLLATE utf8_bin NOT NULL,
-  `description`            text,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_operating_systems_uniq on operating_systems (name);
-
-###
-### TABLE: hypervisor_vm_assignments
-###   This contains assignments of hypervisors to guest_vms object_type.
-###
-DROP TABLE IF EXISTS `hypervisor_vm_assignments`;
-CREATE TABLE `hypervisor_vm_assignments` (
-  `hypervisor_id`               int(11) UNSIGNED,
-  `guest_vm_id`                 int(11) UNSIGNED
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-### User and groups tables
-
-###
-### TABLE: users
-###   This is the local users table for installs that do not
-###   wish to use AD/LDAP
-###
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
-  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(250) COLLATE utf8_bin NOT NULL,
-  `first_name`             varchar(250) COLLATE utf8_bin,
-  `last_name`              varchar(250) COLLATE utf8_bin,
-  `salt`                   varchar(50) COLLATE utf8_bin NOT NULL,
-  `password`               varchar(250) COLLATE utf8_bin NOT NULL,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_user_name_unique on users (name);
-
-###
-### TABLE: groups
-###   This is the primary groups table.
-###
-DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
-  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(250) COLLATE utf8_bin NOT NULL,
-  `updated_by`             varchar(200) COLLATE utf8_bin NOT NULL,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_group_name_unique on arsenal.groups (name);
+    id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_groups PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: local_user_group_assignments
-###   This table assigns local users to groups.
-###
-DROP TABLE IF EXISTS `local_user_group_assignments`;
-CREATE TABLE `local_user_group_assignments` (
-  `group_id`                    mediumint(9) UNSIGNED NOT NULL,
-  `user_id`                     mediumint(9) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_group_name_unique ON `groups` (name(255));
 
-###
-### TABLE: group_permissions
-###   This is the reference table for the list of permissions.
-###
-DROP TABLE IF EXISTS `group_perms`;
-CREATE TABLE `group_perms` (
-  `id`                     mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name`                   varchar(250) COLLATE utf8_bin NOT NULL ,
-  `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-CREATE UNIQUE INDEX idx_group_perms_unique on group_perms (name);
+CREATE TABLE hardware_profiles (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    model VARCHAR(255) NOT NULL, 
+    manufacturer VARCHAR(255) NOT NULL, 
+    rack_u INTEGER NOT NULL, 
+    rack_color TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_hardware_profiles PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: group_perm_assignments
-###   This table assigns groups to permissions, controlling
-###   what group memebers are able to do in the interface.
-###
-DROP TABLE IF EXISTS `group_perm_assignments`;
-CREATE TABLE `group_perm_assignments` (
-  `group_id`               mediumint(9) UNSIGNED NOT NULL,
-  `perm_id`                mediumint(9) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_hardware_profile_id ON hardware_profiles (id);
 
-###
-### AUDIT TABLES
-###
+CREATE UNIQUE INDEX idx_uniq_hardware_profile ON hardware_profiles (name);
 
-###
-### TABLE: data_centers_audit
-###   This table tracks additions, changes and deletions to the data_centers table.
-###
-DROP TABLE IF EXISTS `data_centers_audit`;
-CREATE TABLE `data_centers_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE hardware_profiles_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_hardware_profiles_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: ec2_instances_audit
-###   This table tracks additions, changes and deletions to the ec2_instances table.
-###
-DROP TABLE IF EXISTS `ec2_instances_audit`;
-CREATE TABLE `ec2_instances_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE ip_addresses (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    ip_address VARCHAR(255) NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_ip_addresses PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: ip_addresses_audit
-###   This table tracks additions, changes and deletions to the ip_addresses table.
-###
-DROP TABLE IF EXISTS `ip_addresses_audit`;
-CREATE TABLE `ip_addresses_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_ip_address_uniq ON ip_addresses (ip_address);
 
-###
-### TABLE: nodes_audit
-###   This table tracks additions, changes and deletions to the nodes table.
-###
-DROP TABLE IF EXISTS `nodes_audit`;
-CREATE TABLE `nodes_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE ip_addresses_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_ip_addresses_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: node_groups_audit
-###   This table tracks additions, changes and deletions to the node_groups table.
-###
-DROP TABLE IF EXISTS `node_groups_audit`;
-CREATE TABLE `node_groups_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE network_interfaces_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_network_interfaces_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: operating_systems_audit
-###   This table tracks additions, changes and deletions to the operating_systems table.
-###
-DROP TABLE IF EXISTS `operating_systems_audit`;
-CREATE TABLE `operating_systems_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE node_groups (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    owner VARCHAR(255) NOT NULL, 
+    description TEXT NOT NULL, 
+    notes_url TEXT, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_node_groups PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: hardware_profiles_audit
-###   This table tracks additions, changes and deletions to the hardware_profiles table.
-###
-DROP TABLE IF EXISTS `hardware_profiles_audit`;
-CREATE TABLE `hardware_profiles_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_node_group_id ON node_groups (id);
 
-###
-### TABLE: statuses_audit
-###   This table tracks additions, changes and deletions to the statuses table.
-###
-DROP TABLE IF EXISTS `statuses_audit`;
-CREATE TABLE `statuses_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_unique_node_group_name ON node_groups (name);
 
-###
-### TABLE: tags_audit
-###   This table tracks additions, changes and deletions to the tags table.
-###
-DROP TABLE IF EXISTS `tags_audit`;
-CREATE TABLE `tags_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE node_groups_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_node_groups_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: network_interfaces_audit
-###   This table tracks additions, changes and deletions to the network_interfaces table.
-###
-DROP TABLE IF EXISTS `network_interfaces_audit`;
-CREATE TABLE `network_interfaces_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE nodes_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_nodes_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: physical_locations_audit
-###   This table tracks additions, changes and deletions to the physical_locations table.
-###
-DROP TABLE IF EXISTS `physical_locations_audit`;
-CREATE TABLE `physical_locations_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE operating_systems (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    variant VARCHAR(255) NOT NULL, 
+    version_number VARCHAR(255) NOT NULL, 
+    architecture VARCHAR(255) NOT NULL, 
+    description TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_operating_systems PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
 
-###
-### TABLE: physical_racks_audit
-###   This table tracks additions, changes and deletions to the physical_racks table.
-###
-DROP TABLE IF EXISTS `physical_racks_audit`;
-CREATE TABLE `physical_racks_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE INDEX idx_operating_systems_id ON operating_systems (id);
 
-###
-### TABLE: physical_elevations_audit
-###   This table tracks additions, changes and deletions to the physical_elevations table.
-###
-DROP TABLE IF EXISTS `physical_elevations_audit`;
-CREATE TABLE `physical_elevations_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE UNIQUE INDEX idx_operating_systems_uniq ON operating_systems (name);
 
-###
-### TABLE: physical_devices_audit
-###   This table tracks additions, changes and deletions to the physical_devices table.
-###
-DROP TABLE IF EXISTS `physical_devices_audit`;
-CREATE TABLE `physical_devices_audit` (
-      `id`                     bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `object_id`              int(11) UNSIGNED NOT NULL,
-      `field`                  varchar(255) NOT NULL,
-      `old_value`              varchar(255) NOT NULL,
-      `new_value`              varchar(255) NOT NULL,
-      `updated_by`             varchar(255) NOT NULL,
-      `created`                timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+CREATE TABLE operating_systems_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_operating_systems_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE physical_devices_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_devices_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE physical_elevations_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_elevations_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE physical_locations (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    provider TEXT, 
+    address_1 TEXT, 
+    address_2 TEXT, 
+    city TEXT, 
+    admin_area TEXT, 
+    country TEXT, 
+    postal_code TEXT, 
+    contact_name TEXT, 
+    phone_number TEXT, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_locations PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_physical_location_id ON physical_locations (id);
+
+CREATE UNIQUE INDEX idx_physical_location_name ON physical_locations (name);
+
+CREATE TABLE physical_locations_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_locations_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE physical_racks_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_racks_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE statuses (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    description TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_statuses PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_status_name_id ON statuses (id);
+
+CREATE UNIQUE INDEX idx_status_name_uniq ON statuses (name);
+
+CREATE TABLE statuses_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_statuses_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE tags (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    value VARCHAR(255) NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_tags PRIMARY KEY (id), 
+    CONSTRAINT idx_uniq_tag UNIQUE (name, value)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_tag_id ON tags (id);
+
+CREATE TABLE tags_audit (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    object_id INTEGER NOT NULL, 
+    field TEXT NOT NULL, 
+    old_value TEXT NOT NULL, 
+    new_value TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_tags_audit PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE users (
+    id MEDIUMINT(9) UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name TEXT NOT NULL, 
+    first_name TEXT, 
+    last_name TEXT, 
+    salt TEXT NOT NULL, 
+    password TEXT NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_users PRIMARY KEY (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE UNIQUE INDEX idx_user_name_unique ON users (name(255));
+
+CREATE TABLE data_centers (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    status_id INTEGER UNSIGNED NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_data_centers PRIMARY KEY (id), 
+    CONSTRAINT fk_data_centers_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_data_center_id ON data_centers (id);
+
+CREATE UNIQUE INDEX idx_unique_data_center_name ON data_centers (name);
+
+CREATE TABLE group_perm_assignments (
+    group_id MEDIUMINT(9) UNSIGNED, 
+    perm_id MEDIUMINT(9) UNSIGNED, 
+    CONSTRAINT fk_group_perm_assignments_group_id_groups FOREIGN KEY(group_id) REFERENCES `groups` (id), 
+    CONSTRAINT fk_group_perm_assignments_perm_id_group_perms FOREIGN KEY(perm_id) REFERENCES group_perms (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE local_user_group_assignments (
+    user_id MEDIUMINT(9) UNSIGNED, 
+    group_id MEDIUMINT(9) UNSIGNED, 
+    CONSTRAINT fk_local_user_group_assignments_group_id_groups FOREIGN KEY(group_id) REFERENCES `groups` (id), 
+    CONSTRAINT fk_local_user_group_assignments_user_id_users FOREIGN KEY(user_id) REFERENCES users (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE network_interfaces (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    unique_id VARCHAR(255) NOT NULL, 
+    ip_address_id INTEGER UNSIGNED, 
+    bond_master TEXT, 
+    port_description TEXT, 
+    port_number TEXT, 
+    port_switch TEXT, 
+    port_vlan TEXT, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_network_interfaces PRIMARY KEY (id), 
+    CONSTRAINT fk_network_interfaces_ip_address_id_ip_addresses FOREIGN KEY(ip_address_id) REFERENCES ip_addresses (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_network_interface_id ON network_interfaces (id);
+
+CREATE UNIQUE INDEX idx_unique_network_interface_unique_id ON network_interfaces (unique_id);
+
+CREATE TABLE physical_racks (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    physical_location_id INTEGER UNSIGNED NOT NULL, 
+    server_subnet VARCHAR(255), 
+    oob_subnet VARCHAR(255), 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_racks PRIMARY KEY (id), 
+    CONSTRAINT fk_physical_racks_physical_location_id_physical_locations FOREIGN KEY(physical_location_id) REFERENCES physical_locations (id), 
+    CONSTRAINT idx_physical_rack_location UNIQUE (name, physical_location_id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_physical_rack_id ON physical_racks (id);
+
+CREATE TABLE tag_node_group_assignments (
+    tag_id INTEGER UNSIGNED, 
+    node_group_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_tag_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
+    CONSTRAINT fk_tag_node_group_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE nodes (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL, 
+    unique_id VARCHAR(255) NOT NULL, 
+    status_id INTEGER UNSIGNED NOT NULL, 
+    hardware_profile_id INTEGER UNSIGNED NOT NULL, 
+    operating_system_id INTEGER UNSIGNED NOT NULL, 
+    ec2_id INTEGER UNSIGNED, 
+    data_center_id INTEGER UNSIGNED, 
+    uptime VARCHAR(255), 
+    serial_number VARCHAR(255), 
+    os_memory VARCHAR(255), 
+    processor_count INTEGER, 
+    last_registered TIMESTAMP NULL, 
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_nodes PRIMARY KEY (id), 
+    CONSTRAINT fk_nodes_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
+    CONSTRAINT fk_nodes_ec2_id_ec2_instances FOREIGN KEY(ec2_id) REFERENCES ec2_instances (id), 
+    CONSTRAINT fk_nodes_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
+    CONSTRAINT fk_nodes_operating_system_id_operating_systems FOREIGN KEY(operating_system_id) REFERENCES operating_systems (id), 
+    CONSTRAINT fk_nodes_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE UNIQUE INDEX idx_node_ec2_id ON nodes (ec2_id);
+
+CREATE INDEX idx_node_id ON nodes (id);
+
+CREATE INDEX idx_node_name ON nodes (name);
+
+CREATE INDEX idx_node_serial_number ON nodes (serial_number);
+
+CREATE TABLE physical_elevations (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    elevation VARCHAR(11) NOT NULL, 
+    physical_rack_id INTEGER UNSIGNED NOT NULL, 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_elevations PRIMARY KEY (id), 
+    CONSTRAINT fk_physical_elevations_physical_rack_id_physical_racks FOREIGN KEY(physical_rack_id) REFERENCES physical_racks (id), 
+    CONSTRAINT idx_physical_elevation_location UNIQUE (elevation, physical_rack_id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE UNIQUE INDEX idx_physical_elevation_id ON physical_elevations (id);
+
+CREATE TABLE tag_data_center_assignments (
+    tag_id INTEGER UNSIGNED, 
+    data_center_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_tag_data_center_assignments_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id), 
+    CONSTRAINT fk_tag_data_center_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE hypervisor_vm_assignments (
+    hypervisor_id INTEGER UNSIGNED, 
+    guest_vm_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_hypervisor_vm_assignments_guest_vm_id_nodes FOREIGN KEY(guest_vm_id) REFERENCES nodes (id), 
+    CONSTRAINT fk_hypervisor_vm_assignments_hypervisor_id_nodes FOREIGN KEY(hypervisor_id) REFERENCES nodes (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE network_interface_assignments (
+    node_id INTEGER UNSIGNED, 
+    network_interface_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_network_interface_assignments_network_interface_id_ne_7ba3 FOREIGN KEY(network_interface_id) REFERENCES network_interfaces (id), 
+    CONSTRAINT fk_network_interface_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE node_group_assignments (
+    node_id INTEGER UNSIGNED, 
+    node_group_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_node_group_assignments_node_group_id_node_groups FOREIGN KEY(node_group_id) REFERENCES node_groups (id), 
+    CONSTRAINT fk_node_group_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE physical_devices (
+    id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT, 
+    serial_number VARCHAR(255) NOT NULL, 
+    physical_location_id INTEGER UNSIGNED NOT NULL, 
+    physical_rack_id INTEGER UNSIGNED NOT NULL, 
+    physical_elevation_id INTEGER UNSIGNED NOT NULL, 
+    status_id INTEGER UNSIGNED NOT NULL, 
+    mac_address_1 VARCHAR(255) NOT NULL, 
+    mac_address_2 VARCHAR(255), 
+    hardware_profile_id INTEGER UNSIGNED NOT NULL, 
+    oob_ip_address VARCHAR(255), 
+    oob_mac_address VARCHAR(255), 
+    created TIMESTAMP NOT NULL, 
+    updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    updated_by VARCHAR(255) NOT NULL, 
+    CONSTRAINT pk_physical_devices PRIMARY KEY (id), 
+    CONSTRAINT fk_physical_devices_hardware_profile_id_hardware_profiles FOREIGN KEY(hardware_profile_id) REFERENCES hardware_profiles (id), 
+    CONSTRAINT fk_physical_devices_physical_elevation_id_physical_elevations FOREIGN KEY(physical_elevation_id) REFERENCES physical_elevations (id), 
+    CONSTRAINT fk_physical_devices_physical_location_id_physical_locations FOREIGN KEY(physical_location_id) REFERENCES physical_locations (id), 
+    CONSTRAINT fk_physical_devices_physical_rack_id_physical_racks FOREIGN KEY(physical_rack_id) REFERENCES physical_racks (id), 
+    CONSTRAINT fk_physical_devices_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id), 
+    CONSTRAINT idx_physical_device_rack_elevation UNIQUE (physical_rack_id, physical_elevation_id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE INDEX idx_physical_device_id ON physical_devices (id);
+
+CREATE UNIQUE INDEX idx_physical_device_serial_number ON physical_devices (serial_number);
+
+CREATE TABLE tag_node_assignments (
+    tag_id INTEGER UNSIGNED, 
+    node_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_tag_node_assignments_node_id_nodes FOREIGN KEY(node_id) REFERENCES nodes (id), 
+    CONSTRAINT fk_tag_node_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+CREATE TABLE tag_physical_device_assignments (
+    tag_id INTEGER UNSIGNED, 
+    physical_device_id INTEGER UNSIGNED, 
+    CONSTRAINT fk_tag_physical_device_assignments_physical_device_id_ph_6dc6 FOREIGN KEY(physical_device_id) REFERENCES physical_devices (id), 
+    CONSTRAINT fk_tag_physical_device_assignments_tag_id_tags FOREIGN KEY(tag_id) REFERENCES tags (id)
+)CHARSET=utf8 COLLATE utf8_bin;
+
+INSERT INTO alembic_version (version_num) VALUES ('b1bf5df56a22');
+

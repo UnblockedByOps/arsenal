@@ -18,9 +18,6 @@ import re
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
@@ -30,9 +27,6 @@ from arsenalweb.views.api.common import (
     )
 from arsenalweb.views.api.physical_locations import (
     find_physical_location_by_name,
-    )
-from arsenalweb.models.common import (
-    DBSession,
     )
 from arsenalweb.models.physical_racks import (
     PhysicalRack,
@@ -44,29 +38,30 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_physical_rack_by_name_loc(name, physical_location_id):
+def find_physical_rack_by_name_loc(dbsession, name, physical_location_id):
     '''Find a physical_rack by name and physical_location_id. Returns
     a physical_rack object if found, raises NoResultFound otherwise.'''
 
-    LOG.debug('Searching for physical_rack by name: {0} '
-              'physical_location_id: {1}'.format(name, physical_location_id))
+    LOG.debug('Searching for physical_rack by name: %s '
+              'physical_location_id: %s', name, physical_location_id)
 
-    physical_rack = DBSession.query(PhysicalRack)
+    physical_rack = dbsession.query(PhysicalRack)
     physical_rack = physical_rack.filter(PhysicalRack.name == name)
     physical_rack = physical_rack.filter(PhysicalRack.physical_location_id == physical_location_id)
 
     return physical_rack.one()
 
-def find_physical_rack_by_id(physical_rack_id):
+def find_physical_rack_by_id(dbsession, physical_rack_id):
     '''Find a physical_rack by id.'''
 
-    LOG.debug('Searching for physical_rack by id: {0}'.format(physical_rack_id))
-    physical_rack = DBSession.query(PhysicalRack)
+    LOG.debug('Searching for physical_rack by id: %s', physical_rack_id)
+    physical_rack = dbsession.query(PhysicalRack)
     physical_rack = physical_rack.filter(PhysicalRack.id == physical_rack_id)
 
     return physical_rack.one()
 
-def create_physical_rack(name=None,
+def create_physical_rack(dbsession,
+                         name=None,
                          physical_location_id=None,
                          updated_by=None,
                          **kwargs):
@@ -88,7 +83,7 @@ def create_physical_rack(name=None,
     '''
 
     try:
-        LOG.info('Creating new physical_rack name: {0}'.format(name))
+        LOG.info('Creating new physical_rack name: %s', name)
 
         utcnow = datetime.utcnow()
 
@@ -106,8 +101,8 @@ def create_physical_rack(name=None,
                                      updated=utcnow,
                                      **kwargs)
 
-        DBSession.add(physical_rack)
-        DBSession.flush()
+        dbsession.add(physical_rack)
+        dbsession.flush()
 
         audit = PhysicalRackAudit(object_id=physical_rack.id,
                                   field='name',
@@ -115,8 +110,8 @@ def create_physical_rack(name=None,
                                   new_value=physical_rack.name,
                                   updated_by=updated_by,
                                   created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return api_200(results=physical_rack)
 
@@ -126,7 +121,7 @@ def create_physical_rack(name=None,
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_physical_rack(physical_rack, **kwargs):
+def update_physical_rack(dbsession, physical_rack, **kwargs):
     '''Update an existing physical_rack.
 
     Required params:
@@ -151,7 +146,7 @@ def update_physical_rack(physical_rack, **kwargs):
             if my_attribs.get(my_attr):
                 my_attribs[my_attr] = str(my_attribs[my_attr])
 
-        LOG.info('Updating physical_rack: {0}'.format(physical_rack.name))
+        LOG.info('Updating physical_rack: %s', physical_rack.name)
 
         utcnow = datetime.utcnow()
 
@@ -174,20 +169,20 @@ def update_physical_rack(physical_rack, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating physical_rack: {0} attribute: '
-                          '{1} new_value: {2}'.format(physical_rack.name,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating physical_rack: %s attribute: '
+                          '%s new_value: %s', physical_rack.name,
+                                              attribute,
+                                              new_value)
                 audit = PhysicalRackAudit(object_id=physical_rack.id,
                                           field=attribute,
                                           old_value=old_value,
                                           new_value=new_value,
                                           updated_by=my_attribs['updated_by'],
                                           created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(physical_rack, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return api_200(results=physical_rack)
 
@@ -222,7 +217,7 @@ def api_physical_racks_schema(request):
 
     return physical_rack
 
-@view_config(route_name='api_physical_racks', permission='physical_rack_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_racks', permission='physical_rack_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_racks_write(request):
     '''Process write requests for /api/physical_racks route.'''
 
@@ -242,19 +237,20 @@ def api_physical_racks_write(request):
                 my_pl = params['physical_location']['name']
             else:
                 my_pl = params['physical_location']
-            physical_location = find_physical_location_by_name(my_pl)
+            physical_location = find_physical_location_by_name(request.dbsession, my_pl)
             params['physical_location_id'] = physical_location.id
             del params['physical_location']
             try:
-                physical_rack = find_physical_rack_by_name_loc(params['name'],
+                physical_rack = find_physical_rack_by_name_loc(request.dbsession,
+                                                               params['name'],
                                                                params['physical_location_id'])
-                resp = update_physical_rack(physical_rack, **params)
+                resp = update_physical_rack(request.dbsession, physical_rack, **params)
             except NoResultFound:
-                resp = create_physical_rack(**params)
+                resp = create_physical_rack(request.dbsession, **params)
         except NoResultFound:
             msg = 'physical_location not found: {0} unable to create ' \
                   'rack: {1}'.format(params['physical_location'], params['name'])
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise NoResultFound(msg)
 
         return resp
@@ -264,20 +260,19 @@ def api_physical_racks_write(request):
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_physical_rack_r', permission='physical_rack_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_rack_r', permission='physical_rack_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_rack_r', permission='physical_rack_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_rack_r', permission='physical_rack_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_rack_write_attrib(request):
     '''Process write requests for the /api/physical_racks/{id}/{resource} route.'''
 
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the physical_rack, then figure out what to do to it.
-    physical_rack = find_physical_rack_by_id(request.matchdict['id'])
-    LOG.debug('physical_rack is: {0}'.format(physical_rack))
+    physical_rack = find_physical_rack_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('physical_rack is: %s', physical_rack)
 
     # List of resources allowed
     resources = [
@@ -292,9 +287,9 @@ def api_physical_rack_write_attrib(request):
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating physical_racks: {0} exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating physical_racks: %s exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()
 
-    return resp
+    return []

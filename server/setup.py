@@ -14,69 +14,108 @@
 #  limitations under the License.
 #
 import os
+
 from setuptools import setup, find_packages
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(HERE, 'README.rst')) as f:
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
-with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
-    CHANGELOG = f.read()
+with open(os.path.join(here, 'CHANGES.txt')) as f:
+    CHANGES = f.read()
 
-REQUIRES = [
-    'venusian==1.2.0',
-    'pyramid==1.5.1',
-    'pyramid_chameleon==0.3',
-    'pyramid_debugtoolbar==2.2',
-    'pyramid-tm==0.7',
-    'pyramid_ldap==0.2',
-    'pyramid-mako==1.0.2',
-    'Pygments==1.6',
-    'waitress==0.8.9',
-    'SQLAlchemy==0.9.7',
-    'mysql-connector-python==1.2.3',
-    'transaction==1.4.3',
-    'zope.sqlalchemy==0.7.5',
-    'python-ldap==2.4.16',
-    'ldappool==1.0',
-    'requests==2.3.0',
-    'arrow==0.4.4',
-    'passlib==1.6.2',
-    'PyramidXmlRenderer==0.1.5',
-    'python-pam==1.8.2',
-    'zope.interface==4.3.3',
-    'setuptools==44.0.0',
-    'WebOb==1.7.4',
+requires = [
+    'Chameleon==3.9.0',
+    'Mako==1.1.4',
+    'MarkupSafe==2.0.0',
+    'PasteDeploy==2.1.1',
+    'Pygments==2.9.0',
+    'SQLAlchemy==1.4.15',
+    'WebOb==1.8.7',
+    'WebTest==2.0.35',
+    'attrs==21.2.0',
+    'beautifulsoup4==4.9.3',
+    'certifi==2020.12.5',
+    'chardet==4.0.0',
+    'coverage==5.5',
+    'greenlet==1.1.0',
+    'hupper==1.10.2',
+    'idna==2.10',
+    'importlib-metadata==4.0.1',
+    'iniconfig==1.1.1',
+    'mysqlclient==2.0.3',
+    'packaging==20.9',
+    'pam==0.2.0',
+    'passlib==1.7.4',
+    'plaster-pastedeploy==0.7',
+    'plaster==1.0',
+    'pluggy==0.13.1',
+    'py==1.10.0',
+    'pyparsing==2.4.7',
+    'pyramid-chameleon==0.3',
+    'pyramid-debugtoolbar==4.9',
+    'pyramid-mako==1.1.0',
+    'pyramid-retry==2.1.1',
+    'pyramid-tm==2.4',
+    'pyramid==2.0',
+    'pytest-cov==2.11.1',
+    'pytest==6.2.4',
+    'python-dateutil==2.8.1',
+    'python-editor==1.0.4',
+    'python-pam==1.8.4',
+    'pytz==2021.1',
+    'repoze.lru==0.7',
+    'requests==2.25.1',
+    'six==1.16.0',
+    'soupsieve==2.2.1',
+    'toml==0.10.2',
+    'transaction==3.0.1',
+    'translationstring==1.4',
+    'typing-extensions==3.10.0.0',
+    'urllib3==1.26.4',
+    'venusian==3.0.0',
+    'waitress==2.0.0',
+    'wheel==0.36.2',
+    'zipp==3.4.1',
+    'zope.deprecation==4.4.0',
+    'zope.interface==5.4.0',
+    'zope.sqlalchemy==1.4',
 ]
 
-DEPENDENCY_LINKS = [
-    'https://github.com/CityGrid/pyramid_ldap/tarball/0.2#egg=pyramid_ldap-0.2'
+tests_require = [
+    'WebTest',
+    'pytest',
+    'pytest-cov',
 ]
 
-setup(name='arsenalweb',
-      version='9.10',
-      description='Arsenal web api/ui',
-      long_description=README + '\n\n' + CHANGELOG,
-      classifiers=[
-          'Programming Language :: Python',
-          'Framework :: Pyramid',
-          'Topic :: Internet :: WWW/HTTP',
-          'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
-      ],
-      author='Aaron Bandt',
-      author_email='aaron.bandt@citygridmedia.com',
-      url='',
-      license='Apache',
-      keywords='Arsenal devops',
-      packages=find_packages(),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=REQUIRES,
-      tests_require=REQUIRES,
-      test_suite='arsenalweb',
-      entry_points='''\
-      [paste.app_factory]
-      main = arsenalweb:main
-      [console_scripts]
-      initialize_arsenal-web_db = arsenalweb.scripts.initializedb:main
-      ''',
-     )
+setup(
+    name='arsenalweb',
+    version='10.0',
+    description='Arsenal web api/ui',
+    long_description=README + '\n\n' + CHANGES,
+    classifiers=[
+        'Programming Language :: Python',
+        'Framework :: Pyramid',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
+    ],
+    author='Aaron Bandt',
+    author_email='abandt@magnite.com',
+    url='ihttps://github.com/UnblockedByOps/arsenal',
+    license='Apache',
+    keywords='Arsenal devops web pyramid pylons',
+    packages=find_packages(exclude=['tests']),
+    include_package_data=True,
+    zip_safe=False,
+    extras_require={
+        'testing': tests_require,
+    },
+    install_requires=requires,
+    entry_points={
+        'paste.app_factory': [
+            'main = arsenalweb:main',
+        ],
+        'console_scripts': [
+            'initialize_arsenalweb_db=arsenalweb.scripts.initialize_db:main',
+        ],
+    },
+)

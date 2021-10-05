@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -32,13 +31,13 @@ def view_physical_rack(request):
 
     page_title_type = 'objects/'
     page_title_name = 'physical_rack'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
     uri = '/api/physical_racks/{0}'.format(request.matchdict['id'])
     physical_rack = _api_get(request, uri)
 
     return {
-        'au': auth_user,
+        'au': user,
         'physical_rack': physical_rack['results'][0],
         'page_title_name': page_title_name,
         'page_title_type': page_title_type,
@@ -50,7 +49,7 @@ def view_physical_racks(request):
 
     page_title_type = 'objects/'
     page_title_name = 'physical_racks'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -87,7 +86,7 @@ def view_physical_racks(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

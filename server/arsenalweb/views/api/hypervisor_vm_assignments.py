@@ -18,12 +18,6 @@ from datetime import datetime
 from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.nodes import (
     NodeAudit,
     )
@@ -36,7 +30,7 @@ from arsenalweb.views.api.common import (
 LOG = logging.getLogger(__name__)
 
 
-def guest_vms_to_hypervisor(guest_vms, hypervisor, action, user_id):
+def guest_vms_to_hypervisor(dbsession, guest_vms, hypervisor, action, user_id):
     '''Manage guest vm assignment/deassignments to a hypervisor. Takes a
     list if Node objects and assigns/deassigns them to/from the hypervisor.
 
@@ -64,7 +58,7 @@ def guest_vms_to_hypervisor(guest_vms, hypervisor, action, user_id):
                                       new_value=guest_vm.name,
                                       updated_by=user_id,
                                       created=utcnow)
-                    DBSession.add(audit)
+                    dbsession.add(audit)
             if action == 'DELETE':
                 try:
                     hypervisor.guest_vms.remove(guest_vm)
@@ -74,15 +68,15 @@ def guest_vms_to_hypervisor(guest_vms, hypervisor, action, user_id):
                                       new_value='deassigned',
                                       updated_by=user_id,
                                       created=utcnow)
-                    DBSession.add(audit)
+                    dbsession.add(audit)
                 except (ValueError, AttributeError):
                     try:
-                        DBSession.remove(audit)
+                        dbsession.remove(audit)
                     except  UnboundLocalError:
                         pass
 
-        DBSession.add(hypervisor)
-        DBSession.flush()
+        dbsession.add(hypervisor)
+        dbsession.flush()
 
     except (NoResultFound, AttributeError):
         return api_404(msg='hypervisor not found')
@@ -103,21 +97,21 @@ def api_hypervisor_vm_assignments_schema(request):
 
     return hva
 
-@view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_hypervisor_vm_assignments_write(request):
     '''Process write requests for the /api/hypervisor_vm_assignments route.'''
 
     try:
-        auth_user = get_authenticated_user(request)
+        user = request.identity
         payload = request.json_body
 
         parent_node_id = int(payload['parent_node_id'])
         child_node_id = int(payload['child_node_id'])
 
-        LOG.info('Checking for hypervisor_vm_assignment child_node_id={0}'.format(child_node_id))
+        LOG.info('Checking for hypervisor_vm_assignment child_node_id: %s', child_node_id)
 
         try:
-            hva = DBSession.query(HypervisorVmAssignment)
+            hva = request.dbsession.query(HypervisorVmAssignment)
             hva = hva.filter(HypervisorVmAssignment.child_node_id == child_node_id)
             hva = hva.one()
         except NoResultFound:
@@ -128,35 +122,33 @@ def api_hypervisor_vm_assignments_write(request):
 
                 hva = HypervisorVmAssignment(parent_node_id=parent_node_id,
                                              child_node_id=child_node_id,
-                                             updated_by=auth_user['user_id'],
+                                             updated_by=user['name'],
                                              created=utcnow,
                                              updated=utcnow)
 
-                DBSession.add(hva)
-                DBSession.flush()
+                request.dbsession.add(hva)
+                request.dbsession.flush()
             except Exception as ex:
-                LOG.error('Error creating new hypervisor_vm_assignment parent_node_id={0},'
-                          'child_node_id={1},exception={2}'.format(parent_node_id,
-                                                                   child_node_id,
-                                                                   ex))
+                LOG.error('Error creating new hypervisor_vm_assignment parent_node_id: %s '
+                          'child_node_id: %s exception: %s', parent_node_id, child_node_id, ex)
                 raise
         else:
             try:
-                LOG.info('Updating hypervisor_vm_assignment parent_node_id={0},'
-                         'child_node_id={1}'.format(parent_node_id, child_node_id))
+                LOG.info('Updating hypervisor_vm_assignment parent_node_id: %s '
+                         'child_node_id: %s', parent_node_id, child_node_id)
 
                 hva.parent_node_id = parent_node_id
                 hva.child_node_id = child_node_id
-                hva.updated_by = auth_user['user_id']
+                hva.updated_by = user['name']
 
-                DBSession.flush()
+                request.dbsession.flush()
             except Exception as ex:
                 LOG.error('Error updating hypervisor_vm_assignment'
-                          'parent_node_id={0},child_node_id={1},'
-                          'exception={2}'.format(parent_node_id, child_node_id, ex))
+                          'parent_node_id: %s child_node_id: %s '
+                          'exception: %s', parent_node_id, child_node_id, ex)
                 raise
 
     except Exception as ex:
-        LOG.error('Error writing to hypervisor_vm_assignment API={0},'
-                  'exception={1}'.format(request.url, ex))
+        LOG.error('Error writing to hypervisor_vm_assignment API: %s '
+                  'exception: %s', request.url, ex)
         return Response(json={'error': str(ex)}, content_type='application/json', status_int=500)

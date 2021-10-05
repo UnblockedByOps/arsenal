@@ -16,17 +16,10 @@
 import logging
 from datetime import datetime
 from pyramid.view import view_config
-from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.hardware_profiles import (
     HardwareProfile,
     HardwareProfileAudit,
-    )
-from arsenalweb.views import (
-    get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
     api_200,
@@ -36,27 +29,27 @@ from arsenalweb.views.api.common import (
 LOG = logging.getLogger(__name__)
 
 
-def get_hardware_profile(name):
+def get_hardware_profile(dbsession, name):
     '''Get a hardware_profile from the database.'''
 
     try:
-        query = DBSession.query(HardwareProfile)
+        query = dbsession.query(HardwareProfile)
         query = query.filter(HardwareProfile.name == name)
         hardware_profile = query.one()
 
         return hardware_profile
 
     except (NoResultFound, AttributeError):
-        LOG.debug('hardware_profile not found name={0},'.format(name))
+        LOG.debug('hardware_profile not found name: %s', name)
 
     return None
 
-def create_hardware_profile(name, manufacturer, model, user_id):
+def create_hardware_profile(dbsession, name, manufacturer, model, user_id):
     '''Create a new hardware_profile.'''
 
     try:
-        LOG.info('Creating new hardware_profile name={0},manufacturer={1},'
-                 'model={2}'.format(name, manufacturer, model))
+        LOG.info('Creating new hardware_profile name: %s manufacturer: %s '
+                 'model: %s', name, manufacturer, model)
         utcnow = datetime.utcnow()
 
         hardware_profile = HardwareProfile(name=name,
@@ -68,8 +61,8 @@ def create_hardware_profile(name, manufacturer, model, user_id):
                                            created=utcnow,
                                            updated=utcnow)
 
-        DBSession.add(hardware_profile)
-        DBSession.flush()
+        dbsession.add(hardware_profile)
+        dbsession.flush()
 
         audit = HardwareProfileAudit(object_id=hardware_profile.id,
                                      field='name',
@@ -77,50 +70,49 @@ def create_hardware_profile(name, manufacturer, model, user_id):
                                      new_value=hardware_profile.name,
                                      updated_by=user_id,
                                      created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return hardware_profile
 
     except Exception as ex:
-        LOG.error('Error creating new harware_profile name={1},manufacturer={2},'
-                  'model={3},exception={4}'.format(name, manufacturer, model, ex))
+        LOG.error('Error creating new harware_profile name: %s manufacturer: %s'
+                  'model: %s exception: %s', name, manufacturer, model, ex)
         raise
 
-def update_hardware_profile(hardware_profile, name, rack_color, rack_u, user_id):
+def update_hardware_profile(dbsession, hardware_profile, name, rack_color, rack_u, user_id):
     '''Update an existing hardware_profile. We only allow updating rack_color and
     rack_u. All other hardware profile attributes are derived
     automatically during node registration.'''
 
     try:
-        LOG.info('Updating hardware_profile name={0} rack_color={1} '
-                 'rack_u={2}'.format(name, rack_color, rack_u))
+        LOG.info('Updating hardware_profile name: %s rack_color: %s '
+                 'rack_u: %s', name, rack_color, rack_u)
 
         utcnow = datetime.utcnow()
 
         for attribute in ['rack_color', 'rack_u']:
             if getattr(hardware_profile, attribute) != locals()[attribute]:
-                LOG.debug('Updating hardware profile {0}: {1}'.format(attribute,
-                                                                      locals()[attribute]))
+                LOG.debug('Updating hardware profile %s: %s', attribute, locals()[attribute])
                 audit = HardwareProfileAudit(object_id=hardware_profile.id,
                                              field=attribute,
                                              old_value=getattr(hardware_profile, attribute),
                                              new_value=locals()[attribute],
                                              updated_by=user_id,
                                              created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
 
         hardware_profile.rack_color = rack_color
         hardware_profile.rack_u = rack_u
         hardware_profile.updated_by = user_id
 
-        DBSession.flush()
+        dbsession.flush()
 
         return hardware_profile
 
     except Exception as ex:
-        LOG.error('Error updating hardware_profile name={0},rack_color={1},'
-                  'rack_u={2},exception={3}'.format(name, rack_color, rack_u, ex))
+        LOG.error('Error updating hardware_profile name: %s rack_color: %s '
+                  'rack_u: %s exception: %s', name, rack_color, rack_u, ex)
         raise
 
 @view_config(route_name='api_hardware_profiles', request_method='GET', request_param='schema=true', renderer='json')
@@ -139,12 +131,12 @@ def api_hardware_profiles_schema(request):
 
     return hardware_profile
 
-@view_config(route_name='api_hardware_profiles', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_hardware_profiles', permission='api_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_hardware_profile_write(request):
     '''Process write requests for /api/hardware_profiles route.'''
 
     try:
-        auth_user = get_authenticated_user(request)
+        user = request.identity
         payload = request.json_body
         name = payload['name'].rstrip()
         manufacturer = payload['manufacturer'].rstrip()
@@ -152,26 +144,28 @@ def api_hardware_profile_write(request):
         rack_u = payload['rack_u']
         rack_color = payload['rack_color'].rstrip()
 
-        hardware_profile = get_hardware_profile(name)
+        hardware_profile = get_hardware_profile(request.dbsession, name)
 
         if not hardware_profile:
-            hardware_profile = create_hardware_profile(name,
+            hardware_profile = create_hardware_profile(request.dbsession,
+                                                       name,
                                                        manufacturer,
                                                        model,
-                                                       auth_user['user_id'])
+                                                       user['name'])
         else:
 
-            update_hardware_profile(hardware_profile,
+            update_hardware_profile(request.dbsession,
+                                    hardware_profile,
                                     name,
                                     rack_color,
                                     rack_u,
-                                    auth_user['user_id'])
+                                    user['name'])
 
-        LOG.debug('hardware_profile is: {0}'.format(hardware_profile.__dict__))
+        LOG.debug('hardware_profile is: %s', hardware_profile.__dict__)
 
         return api_200(results=hardware_profile)
 
     except Exception as ex:
-        msg = 'Error writing to harware_profiles API={0},exception={1}'.format(request.url, ex)
+        msg = 'Error writing to harware_profiles API: {0} exception: {1}'.format(request.url, ex)
         LOG.error(msg)
         return api_500(msg=msg)

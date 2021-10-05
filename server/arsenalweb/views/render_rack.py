@@ -18,7 +18,6 @@ import json
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -32,7 +31,7 @@ def get_empty_rack(elevation):
     This is so empty elevations have all the required attributes to render in
     the UI correctly.'''
 
-    LOG.info('Creating dummy elevation for elevation: {0}'.format(elevation))
+    LOG.debug('Creating dummy elevation for elevation: {0}'.format(elevation))
 
     device = {
         'physical_elevation': {
@@ -61,7 +60,7 @@ def view_render_rack(request):
 
     page_title_type = 'objects/'
     page_title_name = 'render_rack'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -78,13 +77,13 @@ def view_render_rack(request):
         'physical_location.name': location_name,
         'fields': 'all',
     }
-    LOG.info('UI requesting data from API={0},payload={1}'.format(uri, pr_payload))
+    LOG.debug('UI requesting data from API: %s payload: %s', uri, pr_payload)
 
     pr_resp = _api_get(request, uri, pr_payload)
     my_rack_elevations = pr_resp['results'][0]['physical_elevations']
 
     uri = '/api/physical_devices'
-    LOG.info('UI requesting data from API={0},payload={1}'.format(uri, payload))
+    LOG.debug('UI requesting data from API: %s payload: %s', uri, payload)
 
     pd_resp = _api_get(request, uri, payload)
     my_physical_devices = pd_resp['results']
@@ -105,7 +104,7 @@ def view_render_rack(request):
                 pde['hardware_profile']['rack_u'] = 1
                 pde['hardware_profile']['rack_u_pxl'] = 120
 
-        physical_devices = sorted(my_physical_devices, key=lambda k: int(k['physical_elevation']['elevation']), reverse=True)
+        physical_devices = sorted(my_physical_devices, key=lambda k: float(k['physical_elevation']['elevation']), reverse=True)
 
         # Remove rack elevations occupied by a device greater than 1 U
         for device in physical_devices:
@@ -113,14 +112,14 @@ def view_render_rack(request):
                 # Get the list of u to be deleted
                 start = int(device['physical_elevation']['elevation']) + 1
                 end = start + device['hardware_profile']['rack_u'] - 1
-                for delete_me in xrange(start, end):
-                    LOG.info('Delete physical_elevation from the list: {0}'.format(delete_me))
+                for delete_me in range(start, end):
+                    LOG.debug('Delete physical_elevation from the list: %s', delete_me)
                     physical_devices = [i for i in physical_devices if not (int(i['physical_elevation']['elevation']) == delete_me)]
 
 #        LOG.debug(json.dumps(physical_devices, indent=4, sort_keys=True))
 
     return {
-        'au': auth_user,
+        'au': user,
         'layout': site_layout('max'),
         'location_name': location_name,
         'rack_name': rack_name,

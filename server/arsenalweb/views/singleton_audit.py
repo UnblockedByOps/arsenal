@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     site_layout,
     )
 
@@ -97,14 +96,14 @@ def view_singleton_audit(request):
 
     params = meta[request.matched_route.name]
 
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     page_title = '{0}_audit'.format(params['object_type'])
 
     uri = '/api/{0}_audit/{1}'.format(params['object_type'], request.matchdict['id'])
     object_audit = _api_get(request, uri)
 
     return {
-        'au': auth_user,
+        'au': user,
         'layout': site_layout('audit'),
         'object_audit': object_audit['results'],
         'page_title_name': page_title,

@@ -44,7 +44,7 @@
           <input type="radio" checked name="tabs" id="tab1">
           <label for="tab1">Node Group</label>
           <div id="tab-content1" class="tab-content">
-            <a tal:attributes="href '/nodes?node_group_id={0}'.format(node_group.id)">Search for nodes with this node group</a><br>
+            <a tal:attributes="href '/nodes?node_group.id=^{0}$'.format(node_group.id)">Search for nodes with this node group</a><br>
             <table>
                 <tr>
                     <td>Name</td><td><span class="mono">${node_group.name}</span></td>

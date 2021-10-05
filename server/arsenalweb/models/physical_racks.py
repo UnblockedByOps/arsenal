@@ -17,17 +17,19 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
+    Index,
     TIMESTAMP,
-    Text,
+    UniqueConstraint,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
     get_name_id_dict,
-    get_name_id_list,
     jsonify,
 )
 
@@ -38,14 +40,28 @@ class PhysicalRack(Base):
     '''Arsenal PhysicalRack object.'''
 
     __tablename__ = 'physical_racks'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text, nullable=False)
-    physical_location_id = Column(Integer, ForeignKey('physical_locations.id'), nullable=False)
-    server_subnet = Column(Text)
-    oob_subnet = Column(Text)
+    __table_args__ = (
+        UniqueConstraint('name', 'physical_location_id', name='idx_physical_rack_location'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    name = Column(VARCHAR(255), nullable=False)
+    physical_location_id = Column(INTEGER(unsigned=True),
+                                  ForeignKey('physical_locations.id'),
+                                  nullable=False)
+    server_subnet = Column(VARCHAR(255))
+    oob_subnet = Column(VARCHAR(255))
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     physical_location = relationship('PhysicalLocation',
                                      backref=backref('physical_racks', lazy='dynamic'))
@@ -71,17 +87,16 @@ class PhysicalRack(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):
@@ -90,7 +105,18 @@ class PhysicalRack(Base):
             return resp
 
 
+Index('idx_physical_rack_id', PhysicalRack.id, unique=False)
+
+
 class PhysicalRackAudit(BaseAudit):
     '''Arsenal PhysicalRackAudit object.'''
 
     __tablename__ = 'physical_racks_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

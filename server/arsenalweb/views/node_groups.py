@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -31,13 +30,13 @@ def view_node_group(request):
     '''Handle requests for node_group UI route.'''
 
     page_title = 'Node Group'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
     uri = '/api/node_groups/{0}'.format(request.matchdict['id'])
     node_group = _api_get(request, uri)
 
     return {
-        'au': auth_user,
+        'au': user,
         'node_group': node_group['results'][0],
         'page_title': page_title,
     }
@@ -48,7 +47,7 @@ def view_node_groups(request):
 
     page_title_type = 'objects/'
     page_title_name = 'node_groups'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -88,7 +87,7 @@ def view_node_groups(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

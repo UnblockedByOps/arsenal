@@ -97,15 +97,16 @@ test_num=0
 FAILED_TESTS=()
 arsenal_cmd="python${python_version} bin/arsenal"
 ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
-ro_cookie="/var/lib/jenkins/.arsenal_cookie_readonly"
+ro_cookie="/var/lib/jenkins/.arsenal_client_test_cookie_readonly"
 rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
+rw_cookie="/var/lib/jenkins/.arsenal_client_test_cookie_readwrite"
 
 if [[ -z "$server" ]] ; then
     server="arsenal"
 fi
 
 search_cmd="${arsenal_cmd} --server ${server}"
-rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf}"
+rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf} -k ${rw_cookie}"
 ro_cmd="${arsenal_cmd} --server ${server} -y -l readonly -s ${ro_conf} -k ${ro_cookie}"
 
 #
@@ -457,7 +458,7 @@ validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "strin
 # Set the status to an assignable status
 validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
 # Now it should get the node group
-validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
+validate_command "${rw_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
 #
 # Clean up
 #

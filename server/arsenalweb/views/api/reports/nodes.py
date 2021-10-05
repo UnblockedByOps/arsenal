@@ -21,9 +21,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from arsenalweb.views.api.common import (
     api_200,
 )
-from arsenalweb.models.common import (
-    DBSession,
-)
 from arsenalweb.models.hardware_profiles import (
     HardwareProfile,
 )
@@ -65,21 +62,21 @@ def api_reports_node_read(request):
     try:
         LOG.debug('Generating metrics...')
 
-        statuses = DBSession.query(Status)
+        statuses = request.dbsession.query(Status)
         statuses = statuses.all()
 
-        hw_profiles = DBSession.query(HardwareProfile)
+        hw_profiles = request.dbsession.query(HardwareProfile)
         hw_profiles = hw_profiles.all()
 
-        operating_systems = DBSession.query(OperatingSystem)
+        operating_systems = request.dbsession.query(OperatingSystem)
         operating_systems = operating_systems.all()
 
         node_metrics['status'] = {}
         for status in statuses:
 
-            LOG.debug('Status id: {0}'.format(status.id))
+            LOG.debug('Status id: %s', status.id)
 
-            node = DBSession.query(Node)
+            node = request.dbsession.query(Node)
             node = node.filter(Node.status_id == status.id)
             node_count = node.count()
             node_metrics['status'][status.name] = node_count
@@ -87,9 +84,9 @@ def api_reports_node_read(request):
         node_metrics['operating_system'] = {}
         for operating_system in operating_systems:
 
-            LOG.debug('Operating System id: {0}'.format(operating_system.id))
+            LOG.debug('Operating System id: %s', operating_system.id)
 
-            node = DBSession.query(Node)
+            node = request.dbsession.query(Node)
             node = node.filter(Node.operating_system_id == operating_system.id)
             node_count = node.count()
             os_name = sanitize_input('{0} {1}'.format(operating_system.variant,
@@ -99,9 +96,9 @@ def api_reports_node_read(request):
         node_metrics['hardware_profile'] = {}
         for hw_profile in hw_profiles:
 
-            LOG.debug('Hardware Profile id: {0}'.format(hw_profile.id))
+            LOG.debug('Hardware Profile id: %s', hw_profile.id)
 
-            node = DBSession.query(Node)
+            node = request.dbsession.query(Node)
             node = node.filter(Node.hardware_profile_id == hw_profile.id)
             node_count = node.count()
             hw_profile_name = sanitize_input('{0} {1}'.format(hw_profile.manufacturer,
@@ -111,6 +108,6 @@ def api_reports_node_read(request):
     except NoResultFound:
         LOG.error('This should never happen')
 
-    LOG.debug('Metrics: {0}'.format(node_metrics))
+    LOG.debug('Metrics: %s', node_metrics)
 
     return api_200(results=node_metrics)

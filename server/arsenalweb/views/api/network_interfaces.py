@@ -17,9 +17,6 @@ import logging
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.ip_addresses import (
     IpAddressAudit,
     )
@@ -29,9 +26,6 @@ from arsenalweb.models.nodes import (
 from arsenalweb.models.network_interfaces import (
     NetworkInterface,
     NetworkInterfaceAudit,
-    )
-from arsenalweb.views import (
-    get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
     api_200,
@@ -46,29 +40,29 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_net_if_by_unique_id(unique_id):
+def find_net_if_by_unique_id(dbsession, unique_id):
     '''Find a network_interface by unique_id. Return an object if found, raises
        an exception otherwise.'''
 
     unique_id = unique_id.lower()
-    LOG.debug('Searching for network_interface.unique_id: '
-              '{0}'.format(unique_id))
-    net_if = DBSession.query(NetworkInterface)
+    LOG.debug('Searching for network_interface.unique_id: %s', unique_id)
+    net_if = dbsession.query(NetworkInterface)
     net_if = net_if.filter(NetworkInterface.unique_id == unique_id)
 
     return net_if.one()
 
-def find_net_if_by_id(net_if_id):
+def find_net_if_by_id(dbsession, net_if_id):
     '''Find a network_interface by id. Return an object if found, raises
        an exception otherwise.'''
 
-    LOG.debug('Searching for network_interface.id: {0}'.format(net_if_id))
-    net_if = DBSession.query(NetworkInterface)
+    LOG.debug('Searching for network_interface.id: %s', net_if_id)
+    net_if = dbsession.query(NetworkInterface)
     net_if = net_if.filter(NetworkInterface.id == net_if_id)
 
     return net_if.one()
 
-def create_net_if(name=None,
+def create_net_if(dbsession,
+                  name=None,
                   unique_id=None,
                   updated_by=None,
                   ip_address_id=None,
@@ -93,18 +87,17 @@ def create_net_if(name=None,
         except TypeError:
             pass
 
-        LOG.info('Creating new network_interface name: {0} unique_id: {1} '
-                 'ip_address_id: {2} updated_by: {3} bond_master: {4} port_description: '
-                 '{5} port_number: {6} port_switch: {7} port_vlan: '
-                 '{8}'.format(name,
-                              unique_id,
-                              ip_address_id,
-                              updated_by,
-                              bond_master,
-                              port_description,
-                              port_number,
-                              port_switch,
-                              port_vlan))
+        LOG.info('Creating new network_interface name: %s unique_id: %s '
+                 'ip_address_id: %s updated_by: %s bond_master: %s port_description: '
+                 '%s port_number: %s port_switch: %s port_vlan: %s', name,
+                                                                     unique_id,
+                                                                     ip_address_id,
+                                                                     updated_by,
+                                                                     bond_master,
+                                                                     port_description,
+                                                                     port_number,
+                                                                     port_switch,
+                                                                     port_vlan)
 
         utcnow = datetime.utcnow()
 
@@ -120,8 +113,8 @@ def create_net_if(name=None,
                                   created=utcnow,
                                   updated=utcnow)
 
-        DBSession.add(net_if)
-        DBSession.flush()
+        dbsession.add(net_if)
+        dbsession.flush()
 
         audit = NetworkInterfaceAudit(object_id=net_if.id,
                                       field='unique_id',
@@ -129,7 +122,7 @@ def create_net_if(name=None,
                                       new_value=net_if.unique_id,
                                       updated_by=updated_by,
                                       created=utcnow)
-        DBSession.add(audit)
+        dbsession.add(audit)
 
         if ip_address_id:
             LOG.debug('Creating audit entry for ip_address assignment '
@@ -141,9 +134,9 @@ def create_net_if(name=None,
                                            updated_by=updated_by,
                                            created=utcnow)
 
-            DBSession.add(ip_addr_audit)
+            dbsession.add(ip_addr_audit)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return net_if
 
@@ -164,7 +157,8 @@ def create_net_if(name=None,
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_net_if(net_if,
+def update_net_if(dbsession,
+                  net_if,
                   name=None,
                   unique_id=None,
                   updated_by=None,
@@ -179,6 +173,7 @@ def update_net_if(net_if,
     try:
         # Convert everything that is defined to a string.
         my_attribs = locals().copy()
+        my_attribs.pop('dbsession')
         my_attribs.pop('net_if')
         for my_attr in my_attribs:
             if my_attribs.get(my_attr):
@@ -191,8 +186,7 @@ def update_net_if(net_if,
         except TypeError:
             pass
 
-        LOG.info('Updating network_interface.unique_id: '
-                 '{0}'.format(my_attribs['unique_id']))
+        LOG.info('Updating network_interface.unique_id: %s', my_attribs['unique_id'])
 
         utcnow = datetime.utcnow()
 
@@ -207,17 +201,17 @@ def update_net_if(net_if,
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating network_interface: {0} attribute: '
-                          '{1} new_value: {2}'.format(my_attribs['unique_id'],
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating network_interface: %s attribute: '
+                          '%s new_value: %s', my_attribs['unique_id'],
+                                              attribute,
+                                              new_value)
                 net_if_audit = NetworkInterfaceAudit(object_id=net_if.id,
                                                      field=attribute,
                                                      old_value=old_value,
                                                      new_value=new_value,
                                                      updated_by=updated_by,
                                                      created=utcnow)
-                DBSession.add(net_if_audit)
+                dbsession.add(net_if_audit)
                 setattr(net_if, attribute, new_value)
 
                 if attribute == 'ip_address_id':
@@ -230,9 +224,9 @@ def update_net_if(net_if,
                                                    updated_by=updated_by,
                                                    created=utcnow)
 
-                    DBSession.add(ip_addr_audit)
+                    dbsession.add(ip_addr_audit)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return net_if
 
@@ -253,7 +247,7 @@ def update_net_if(net_if,
         LOG.error(msg)
         raise
 
-def net_ifs_to_node(network_interfaces, node, action, user_id):
+def net_ifs_to_node(dbsession, network_interfaces, node, action, user_id):
     '''Manage network_interface assignment/deassignments to a node. Takes a
     list if network_interface objects and assigns/deassigns them to/from the node.
 
@@ -280,7 +274,7 @@ def net_ifs_to_node(network_interfaces, node, action, user_id):
                                       new_value=net_if.id,
                                       updated_by=user_id,
                                       created=utcnow)
-                    DBSession.add(audit)
+                    dbsession.add(audit)
             if action == 'DELETE':
                 try:
                     node.network_interfaces.remove(net_if)
@@ -290,15 +284,15 @@ def net_ifs_to_node(network_interfaces, node, action, user_id):
                                       new_value='deassigned',
                                       updated_by=user_id,
                                       created=utcnow)
-                    DBSession.add(audit)
+                    dbsession.add(audit)
                 except (ValueError, AttributeError):
                     try:
-                        DBSession.remove(audit)
+                        dbsession.remove(audit)
                     except  UnboundLocalError:
                         pass
 
-        DBSession.add(node)
-        DBSession.flush()
+        dbsession.add(node)
+        dbsession.flush()
 
     except (NoResultFound, AttributeError):
         return api_404(msg='node not found')
@@ -321,7 +315,7 @@ def api_node_groups_schema(request):
     return network_interfaces
 
 # FIXME: Need to create the perms if we start allowing manual updates
-@view_config(route_name='api_network_interfaces', permission='network_interface_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_network_interfaces', permission='network_interface_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_network_interfaces_write(request):
     '''Process write requests for /api/network_interfaces route.'''
 
@@ -342,8 +336,8 @@ def api_network_interfaces_write(request):
         params['unique_id'] = params['unique_id'].lower()
 
         try:
-            net_if = find_net_if_by_unique_id(params['unique_id'])
-            update_net_if(net_if, **params)
+            net_if = find_net_if_by_unique_id(request.dbsession, params['unique_id'])
+            update_net_if(request.dbsession, net_if, **params)
         except NoResultFound:
             net_if = create_net_if(**params)
 
@@ -355,20 +349,19 @@ def api_network_interfaces_write(request):
         return api_500(msg=msg)
 
 # FIXME: Need to create the perms if we start allowing manual add/delete
-@view_config(route_name='api_network_interface_r', permission='network_interface_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_network_interface_r', permission='network_interface_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_network_interface_r', permission='network_interface_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_network_interface_r', permission='network_interface_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_network_interface_write_attrib(request):
     '''Process write requests for the /api/network_interfaces/{id}/{resource} route.'''
 
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the network_interfaces, then figure out what to do to it.
-    net_if = find_net_if_by_id(request.matchdict['id'])
-    LOG.debug('net_if is: {0}'.format(net_if))
+    net_if = find_net_if_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('net_if is: %s', net_if)
 
     # List of resources allowed
     resources = [
@@ -379,14 +372,14 @@ def api_network_interface_write_attrib(request):
         try:
             actionable = payload[resource]
             if resource == 'undef':
-                LOG.warn('Not allowed.')
+                LOG.warning('Not allowed.')
                 resp = []
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating network_interfaces: {0} '
-                      'exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating network_interfaces: %s '
+                      'exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()
