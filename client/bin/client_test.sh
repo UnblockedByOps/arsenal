@@ -174,6 +174,10 @@ validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal,tag.nam
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag NODE_TEST_TAG=TEST" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
 
+# Test deleting a tag when one node has it and the other doesn't
+validate_command "${rw_cmd} nodes search name=pup0000.docker --tag NODE_TEST_TAG=TEST" 0
+validate_command "${rw_cmd} nodes search name=pup.*docker --del_tag NODE_TEST_TAG=TEST" 0
+validate_command "${search_cmd} nodes search name=pup.*docker --fields tags" 0 "string" "tags: []"
 #
 # Bulk tag removal
 #
