@@ -201,7 +201,8 @@ def manage_tags(dbsession, tag, tagable_type, tagables, action, user):
             if action == 'DELETE':
                 try:
                     my_subtype = getattr(tag, tagable_type)
-                    my_subtype.remove(tagable)
+                    if tagable in my_subtype:
+                        my_subtype.remove(tagable)
                     my_audit = create_audit(object_id=tagable.id,
                                             field='tag',
                                             old_value='{0}={1}'.format(tag.name,
@@ -223,8 +224,9 @@ def manage_tags(dbsession, tag, tagable_type, tagables, action, user):
         msg = 'Bad request: {0}_id is not unique: {1}'.format(tagable_type, tagable_id)
         return api_400(msg=msg)
     except Exception as ex:
-        LOG.error('Error updating node: exception={0}'.format(ex))
-        return api_500()
+        msg = 'Error updating FLUBBER: exception={0}'.format(type(ex))
+        LOG.error(msg)
+        return api_500(msg)
 
     return api_200(results=resp)
 
