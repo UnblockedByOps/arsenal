@@ -113,7 +113,7 @@ class ArsenalSecurityPolicy:
     '''Security policy for Arsenal.'''
 
     def __init__(self, secret):
-        self.authtkt = AuthTktCookieHelper(secret)
+        self.authtkt = AuthTktCookieHelper(secret, wild_domain=False)
 
     def identity(self, request):
         '''define our simple identity as None or a dict with userid and
