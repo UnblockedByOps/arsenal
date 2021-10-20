@@ -622,12 +622,12 @@ tests:
       - test_data: 'login_success'
         url: '/api/login'
         username: 'kaboom'
-        passworf: 'password'
+        password: 'password'
         expected_response: 200
       - test_data: 'login_failure'
         url: '/api/login'
         username: 'kaboom'
-        passworf: 'bad_password'
+        password: 'bad_password'
         expected_response: 401
   # Node registration must be tested last or it hoses the other tests
   node_registration:
