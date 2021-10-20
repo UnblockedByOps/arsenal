@@ -2,6 +2,7 @@ import logging
 import pam
 from pwd import getpwnam
 from pyramid.csrf import new_csrf_token
+from pyramid.httpexceptions import HTTPOk
 from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.httpexceptions import HTTPUnauthorized
 from sqlalchemy.orm.exc import NoResultFound
@@ -119,6 +120,21 @@ def login(request):
         page_title='login',
         error = error,
     )
+
+@view_config(route_name='api_login', request_method='POST')
+def api_login(request):
+    '''Handle API login requests.'''
+
+    login_name = request.params['login']
+    user_id = authenticate_user(request)
+    LOG.debug('Authenticated user_id is: %s for user: %s', user_id, login_name)
+
+    if user_id:
+        new_csrf_token(request)
+        headers = remember(request, user_id)
+        return HTTPOk(headers=headers)
+
+    return HTTPUnauthorized()
 
 @view_config(route_name='logout')
 def logout(request):

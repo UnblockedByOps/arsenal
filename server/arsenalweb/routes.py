@@ -91,6 +91,7 @@ def includeme(config):
     #
     # API Endpoints. Order matters.
     #
+    config.add_route('api_login', '/api/login')
     # api_register is a special endpoint in order to use pyramid
     # secirty to control access to node registrations. Don't love it
     # but can't use request_param on a put request.
