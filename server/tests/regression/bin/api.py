@@ -67,8 +67,8 @@ def run_api_authentication_test(args, test_num, test_total, **obj_args):
     resp = session.post('{0}{1}'.format(args.arsenal_server, url),
                         data=payload,
                         verify=False)
-    LOG.info('    Response data: {0}'.format(resp))
-    if not resp['http_status']['code'] == expected_response:
+    LOG.info('    Response code: {0}'.format(resp.status_code))
+    if not resp.status_code == expected_response:
         LOG.error('    result   : FAIL')
         FAILED_TESTS.append({
             'name': desc,
