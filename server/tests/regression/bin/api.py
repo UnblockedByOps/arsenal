@@ -46,6 +46,41 @@ def ar_login(server, username, password):
 
     return session
 
+def run_api_authentication_test(args, test_num, test_total, **obj_args):
+    '''Create a session and log into arsenal. Returns a requests session object.'''
+
+    desc = obj_args['test_data']
+    url = obj_args['url']
+    username = obj_args['username']
+    password = obj_args['password']
+    expected_response = obj_args['expected_response']
+
+    payload = {
+        'login': username,
+        'password': password,
+    }
+
+    LOG.info('  BEGIN ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
+                                                                   test_total,
+                                                                   desc))
+    session = requests.Session()
+    resp = session.post('{0}{1}'.format(args.arsenal_server, url),
+                        data=payload,
+                        verify=False)
+    LOG.info('    Response code: {0}'.format(resp.status_code))
+    if not resp.status_code == expected_response:
+        LOG.error('    result   : FAIL')
+        FAILED_TESTS.append({
+            'name': desc,
+            'url': url
+        })
+    else:
+        LOG.info('    result   : PASS')
+
+    LOG.info('  END   ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
+                                                                   test_total,
+                                                                   desc))
+
 @retry(5, HTTPError, ConnectionError, NewConnectionError, RequestException, UnboundLocalError, time_delay=5)
 def ar_query(args, endpoint, http_method, data=None, session=None):
     '''Make http requests arsenal.'''

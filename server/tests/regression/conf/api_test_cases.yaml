@@ -615,6 +615,20 @@ tests:
           - parameters:
               enc_test_tag: 'data_center_level'
               enc_test_tag_2: 'fqdn_level'
+  api_authentication:
+    description: 'Test api authentication'
+    function: 'run_api_authentication_test'
+    tests:
+      - test_data: 'login_success'
+        url: '/api/login'
+        username: 'kaboom'
+        password: 'password'
+        expected_response: 200
+      - test_data: 'login_failure'
+        url: '/api/login'
+        username: 'kaboom'
+        password: 'bad_password'
+        expected_response: 401
   # Node registration must be tested last or it hoses the other tests
   node_registration:
     description: 'Test node registration'
