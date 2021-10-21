@@ -167,16 +167,13 @@ class Authorization(object):
 
             try:
                 payload = {
-                    'form.submitted': True,
-                    'api.client': True,
-                    'return_url': '/api',
                     'login': self.user_login,
                     'password': password
                 }
                 resp = self.session.post(self.api_protocol
                                          + '://'
                                          + self.api_host
-                                         + '/login', data=payload,
+                                         + '/api/login', data=payload,
                                          verify=self.verify_ssl)
 
                 resp.raise_for_status()
