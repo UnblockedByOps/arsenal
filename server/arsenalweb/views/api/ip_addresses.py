@@ -83,7 +83,7 @@ def create_ip_addr(dbsession, ip_address=None, updated_by=None):
         dbsession.flush()
 
     except Exception as ex:
-        msg = 'Error creating ip_address: {0} exception: {2}'.format(ip_address, ex)
+        msg = 'Error creating ip_address: {0} exception: {1}'.format(ip_address, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
