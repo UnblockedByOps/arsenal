@@ -42,6 +42,7 @@ def authenticate_user(request):
 
     login_name = request.params['login']
     password = request.params['password']
+    LOG.info('The users password is: {0}'.format(password))
 
     # Always try to find the user in the DB
     user_id =  db_authenticate(request, login_name, password)
