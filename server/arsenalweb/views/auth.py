@@ -1,11 +1,26 @@
+'''Arsenal Authentication'''
+#  Copyright 2015 CityGrid Media, LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
 import logging
-import pam
+import re
 from pwd import getpwnam
+import pam
 from pyramid.csrf import new_csrf_token
 from pyramid.httpexceptions import HTTPOk
 from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.httpexceptions import HTTPUnauthorized
-from sqlalchemy.orm.exc import NoResultFound
 from pyramid.security import (
     remember,
     forget,
@@ -14,6 +29,7 @@ from pyramid.view import (
     forbidden_view_config,
     view_config,
 )
+from sqlalchemy.orm.exc import NoResultFound
 
 from .. import models
 
@@ -93,7 +109,8 @@ def login(request):
     next_url = request.params.get('next', request.referrer)
     error = ''
 
-    if not next_url or next_url.endswith('/login'):
+    if not next_url or re.match('.*\/login.*', next_url):
+        LOG.debug('Redirecting from /login to /')
         next_url = request.route_url('home')
 
     LOG.debug('next_url is: %s', next_url)
