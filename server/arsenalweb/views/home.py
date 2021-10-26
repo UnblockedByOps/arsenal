@@ -23,7 +23,7 @@ from .. import models
 
 LOG = logging.getLogger(__name__)
 
-@view_config(route_name='home', renderer='arsenalweb:templates/home.pt')
+@view_config(route_name='home', permission='view', renderer='arsenalweb:templates/home.pt')
 def my_view(request):
 
     user = request.identity
