@@ -52,26 +52,41 @@ def guest_vms_to_hypervisor(dbsession, guest_vms, hypervisor, action, user_id):
                 LOG.debug('HVMS: {0}'.format(hypervisor.guest_vms))
                 if not guest_vm in hypervisor.guest_vms:
                     hypervisor.guest_vms.append(guest_vm)
-                    audit = NodeAudit(object_id=hypervisor.id,
-                                      field='guest_vm',
-                                      old_value='assigned',
-                                      new_value=guest_vm.name,
-                                      updated_by=user_id,
-                                      created=utcnow)
-                    dbsession.add(audit)
+                    audit_hv = NodeAudit(object_id=hypervisor.id,
+                                         field='guest_vm',
+                                         old_value='assigned',
+                                         new_value=guest_vm.name,
+                                         updated_by=user_id,
+                                         created=utcnow)
+                    audit_guest = NodeAudit(object_id=guest_vm.id,
+                                            field='hypervisor',
+                                            old_value='assigned',
+                                            new_value=hypervisor.name,
+                                            updated_by=user_id,
+                                            created=utcnow)
+                    dbsession.add(audit_hv)
+                    dbsession.add(audit_guest)
             if action == 'DELETE':
                 try:
                     hypervisor.guest_vms.remove(guest_vm)
-                    audit = NodeAudit(object_id=hypervisor.id,
-                                      field='guest_vm',
-                                      old_value=guest_vm.name,
-                                      new_value='deassigned',
-                                      updated_by=user_id,
-                                      created=utcnow)
-                    dbsession.add(audit)
+                    audit_hv = NodeAudit(object_id=hypervisor.id,
+                                         field='guest_vm',
+                                         old_value=guest_vm.name,
+                                         new_value='deassigned',
+                                         updated_by=user_id,
+                                         created=utcnow)
+                    audit_guest = NodeAudit(object_id=guest_vm.id,
+                                            field='hypervisor',
+                                            old_value=hypervisor.name,
+                                            new_value='deassigned',
+                                            updated_by=user_id,
+                                            created=utcnow)
+                    dbsession.add(audit_hv)
+                    dbsession.add(audit_guest)
                 except (ValueError, AttributeError):
                     try:
-                        dbsession.remove(audit)
+                        dbsession.remove(audit_hv)
+                        dbsession.remove(audit_guest)
                     except  UnboundLocalError:
                         pass
 
