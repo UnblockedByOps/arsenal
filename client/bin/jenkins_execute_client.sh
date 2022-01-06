@@ -14,7 +14,7 @@ check_arsenal_ready () {
     RETRIES=10
     until [ $RETRY -ge $RETRIES ] ; do
         echo "Checking to see if Arsenal docker container is responding ($RETRY of $RETRIES)..."
-        HTTP_CODE=$(curl -k -o /dev/null -s -w "%{http_code}\n" https://${ARSENAL_SERVER}/api/nodes || true)
+        HTTP_CODE=$(curl -k -o /dev/null -s -w "%{http_code}\n" https://${ARSENAL_SERVER}/api/nodes?name=f || true)
         if [ "${HTTP_CODE}" == '200' ] ; then
             echo "Arsenal is ready: ${HTTP_CODE}"
             return
