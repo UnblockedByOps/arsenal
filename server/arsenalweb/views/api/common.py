@@ -238,6 +238,22 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
     except Exception:
         raise
 
+def valiate_parameters(params):
+    '''Validate input parameters for search. Ensures at least one parameter is
+    specified and no parameters have empty values. Returns None if validation
+    passes, a message to return as a 400 otherwise.'''
+
+    if not params:
+        msg='Bad Request. You must have at least one search parameter.'
+        return msg
+
+    for param in params:
+        if not params[param]:
+            msg='Bad Request. parameter %s cannot have an empty value.' % param
+            return msg
+
+    return None
+
 def process_search(query, params, model_type, exact_get):
     '''Handle searches and delegate to exact or regex.'''
 
@@ -881,51 +897,46 @@ def api_read_by_params(request):
     try:
         exact_get = request.GET.get("exact_get", None)
 
-        if request.params:
+        fail_validate = valiate_parameters(request.params)
+        if fail_validate:
+            return api_400(msg=fail_validate)
 
-            query = request.dbsession.query(globals()[model_type])
-
-            # This is a bit of a cheat. Filtering from most to least specific
-            # speeds up the search dramatically. Alphabetical sort makes the
-            # 'name' parameter (which usually is the most specific) come
-            # before almost everything else by default.
-            params = list(request.GET.items())
-
-            exclude_params = sorted([x for x in params if x[0].startswith('ex_')])
-            include_params = sorted([x for x in params if not x[0].startswith('ex_')])
-
-            LOG.debug('include_params: %s exclude_params: %s', include_params, exclude_params)
-
-            query = process_search(query, include_params, model_type, exact_get)
-            # Process excludes at the end to ensure they're excluded.
-            if exclude_params:
-                query = process_search(query, exclude_params, model_type, exact_get)
-
-            if perpage:
-                LOG.debug('Query count START')
-                total = query.count()
-                LOG.debug('Query count END')
-                LOG.debug('Query limit START')
-                LOG.debug('Query limit: %s offset: %s', perpage, offset)
-                myob = query.limit(perpage).offset(offset).all()
-                LOG.debug('Query limit END')
-            else:
-                LOG.debug('Query all START')
-                myob = query.all()
-                total = len(myob)
-                LOG.debug('Query all END')
-
-            result_count = len(myob)
-
-            LOG.debug('Returning Query results')
-            return api_200(total=total, result_count=result_count, results=myob)
-
-        LOG.debug('Displaying all %s', camel)
         query = request.dbsession.query(globals()[model_type])
-        total = query.count()
-        myob = query.all()
 
-        return api_200(total=total, result_count=total, results=myob)
+        # This is a bit of a cheat. Filtering from most to least specific
+        # speeds up the search dramatically. Alphabetical sort makes the
+        # 'name' parameter (which usually is the most specific) come
+        # before almost everything else by default.
+        params = list(request.GET.items())
+
+        exclude_params = sorted([x for x in params if x[0].startswith('ex_')])
+        include_params = sorted([x for x in params if not x[0].startswith('ex_')])
+
+        LOG.debug('include_params: %s exclude_params: %s', include_params, exclude_params)
+
+        query = process_search(query, include_params, model_type, exact_get)
+        # Process excludes at the end to ensure they're excluded.
+        if exclude_params:
+            query = process_search(query, exclude_params, model_type, exact_get)
+
+        if perpage:
+            LOG.debug('Query count START')
+            total = query.count()
+            LOG.debug('Query count END')
+            LOG.debug('Query limit START')
+            LOG.debug('Query limit: %s offset: %s', perpage, offset)
+            myob = query.limit(perpage).offset(offset).all()
+            LOG.debug('Query limit END')
+        else:
+            LOG.debug('Query all START')
+            myob = query.all()
+            total = len(myob)
+            LOG.debug('Query all END')
+
+        result_count = len(myob)
+
+        LOG.debug('Returning Query results')
+        return api_200(total=total, result_count=result_count, results=myob)
 
     # FIXME: Should AttributeError return something different?
     except (NoResultFound, AttributeError):
