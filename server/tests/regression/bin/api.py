@@ -312,10 +312,7 @@ def check_arsenal_ready(args):
     '''make sure arsenal is ready before proceeding.'''
 
     LOG.info('Checking to make sure arsenal is ready for queries...')
-    try:
-        ar_query(args, '/api/nodes', 'get')
-    except:
-        raise
+    ar_query(args, '/api/nodes?name=f', 'get')
     LOG.info('Arsenal is ready.')
 
 def parse_args():
