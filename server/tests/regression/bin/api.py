@@ -299,7 +299,6 @@ def run_parameter_validation_test(args, test_num, test_total, **obj_args):
 
     desc = obj_args['description']
     url = obj_args['url']
-    exp_result_count = obj_args['result_count']
     exp_response = obj_args['expected_response']
 
     LOG.info('  BEGIN ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
