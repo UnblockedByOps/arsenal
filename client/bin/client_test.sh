@@ -110,6 +110,10 @@ rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf} -k
 ro_cmd="${arsenal_cmd} --server ${server} -y -l readonly -s ${ro_conf} -k ${ro_cookie}"
 
 #
+# Parameter validation
+#
+validate_command "${ro_cmd} nodes search name --status=inservice" 0 "string" "400: Bad Request. You must have at least one search parameter."
+#
 # Add and manipulate objects
 #
 # Create node
