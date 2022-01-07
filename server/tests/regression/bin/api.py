@@ -297,7 +297,7 @@ def run_node_registration_test(args, test_num, test_total, **obj_args):
 def run_parameter_validation_test(args, test_num, test_total, **obj_args):
     '''Make sure you can't ask the api for no parameters or an empty parameter.'''
 
-    desc = obj_args['description']
+    desc = obj_args['test_data']
     url = obj_args['url']
     exp_response = obj_args['expected_response']
 
