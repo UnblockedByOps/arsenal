@@ -629,6 +629,16 @@ tests:
         username: 'kaboom'
         password: 'bad_password'
         expected_response: 401
+  parameter_validation:
+    description: 'Test api parameter validation'
+    function: 'run_parameter_validation_test'
+    tests:
+      - test_data: 'no_params'
+        url: '/api/nodes'
+        expected_response: 400
+      - test_data: 'empty_param'
+        url: '/api/nodes?name='
+        expected_response: 400
   # Node registration must be tested last or it hoses the other tests
   node_registration:
     description: 'Test node registration'
