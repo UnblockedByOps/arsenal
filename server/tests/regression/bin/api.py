@@ -82,7 +82,7 @@ def run_api_authentication_test(args, test_num, test_total, **obj_args):
                                                                    desc))
 
 @retry(5, HTTPError, ConnectionError, NewConnectionError, RequestException, UnboundLocalError, time_delay=5)
-def ar_query(args, endpoint, http_method, data=None, session=None):
+def ar_query(args, endpoint, http_method, data=None, session=None, nofail=False):
     '''Make http requests arsenal.'''
 
     headers = {'Content-Type': 'application/json'}
@@ -112,18 +112,18 @@ def ar_query(args, endpoint, http_method, data=None, session=None):
                                headers=headers,
                                json=data)
 
-        resp.raise_for_status()
-        if resp.status_code == 200:
+        if not nofail:
+            resp.raise_for_status()
 
-            try:
-                results = resp.json()
-            except:
-                raise
+        try:
+            results = resp.json()
+        except:
+            raise
 
-            LOG.info('    http code: 200')
-            LOG.debug(results)
+        LOG.info('    http code: {0}'.format(resp.status_code))
+        LOG.debug(results)
 
-            return results
+        return results
 
     except Exception as ex:
         try:
@@ -304,7 +304,7 @@ def run_parameter_validation_test(args, test_num, test_total, **obj_args):
     LOG.info('  BEGIN ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
                                                                    test_total,
                                                                    desc))
-    resp = ar_query(args, url, 'get')
+    resp = ar_query(args, url, 'get', nofail=True)
     LOG.debug('    Response data: {0}'.format(resp))
     if not resp.status_code == exp_response:
         LOG.error('    result   : FAIL')
