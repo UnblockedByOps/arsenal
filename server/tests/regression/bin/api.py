@@ -306,7 +306,7 @@ def run_parameter_validation_test(args, test_num, test_total, **obj_args):
                                                                    desc))
     resp = ar_query(args, url, 'get', nofail=True)
     LOG.debug('    Response data: {0}'.format(resp))
-    if not resp.status_code == exp_response:
+    if not resp['http_status']['code'] == exp_response:
         LOG.error('    result   : FAIL')
         LOG.error('    response : {0}'.format(json.dumps(resp, indent=4,
                                                          sort_keys=True)))
