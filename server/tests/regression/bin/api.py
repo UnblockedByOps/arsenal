@@ -294,6 +294,34 @@ def run_node_registration_test(args, test_num, test_total, **obj_args):
                                                                    test_total,
                                                                    desc))
 
+def run_parameter_validation_test(args, test_num, test_total, **obj_args):
+    '''Make sure you can't ask the api for no parameters or an empty parameter.'''
+
+    desc = obj_args['description']
+    url = obj_args['url']
+    exp_result_count = obj_args['result_count']
+    exp_response = obj_args['expected_response']
+
+    LOG.info('  BEGIN ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
+                                                                   test_total,
+                                                                   desc))
+    resp = ar_query(args, url, 'get')
+    LOG.debug('    Response data: {0}'.format(resp))
+    if not resp.status_code == exp_response:
+        LOG.error('    result   : FAIL')
+        LOG.error('    response : {0}'.format(json.dumps(resp, indent=4,
+                                                         sort_keys=True)))
+        FAILED_TESTS.append({
+            'name': desc,
+            'url': url
+        })
+    else:
+        LOG.info('    result   : PASS')
+
+    LOG.info('  END   ({0:0>3d} of {1:0>3d}): Testing: {2}'.format(test_num,
+                                                                   test_total,
+                                                                   desc))
+
 def run_tests(args, desc, call_func, my_tests):
     '''Run all the tests.'''
 
