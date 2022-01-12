@@ -72,7 +72,7 @@ def search_hardware_profiles(args, client):
             hardware_profile = results[0]
         LOG.debug('HARDWARE_PROFILE: {0}'.format(hardware_profile))
         msg = 'We are ready to update the following hardware_profile: \n  ' \
-              '{0}\nContinue?'.format(hardware_profile['name'])
+              '{0}\n  1 item(s) will be updated. Continue?'.format(hardware_profile['name'])
         if any(getattr(args, key) for key in update_fields) and ask_yes_no(msg, args.answer_yes):
             hardware_profile_update = update_object_fields(args,
                                                            'hardware_profiles',

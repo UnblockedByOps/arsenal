@@ -56,7 +56,8 @@ def _format_msg(results, tags=None, mode='tag'):
             r_names.append('{0}'.format(res['name']))
 
     msg = 'We are ready to update the following physical_racks: ' \
-          '\n {0}\nContinue?'.format('\n '.join(r_names))
+          '\n {0}\n  {1} item(s) will be updated. Continue?'.format('\n '.join(r_names),
+                                                                   len(r_names))
 
     return msg
 
@@ -182,7 +183,9 @@ def delete_physical_rack(args, client):
             r_names.append(physical_racks['name'])
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n  {2} item(s) will be deleted.  Continue?'.format(args.object_type,
+                                                                        '\n '.join(r_names),
+                                                                        len(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
             for physical_rack in results:

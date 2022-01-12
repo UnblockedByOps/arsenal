@@ -75,7 +75,7 @@ def search_data_centers(args, client):
                                                     data_center['id']))
 
         msg = 'We are ready to update the following data_center: \n  ' \
-              '{0}\nContinue?'.format('\n '.join(r_names))
+              '{0}\n  {1} item(s) will be updated. Continue?'.format('\n '.join(r_names), len(r_names))
 
         if args.data_center_status and ask_yes_no(msg, args.answer_yes):
             resp = client.statuses.assign(args.data_center_status, 'data_centers', results)
@@ -141,7 +141,9 @@ def delete_data_center(args, client):
             r_names.append(data_centers['name'])
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n  {2} item(s) will be deleted.  Continue?'.format(args.object_type,
+                                                                        '\n '.join(r_names),
+                                                                        len(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
             for datacenter in results:
