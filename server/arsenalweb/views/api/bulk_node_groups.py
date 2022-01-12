@@ -26,6 +26,7 @@ from arsenalweb.views.api.common import (
     api_400,
     api_404,
     api_500,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.nodes import (
     find_node_by_id,
@@ -93,6 +94,11 @@ def api_b_node_groups_deassign(request):
         payload = request.json_body
         node_ids = payload['node_ids']
         user = request.identity
+
+        item_count = len(node_ids)
+        denied = enforce_api_change_limit(request, item_count)
+        if denied:
+            return api_400(msg=denied)
 
         LOG.debug('Updating %s', request.url)
 

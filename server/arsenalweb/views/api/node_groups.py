@@ -31,6 +31,7 @@ from arsenalweb.views.api.common import (
     api_404,
     api_500,
     api_501,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.nodes import (
     find_node_by_id,
@@ -260,6 +261,12 @@ def api_node_group_write_attrib(request):
     if resource in resources:
         try:
             actionable = payload[resource]
+
+            item_count = len(actionable)
+            denied = enforce_api_change_limit(request, item_count)
+            if denied:
+                return api_400(msg=denied)
+
             if resource == 'tags':
                 # FIXME: This is missing, is it needed?
                 resp = manage_tags(request.dbsession, node_group, actionable, request.method)

@@ -254,6 +254,42 @@ def valiate_parameters(params):
 
     return None
 
+def enforce_api_change_limit(request, item_count):
+    '''Enforces the number of items that can be changed in a single API call.
+    Set by arsenal.api.change_limit. Set to 0 to enforce no limit.
+
+    Args:
+        request:  : The request object.
+        item_count: An int representing the number of elements being changed.
+
+    Returns True if the change is denied, False otherwise.'''
+
+    settings = request.registry.settings
+    try:
+        change_limit = int(settings['arsenal.api.change_limit'])
+    except KeyError:
+        msg = 'arsenal.api.change_limit is not set in the config. ' \
+              'Unable to make the requested change.'
+        LOG.error(msg)
+        return msg
+
+    LOG.debug('Checking API change limit: %d', change_limit)
+
+    if change_limit == 0:
+        LOG.debug('No change limit enforced, allowing.')
+        return False
+
+    if item_count > change_limit:
+        LOG.debug('Item count: %d is greater than change_limit: %d, denying.', item_count,
+                                                                               change_limit)
+        msg = 'Bad Request. You are trying to change more items in ' \
+        'one query than allowed (limit {0}). Please adjust your ' \
+        'query and try again.'.format(change_limit)
+        return msg
+
+    LOG.debug('Item count %d is fewer than change_limit: %d, allowing.')
+    return False
+
 def process_search(query, params, model_type, exact_get):
     '''Handle searches and delegate to exact or regex.'''
 
