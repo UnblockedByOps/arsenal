@@ -23,6 +23,7 @@ from arsenalweb.views.api.common import (
     api_500,
     api_501,
     collect_params,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.physical_racks import (
     find_physical_rack_by_name_loc,
@@ -242,6 +243,12 @@ def api_physical_elevation_write_attrib(request):
     if resource in resources:
         try:
             actionable = payload[resource]
+
+            item_count = len(actionable)
+            denied = enforce_api_change_limit(request, item_count)
+            if denied:
+                return api_400(msg=denied)
+
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)

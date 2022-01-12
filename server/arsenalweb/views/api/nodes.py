@@ -33,6 +33,7 @@ from arsenalweb.views.api.common import (
     api_404,
     api_500,
     api_501,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.data_centers import (
     find_data_center_by_name,
@@ -699,6 +700,12 @@ def api_node_write_attrib(request):
         if resource in resources:
             try:
                 actionable = payload[resource]
+
+                item_count = len(actionable)
+                denied = enforce_api_change_limit(request, item_count)
+                if denied:
+                    return api_400(msg=denied)
+
                 if resource == 'node_groups':
                     resp = node_groups_to_nodes(request.dbsession,
                                                 node,
