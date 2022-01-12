@@ -64,7 +64,8 @@ def _format_msg(results, tags=None, mode='tag'):
                                              loc['id']))
 
     msg = 'We are ready to update the following physical_locations: ' \
-          '\n {0}\nContinue?'.format('\n '.join(r_names))
+          '\n {0}\n {1} item(s) will be updated. Continue?'.format('\n '.join(r_names),
+                                                                   len(r_names))
 
     return msg
 
@@ -190,7 +191,8 @@ def delete_physical_location(args, client):
 
     if results:
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, results['name'])
+              '\n{1}\n  1 item(s) will be deleted. Continue?'.format(args.object_type,
+                                                                     results['name'])
 
         if ask_yes_no(msg, args.answer_yes):
             resp = client.physical_locations.delete(results)

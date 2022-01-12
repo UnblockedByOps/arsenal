@@ -78,7 +78,7 @@ def search_node_groups(args, client):
                                                     node_group['id']))
 
         msg = 'We are ready to update the following node_groups: \n  ' \
-              '{0}\nContinue?'.format('\n '.join(r_names))
+              '{0}\n  {1} item(s) will be updated. Continue?'.format('\n '.join(r_names), len(r_names))
 
         if any(getattr(args, key) for key in update_fields) and ask_yes_no(msg, args.answer_yes):
             for node_group in results:
@@ -140,7 +140,7 @@ def delete_node_group(args, client):
         result = client.node_groups.get_by_name(args.node_group_name)
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, result['name'])
+              '\n{1}\n  1 item(s) will be deleted. Continue?'.format(args.object_type, result['name'])
 
         if ask_yes_no(msg, args.answer_yes):
             resp = client.node_groups.delete(result)

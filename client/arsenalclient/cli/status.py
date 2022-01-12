@@ -71,7 +71,7 @@ def search_statuses(args, client):
             status = results[0]
         LOG.debug('STATUS: {0}'.format(status))
         msg = 'We are ready to update the following status: \n  ' \
-              '{0}\nContinue?'.format(status['name'])
+              '{0}\n  1 item(s) will be updated. Continue?'.format(status['name'])
         if any(getattr(args, key) for key in update_fields) and ask_yes_no(msg, args.answer_yes):
             status_update = update_object_fields(args,
                                                  'statuses',

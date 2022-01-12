@@ -65,7 +65,7 @@ def _format_msg(results, tags=None, mode='tag'):
             r_names.append('{0}'.format(res['serial_number']))
 
     msg = 'We are ready to update the following physical_devices: ' \
-          '\n {0}\nContinue?'.format('\n '.join(r_names))
+          '\n {0}\n  {1} item(s) will be updated. Continue?'.format('\n '.join(r_names), len(r_names))
 
     return msg
 
@@ -234,7 +234,7 @@ def delete_physical_device(args, client):
         results = client.physical_devices.get_by_serial_number(args.physical_device_serial_number)
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, results['serial_number'])
+              '\n{1}\n  1 item(s) will be deleted. Continue?'.format(args.object_type, results['serial_number'])
 
         if ask_yes_no(msg, args.answer_yes):
             resp = client.physical_devices.delete(results)
