@@ -468,6 +468,10 @@ validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initi
 # Now it should get the node group
 validate_command "${rw_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
 #
+# API change limit tests
+#
+validate_command "${rw_cmd} nodes search name=docker --status=decom" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
+#
 # Clean up
 #
 validate_command "${rw_cmd} nodes delete --name fopd-TEST8675.internal" 0
