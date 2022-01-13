@@ -474,7 +474,6 @@ validate_command "${rw_cmd} nodes search name=docker --del_all_tags" 1 "string" 
 validate_command "${rw_cmd} nodes search name=docker --del_all_node_groups" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
 validate_command "${rw_cmd} nodes search name=docker --status=decom" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
 validate_command "${rw_cmd} nodes search name=docker --node_groups=default_install" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
-validate_command "${rw_cmd} nodes search name=docker --tag foo=bar" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
 #
 # Clean up
 #
