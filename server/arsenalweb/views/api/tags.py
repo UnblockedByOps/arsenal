@@ -46,7 +46,6 @@ from arsenalweb.views.api.common import (
     api_409,
     api_500,
     api_501,
-    enforce_api_change_limit,
     underscore_to_camel,
     validate_tag_perm,
     )
@@ -303,11 +302,6 @@ def api_tag_write_attrib(request):
         if resource in resources:
             try:
                 actionable = payload[resource]
-
-                item_count = len(actionable)
-                denied = enforce_api_change_limit(request, item_count)
-                if denied:
-                    return api_400(msg=denied)
 
                 # FIXME: THis is probably broken due to user
                 if validate_tag_perm(request, user, tag.name):
