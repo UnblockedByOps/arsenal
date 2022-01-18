@@ -111,6 +111,7 @@ def includeme(config):
     config.add_route('api_nodes_audit', '/api/nodes_audit')
     config.add_route('api_node_audit_r', '/api/nodes_audit/{id}/{resource}')
     config.add_route('api_node_audit', '/api/nodes_audit/{id}')
+    config.add_route('api_b_guest_vms_deassign', '/api/bulk/guest_vms/deassign')
 
     config.add_route('api_statuses', '/api/statuses')
     config.add_route('api_status_r', '/api/statuses/{id}/{resource}')
