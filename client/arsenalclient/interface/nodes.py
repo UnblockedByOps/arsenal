@@ -355,3 +355,34 @@ class Nodes(ArsenalInterface):
         resp = self.api_conn('/api/enc', data, log_success=False)
 
         return resp
+
+    def deassign_all_vms(self, nodes):
+        '''De-assign ALL guest_vms from one or more nodes.
+
+        Args:
+
+        nodes (list): The list of node dicts from the search results to de-assign
+            all guest_vms from.
+
+        Usage:
+
+        >>> Nodes.deassign_all_vms(<search results>)
+        <json>
+        '''
+
+        node_ids = []
+        for node in nodes:
+            LOG.info('Removing all guest_vms from node: {0}'.format(node['name']))
+            node_ids.append(node['id'])
+
+        data = {'node_ids': node_ids}
+
+        try:
+            resp = self.api_conn('/api/bulk/guest_vms/deassign',
+                                 data,
+                                 method='delete')
+        except Exception as ex:
+            LOG.error('Command failed: {0}'.format(repr(ex)))
+            raise
+
+        return resp
