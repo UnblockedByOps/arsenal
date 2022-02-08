@@ -239,6 +239,8 @@ INSERT INTO statuses VALUES (9, 'maintenance', 'Hardware that is currently under
 INSERT INTO statuses_audit VALUES (9, 9, 'name', 'created', 'maintenance', NOW(), 'Admin');
 INSERT INTO statuses VALUES (10, 'allocated', 'Hardware that has been allocated for a purpose.', NOW(), NOW(), 'Admin');
 INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', NOW(), 'Admin');
+INSERT INTO statuses VALUES (11, 'pending_maintenance', 'Node that is marked for maintenance..', NOW(), NOW(), 'Admin');
+INSERT INTO statuses_audit VALUES (11, 11, 'name', 'created', 'allocated', NOW(), 'Admin');
 
 INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'Documentation url', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', NOW(), 'Admin');
