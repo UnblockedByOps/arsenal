@@ -59,6 +59,7 @@ def enc(args, client):
     apply_statuses = [
         'setup',
         'inservice',
+        'pending_maintenance',
     ]
 
     LOG.debug('Triggering node enc.')
