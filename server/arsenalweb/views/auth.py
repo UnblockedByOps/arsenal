@@ -107,11 +107,15 @@ def login(request):
     '''Handle user login requests.'''
 
     next_url = request.params.get('next', request.referrer)
+    LOG.debug('REQUEST PARAMS: %s', request.params)
     error = ''
 
     if not next_url or re.match('.*\/login.*', next_url):
-        LOG.debug('Redirecting from /login to /')
-        next_url = request.route_url('home')
+        try:
+            next_url = request.params['next_url']
+        except KeyError:
+            LOG.debug('Redirecting from /login to /')
+            next_url = request.route_url('home')
 
     LOG.debug('next_url is: %s', next_url)
     message = ''
@@ -124,6 +128,7 @@ def login(request):
         if user_id:
             new_csrf_token(request)
             headers = remember(request, user_id)
+            LOG.debug('Returning redirect to next_url is: %s', next_url)
             return HTTPSeeOther(location=next_url, headers=headers)
 
         message = 'Failed login'
