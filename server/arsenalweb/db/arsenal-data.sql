@@ -183,6 +183,7 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (22,19);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (102,19);
 #  status_write
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (23,20);
+INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (100,20);
 INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (102,20);
 
 # For devel on mac
