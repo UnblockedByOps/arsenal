@@ -250,7 +250,8 @@ def api_tags_write(request):
         tag_name = payload['name'].rstrip()
         tag_value = payload['value'].rstrip()
         try:
-            tag_value = int(tag_value)
+            if tag_value != '0':
+                tag_value = int(tag_value)
         except ValueError:
             pass
 
