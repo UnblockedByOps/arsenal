@@ -299,9 +299,9 @@ class Nodes(ArsenalInterface):
                         unique_id = strip_uuid
 
         if type(unique_id) != str:
-            return_uid = unique_id.decode('UTF-8')
+            return_unique_id = unique_id.decode('UTF-8')
         else:
-            return_uid = unique_id
+            return_unique_id = unique_id
 
         return return_unique_id
 
