@@ -298,7 +298,12 @@ class Nodes(ArsenalInterface):
                     else:
                         unique_id = strip_uuid
 
-        return unique_id
+        if type(unique_id) != str:
+            return_unique_id = unique_id.decode('UTF-8')
+        else:
+            return_unique_id = unique_id
+
+        return return_unique_id
 
     def get_unique_id(self):
         '''Determines the unique_id of a node and returns it as a string.'''
