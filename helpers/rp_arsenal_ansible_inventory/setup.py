@@ -27,7 +27,7 @@ REQUIRES = [
 ]
 
 setup(name='rp_arsenal_ansible_inventory',
-      version=1.0,
+      version=2.0,
       description='Python script to generate ansbile inventory from an arsenal query.',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[

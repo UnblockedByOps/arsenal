@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/app/rp_arsenal_ansible_inventory/venv/bin/python
 '''Search arsenal and generate ansible inventory.'''
 #
 #  Copyright 2015 CityGrid Media, LLC
