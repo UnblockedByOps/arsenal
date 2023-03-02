@@ -57,10 +57,12 @@ class NetworkInterface(Base):
     ip_address = relationship('IpAddress', backref='network_interfaces',
                               lazy='joined')
     bond_master = Column(Text, nullable=True)
+    mac_address = Column(Text, nullable=True)
     port_description = Column(Text, nullable=True)
     port_number = Column(Text, nullable=True)
     port_switch = Column(Text, nullable=True)
     port_vlan = Column(Text, nullable=True)
+    seen_mac_address = Column(Text, nullable=True)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
@@ -81,10 +83,12 @@ class NetworkInterface(Base):
                     ip_address=get_name_id_dict([self.ip_address],
                                                 default_keys=['id', 'ip_address']),
                     bond_master=self.bond_master,
+                    mac_address=self.mac_address,
                     port_description=self.port_description,
                     port_number=self.port_number,
                     port_switch=self.port_switch,
                     port_vlan=self.port_vlan,
+                    seen_mac_address=self.seen_mac_address,
                     nodes=get_name_id_list(self.nodes),
                     created=self.created,
                     updated=self.updated,

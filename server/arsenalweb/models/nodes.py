@@ -130,6 +130,9 @@ class Node(Base):
                     network_interfaces=get_name_id_list(self.network_interfaces,
                                                         extra_keys=[
                                                             'unique_id',
+                                                            'port_description',
+                                                            'port_vlan',
+                                                            'seen_mac_address',
                                                         ]),
                     guest_vms=get_name_id_list(self.guest_vms),
                     hypervisor=get_name_id_list(self.hypervisor),
