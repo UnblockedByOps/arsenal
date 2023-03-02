@@ -521,9 +521,9 @@ INSERT INTO alembic_version (version_num) VALUES ('b1bf5df56a22');
 
 -- Running upgrade b1bf5df56a22 -> d4574cc94ba8
 
-ALTER TABLE network_interfaces ADD COLUMN mac_address TEXT;
+ALTER TABLE network_interfaces ADD COLUMN mac_address TEXT AFTER bond_master;
 
-ALTER TABLE network_interfaces ADD COLUMN seen_mac_address TEXT;
+ALTER TABLE network_interfaces ADD COLUMN seen_mac_address TEXT AFTER port_vlan;
 
 UPDATE alembic_version SET version_num='d4574cc94ba8' WHERE alembic_version.version_num = 'b1bf5df56a22';
 
