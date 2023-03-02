@@ -67,10 +67,12 @@ def create_net_if(dbsession,
                   updated_by=None,
                   ip_address_id=None,
                   bond_master=None,
+                  mac_address=None,
                   port_description=None,
                   port_number=None,
                   port_switch=None,
-                  port_vlan=None,):
+                  port_vlan=None,
+                  seen_mac_address=None,):
     '''Create a new network_interface.'''
 
     try:
@@ -88,16 +90,19 @@ def create_net_if(dbsession,
             pass
 
         LOG.info('Creating new network_interface name: %s unique_id: %s '
-                 'ip_address_id: %s updated_by: %s bond_master: %s port_description: '
-                 '%s port_number: %s port_switch: %s port_vlan: %s', name,
-                                                                     unique_id,
-                                                                     ip_address_id,
-                                                                     updated_by,
-                                                                     bond_master,
-                                                                     port_description,
-                                                                     port_number,
-                                                                     port_switch,
-                                                                     port_vlan)
+                 'ip_address_id: %s updated_by: %s bond_master: %s mac_address: %s '
+                 'port_description: %s port_number: %s port_switch: %s '
+                 'port_vlan: %s seen_mac_address: %s', name,
+                                                       unique_id,
+                                                       ip_address_id,
+                                                       updated_by,
+                                                       bond_master,
+                                                       mac_address,
+                                                       port_description,
+                                                       port_number,
+                                                       port_switch,
+                                                       port_vlan,
+                                                       seen_mac_address)
 
         utcnow = datetime.utcnow()
 
@@ -105,10 +110,12 @@ def create_net_if(dbsession,
                                   unique_id=unique_id,
                                   ip_address_id=ip_address_id,
                                   bond_master=bond_master,
+                                  mac_address=mac_address,
                                   port_description=port_description,
                                   port_number=port_number,
                                   port_switch=port_switch,
                                   port_vlan=port_vlan,
+                                  seen_mac_address=seen_mac_address,
                                   updated_by=updated_by,
                                   created=utcnow,
                                   updated=utcnow)
@@ -141,19 +148,11 @@ def create_net_if(dbsession,
         return net_if
 
     except Exception as ex:
-        msg = 'Error creating new network_interface name: {0} unique_id: {1} ' \
-              'ip_address_id: {2} updated_by: {3} bond_master: {4} port_description: ' \
-              '{5} port_number: {6} port_switch: {7} port_vlan: {8} ' \
-              'exception: {9}'.format(name,
-                                      unique_id,
-                                      ip_address_id,
-                                      updated_by,
-                                      bond_master,
-                                      port_description,
-                                      port_number,
-                                      port_switch,
-                                      port_vlan,
-                                      ex)
+        msg = f'''Error creating new network_interface name: {name} unique_id: {unique_id}
+ip_address_id: {ip_address_id} updated_by: {updated_by} bond_master: {bond_master}
+mac_address: {mac_address} port_description: {port_description} port_number: {port_number}
+port_switch: {port_switch} port_vlan: {port_vlan} seen_mac_address: {seen_mac_address}
+exception: {ex}'''
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -164,10 +163,12 @@ def update_net_if(dbsession,
                   updated_by=None,
                   ip_address_id=None,
                   bond_master=None,
+                  mac_address=None,
                   port_description=None,
                   port_number=None,
                   port_switch=None,
-                  port_vlan=None,):
+                  port_vlan=None,
+                  seen_mac_address=None,):
     '''Update an existing network_interface.'''
 
     try:
@@ -231,19 +232,11 @@ def update_net_if(dbsession,
         return net_if
 
     except Exception as ex:
-        msg = 'Error updating network_interface name: {0} unique_id: {1} ' \
-              'ip_address_id: {2} user: {3} bond_master: {4} port_description: ' \
-              '{5} port_number: {6} port_switch: {7} port_vlan: {8} ' \
-              'exception: {9}'.format(name,
-                                      my_attribs['unique_id'],
-                                      ip_address_id,
-                                      updated_by,
-                                      bond_master,
-                                      port_description,
-                                      port_number,
-                                      port_switch,
-                                      port_vlan,
-                                      ex)
+        msg = f'''Error creating new network_interface name: {name} unique_id:
+{my_attribs['unique_id']} ip_address_id: {ip_address_id} updated_by: {updated_by}
+bond_master: {bond_master} mac_address: {mac_address} port_description:
+{port_description} port_number: {port_number} port_switch: {port_switch}
+port_vlan: {port_vlan} seen_mac_address: {seen_mac_address} exception: {ex}'''
         LOG.error(msg)
         raise
 

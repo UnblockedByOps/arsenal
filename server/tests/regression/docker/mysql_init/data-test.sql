@@ -386,9 +386,9 @@ INSERT INTO ip_addresses_audit VALUES (4, 4, 'ip_address', 'created', '10.100.10
 # Test network_interfaces
 #----------------------------------------------
 INSERT INTO network_interfaces (id,name,unique_id,ip_address_id,created,updated,updated_by) VALUES (1, 'bond0', 'bond0_docker1', 1, NOW(), NOW(), 'Admin');
-INSERT INTO network_interfaces VALUES (2, 'eth0', '00:11:22:aa:bb:cc', 1, 'bond0', 'docker_port', 'docker_port_10', 'docker_vswitch', '456', NOW(), NOW(), 'Admin');
-INSERT INTO network_interfaces VALUES (3, 'eth1', '00:11:22:aa:bb:cd', 1, 'bond0', 'docker_port', 'docker_port_11', 'docker_vswitch', '456', NOW(), NOW(), 'Admin');
-INSERT INTO network_interfaces VALUES (4, 'eth0', 'aa:bb:cc:00:11:22', 1, '', 'docker_port', 'docker_port_12', 'docker_vswitch', '456', NOW(), NOW(), 'Admin');
+INSERT INTO network_interfaces VALUES (2, 'eth0', '00:11:22:aa:bb:cc', 1, 'bond0', '', 'docker_port', 'docker_port_10', 'docker_vswitch', '456', '', NOW(), NOW(), 'Admin');
+INSERT INTO network_interfaces VALUES (3, 'eth1', '00:11:22:aa:bb:cd', 1, 'bond0', '', 'docker_port', 'docker_port_11', 'docker_vswitch', '456', '', NOW(), NOW(), 'Admin');
+INSERT INTO network_interfaces VALUES (4, 'eth0', 'aa:bb:cc:00:11:22', 1, '', '', 'docker_port', 'docker_port_12', 'docker_vswitch', '456', '', NOW(), NOW(), 'Admin');
 INSERT INTO network_interfaces_audit VALUES (1, 1, 'unique_id', 'created', 'bond0_docker',      NOW(), 'Admin');
 INSERT INTO network_interfaces_audit VALUES (2, 2, 'unique_id', 'created', '00:11:22:aa:bb:cc', NOW(), 'Admin');
 INSERT INTO network_interfaces_audit VALUES (3, 3, 'unique_id', 'created', '00:11:22:aa:bb:cd', NOW(), 'Admin');
