@@ -6,6 +6,7 @@ import configparser
 import json
 import logging
 import sys
+import traceback
 
 import pyeapi
 import requests
@@ -201,7 +202,13 @@ def process_all_switches(args, all_switches):
         LOG.info('Collecting data for switch: %s (%s of %s)', switch_fqdn,
                                                               current_switch,
                                                               total_switch_count)
-        payload = get_switch_payload(args, switch_fqdn)
+        try:
+            payload = get_switch_payload(args, switch_fqdn)
+        except Exception:
+            LOG.error('  Error collecting info from switch! traceback: %s', traceback.format_exc())
+            failed_switches.append(switch_fqdn)
+            continue
+
         if args.dry_run:
             LOG.info('  Would have registered switch: %s', switch_fqdn)
         else:
