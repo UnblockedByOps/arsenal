@@ -17,7 +17,7 @@ import os
 from setuptools import setup, find_packages
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(HERE, 'README.rst')) as f:
+with open(os.path.join(HERE, 'README.md')) as f:
     README = f.read()
 with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
     CHANGELOG = f.read()
