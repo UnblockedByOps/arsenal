@@ -263,7 +263,6 @@ def get_switch_payload(args, switch_fqdn):
     }
 
     resp = node.enable('show version')
-    LOG.info(json.dumps(resp, indent=4, sort_keys=True))
     my_version = resp[0]['result']
     my_name = 'Arista Networks ' + my_version['version']
     try:
