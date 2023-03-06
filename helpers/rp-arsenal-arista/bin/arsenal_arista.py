@@ -150,7 +150,7 @@ def register(args, session, payload):
     '''Register a node with Arsenal.'''
 
     headers = {'Content-Type': 'application/json'}
-    url = f'{args.server}/api/register'
+    url = f'{args.arsenal_server}/api/register'
 
     resp = session.put(url, headers=headers, json=payload, verify=False)
     if args.debug:
@@ -204,9 +204,29 @@ def process_all_switches(args, all_switches):
                                                               total_switch_count)
         try:
             payload = get_switch_payload(args, switch_fqdn)
+        except KeyError as ex:
+            LOG.error('  KeyError collecting info from switch! traceback: %s', traceback.format_exc())
+            fail = {
+                'name': switch_fqdn,
+                'error': f'KeyError: {ex}',
+            }
+            failed_switches.append(fail)
+            continue
+        except pyeapi.eapilib.ConnectionError as ex:
+            LOG.error('  Host unknown collecting info from switch! traceback: %s', traceback.format_exc())
+            fail = {
+                'name': switch_fqdn,
+                'error': f'Host Unknown: {ex}',
+            }
+            failed_switches.append(fail)
+            continue
         except Exception:
-            LOG.error('  Error collecting info from switch! traceback: %s', traceback.format_exc())
-            failed_switches.append(switch_fqdn)
+            LOG.error('  Unknown Errror collecting info from switch! traceback: %s', traceback.format_exc())
+            fail = {
+                'name': switch_fqdn,
+                'error': 'Unknown, see console output for more info.'
+            }
+            failed_switches.append(fail)
             continue
 
         if args.dry_run:
@@ -243,23 +263,33 @@ def get_switch_payload(args, switch_fqdn):
     }
 
     resp = node.enable('show version')
+    LOG.info(json.dumps(resp, indent=4, sort_keys=True))
     my_version = resp[0]['result']
     my_name = 'Arista Networks ' + my_version['version']
+    try:
+        my_variant = my_version['mfgName']
+    except KeyError:
+        my_variant = 'Arista'
 
     payload['operating_system'] = {
         'architecture': my_version['architecture'],
         'description': my_name + ' TOR Swich',
         'name': my_name,
-        'variant':  my_version['mfgName'],
+        'variant':  my_variant,
         'version_number':  my_version['version'],
     }
     payload['os_memory'] = str(my_version['memTotal'])
+
+    try:
+        my_uptime = str(my_version['uptime'])
+    except KeyError:
+        my_uptime = '1'
 
     payload['ec2'] = ''
     payload['guest_vms'] = []
     payload['network_interfaces'] = []
     payload['processor_count'] = 1
-    payload['uptime'] = str(my_version['uptime'])
+    payload['uptime'] = my_uptime
     payload['data_center'] = {
         'name': switch_fqdn.split('.')[1]
     }
@@ -298,7 +328,7 @@ def process_failures(failed_switches):
     if failed_switches:
         LOG.error('The following switches were unable to be registered: ')
         for switch in failed_switches:
-            LOG.error('  %s', switch)
+            LOG.error('  switch: %s error: %s', switch['name'], switch['error'])
         returnme = False
 
     return returnme
@@ -317,10 +347,13 @@ def main():
     failed_switches = process_all_switches(args, all_switches)
     exit_ok = process_failures(failed_switches)
 
-    LOG.info('END: Registering switches.')
+    msg = 'END: Registering switches.'
 
     if not exit_ok:
+        LOG.error(msg)
         sys.exit(1)
+
+    LOG.info(msg)
 
 if __name__ == '__main__':
     main()
