@@ -266,7 +266,7 @@ def process_all_switches(args, all_switches):
                 'name': switch_fqdn,
                 'serial_number': payload['serial_number'],
             }
-            success_switches.append()
+            success_switches.append(success)
 
     return success_switches, failed_switches
 
