@@ -6,6 +6,7 @@ import configparser
 import json
 import logging
 import sys
+import socket
 import traceback
 
 import pyeapi
@@ -15,6 +16,7 @@ LOG = logging.getLogger(__name__)
 
 # requests is chatty
 logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("pyeapi.eapilib").setLevel(logging.CRITICAL)
 
 
 def _parse_args():
@@ -191,6 +193,7 @@ def process_all_switches(args, all_switches):
     '''Get registration info for all witches and register them with Arsenal.'''
 
     session = login(args, 'kaboom', 'password')
+    success_switches = []
     failed_switches = []
     total_switch_count = len(all_switches)
 
@@ -203,25 +206,38 @@ def process_all_switches(args, all_switches):
                                                               current_switch,
                                                               total_switch_count)
         try:
+            socket.gethostbyname(switch_fqdn)
             payload = get_switch_payload(args, switch_fqdn)
         except KeyError as ex:
-            LOG.error('  KeyError collecting info from switch! traceback: %s', traceback.format_exc())
+            LOG.error('  KeyError collecting info from switch: %s', ex)
+            LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
                 'name': switch_fqdn,
                 'error': f'KeyError: {ex}',
             }
             failed_switches.append(fail)
             continue
-        except pyeapi.eapilib.ConnectionError as ex:
-            LOG.error('  Host unknown collecting info from switch! traceback: %s', traceback.format_exc())
+        except socket.gaierror as ex:
+            LOG.error('  Host unknown collecting info from switch: %s', ex)
+            LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
                 'name': switch_fqdn,
                 'error': f'Host Unknown: {ex}',
             }
             failed_switches.append(fail)
             continue
-        except Exception:
-            LOG.error('  Unknown Errror collecting info from switch! traceback: %s', traceback.format_exc())
+        except (pyeapi.eapilib.ConnectionError, ConnectionRefusedError) as ex:
+            LOG.error('  Connection refused collecting info from switch: %s', ex)
+            LOG.debug('  traceback: %s', traceback.format_exc())
+            fail = {
+                'name': switch_fqdn,
+                'error': f'Connection error: {ex}',
+            }
+            failed_switches.append(fail)
+            continue
+        except Exception as ex:
+            LOG.error('  Unknown Errror collecting info from switch: %s', ex)
+            LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
                 'name': switch_fqdn,
                 'error': 'Unknown, see console output for more info.'
@@ -231,12 +247,28 @@ def process_all_switches(args, all_switches):
 
         if args.dry_run:
             LOG.info('  Would have registered switch: %s', switch_fqdn)
+            success = {
+                'name': switch_fqdn,
+                'serial_number': payload['serial_number'],
+            }
+            success_switches.append(success)
         else:
             LOG.info('  Registering switch with Arsenal: %s', switch_fqdn)
             resp = register(args, session, payload)
             if not resp:
                 failed_switches.append(switch_fqdn)
-    return failed_switches
+                fail = {
+                    'name': switch_fqdn,
+                    'error': 'Failed to register with Arsenal.'
+                }
+                failed_switches.append(fail)
+            success = {
+                'name': switch_fqdn,
+                'serial_number': payload['serial_number'],
+            }
+            success_switches.append()
+
+    return success_switches, failed_switches
 
 def get_switch_payload(args, switch_fqdn):
     '''Get all the stuff.'''
@@ -319,6 +351,14 @@ def get_switch_payload(args, switch_fqdn):
 
     return payload
 
+def process_success(success_switches):
+    '''Process the successes.'''
+
+    LOG.info('The following switches were successfully registered with Arsenal: ')
+
+    for switch in success_switches:
+        LOG.info('  switch: %s serial_number: %s', switch['name'], switch['serial_number'])
+
 def process_failures(failed_switches):
     '''Process the failures and exit accordingly.'''
 
@@ -343,7 +383,8 @@ def main():
              args.physical_location, args.logical_location)
 
     all_switches = generate_switch_names(args)
-    failed_switches = process_all_switches(args, all_switches)
+    success_switches, failed_switches = process_all_switches(args, all_switches)
+    process_success(success_switches)
     exit_ok = process_failures(failed_switches)
 
     msg = 'END: Registering switches.'
