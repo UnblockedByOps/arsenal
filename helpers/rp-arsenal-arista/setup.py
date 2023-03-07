@@ -28,7 +28,7 @@ REQUIRES = [
 ]
 
 setup(name='rp-arsenal-arista',
-      version=1.3,
+      version=1.4,
       description='Collect information about Arista TOR switches and register them with Arsenal.',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
