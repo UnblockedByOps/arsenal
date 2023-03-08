@@ -8,6 +8,7 @@ import logging
 import sys
 import socket
 import traceback
+import yaml
 
 import pyeapi
 import requests
@@ -66,6 +67,10 @@ def _parse_args():
                      dest='secrets_config_file',
                      help='Secret config file to use.',
                      default='/app/rp-arsenal-arista/conf/secrets.ini')
+    pap.add_argument('-y',
+                     '--yaml-config',
+                     help='Yaml config file.',
+                     default='/app/rp-arsenal-arista/conf/config.yaml')
 
     return pap.parse_args()
 
@@ -98,6 +103,16 @@ def _parse_config(args):
     setattr(args, 'api_pass', secrets_config.get('arista', 'password'))
 
     return args
+
+def load_yaml(yaml_file):
+    '''Load in the data from yaml_file and return a YAML() object.'''
+
+    LOG.info('Loading data from yaml file: %s', yaml_file)
+
+    with open(yaml_file, 'r', encoding='utf-8') as config_fd:
+        my_yaml = yaml.safe_load(config_fd)
+
+    return my_yaml
 
 def arsenal_query_api(args, url, http_method, data = None):
     '''Query the Arsenal API.'''
@@ -175,7 +190,7 @@ def generate_switch_names(args):
     url = f'{args.arsenal_server}/api/physical_racks?physical_location.name=^{pl_name}$'
     all_switches = []
 
-    LOG.info('Retrieiving rack information for physical_location: %s', pl_name)
+    LOG.info('Retrieving rack information for physical_location: %s', pl_name)
 
     resp = arsenal_query_api(args, url, 'get')
     my_racks = resp['results']
@@ -189,7 +204,7 @@ def generate_switch_names(args):
 
     return all_switches
 
-def process_all_switches(args, all_switches):
+def process_all_switches(args, exclude_switches, all_switches):
     '''Get registration info for all witches and register them with Arsenal.'''
 
     session = login(args, 'kaboom', 'password')
@@ -202,6 +217,11 @@ def process_all_switches(args, all_switches):
     current_switch = 0
     for switch_fqdn in all_switches:
         current_switch += 1
+        if switch_fqdn in exclude_switches:
+            LOG.warning('Switch is in exclude config: %s skipping. (%s of %s)', switch_fqdn,
+                                                                                current_switch,
+                                                                                total_switch_count)
+            continue
         LOG.info('Collecting data for switch: %s (%s of %s)', switch_fqdn,
                                                               current_switch,
                                                               total_switch_count)
@@ -383,7 +403,10 @@ def main():
              args.physical_location, args.logical_location)
 
     all_switches = generate_switch_names(args)
-    success_switches, failed_switches = process_all_switches(args, all_switches)
+    yaml_config = load_yaml(args.yaml_config)
+    success_switches, failed_switches = process_all_switches(args,
+                                                             yaml_config['exclude_switches'],
+                                                             all_switches)
     process_success(success_switches)
     exit_ok = process_failures(failed_switches)
 
