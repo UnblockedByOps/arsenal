@@ -218,13 +218,13 @@ def process_all_switches(args, exclude_switches, all_switches):
     for switch_fqdn in all_switches:
         current_switch += 1
         if switch_fqdn in exclude_switches:
-            LOG.warning('Switch is in exclude config: %s skipping. (%s of %s)', switch_fqdn,
+            LOG.warning('Switch is in exclude config: %s skipping (%s of %s).', switch_fqdn,
                                                                                 current_switch,
                                                                                 total_switch_count)
             continue
-        LOG.info('Collecting data for switch: %s (%s of %s)', switch_fqdn,
-                                                              current_switch,
-                                                              total_switch_count)
+        LOG.info('Collecting data for switch: %s (%s of %s)...', switch_fqdn,
+                                                                 current_switch,
+                                                                 total_switch_count)
         try:
             socket.gethostbyname(switch_fqdn)
             payload = get_switch_payload(args, switch_fqdn)
