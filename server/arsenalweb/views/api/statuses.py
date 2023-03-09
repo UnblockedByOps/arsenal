@@ -198,18 +198,23 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                         if my_obj.physical_device:
 
                             try:
-                                pd_status = settings['arsenal.node_hw_map.{0}'.format(status.name)]
+                                pd_status = settings[f'arsenal.node_hw_map.{status.name}']
                                 av = find_status_by_name(dbsession, pd_status)
                                 final_status_id = av.id
+                                if my_obj.physical_device.status_id != final_status_id:
 
-                                pd_params = {
-                                    'status_id': final_status_id,
-                                    'updated_by': user,
-                                }
+                                    pd_params = {
+                                        'status_id': final_status_id,
+                                        'updated_by': user,
+                                    }
 
-                                update_physical_device(dbsession,
-                                                       my_obj.physical_device,
-                                                       **pd_params)
+                                    update_physical_device(dbsession,
+                                                           my_obj.physical_device,
+                                                           **pd_params)
+                                else:
+                                    LOG.debug('current physical_device status_id: %s matches '
+                                              'expected status_id: %s. Nothing to do.',
+                                              my_obj.physical_device.status_id, final_status_id)
 
                             except KeyError:
                                 LOG.debug('No physical_device status map attribute defined in '
