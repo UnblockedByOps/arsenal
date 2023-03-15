@@ -16,6 +16,7 @@
 import logging
 from sqlalchemy import (
     Column,
+    ForeignKey,
     Index,
     TIMESTAMP,
     Text,
@@ -23,6 +24,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.orm import relationship
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
@@ -58,6 +60,8 @@ class PhysicalLocation(Base):
     postal_code = Column(Text, nullable=True)
     contact_name = Column(Text, nullable=True)
     phone_number = Column(Text, nullable=True)
+    status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
+    status = relationship('Status', backref='physical_locations', lazy='joined')
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
@@ -83,6 +87,7 @@ class PhysicalLocation(Base):
                     postal_code=self.postal_code,
                     contact_name=self.contact_name,
                     phone_number=self.phone_number,
+                    status=get_name_id_dict([self.status]),
                     physical_racks=get_name_id_list(self.physical_racks,
                                                     default_keys=['id',
                                                                   'name',

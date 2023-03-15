@@ -527,3 +527,11 @@ ALTER TABLE network_interfaces ADD COLUMN seen_mac_address TEXT AFTER port_vlan;
 
 UPDATE alembic_version SET version_num='d4574cc94ba8' WHERE alembic_version.version_num = 'b1bf5df56a22';
 
+-- Running upgrade d4574cc94ba8 -> 3ee80746cca8
+
+ALTER TABLE physical_locations ADD COLUMN status_id INTEGER UNSIGNED NOT NULL AFTER phone_number;
+
+ALTER TABLE physical_locations ADD CONSTRAINT fk_physical_locations_status_id_statuses FOREIGN KEY(status_id) REFERENCES statuses (id);
+
+UPDATE alembic_version SET version_num='3ee80746cca8' WHERE alembic_version.version_num = 'd4574cc94ba8';
+
