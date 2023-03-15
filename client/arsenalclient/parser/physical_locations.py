@@ -113,6 +113,10 @@ def parser_physical_locations(top_parser, otsp):
                       '--provider',
                       dest='physical_location_provider',
                       help='Update physical_location provider.')
+    uaag.add_argument('--status',
+                      dest='physical_location_status',
+                      help='status to assign to the search results.')
+
 
     # physical_locations assignment action argument group (aag)
     aag = ssc.add_argument_group('Assignment Actions')
@@ -173,6 +177,10 @@ def parser_physical_locations(top_parser, otsp):
                      '--provider',
                      dest='physical_location_provider',
                      help='Update physical_location provider.')
+    csc.add_argument('--status',
+                     dest='physical_location_status',
+                     help='status to set the new physical_location to. ' \
+                     'If not specified will be set to setup.')
 
     # required physical_location create argument group (rcag)
     rcag = csc.add_argument_group('required arguments')

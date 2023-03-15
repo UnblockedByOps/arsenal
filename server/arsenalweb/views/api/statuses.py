@@ -31,6 +31,9 @@ from arsenalweb.models.statuses import (
 from arsenalweb.models.physical_devices import (
     PhysicalDeviceAudit,
     )
+from arsenalweb.models.physical_locations import (
+    PhysicalLocationAudit,
+    )
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
@@ -49,6 +52,9 @@ from arsenalweb.views.api.data_centers import (
 from arsenalweb.views.api.physical_devices import (
     update_physical_device,
     find_physical_device_by_id,
+    )
+from arsenalweb.views.api.physical_locations import (
+    find_physical_location_by_id,
     )
 
 LOG = logging.getLogger(__name__)
@@ -97,8 +103,7 @@ def create_status(dbsession, name=None, description=None, user_id=None):
         dbsession.flush()
 
     except Exception as ex:
-        msg = 'Error creating status name={0},description={1},' \
-              'exception={2}'.format(name, description, ex)
+        msg = f'Error creating status name={name},description={description},exception={ex}'
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -150,10 +155,8 @@ def update_status(dbsession, status, **kwargs):
         return api_200(results=status)
 
     except Exception as ex:
-        msg = 'Error updating status name: {0} updated_by: {1} exception: ' \
-              '{2}'.format(status.name,
-                           my_attribs['updated_by'],
-                           repr(ex))
+        msg = f"Error updating status name: {status.name} updated_by: " \
+               "{my_attribs['updated_by']} exception: {ex}"
         LOG.error(msg)
         raise
 
@@ -175,6 +178,8 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                     my_obj = find_data_center_by_id(dbsession, actionable_id)
                 elif resource == 'physical_devices':
                     my_obj = find_physical_device_by_id(dbsession, actionable_id)
+                elif resource == 'physical_locations':
+                    my_obj = find_physical_location_by_id(dbsession, actionable_id)
 
                 if resource == 'physical_devices':
                     resp[status.name].append(my_obj.serial_number)
@@ -248,6 +253,16 @@ def assign_status(dbsession, status, actionables, resource, user, settings):
                                                        created=utcnow)
                         dbsession.add(pd_audit)
 
+                    elif resource == 'physical_locations':
+
+                        pd_audit = PhysicalLocationAudit(object_id=my_obj.id,
+                                                         field='status',
+                                                         old_value=orig_status.name,
+                                                         new_value=status.name,
+                                                         updated_by=user,
+                                                         created=utcnow)
+                        dbsession.add(pd_audit)
+
                     LOG.debug('END assign_status() create audit')
 
             LOG.debug('START assign_status() session add')
@@ -301,6 +316,7 @@ def api_status_write_attrib(request):
             'nodes',
             'data_centers',
             'physical_devices',
+            'physical_locations',
         ]
 
         if resource in resources:

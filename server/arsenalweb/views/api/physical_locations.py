@@ -29,6 +29,9 @@ from arsenalweb.models.physical_locations import (
     PhysicalLocation,
     PhysicalLocationAudit,
     )
+from arsenalweb.models.statuses import (
+    Status,
+    )
 
 LOG = logging.getLogger(__name__)
 
@@ -53,16 +56,30 @@ def find_physical_location_by_id(dbsession, physical_location_id):
 
     return physical_location.one()
 
+def find_status_by_name(dbsession, status_name):
+    '''Find a status by name. Returns a status object if found, raises
+    exception otherwise.
+
+    status_name: A string that is the name of the status to search for.
+    '''
+
+    status = dbsession.query(Status)
+    status = status.filter(Status.name == status_name)
+
+    return status.one()
+
 def create_physical_location(dbsession,
                              name=None,
+                             status_name=None,
                              updated_by=None,
                              **kwargs):
     '''Create a new physical_location.
 
     Required params:
 
-    name      : A string that is the name of the physical_location.
-    updated_by: A string that is the user making the update.
+    name        : A string that is the name of the physical_location.
+    status_name : A string that is the name of the status of the physical_location.
+    updated_by  : A string that is the user making the update.
 
     Optional kwargs:
 
@@ -80,9 +97,16 @@ def create_physical_location(dbsession,
     try:
         LOG.info('Creating new physical_location name: %s', name)
 
+        try:
+            my_status = find_status_by_name(dbsession, status_name)
+            my_status_id = my_status.id
+        except NoResultFound:
+            my_status_id = 2
+
         utcnow = datetime.utcnow()
 
         physical_location = PhysicalLocation(name=name,
+                                             status_id=my_status_id,
                                              updated_by=updated_by,
                                              created=utcnow,
                                              updated=utcnow,
