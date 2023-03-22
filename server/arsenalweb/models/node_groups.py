@@ -54,6 +54,7 @@ class NodeGroup(Base):
     owner = Column(VARCHAR(255), nullable=False)
     description = Column(Text, nullable=False)
     notes_url = Column(Text, nullable=True)
+    monitoring_contact = Column(Text, nullable=True)
     created = Column(TIMESTAMP, nullable=False)
     updated = Column(TIMESTAMP,
                      server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
@@ -86,6 +87,7 @@ class NodeGroup(Base):
                     owner=self.owner,
                     description=self.description,
                     notes_url=self.notes_url,
+                    monitoring_contact=self.monitoring_contact,
                     tags=get_name_id_list(self.tags, extra_keys=['value']),
                     nodes=get_name_id_list(self.nodes),
                     created=self.created,

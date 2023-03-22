@@ -80,6 +80,9 @@ def parser_node_groups(top_parser, otsp):
     anguag.add_argument('--owner', '-o',
                         dest='node_group_owner',
                         help='Update node_group_owner.')
+    anguag.add_argument('--monitoring-contact', '-m',
+                        dest='node_group_monitoring_contact',
+                        help='Update node_group_monitoring_contact.')
     anguag.add_argument('--notes-url', '-u',
                         dest='node_group_notes_url',
                         help='Update node_group_notes_url.')
@@ -126,6 +129,10 @@ def parser_node_groups(top_parser, otsp):
                         dest='node_group_notes_url',
                         default=None,
                         help='node_group_notes_url to assign.')
+    rngcag.add_argument('--monitoring-contact', '-m',
+                        dest='node_group_monitoring_contact',
+                        default=None,
+                        help='node_group_monitoring_contact to assign.')
     rngcag.set_defaults(func=create_node_group)
 
     # node_groups delete subcommand (ngdsc)

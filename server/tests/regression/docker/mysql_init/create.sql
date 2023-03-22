@@ -535,3 +535,9 @@ ALTER TABLE physical_locations ADD CONSTRAINT fk_physical_locations_status_id_st
 
 UPDATE alembic_version SET version_num='3ee80746cca8' WHERE alembic_version.version_num = 'd4574cc94ba8';
 
+-- Running upgrade 3ee80746cca8 -> b63d86dd6535
+
+ALTER TABLE node_groups ADD COLUMN monitoring_contact TEXT after notes_url;
+
+UPDATE alembic_version SET version_num='b63d86dd6535' WHERE alembic_version.version_num = '3ee80746cca8';
+
