@@ -57,21 +57,23 @@ def find_node_group_by_id(dbsession, node_group_id):
 
     return node_group.one()
 
-def create_node_group(dbsession, name, owner, description, notes_url, user):
+def create_node_group(dbsession, name, owner, description, notes_url, monitoring_contact, user):
     '''Create a new node_group.'''
 
     try:
         LOG.info('Creating new node_group name: %s owner: %s '
-                 'description: %s notes_url: %s', name,
-                                                  owner,
-                                                  description,
-                                                  notes_url)
+                 'description: %s notes_url: %s monitoring_contact %s', name,
+                                                                        owner,
+                                                                        description,
+                                                                        notes_url,
+                                                                        monitoring_contact)
         utcnow = datetime.utcnow()
 
         node_group = NodeGroup(name=name,
                                owner=owner,
                                description=description,
                                notes_url=notes_url,
+                               monitoring_contact=monitoring_contact,
                                updated_by=user,
                                created=utcnow,
                                updated=utcnow)
@@ -91,12 +93,10 @@ def create_node_group(dbsession, name, owner, description, notes_url, user):
         return node_group
 
     except Exception as ex:
-        msg = 'Error creating new node_group name: {0} owner: {1} ' \
-                'description: {2} notes_url: {3} exception: {4}'.format(name,
-                                                                        owner,
-                                                                        description,
-                                                                        notes_url,
-                                                                        ex)
+        msg = f'Error creating new node_group name: {name} owner: {owner} ' \
+                'description: {description} notes_url: {notes_url} monitoring_contact: ' \
+                '{monitoring_contact} exception: {ex}'
+
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -179,6 +179,10 @@ def api_node_groups_write(request):
             notes_url = payload['notes_url'].rstrip()
         except:
             notes_url = None
+        try:
+            monitoring_contact = payload['monitoring_contact'].rstrip()
+        except:
+            monitoring_contact = None
 
         LOG.debug('Searching for node_group name: %s', name)
 
@@ -189,7 +193,13 @@ def api_node_groups_write(request):
 
                 utcnow = datetime.utcnow()
 
-                for attribute in ['name', 'owner', 'description', 'notes_url']:
+                for attribute in [
+                    'name',
+                    'owner',
+                    'description',
+                    'notes_url',
+                    'monitoring_contact',
+                ]:
                     if getattr(node_group, attribute) != locals()[attribute]:
                         LOG.debug('Updating node group %s: %s', attribute, locals()[attribute])
                         old_value = getattr(node_group, attribute)
@@ -207,17 +217,15 @@ def api_node_groups_write(request):
                 node_group.owner = owner
                 node_group.description = description
                 node_group.notes_url = notes_url
+                node_group.monitoring_contact = monitoring_contact
                 node_group.updated_by = user['name']
 
                 request.dbsession.flush()
 
             except Exception as ex:
-                msg = 'Error updating node_group name: {0} owner: {1} ' \
-                      'description: {2} notes_url: {3} exception: {4}'.format(name,
-                                                                              owner,
-                                                                              description,
-                                                                              notes_url,
-                                                                              ex)
+                msg = f'Error updating node_group name: {name} owner: {owner} ' \
+                       'description: {description} notes_url: {notes_url} monitoring_contact: ' \
+                       '{monitoring_contact} exception: {ex}'
 
                 LOG.error(msg)
                 return api_500(msg=msg)
@@ -228,6 +236,7 @@ def api_node_groups_write(request):
                                            owner,
                                            description,
                                            notes_url,
+                                           monitoring_contact,
                                            user['name'])
 
         return api_200(results=node_group)

@@ -47,6 +47,7 @@ def search_node_groups(args, client):
         'node_group_owner',
         'node_group_description',
         'node_group_notes_url',
+        'node_group_monitoring_contact',
     ]
     tag_fields = [
         'set_tags',
@@ -114,6 +115,7 @@ def create_node_group(args, client):
         'owner': args.node_group_owner,
         'description': args.node_group_description,
         'notes_url': args.node_group_notes_url,
+        'monitoring_contact': args.node_group_monitoring_contact,
     }
 
     try:

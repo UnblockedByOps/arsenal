@@ -284,14 +284,14 @@ INSERT INTO nodes_audit VALUES (19, 19, 'name', 'created', 'node0003.datetime', 
 
 # Test node_groups
 #----------------------------------------------
-INSERT INTO node_groups VALUES (2, 'pup_docker', 'pup ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (3, 'cbl_docker', 'cbl ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (4, 'log_docker', 'log security', 'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (5, 'pud_docker', 'pud ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (6, 'emx_docker', 'emx ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (7, 'bck_docker', 'bck ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (8, 'enc_docker', 'enc ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
-INSERT INTO node_groups VALUES (9, 'kvm_docker', 'kvm ops',      'Node group for regression testing in docker', 'https://some/documentation', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (2, 'pup_docker', 'pup ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (3, 'cbl_docker', 'cbl ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (4, 'log_docker', 'log security', 'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (5, 'pud_docker', 'pud ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (6, 'emx_docker', 'emx ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (7, 'bck_docker', 'bck ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (8, 'enc_docker', 'enc ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (9, 'kvm_docker', 'kvm ops',      'Node group for regression testing in docker', 'https://some/documentation', 'some_contact', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (2, 2, 'name', 'created', 'pup_docker', NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (3, 3, 'name', 'created', 'cbl_docker', NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (4, 4, 'name', 'created', 'log_docker', NOW(), 'Admin');
