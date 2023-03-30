@@ -174,7 +174,7 @@ def main():
     try:
         args.func(args, client)
     except AttributeError:
-        argparse.ArgumentParser().error('too few argueents')
+        argparse.ArgumentParser().error('too few arguments')
 
 if __name__ == '__main__':
     main()
