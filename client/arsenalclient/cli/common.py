@@ -380,7 +380,10 @@ def format_brief(key, values):
             if key == 'tags':
                 updated_values.append('{0}={1}'.format(val['name'], val['value']))
             elif key == 'network_interfaces':
-                updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
+                try:
+                    updated_values.append('{0}={1}'.format(val['name'], val['unique_id']))
+                except KeyError:
+                    updated_values.append('{0}'.format(val['name']))
             else:
                 updated_values.append(val['name'])
         values = updated_values
