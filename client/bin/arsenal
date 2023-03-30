@@ -52,6 +52,7 @@ try:
     requests.packages.urllib3.disable_warnings()
 except AttributeError:
     pass
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 def _parse_args():
     '''Parse all the command line arguments.'''
