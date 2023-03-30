@@ -225,6 +225,10 @@ validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --
 validate_command "${rw_cmd} hardware_profiles search name=Unknown --rack-u 6" 0
 validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --fields rack_u" 0 "string" "rack_u: 6"
 #
+# ip_addresses
+#
+validate_command "${rw_cmd} ip_addresses search ip_address=10.100.100.1" 0
+#
 # Try to make changes as a read only user, be sure it doesn't let us.
 #
 # Create a node
