@@ -71,13 +71,15 @@ def find_tag_by_name(dbsession, name, value):
     LOG.debug('Searching for tag name: %s value: %s', name, value)
     try:
         tag = dbsession.query(Tag)
-        tag = tag.filter(Tag.name == name)
-        tag = tag.filter(Tag.value == value)
+        tag = tag.filter(Tag.name == f'^{name}$')
+        tag = tag.filter(Tag.value == f'^{value}$')
         one = tag.one()
     except DatabaseError:
+        LOG.info('DatabaseError encountered, trying value as string...')
+        my_value = str(value)
         tag = dbsession.query(Tag)
-        tag = tag.filter(Tag.name == name)
-        tag = tag.filter(Tag.value == str(value))
+        tag = tag.filter(Tag.name == f'^{name}$')
+        tag = tag.filter(Tag.value == f'^{my_value}$')
         one = tag.one()
     return one
 
