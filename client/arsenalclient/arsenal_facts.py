@@ -358,5 +358,7 @@ class ArsenalFacts(object):
             self.facts['ec2']['instance_type'] = resp['ec2_instance_type']
             self.facts['ec2']['security_groups'] = resp['ec2_security_groups']
             self.facts['ec2']['availability_zone'] = resp['ec2_placement_availability_zone']
+            if self.facts['int_cloud_instance'] == 'False':
+                raise ValueError('Not a cloud instance')
         except KeyError:
             pass
