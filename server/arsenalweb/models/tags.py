@@ -75,7 +75,10 @@ class Tag(Base):
                     value=self.value,
                     nodes=get_name_id_list(self.nodes),
                     node_groups=get_name_id_list(self.node_groups),
-                    physical_devices=get_name_id_list(self.physical_devices),
+                    data_centers=get_name_id_list(self.data_centers),
+                    physical_devices=get_name_id_list(self.physical_devices,
+                                                      default_keys=
+                                                      ['id', 'serial_number']),
                     created=self.created,
                     updated=self.updated,
                     updated_by=self.updated_by,
@@ -94,6 +97,8 @@ class Tag(Base):
                 resp['nodes'] = get_name_id_list(self.nodes)
             if 'node_groups' in my_fields:
                 resp['node_groups'] = get_name_id_list(self.node_groups)
+            if 'data_centers' in my_fields:
+                resp['data_centers'] = get_name_id_list(self.data_centers)
             if 'physical_devices' in my_fields:
                 resp['physical_devices'] = get_name_id_list(self.physical_devices)
 
