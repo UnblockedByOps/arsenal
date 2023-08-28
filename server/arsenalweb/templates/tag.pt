@@ -132,6 +132,7 @@
         </li>
       </ul>
     </div>
+
     <div tal:condition="not tag">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/tag/</span> <span class="page_title_name_s">Not Found</span>
