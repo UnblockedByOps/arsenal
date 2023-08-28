@@ -65,9 +65,6 @@
             </table>
           </div>
         </li>
-
-
-
         <li>
           <input type="radio" name="tabs" id="tab2">
           <label for="tab2">Nodes</label>
@@ -82,7 +79,6 @@
               </div>
           </div>
         </li>
-
         <li>
           <input type="radio" name="tabs" id="tab3">
           <label for="tab3">Data Centers</label>
@@ -97,7 +93,6 @@
               </div>
           </div>
         </li>
-
         <li>
           <input type="radio" name="tabs" id="tab4">
           <label for="tab4">Node Groups</label>
@@ -112,7 +107,6 @@
               </div>
           </div>
         </li>
-
         <li>
           <input type="radio" name="tabs" id="tab5">
           <label for="tab5">Physical Devices</label>
@@ -127,9 +121,6 @@
               </div>
           </div>
         </li>
-
-
-
         <li>
           <input type="radio" name="tabs" id="tab_hist">
           <label for="tab_hist">History</label>
@@ -141,7 +132,6 @@
         </li>
       </ul>
     </div>
-    
     <div tal:condition="not tag">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/tag/</span> <span class="page_title_name_s">Not Found</span>
