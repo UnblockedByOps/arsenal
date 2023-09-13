@@ -25,11 +25,11 @@ with open(os.path.join(HERE, 'CHANGELOG.rst')) as f:
 REQUIRES = [
     'pyeapi==0.8.4',
     'pyyaml==6.0',
-    'requests==2.28.2',
+    'requests==2.31.0',
 ]
 
 setup(name='rp-arsenal-arista',
-      version=1.5,
+      version=2.0.0,
       description='Collect information about Arista TOR switches and register them with Arsenal.',
       long_description=README + '\n\n' + CHANGELOG,
       classifiers=[
