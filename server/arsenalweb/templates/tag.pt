@@ -66,6 +66,62 @@
           </div>
         </li>
         <li>
+          <input type="radio" name="tabs" id="tab2">
+          <label for="tab2">Nodes</label>
+          <div id="tab-content2" class="tab-content">
+              <table>
+                <tr tal:repeat="node tag.nodes">
+                    <td>${node['name']}</td>
+                </tr>
+              </table>
+              <div tal:condition="not tag.nodes">
+                  <span class="mono">This tag is not assigned to any nodes.</span>
+              </div>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="tabs" id="tab3">
+          <label for="tab3">Data Centers</label>
+          <div id="tab-content3" class="tab-content">
+              <table>
+                <tr tal:repeat="data_center tag.data_centers">
+                    <td>${data_center['name']}</td>
+                </tr>
+              </table>
+              <div tal:condition="not tag.data_centers">
+                  <span class="mono">This tag is not assigned to any data_centers.</span>
+              </div>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="tabs" id="tab4">
+          <label for="tab4">Node Groups</label>
+          <div id="tab-content4" class="tab-content">
+              <table>
+                <tr tal:repeat="node_group tag.node_groups">
+                    <td>${node_group['name']}</td>
+                </tr>
+              </table>
+              <div tal:condition="not tag.node_groups">
+                  <span class="mono">This tag is not assigned to any node_groups.</span>
+              </div>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="tabs" id="tab5">
+          <label for="tab5">Physical Devices</label>
+          <div id="tab-content5" class="tab-content">
+              <table>
+                <tr tal:repeat="physcial_device tag.physical_devices">
+                    <td>${physcial_device['serial_number']}</td>
+                </tr>
+              </table>
+              <div tal:condition="not tag.physical_devices">
+                  <span class="mono">This tag is not assigned to any physical_devices.</span>
+              </div>
+          </div>
+        </li>
+        <li>
           <input type="radio" name="tabs" id="tab_hist">
           <label for="tab_hist">History</label>
           <div id="tab-content_hist" class="tab-content">
@@ -76,7 +132,7 @@
         </li>
       </ul>
     </div>
-    
+
     <div tal:condition="not tag">
       <div id="page_title_s">
         <span class="page_title_type_s">objects/tag/</span> <span class="page_title_name_s">Not Found</span>

@@ -101,7 +101,7 @@ class Authorization(object):
             else:
                 self.cookies = ast.literal_eval(self.cookies)
 
-        except Exception, ex:
+        except Exception as ex:
             LOG.error('Failed to evaluate cookies: {0}'.format(repr(ex)))
             raise
 
@@ -134,7 +134,7 @@ class Authorization(object):
             cookie_dict = dict(cookies)
             with open(self.cookie_file, "w") as cookie_file:
                 cookie_file.write(str(cookie_dict))
-            os.chmod(self.cookie_file, 0600)
+            os.chmod(self.cookie_file, 0o600)
 
         except Exception as ex:
             LOG.error('Unable to write cookie: '
@@ -167,30 +167,26 @@ class Authorization(object):
 
             try:
                 payload = {
-                    'form.submitted': True,
-                    'api.client': True,
-                    'return_url': '/api',
                     'login': self.user_login,
                     'password': password
                 }
                 resp = self.session.post(self.api_protocol
                                          + '://'
                                          + self.api_host
-                                         + '/login', data=payload,
+                                         + '/api/login', data=payload,
                                          verify=self.verify_ssl)
 
                 resp.raise_for_status()
                 LOG.debug('Authentication successful for user: {0}'.format(self.user_login))
 
                 self.cookies = self.session.cookies.get_dict()
-                LOG.debug('Cookies are: {0}'.format(self.cookies))
                 try:
                     self.write_cookie(self.cookies)
-                except Exception, ex:
+                except Exception as ex:
                     LOG.error('Exception: {0}'.format(repr(ex)))
                     raise
 
-            except Exception, ex:
+            except Exception as ex:
                 LOG.error('Exception: {0}'.format(repr(ex)))
                 LOG.error('Authentication failed')
                 raise

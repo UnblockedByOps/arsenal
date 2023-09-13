@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.node import (
     enc,
     search_nodes,
@@ -35,8 +38,14 @@ def parser_nodes(top_parser, otsp):
                            parents=[top_parser])
 
     # nodes action sub-parser (nasp)
-    nasp = notp.add_subparsers(title='Actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        nasp = notp.add_subparsers(title='Actions',
+                                   dest='action_command')
+    else:
+        nasp = notp.add_subparsers(title='Actions',
+                                   dest='action_command',
+                                   required=True)
 
     # nodes enc subcommand (nesc)
     nesc = nasp.add_parser('enc',
@@ -59,7 +68,8 @@ def parser_nodes(top_parser, otsp):
     # nodes search subcommand (nssc)
     nssc = nasp.add_parser('search',
                            help='Search for node objects and optionally act upon the results.',
-                           parents=[top_parser])
+                           parents=[top_parser],
+                           formatter_class=RawTextHelpFormatter)
     nssc.add_argument('--fields',
                       '-f',
                       dest='fields',
@@ -108,11 +118,15 @@ def parser_nodes(top_parser, otsp):
                        dest='del_all_tags',
                        action='store_true',
                        help='De-assign ALL tags from the search results.')
+    ansag.add_argument('--del_all_guest_vms',
+                       dest='del_all_guest_vms',
+                       action='store_true',
+                       help='De-assign ALL guest_vms from the search results.')
     nssc.add_argument('search',
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search ' \
-                      'for.\n {0}'.format(gen_help('nodes_search')))
+                      'for:\n{0} \n {1}'.format(gen_help('nodes_search'), date_help()))
     nssc.set_defaults(func=search_nodes)
 
     # nodes create subcommand (ncsc)

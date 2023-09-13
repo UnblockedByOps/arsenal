@@ -16,9 +16,6 @@
 import logging
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.models.common import (
-    DBSession,
-)
 from arsenalweb.models.nodes import (
     Node,
     )
@@ -31,7 +28,7 @@ from arsenalweb.views.api.common import (
 
 LOG = logging.getLogger(__name__)
 
-def find_node_by_name_and_status(settings, node_name):
+def find_node_by_name_and_status(dbsession, settings, node_name):
     '''Find a node by name, filtered by statuses'''
 
     try:
@@ -42,7 +39,7 @@ def find_node_by_name_and_status(settings, node_name):
         LOG.error(msg)
         raise type(ex)(ex.message + ' {0}'.format(msg))
 
-    node = DBSession.query(Node)
+    node = dbsession.query(Node)
     node = node.filter(Node.name == node_name)
     node = node.filter(Node.status_id.in_(status_ids))
 
@@ -54,7 +51,7 @@ def process_tags(tags, tag_type):
 
     results = {}
     for tag in tags:
-        LOG.debug('{0} tag: {1}={2}'.format(tag_type, tag.name, tag.value))
+        LOG.debug('%s tag: %s=%s', tag_type, tag.name, tag.value)
         if tag.value == 'True':
             results[tag.name] = bool(tag.value)
         elif tag.value == 'False':
@@ -69,7 +66,7 @@ def process_tags(tags, tag_type):
 
     return results
 
-def process_node_enc(settings, node_name, param_sources=False):
+def process_node_enc(dbsession, settings, node_name, param_sources=False):
     '''Process enc for node. Merges tags from the following three
     objects in order from least to most specific:
 
@@ -90,20 +87,20 @@ def process_node_enc(settings, node_name, param_sources=False):
 
     try:
         LOG.debug('ENC find the node...')
-        node = find_node_by_name_and_status(settings, node_name)
+        node = find_node_by_name_and_status(dbsession, settings, node_name)
         LOG.debug('ENC find the node complete')
         results['name'] = node.name
         results['id'] = node.id
         results['status'] = node.status
 
-        LOG.debug('ENC node name is: {0}'.format(node.name))
-        LOG.debug('ENC node datacenter is: {0}'.format(node.data_center_id))
+        LOG.debug('ENC node name is: %s', node.name)
+        LOG.debug('ENC node datacenter is: %s', node.data_center_id)
 
         # What happens when there's more than one node group? What tags
         # win, alphabetic?
         LOG.debug('ENC find node_group tags...')
         for node_group in node.node_groups:
-            LOG.debug('ENC node_group: {0}'.format(node_group.name))
+            LOG.debug('ENC node_group: %s', node_group.name)
             results['classes'].append(node_group.name)
             my_tags = process_tags(node_group.tags, 'node_group')
             results['parameters'].update(my_tags)
@@ -134,9 +131,7 @@ def process_node_enc(settings, node_name, param_sources=False):
         LOG.debug('ENC process node tags complete.')
 
     except NoResultFound:
-        LOG.debug('node not found: {0}'.format(node_name))
-    except (AttributeError, KeyError):
-        raise
+        LOG.debug('node not found: %s', node_name)
 
     return results
 
@@ -168,9 +163,12 @@ def api_enc(request):
         except KeyError:
             param_sources = False
 
-        LOG.debug('Starting enc for node: {0}'.format(name))
+        LOG.debug('Starting enc for node: %s', name)
         try:
-            results = process_node_enc(settings, name, param_sources=param_sources)
+            results = process_node_enc(request.dbsession,
+                                       settings,
+                                       name,
+                                       param_sources=param_sources)
         except (AttributeError, KeyError) as ex:
             return api_501(msg=repr(ex))
     except Exception as ex:

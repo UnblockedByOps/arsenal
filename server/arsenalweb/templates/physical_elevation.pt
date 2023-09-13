@@ -70,7 +70,7 @@
           <input type="radio" name="tabs" id="tab2">
           <label for="tab2">Physical Device</label>
           <div id="tab-content2" class="tab-content">
-            <table>
+            <table tal:condition="physical_elevation.physical_device">
                 <tr>
                     <td>ID</td><td><span class="mono">${physical_elevation.physical_device.id}</span></td>
                 </tr>

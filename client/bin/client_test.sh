@@ -10,6 +10,7 @@ functionality works as expected.
 
 OPTIONS:
        -h      Show this message.
+       -p      Python version to test with
        -s      The name of the Arsenal server to connect to. Defaults
                to arsenal.
 
@@ -71,20 +72,15 @@ validate_command () {
 
 }
 
-overall_ret=0
-test_num=0
-FAILED_TESTS=()
-arsenal_cmd="python2.7 bin/arsenal"
-ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
-ro_cookie="/var/lib/jenkins/.arsenal_cookie_readonly"
-rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
-
 # Parse options
-while getopts "hs:" OPTION; do
+while getopts "hp:s:" OPTION; do
     case $OPTION in
         h)
             usage
             exit 1
+            ;;
+        p)
+            python_version="$OPTARG"
             ;;
         s)
             server="$OPTARG"
@@ -96,14 +92,27 @@ while getopts "hs:" OPTION; do
     esac
 done
 
+overall_ret=0
+test_num=0
+FAILED_TESTS=()
+arsenal_cmd="python${python_version} bin/arsenal"
+ro_conf="/app/arsenal/conf/arsenal-jenkins-regression-readonly.ini"
+ro_cookie="/var/lib/jenkins/.arsenal_client_test_cookie_readonly"
+rw_conf="/app/arsenal/conf/arsenal-jenkins-regression.ini"
+rw_cookie="/var/lib/jenkins/.arsenal_client_test_cookie_readwrite"
+
 if [[ -z "$server" ]] ; then
     server="arsenal"
 fi
 
 search_cmd="${arsenal_cmd} --server ${server}"
-rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf}"
+rw_cmd="${arsenal_cmd} --server ${server} -y -l jenkins-techops -s ${rw_conf} -k ${rw_cookie}"
 ro_cmd="${arsenal_cmd} --server ${server} -y -l readonly -s ${ro_conf} -k ${ro_cookie}"
 
+#
+# Parameter validation
+#
+validate_command "${ro_cmd} nodes search name --status=inservice" 0 "string" "400: Bad Request. You must have at least one search parameter."
 #
 # Add and manipulate objects
 #
@@ -169,6 +178,10 @@ validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal,tag.nam
 validate_command "${rw_cmd} nodes search name=fopd-TEST8675.internal --del_tag NODE_TEST_TAG=TEST" 0
 validate_command "${search_cmd} nodes search name=fopd-TEST8675.internal --exact --fields tags" 0 "string" "tags: []"
 
+# Test deleting a tag when one node has it and the other doesn't
+validate_command "${rw_cmd} nodes search name=emx0000.docker --tag NODE_TEST_TAG=TEST" 0
+validate_command "${rw_cmd} nodes search name='(emx|bck).*docker' --del_tag NODE_TEST_TAG=TEST" 0
+validate_command "${search_cmd} nodes search name=emx0000.docker --exact --fields tags" 0 "string" "tags: []"
 #
 # Bulk tag removal
 #
@@ -211,6 +224,10 @@ validate_command "${rw_cmd} hardware_profiles search name=Unknown --rack-color '
 validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --fields rack_color" 0 "string" "rack_color: '#000'"
 validate_command "${rw_cmd} hardware_profiles search name=Unknown --rack-u 6" 0
 validate_command "${search_cmd} hardware_profiles search name=Unknown --exact --fields rack_u" 0 "string" "rack_u: 6"
+#
+# ip_addresses
+#
+validate_command "${rw_cmd} ip_addresses search ip_address=10.100.100.1" 0
 #
 # Try to make changes as a read only user, be sure it doesn't let us.
 #
@@ -285,6 +302,13 @@ validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP[12] --fields
 validate_command "${rw_cmd} nodes search name=fopd-TEST867[78].internal --exclude name=fopd-TEST8677.internal" 0 "command" "echo \"\$results\" | egrep -c 'fopd-TEST8678.internal'" "1"
 validate_command "${rw_cmd} nodes search name=fopd-TEST867[78].internal --exclude operating_system=Unknown" 0 "command" "echo \"\$results\" | egrep -c 'fopd-TEST'" "0"
 #
+# datetime search
+#
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='<2020-06-16'" 0 "command" "echo \"\$results\" | egrep -c 'node000[01].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='>2020-06-16'" 0 "command" "echo \"\$results\" | egrep -c 'node000[23].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='2020-05-01,2020-09-01'" 0 "command" "echo \"\$results\" | egrep -c 'node000[01].datetime'" "2"
+validate_command "${rw_cmd} nodes search name=node000.*datetime,last_registered='2020-05-01,2020-10-01 13:00:00'" 0 "command" "echo \"\$results\" | egrep -c 'node000[012].datetime'" "3"
+#
 #
 # Malformed command testing
 #
@@ -310,6 +334,8 @@ validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --owner 'en
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "owner: eng-infra@rubiconproject.com"
 validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --notes-url 'https://wiki.rubiconproject.com'" 0
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "notes_url: https://wiki.rubiconproject.com"
+validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --monitoring-contact 'my_pg_team'" 0
+validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "monitoring_contact: my_pg_team"
 # Modify status attribute
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Like a bear, it hibernates.'" 0
 validate_command "${search_cmd} statuses search name=hibernating --fields all --exact" 0 "string" "description: Like a bear, it hibernates."
@@ -318,6 +344,9 @@ validate_command "${search_cmd} statuses search name=hibernating --fields all --
 #
 validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_1" 0
 validate_command "${rw_cmd} physical_locations create --name TEST_LOCATION_2 -a1 '1234 Anywhere St.' -a2 'Suite 200' -c Smalltown -s CA -t 'Jim Jones' -C USA -P 555-1212 -p 00002 -r 'Some Company'" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_2 --fields all --exact" 0 "string" "status: installed"
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --status inservice" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "status: inservice"
 validate_command "${search_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
 validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
@@ -326,6 +355,18 @@ validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R100" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R101" 0
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R200" 0
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R300 -o 10.1.1.0" 1
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R300 -o 10.1.1.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R300,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.1.0/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R301 -s 10.1.1.128/25" 0
+validate_command "${search_cmd} physical_racks search name=R301,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'server_subnet: 10.1.1.128/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R302 -o 10.1.2.0/25 -s 10.1.2.128/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.2.0/25'" "1"
+validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_1 -n R302 -o 10.1.44.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.44.0/25'" "1"
+validate_command "${rw_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -o 10.1.45.0/25" 0
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'oob_subnet: 10.1.45.0/25'" "1"
+validate_command "${search_cmd} physical_racks search name=R302,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'server_subnet: 10.1.2.128/25'" "1"
 validate_command "${search_cmd} physical_racks search name=R10,physical_location.name=TEST_LOCATION_1 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "2"
 validate_command "${rw_cmd} physical_racks create -l TEST_LOCATION_3 -n R100" 1
 #
@@ -434,7 +475,14 @@ validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "strin
 # Set the status to an assignable status
 validate_command "${rw_cmd} nodes search name=fxxp-tst9999.internal,status=initializing --status setup" 0
 # Now it should get the node group
-validate_command "${search_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
+validate_command "${rw_cmd} nodes enc --name fxxp-tst9999.internal" 0 "string" "- fxx_tst"
+#
+# API change limit tests
+#
+validate_command "${rw_cmd} nodes search name=docker --del_all_tags" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
+validate_command "${rw_cmd} nodes search name=docker --del_all_node_groups" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
+validate_command "${rw_cmd} nodes search name=docker --status=decom" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
+validate_command "${rw_cmd} nodes search name=docker --node_groups=default_install" 1 "string" "WARNING - 400: Bad Request. You are trying to change more items in one query than allowed"
 #
 # Clean up
 #
@@ -454,6 +502,7 @@ validate_command "${rw_cmd} tags delete --name sec_NODE_GROUP_TEST_TAG_FORBIDDEN
 validate_command "${rw_cmd} tags delete --name TAG_TEST_CREATE --value TEST" 0
 validate_command "${rw_cmd} tags delete --name TAG_TEST_CREATE_FORBIDDEN --value TEST" 0
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Instances that have been spun down that will be spun up on demand.'" 0
+validate_command "${rw_cmd} data_centers delete --name TEST_DATA_CENTER_2" 0
 
 
 # print out failed tests

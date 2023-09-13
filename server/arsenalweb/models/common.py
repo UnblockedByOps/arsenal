@@ -14,30 +14,30 @@
 #  limitations under the License.
 #
 import logging
-from datetime import datetime
-import arrow
-from dateutil import tz
+import datetime
+from passlib.hash import sha512_crypt
+import pytz
 import pyramid
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import (
     Column,
     ForeignKey,
+    Index,
     Integer,
     TIMESTAMP,
     Table,
     Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import (
+    INTEGER,
+    MEDIUMINT,
+)
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
-from sqlalchemy.orm import (
-    scoped_session,
-    sessionmaker,
-)
-from zope.sqlalchemy import ZopeTransactionExtension
 
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-Base = declarative_base()
+from .meta import Base
+
 LOG = logging.getLogger(__name__)
 
 NO_CONVERT = [
@@ -47,104 +47,40 @@ NO_CONVERT = [
 ]
 
 
-# Many to many association tables.
-hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
-                                  Base.metadata,
-                                  Column('hypervisor_id',
-                                         Integer,
-                                         ForeignKey('nodes.id')),
-                                  Column('guest_vm_id',
-                                         Integer,
-                                         ForeignKey('nodes.id'))
-                                 )
-
-network_interface_assignments = Table('network_interface_assignments',
-                                      Base.metadata,
-                                      Column('node_id',
-                                             Integer,
-                                             ForeignKey('nodes.id')),
-                                      Column('network_interface_id',
-                                             Integer,
-                                             ForeignKey('network_interfaces.id'))
-                                     )
-
-node_group_assignments = Table('node_group_assignments',
-                               Base.metadata,
-                               Column('node_id',
-                                      Integer,
-                                      ForeignKey('nodes.id')),
-                               Column('node_group_id',
-                                      Integer,
-                                      ForeignKey('node_groups.id'))
-                              )
-
-tag_data_center_assignments = Table('tag_data_center_assignments',
-                                    Base.metadata,
-                                    Column('data_center_id',
-                                           Integer,
-                                           ForeignKey('data_centers.id')),
-                                    Column('tag_id',
-                                           Integer,
-                                           ForeignKey('tags.id'))
-                                   )
-
-tag_node_assignments = Table('tag_node_assignments',
-                             Base.metadata,
-                             Column('node_id',
-                                    Integer,
-                                    ForeignKey('nodes.id')),
-                             Column('tag_id',
-                                    Integer,
-                                    ForeignKey('tags.id'))
-                            )
-
-tag_node_group_assignments = Table('tag_node_group_assignments',
-                                   Base.metadata,
-                                   Column('node_group_id',
-                                          Integer,
-                                          ForeignKey('node_groups.id')),
-                                   Column('tag_id',
-                                          Integer,
-                                          ForeignKey('tags.id'))
-                                  )
-
-tag_physical_device_assignments = Table('tag_physical_device_assignments',
-                                        Base.metadata,
-                                        Column('physical_device_id',
-                                               Integer,
-                                               ForeignKey('physical_devices.id')),
-                                        Column('tag_id',
-                                               Integer,
-                                               ForeignKey('tags.id'))
-                                       )
-
 # Common functions
 def check_null_string(obj):
     '''Check for null string for json object.'''
 
     if not obj:
         return ''
-    else:
-        return obj
+    return obj
 
 def check_null_dict(obj):
     '''Check for null dict for json object.'''
 
     if not obj:
         return {}
-    else:
-        return obj
 
-def localize_date(obj):
+    return obj
+
+def localize_date(datetime_obj):
     '''Localize dates stored in UTC in the DB to a timezone.'''
 
+    LOG.debug('START Datetime object is: %s', type(datetime_obj))
+    # dates are stored in the DB in UTC but the datetime object needs to be
+    # made UTC aware.
+    datetime_obj.replace(tzinfo=None).astimezone(tz=pytz.utc)
     try:
-        utc = arrow.get(obj)
         registry = pyramid.threadlocal.get_current_registry()
         settings = registry.settings
         zone = settings['arsenal.timezone']
-        LOG.debug('Time zone is: {0}'.format(zone))
-        return utc.to(tz.gettz(zone)).format('YYYY-MM-DD HH:mm:ss')
+        time_format = "%Y-%m-%d %H:%M:%S %Z%z"
+        LOG.debug('Time zone is: %s', zone)
+        local_tz = pytz.timezone(zone)
+        localized = datetime_obj.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        formatted = localized.strftime(time_format)
+        LOG.debug('Formatted Datetime object is: %s', formatted)
+        return formatted
     except:
         return 'Datetime object'
 
@@ -181,7 +117,7 @@ def jsonify(obj):
                 p_type = obj.get(param)
 
         # Handle datetime objects
-        if isinstance(p_type, datetime):
+        if isinstance(p_type, datetime.datetime):
             date = localize_date(p_type)
             resp[param] = date
         else:
@@ -252,7 +188,361 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
     return resp
 
 
-# Base classes
+# Many to many association tables.
+local_user_group_assignments = Table('local_user_group_assignments',
+                                      Base.metadata,
+                                      Column('user_id',
+                                             MEDIUMINT(9, unsigned=True),
+                                             ForeignKey('users.id')),
+                                      Column('group_id',
+                                             MEDIUMINT(9, unsigned=True),
+                                             ForeignKey('groups.id')),
+                                     mysql_charset='utf8',
+                                     mysql_collate='utf8_bin'
+                                     )
+
+group_perm_assignments = Table('group_perm_assignments',
+                                Base.metadata,
+                                Column('group_id',
+                                       MEDIUMINT(9, unsigned=True),
+                                       ForeignKey('groups.id')),
+                                Column('perm_id',
+                                       MEDIUMINT(9, unsigned=True),
+                                       ForeignKey('group_perms.id')),
+                                mysql_charset='utf8',
+                                mysql_collate='utf8_bin'
+                               )
+
+hypervisor_vm_assignments = Table('hypervisor_vm_assignments',
+                                  Base.metadata,
+                                  Column('hypervisor_id',
+                                         INTEGER(unsigned=True),
+                                         ForeignKey('nodes.id')),
+                                  Column('guest_vm_id',
+                                         INTEGER(unsigned=True),
+                                         ForeignKey('nodes.id')),
+                                 mysql_charset='utf8',
+                                 mysql_collate='utf8_bin'
+                                 )
+
+network_interface_assignments = Table('network_interface_assignments',
+                                      Base.metadata,
+                                      Column('node_id',
+                                             INTEGER(unsigned=True),
+                                             ForeignKey('nodes.id')),
+                                      Column('network_interface_id',
+                                             INTEGER(unsigned=True),
+                                             ForeignKey('network_interfaces.id')),
+                                      mysql_charset='utf8',
+                                      mysql_collate='utf8_bin'
+                                     )
+
+node_group_assignments = Table('node_group_assignments',
+                               Base.metadata,
+                               Column('node_id',
+                                      INTEGER(unsigned=True),
+                                      ForeignKey('nodes.id')),
+                               Column('node_group_id',
+                                      INTEGER(unsigned=True),
+                                      ForeignKey('node_groups.id')),
+                               mysql_charset='utf8',
+                               mysql_collate='utf8_bin'
+                              )
+
+tag_data_center_assignments = Table('tag_data_center_assignments',
+                                    Base.metadata,
+                                    Column('tag_id',
+                                           INTEGER(unsigned=True),
+                                           ForeignKey('tags.id')),
+                                    Column('data_center_id',
+                                           INTEGER(unsigned=True),
+                                           ForeignKey('data_centers.id')),
+                                    mysql_charset='utf8',
+                                    mysql_collate='utf8_bin'
+                                   )
+
+tag_node_assignments = Table('tag_node_assignments',
+                             Base.metadata,
+                             Column('tag_id',
+                                    INTEGER(unsigned=True),
+                                    ForeignKey('tags.id')),
+                             Column('node_id',
+                                    INTEGER(unsigned=True),
+                                    ForeignKey('nodes.id')),
+                             mysql_charset='utf8',
+                             mysql_collate='utf8_bin'
+                            )
+
+tag_node_group_assignments = Table('tag_node_group_assignments',
+                                   Base.metadata,
+                                   Column('tag_id',
+                                          INTEGER(unsigned=True),
+                                          ForeignKey('tags.id')),
+                                   Column('node_group_id',
+                                          INTEGER(unsigned=True),
+                                          ForeignKey('node_groups.id')),
+                                   mysql_charset='utf8',
+                                   mysql_collate='utf8_bin'
+                                  )
+
+tag_physical_device_assignments = Table('tag_physical_device_assignments',
+                                        Base.metadata,
+                                        Column('tag_id',
+                                               INTEGER(unsigned=True),
+                                               ForeignKey('tags.id')),
+                                        Column('physical_device_id',
+                                               INTEGER(unsigned=True),
+                                               ForeignKey('physical_devices.id')),
+                                        mysql_charset='utf8',
+                                        mysql_collate='utf8_bin'
+                                       )
+
+
+class User(Base):
+    '''Arsenal User object.'''
+
+    __tablename__ = 'users'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
+    name = Column(Text, nullable=False) # email address
+    first_name = Column(Text, nullable=True)
+    last_name = Column(Text, nullable=True)
+    salt = Column(Text, nullable=False)
+    password = Column(Text, nullable=False)
+    groups = relationship('Group',
+                    secondary='local_user_group_assignments',
+                    backref='users',
+                    lazy='dynamic')
+    created = Column(TIMESTAMP, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
+
+    def check_password(self, password):
+        '''Check if the user's password matches what's in the DB.'''
+
+        LOG.debug('Checking password against local DB...')
+        try:
+            if sha512_crypt.verify(password, self.password):
+                LOG.debug('Successfully authenticated via local DB')
+                return True
+        except Exception as ex:
+            LOG.error('%s (%s)', Exception, ex)
+
+        LOG.debug('Bad password via local DB for user: %s', self.name)
+        return False
+
+    @hybrid_property
+    def localize_date_created(self):
+        '''Return localized created datetime object.'''
+        local = localize_date(self.created)
+        return local
+
+    @hybrid_property
+    def localize_date_updated(self):
+        '''Return localized updated datetime object.'''
+        local = localize_date(self.updated)
+        return local
+
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    id=self.id,
+                    name=self.name,
+                    first_name=self.first_name,
+                    last_name=self.last_name,
+                    groups=get_name_id_list(self.groups),
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return id, and name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'groups' in my_fields:
+                resp['groups'] = get_name_id_list(self.groups)
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only id, and name.
+        except KeyError:
+            resp = get_name_id_dict([self])
+
+            return resp
+
+
+Index('idx_user_name_unique', User.name, unique=True, mysql_length=255)
+
+
+class Group(Base):
+    '''Arsenal Group object.'''
+
+    __tablename__ = 'groups'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
+    name = Column(Text, nullable=False)
+    group_perms = relationship('GroupPerm',
+                    secondary='group_perm_assignments',
+                    backref='groups',
+                    lazy='dynamic')
+    created = Column(TIMESTAMP, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
+
+    @hybrid_property
+    def localize_date_created(self):
+        '''Return localized created datetime object.'''
+        local = localize_date(self.created)
+        return local
+
+    @hybrid_property
+    def localize_date_updated(self):
+        '''Return localized updated datetime object.'''
+        local = localize_date(self.updated)
+        return local
+
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    id=self.id,
+                    name=self.name,
+                    group_perms=get_name_id_list(self.group_perms),
+                    users=get_name_id_list(self.users),
+                    created=localize_date(self.created),
+                    updated=self.updated,
+                    updated_by=self.updated_by,
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return id, and name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self])
+
+            my_fields = fields.split(',')
+
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'users' in my_fields:
+                resp['users'] = get_name_id_list(self.users)
+
+            if 'group_perms' in my_fields:
+                resp['group_perms'] = get_name_id_list(self.group_perms)
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only id, and name.
+        except KeyError:
+            resp = get_name_id_dict([self])
+
+            return resp
+
+
+Index('idx_group_name_unique', Group.name, unique=True, mysql_length=255)
+
+
+class GroupPerm(Base):
+    '''Arsenal GroupPerm object.'''
+
+    __tablename__ = 'group_perms'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(MEDIUMINT(9, unsigned=True), primary_key=True, nullable=False)
+    name = Column(Text, nullable=False)
+    created = Column(TIMESTAMP, nullable=False)
+
+    def __repr__(self):
+        return "GroupPerm(id='%s', name='%s', )" % (self.id, self.name)
+
+    @hybrid_method
+    def get_group_perm_id(self, perm_name):
+        '''Convert the perm name to the id.'''
+
+        query = DBSession.query(GroupPerm)
+        query = query.filter(GroupPerm.name == '%s' % perm_name)
+        return query.one()
+
+    def __json__(self, request):
+        try:
+            fields = request.params['fields']
+
+            if fields == 'all':
+
+                all_fields = dict(
+                    id=self.id,
+                    name=self.name,
+                    created=localize_date(self.created),
+                    )
+
+                return jsonify(all_fields)
+
+            # Always return id, and name, then return whatever
+            # additional fields are asked for.
+            resp = get_name_id_dict([self])
+
+            my_fields = fields.split(',')
+
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
+
+            return jsonify(resp)
+
+        # Default to returning only id, and name.
+        except KeyError:
+            resp = get_name_id_dict([self])
+
+            return resp
+
+
+Index('idx_group_perms_unique', GroupPerm.name, unique=True, mysql_length=255)
+
+
 class BaseAudit(Base):
     '''Arsenal BaseAudit object. Allows for overriding on other Audit classes.'''
 
@@ -262,8 +552,10 @@ class BaseAudit(Base):
     field = Column(Text, nullable=False)
     old_value = Column(Text, nullable=False)
     new_value = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    created = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def __json__(self, request):
         return dict(
@@ -275,148 +567,3 @@ class BaseAudit(Base):
             created=localize_date(self.created),
             updated_by=self.updated_by,
             )
-
-
-class User(Base):
-    '''Arsenal User object.'''
-
-    __tablename__ = 'users'
-    user_id = Column(Integer, primary_key=True, nullable=False)
-    user_name = Column(Text, nullable=False) # email address
-    first_name = Column(Text, nullable=True)
-    last_name = Column(Text, nullable=True)
-    salt = Column(Text, nullable=False)
-    password = Column(Text, nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Get all group assignents for the user.'''
-
-        groups = []
-        for assign in self.local_user_group_assignments:
-            groups.append(assign.group.group_name)
-        return groups
-
-    @hybrid_property
-    def localize_date_created(self):
-        '''Return localized created datetime object.'''
-        local = localize_date(self.created)
-        return local
-
-    @hybrid_property
-    def localize_date_updated(self):
-        '''Return localized updated datetime object.'''
-        local = localize_date(self.updated)
-        return local
-
-
-class LocalUserGroupAssignment(Base):
-    '''Arsenal LocalUserGroupAssignment object.'''
-
-    __tablename__ = 'local_user_group_assignments'
-    user_group_assignment_id = Column(Integer, primary_key=True, nullable=False)
-    group_id = Column(Integer, ForeignKey('groups.group_id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    user = relationship('User', backref=backref('local_user_group_assignments'))
-    group = relationship('Group', backref=backref('local_user_group_assignments'))
-
-
-class Group(Base):
-    '''Arsenal Group object.'''
-
-    __tablename__ = 'groups'
-    group_id = Column(Integer, primary_key=True, nullable=False)
-    group_name = Column(Text, nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Get all permissions a group is assigned to.'''
-
-        group_assign = []
-        for assign in self.group_perm_assignments:
-            group_assign.append(assign.group_perms.perm_name)
-        return group_assign
-
-    @hybrid_property
-    def localize_date_created(self):
-        '''Return localized created datetime object.'''
-        local = localize_date(self.created)
-        return local
-
-    @hybrid_property
-    def localize_date_updated(self):
-        '''Return localized updated datetime object.'''
-        local = localize_date(self.updated)
-        return local
-
-
-class GroupPermAssignment(Base):
-    '''Arsenal GroupPermAssignment object.'''
-
-    __tablename__ = 'group_perm_assignments'
-    group_assignment_id = Column(Integer, primary_key=True, nullable=False)
-    group_id = Column(Integer, ForeignKey('groups.group_id'), nullable=False)
-    perm_id = Column(Integer, ForeignKey('group_perms.perm_id'), nullable=False)
-    updated_by = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    group = relationship('Group', backref=backref('group_perm_assignments'))
-
-    @hybrid_method
-    def get_assignments_by_group(self, group_name):
-        '''Return a list of permission assignments by group name.'''
-
-        query = DBSession.query(GroupPermAssignment)
-        query = query.join(Group, GroupPermAssignment.group_id == Group.group_id)
-        query = query.filter(Group.group_name == group_name)
-        return query.all()
-
-    @hybrid_method
-    def get_assignments_by_perm(self, perm_name):
-        '''Return a list of permission assignments by permission name.'''
-
-        query = DBSession.query(GroupPermAssignment)
-        query = query.join(Group, GroupPermAssignment.group_id == Group.group_id)
-        query = query.join(GroupPerm, GroupPermAssignment.perm_id == GroupPerm.perm_id)
-        query = query.filter(GroupPerm.perm_name == perm_name)
-        return query.all()
-
-
-class GroupPerm(Base):
-    '''Arsenal GroupPerm object.'''
-
-    __tablename__ = 'group_perms'
-    perm_id = Column(Integer, primary_key=True, nullable=False)
-    perm_name = Column(Text, nullable=False)
-    created = Column(TIMESTAMP, nullable=False)
-    group_perm_assignments = relationship('GroupPermAssignment', backref=backref('group_perms'),
-                                          order_by=GroupPermAssignment.created.desc,
-                                          lazy='dynamic')
-
-    def __repr__(self):
-        return "GroupPerm(perm_id='%s', perm_name='%s', )" % (self.perm_id, self.perm_name)
-
-    @hybrid_method
-    def get_all_assignments(self):
-        '''Return a list of all group permission assignments.'''
-        perm_assign = []
-        for assign in self.group_perm_assignments:
-            perm_assign.append(assign.group.group_name)
-        return perm_assign
-
-    @hybrid_method
-    def get_group_perm_id(self, perm_name):
-        '''Convert the perm name to the id.'''
-
-        query = DBSession.query(GroupPerm)
-        query = query.filter(GroupPerm.perm_name == '%s' % perm_name)
-        return query.one()

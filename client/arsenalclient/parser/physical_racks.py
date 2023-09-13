@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.physical_rack import (
     search_physical_racks,
     create_physical_rack,
@@ -33,13 +36,21 @@ def parser_physical_racks(top_parser, otsp):
                           parents=[top_parser])
 
     # physical_racks action sub-parser (asp)
-    asp = otp.add_subparsers(title='Available actions',
-                             dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        asp = otp.add_subparsers(title='Available actions',
+                                 dest='action_command')
+    else:
+        asp = otp.add_subparsers(title='Available actions',
+                                 dest='action_command',
+                                 required=True)
+
     # physical_racks search subcommand (ssc)
     ssc = asp.add_parser('search',
                          help='Search for physical_rack objects and optionally ' \
                          'act upon the results.',
-                         parents=[top_parser])
+                         parents=[top_parser],
+                         formatter_class=RawTextHelpFormatter)
     ssc.add_argument('--fields',
                      '-f',
                      dest='fields',
@@ -67,6 +78,14 @@ def parser_physical_racks(top_parser, otsp):
                       '--location',
                       dest='physical_location',
                       help='Update physical_rack location.')
+    uaag.add_argument('-o',
+                      '--oob-subnet',
+                     dest='physical_rack_oob_subnet',
+                      help='Update the oob-subnet (must be CIDR notation).')
+    uaag.add_argument('-s',
+                      '--server-subnet',
+                     dest='physical_rack_server_subnet',
+                      help='Update the server-subnet (must be CIDR notation).')
 
     # physical_racks assignment action argument group (aag)
     aag = ssc.add_argument_group('Assignment Actions')
@@ -83,13 +102,24 @@ def parser_physical_racks(top_parser, otsp):
                      default=None,
                      metavar='search_terms',
                      help='Comma separated list of key=value pairs to search ' \
-                     'for.\n {0}'.format(gen_help('physical_racks_search')))
+                          'for:\n{0} \n {1}'.format(gen_help('physical_racks_search'),
+                                                    date_help()))
     ssc.set_defaults(func=search_physical_racks)
 
     # physical_racks create subcommand (csc)
     csc = asp.add_parser('create',
                          help='Create physical_rack objects.',
                          parents=[top_parser])
+
+    csc.add_argument('-o',
+                     '--oob-subnet',
+                     dest='physical_rack_oob_subnet',
+                     help='the oob-subnet (must be CIDR notation).')
+
+    csc.add_argument('-s',
+                     '--server-subnet',
+                     dest='physical_rack_server_subnet',
+                     help='the oob-subnet (must be CIDR notation).')
 
     # required physical_rack create argument group (rcag)
     rcag = csc.add_argument_group('required arguments')
@@ -101,6 +131,7 @@ def parser_physical_racks(top_parser, otsp):
                       help='The physical rack location name.')
     rcag.add_argument('-n',
                       '--name',
+                      required=True,
                       help='The physical rack name.')
 
     rcag.set_defaults(func=create_physical_rack)

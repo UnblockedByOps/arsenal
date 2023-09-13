@@ -21,8 +21,10 @@ from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import or_
 from sqlalchemy.orm.dynamic import AppenderQuery
+#import arsenalweb.models
 from arsenalweb.models.common import (
-    DBSession,
+    Group,
+    User,
     get_name_id_list,
     localize_date,
     )
@@ -83,11 +85,15 @@ from arsenalweb.models.tags import (
     TagAudit,
     )
 from arsenalweb.views import (
-    get_authenticated_user,
     get_pag_params,
     )
 
 LOG = logging.getLogger(__name__)
+DATETIME_FIELDS = [
+    'created',
+    'updated',
+    'last_registered',
+]
 
 # Common functions
 def api_return_json(http_code, msg, total=0, result_count=0, results=None):
@@ -186,20 +192,20 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
     request: pyramid request object.
     req_params: A list of all required params.
     opt_params: A list of all optional params. If not found, returns none.
-    auth_user_obj: If set to true, will return the entire auth_user object
-        instead of just the user_id.
+    auth_user_obj: If set to true, will return the entire user identity
+        instead of just the user name.
     '''
 
     try:
         resp = {}
-        auth_user = get_authenticated_user(request)
-        resp['updated_by'] = auth_user['user_id']
+        user = request.identity
+        resp['updated_by'] = user['name']
         if auth_user_obj:
-            resp['auth_user'] = auth_user
+            resp['user'] = user
         payload = request.json_body
 
         for param in req_params:
-            LOG.debug('Working on param: {0}'.format(param))
+            LOG.debug('Working on param: %s', param)
             try:
                 resp[param] = payload[param].rstrip()
                 LOG.debug('  is a string')
@@ -212,7 +218,7 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
                 raise KeyError(msg)
 
         for param in opt_params:
-            LOG.debug('Working on param: {0}'.format(param))
+            LOG.debug('Working on param: %s', param)
             try:
                 resp[param] = payload[param].rstrip()
                 LOG.debug('  is a string')
@@ -226,11 +232,63 @@ def collect_params(request, req_params, opt_params, auth_user_obj=False):
                       'to None'.format(param)
                 LOG.debug(msg)
 
-        LOG.debug('Collected params: {0}'.format(resp))
+        LOG.debug('Collected params: %s', resp)
         return resp
 
     except Exception:
         raise
+
+def valiate_parameters(params):
+    '''Validate input parameters for search. Ensures at least one parameter is
+    specified and no parameters have empty values. Returns None if validation
+    passes, a message to return as a 400 otherwise.'''
+
+    if not params:
+        msg='Bad Request. You must have at least one search parameter.'
+        return msg
+
+    for param in params:
+        if not params[param]:
+            msg='Bad Request. parameter %s cannot have an empty value.' % param
+            return msg
+
+    return None
+
+def enforce_api_change_limit(request, item_count):
+    '''Enforces the number of items that can be changed in a single API call.
+    Set by arsenal.api.change_limit. Set to 0 to enforce no limit.
+
+    Args:
+        request:  : The request object.
+        item_count: An int representing the number of elements being changed.
+
+    Returns True if the change is denied, False otherwise.'''
+
+    settings = request.registry.settings
+    try:
+        change_limit = int(settings['arsenal.api.change_limit'])
+    except KeyError:
+        msg = 'arsenal.api.change_limit is not set in the config. ' \
+              'Unable to make the requested change.'
+        LOG.error(msg)
+        return msg
+
+    LOG.debug('Checking API change limit: %d', change_limit)
+
+    if change_limit == 0:
+        LOG.debug('No change limit enforced, allowing.')
+        return False
+
+    if item_count > change_limit:
+        LOG.debug('Item count: %d is greater than change_limit: %d, denying.', item_count,
+                                                                               change_limit)
+        msg = 'Bad Request. You are trying to change more items in ' \
+        'one query than allowed (limit {0}). Please adjust your ' \
+        'query and try again.'.format(change_limit)
+        return msg
+
+    LOG.debug('Item count %d is fewer than change_limit: %d, allowing.')
+    return False
 
 def process_search(query, params, model_type, exact_get):
     '''Handle searches and delegate to exact or regex.'''
@@ -266,7 +324,7 @@ def process_search(query, params, model_type, exact_get):
         for mut in muta:
             mutations.append('ex_{0}'.format(mut))
 
-        LOG.info('MUTATIONS: {0}'.format(mutations))
+        LOG.debug('MUTATIONS: {0}'.format(mutations))
 
         if key in mutations:
             key += '.name'
@@ -286,7 +344,9 @@ def process_regex_search(query, model_type, key, val):
     if '.' in key:
         query = filter_regex_subparam(query, model_type, key, val)
     else:
-        if ',' in val:
+        if key in DATETIME_FIELDS:
+            query = filter_datetime(query, model_type, key, val)
+        elif ',' in val:
             query = filter_regex_multi_val(query, model_type, key, val)
         else:
             query = filter_regex(query, model_type, key, val)
@@ -304,6 +364,45 @@ def process_exact_search(query, model_type, key, val):
     else:
         query = query.filter(getattr(global_model, key) == val)
 
+    return query
+
+def filter_datetime(query, model_type, key, val):
+    '''Deal with date searches. Return a sqlalchemy query object.
+
+    Can be passed all or part of a date string, preceeded by a > (newer than)
+    or < (older than), or two date strings comma separated for searching a
+    range between the two dates (oldest date must be first).
+
+    Examples:
+        '>2020-08-06'
+        '<2021-01-01'
+        '2020-08-06 21:00:00,2020-08-07 16:00:00'
+    '''
+
+    LOG.debug('START: filter_datetime()')
+    operator, key = check_regex_excludes(key)
+    global_model = globals()[model_type]
+    LOG.debug('Single value for model_type: %s key: %s value: %s '
+              'operator: %s', model_type,
+                              key,
+                              val,
+                              operator)
+    my_val = val.split(',')
+    if len(my_val) == 2:
+        query = query.filter(getattr(global_model, key).between(my_val[0],
+                                                                my_val[1]))
+    else:
+        oper = my_val[0][:1]
+        sanitized_val = my_val[0][1:]
+        LOG.debug('oper: %s sanitized_val: %s', oper, sanitized_val)
+        if oper == '<':
+            query = query.filter(getattr(global_model, key) <= sanitized_val)
+        elif oper == '>':
+            query = query.filter(getattr(global_model, key) >= sanitized_val)
+        else:
+            raise RuntimeError('Invalid operator for date search')
+
+    LOG.debug('RETURN: filter_datetime()')
     return query
 
 def filter_regex(query, model_type, key, val):
@@ -401,7 +500,6 @@ def filter_regex_subparam(query, model_type, key, val):
         search_key = 'ex_{0}'.format(obj_attrib)
     LOG.debug('Mutated search key: {0}'.format(search_key))
 
-#    if not orig_obj_type.startswith('ex_'):
     if ',' in val:
         query = filter_regex_multi_val(query, obj_type_camel, search_key, val)
     else:
@@ -412,8 +510,7 @@ def filter_regex_subparam(query, model_type, key, val):
 
 def check_regex_excludes(key):
     '''Checks a key to see if it's an exclude (starts with 'ex_'). Returns a
-
-    and operator for regexp and a key.'''
+    not operator for regexp and a key.'''
     # Handle excludes
     operator = 'regexp'
     if key.startswith('ex_'):
@@ -440,6 +537,13 @@ def model_matcher(route_name):
         'api_ec2_instance_r': 'Ec2Instance',
         'api_ec2_instances': 'Ec2Instance',
         'api_ec2_instances_audit': 'Ec2InstanceAudit',
+
+        'api_group': 'Group',
+        'api_group_audit': 'GroupAudit',
+        'api_group_audit_r': 'GroupAudit',
+        'api_group_r': 'Group',
+        'api_groups': 'Group',
+        'api_groups_audit': 'GroupAudit',
 
         'api_hardware_profile': 'HardwareProfile',
         'api_hardware_profile_audit': 'HardwareProfileAudit',
@@ -528,6 +632,13 @@ def model_matcher(route_name):
         'api_tag_r': 'Tag',
         'api_tags': 'Tag',
         'api_tags_audit': 'TagAudit',
+
+        'api_user': 'User',
+        'api_user_audit': 'UserAudit',
+        'api_user_audit_r': 'UserAudit',
+        'api_user_r': 'User',
+        'api_users': 'User',
+        'api_users_audit': 'UserAudit',
     }
 
     return routes[route_name]
@@ -562,7 +673,7 @@ def underscore_to_camel(model_type):
     underscore = model_type.split('_')
     return "".join(x.title() for x in underscore)
 
-def validate_tag_perm(request, auth_user, tag_name):
+def validate_tag_perm(request, user, tag_name):
     '''Validates that the authenticated user has permission to modify the tag.
     Returns True under the following conditions:
 
@@ -575,11 +686,11 @@ def validate_tag_perm(request, auth_user, tag_name):
     Params:
 
     request  : A pyramid.request object.
-    auth_user: A dict returned from arsenalweb.views.get_authenticated_user()
+    user     : A dict returned from request.identity
     tag_name : The name of the tag to evaluate.
     '''
 
-    LOG.debug('Validating tag name: {0}'.format(tag_name))
+    LOG.debug('Validating tag name: %s', tag_name)
 
     settings = request.registry.settings
     try:
@@ -588,35 +699,33 @@ def validate_tag_perm(request, auth_user, tag_name):
         secure_tag_regexes = [s for s in settings['arsenal.secure_tags.list'].splitlines() if s]
         secure_groups = [s for s in settings['arsenal.secure_tags.groups'].splitlines() if s]
     except KeyError:
-        LOG.warn('You must define arsenal.secure_tags.list and '
-                 'arsenal.secure_tags.groups in the main settings file to '
-                 'enable secure tags. Bypassing this feature.')
+        LOG.warning('You must define arsenal.secure_tags.list and '
+                    'arsenal.secure_tags.groups in the main settings file to '
+                    'enable secure tags. Bypassing this feature.')
         return True
 
-    LOG.debug('Secure tags regex list: {0}'.format(secure_tag_regexes))
-    LOG.debug('Secure tags groups: {0}'.format(secure_groups))
-    LOG.debug('Users is: {0}'.format(auth_user))
+    LOG.debug('Secure tags regex list: %s', secure_tag_regexes)
+    LOG.debug('Secure tags groups: %s', secure_groups)
+    LOG.debug('User is: %s', user)
 
-    try:
-        for tag_regex in secure_tag_regexes:
-            regex = re.compile(tag_regex)
-            if re.match(regex, tag_name):
-                LOG.debug('Secure tag detected: {0}'.format(tag_name))
-                if not set(secure_groups) & set(auth_user['groups']):
-                    LOG.error('User is not allowed to modify tag: {0}'.format(tag_name))
-                    return False
-                else:
-                    LOG.debug('User is in an allowed group.')
-                    return True
-        LOG.debug('Tag is not secured: {0}'.format(tag_name))
-        return True
-    except:
-        raise
+    for tag_regex in secure_tag_regexes:
+        regex = re.compile(tag_regex)
+        if re.match(regex, tag_name):
+            LOG.debug('Secure tag detected: %s', tag_name)
+            if not set(secure_groups) & set(user['groups']):
+                LOG.error('User is not allowed to modify tag: %s', tag_name)
+                return False
+            LOG.debug('User is in an allowed group.')
+            return True
+    LOG.debug('Tag is not secured: %s', tag_name)
+    return True
 
 @view_config(route_name='api_data_center_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_data_center_r', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance_r', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_group_r', request_method='GET', renderer='json')
+@view_config(route_name='api_group_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_r', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment_r', request_method='GET', renderer='json')
@@ -642,6 +751,8 @@ def validate_tag_perm(request, auth_user, tag_name):
 @view_config(route_name='api_status_r', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit_r', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_r', request_method='GET', renderer='json')
+@view_config(route_name='api_user_audit_r', request_method='GET', renderer='json')
+@view_config(route_name='api_user_r', request_method='GET', renderer='json')
 def get_api_attribute(request):
     '''Get single attribute request for /api/{object_type}/{id}/{resource}
        route match.'''
@@ -653,7 +764,7 @@ def get_api_attribute(request):
         resource = request.matchdict['resource']
         LOG.debug('Querying for attribute={0},url={1}'.format(resource, request.url))
 
-        query = DBSession.query(globals()[model_type])
+        query = request.dbsession.query(globals()[model_type])
         query = query.filter(getattr(globals()[model_type], 'id') == resource_id)
         query = query.one()
         LOG.debug('query is: {0}'.format(query))
@@ -691,6 +802,7 @@ def get_api_attribute(request):
 
 @view_config(route_name='api_data_center', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instance', request_method='GET', renderer='json')
+@view_config(route_name='api_group', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignment', request_method='GET', renderer='json')
 @view_config(route_name='api_ip_address', request_method='GET', renderer='json')
@@ -704,6 +816,7 @@ def get_api_attribute(request):
 @view_config(route_name='api_physical_rack', request_method='GET', renderer='json')
 @view_config(route_name='api_status', request_method='GET', renderer='json')
 @view_config(route_name='api_tag', request_method='GET', renderer='json')
+@view_config(route_name='api_user', request_method='GET', renderer='json')
 def api_read_by_id(request):
     '''Process get requests for /api/{object_type}/{id} route match.'''
 
@@ -714,7 +827,7 @@ def api_read_by_id(request):
         camel = camel_to_underscore(model_type)
         LOG.debug('Displaying single {0} id={1}'.format(camel, resource_id))
 
-        query = DBSession.query(globals()[model_type])
+        query = request.dbsession.query(globals()[model_type])
         query = query.filter(getattr(globals()[model_type], 'id') == resource_id)
         query = query.one()
 
@@ -733,6 +846,7 @@ def api_read_by_id(request):
         return api_500(msg=repr(ex))
 
 @view_config(route_name='api_data_center_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_group_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profile_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_ip_address_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_network_interface_audit', request_method='GET', renderer='json')
@@ -745,6 +859,7 @@ def api_read_by_id(request):
 @view_config(route_name='api_physical_rack_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_status_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tag_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_user_audit', request_method='GET', renderer='json')
 def api_read_audit_by_id(request):
     '''Process get requests for /api/{object_type}_audit/{id} route match.
     Audit routes are different in that we use the matchdict id to look up the
@@ -757,7 +872,7 @@ def api_read_audit_by_id(request):
         camel = camel_to_underscore(model_type)
         LOG.debug('Displaying single {0} id={1}'.format(camel, resource_id))
 
-        query = DBSession.query(globals()[model_type])
+        query = request.dbsession.query(globals()[model_type])
         query = query.filter(getattr(globals()[model_type],
                                      'object_id') == resource_id)
         query = query.all()
@@ -779,6 +894,8 @@ def api_read_audit_by_id(request):
 @view_config(route_name='api_data_centers_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instances', request_method='GET', renderer='json')
 @view_config(route_name='api_ec2_instances_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_groups', request_method='GET', renderer='json')
+@view_config(route_name='api_groups_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles', request_method='GET', renderer='json')
 @view_config(route_name='api_hardware_profiles_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_hypervisor_vm_assignments', request_method='GET', renderer='json')
@@ -804,6 +921,8 @@ def api_read_audit_by_id(request):
 @view_config(route_name='api_statuses_audit', request_method='GET', renderer='json')
 @view_config(route_name='api_tags', request_method='GET', renderer='json')
 @view_config(route_name='api_tags_audit', request_method='GET', renderer='json')
+@view_config(route_name='api_users', request_method='GET', renderer='json')
+@view_config(route_name='api_users_audit', request_method='GET', renderer='json')
 def api_read_by_params(request):
     '''Process get requests for /api/{object_type} route match.'''
 
@@ -814,95 +933,85 @@ def api_read_by_params(request):
     try:
         exact_get = request.GET.get("exact_get", None)
 
-        if request.params:
-            query = DBSession.query(globals()[model_type])
+        fail_validate = valiate_parameters(request.params)
+        if fail_validate:
+            return api_400(msg=fail_validate)
 
-            # This is a bit of a cheat. Filtering from most to least specific
-            # speeds up the search dramatically. Alphabetical sort makes the
-            # 'name' parameter (which usually is the most specific) come
-            # before almost everything else by default.
-            params = request.GET.items()
-            exclude_params = sorted([x for x in params if x[0].startswith('ex_')])
-            include_params = sorted([x for x in params if not x[0].startswith('ex_')])
+        query = request.dbsession.query(globals()[model_type])
 
-            LOG.info('include_params: {0} exclude_params: {1}'.format(include_params,
-                                                                      exclude_params))
+        # This is a bit of a cheat. Filtering from most to least specific
+        # speeds up the search dramatically. Alphabetical sort makes the
+        # 'name' parameter (which usually is the most specific) come
+        # before almost everything else by default.
+        params = list(request.GET.items())
 
-            query = process_search(query, include_params, model_type, exact_get)
-            # Process excludes at the end to ensure they're excluded.
-            if exclude_params:
-                query = process_search(query, exclude_params, model_type, exact_get)
+        exclude_params = sorted([x for x in params if x[0].startswith('ex_')])
+        include_params = sorted([x for x in params if not x[0].startswith('ex_')])
 
-            if perpage:
-                LOG.debug('Query count START')
-                total = query.count()
-                LOG.debug('Query count END')
-                LOG.debug('Query limit START')
-                LOG.debug('Query limit: {0} offset: {1}'.format(perpage, offset))
-                myob = query.limit(perpage).offset(offset).all()
-                LOG.debug('Query limit END')
-            else:
-                LOG.debug('Query all START')
-                myob = query.all()
-                total = len(myob)
-                LOG.debug('Query all END')
+        LOG.debug('include_params: %s exclude_params: %s', include_params, exclude_params)
 
-            result_count = len(myob)
+        query = process_search(query, include_params, model_type, exact_get)
+        # Process excludes at the end to ensure they're excluded.
+        if exclude_params:
+            query = process_search(query, exclude_params, model_type, exact_get)
 
-            LOG.debug('Returning Query results')
-            return api_200(total=total, result_count=result_count, results=myob)
-
-        else:
-
-            LOG.info('Displaying all {0}'.format(camel))
-
-            query = DBSession.query(globals()[model_type])
+        if perpage:
+            LOG.debug('Query count START')
             total = query.count()
+            LOG.debug('Query count END')
+            LOG.debug('Query limit START')
+            LOG.debug('Query limit: %s offset: %s', perpage, offset)
+            myob = query.limit(perpage).offset(offset).all()
+            LOG.debug('Query limit END')
+        else:
+            LOG.debug('Query all START')
             myob = query.all()
+            total = len(myob)
+            LOG.debug('Query all END')
 
-            return api_200(total=total, result_count=total, results=myob)
+        result_count = len(myob)
+
+        LOG.debug('Returning Query results')
+        return api_200(total=total, result_count=result_count, results=myob)
 
     # FIXME: Should AttributeError return something different?
     except (NoResultFound, AttributeError):
         return api_404()
 
-    except Exception, ex:
+    except Exception as ex:
         msg = 'Error querying {0} url: {1} exception: {2}'.format(camel,
                                                                     request.url,
                                                                     repr(ex))
         LOG.error(msg)
         return api_500(msg=repr(ex))
 
-@view_config(route_name='api_data_center', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ec2_instance', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_hardware_profile', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_hypervisor_vm_assignment', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ip_address', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_network_interface', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_node', permission='node_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_node_group', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_operating_system', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_device', permission='physical_device_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_elevation', permission='physical_elevation_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_location', permission='physical_location_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_rack', permission='physical_rack_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_status', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_tag', permission='tag_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_data_center', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_ec2_instance', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_hardware_profile', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_hypervisor_vm_assignment', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_ip_address', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_network_interface', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_node', permission='node_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_node_group', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_operating_system', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_device', permission='physical_device_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_elevation', permission='physical_elevation_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_location', permission='physical_location_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_rack', permission='physical_rack_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_status', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_tag', permission='tag_delete', request_method='DELETE', renderer='json', require_csrf=False)
 def api_delete_by_id(request):
     '''Process delete requests for /api/{object_type}/{id} route match.'''
 
     try:
-        # FIXME: Will be used for auditing eventually. Would be nice to use
-        # request.authenticated_userid, but I think this gets ugly when it's
-        # an AD user. Need to test.
-        auth_user = get_authenticated_user(request)
+        user = request.identity
         model_type = model_matcher(request.matched_route.name)
         resource_id = request.matchdict['id']
         camel = camel_to_underscore(model_type)
-        LOG.debug('Checking for id={0}'.format(resource_id))
+        LOG.debug('Checking for id: %s', resource_id)
         object_type = request.path_info.split('/')[2]
 
-        query = DBSession.query(globals()[model_type])
+        query = request.dbsession.query(globals()[model_type])
         query = query.filter(getattr(globals()[model_type], 'id') == resource_id)
         query = query.one()
 
@@ -913,7 +1022,7 @@ def api_delete_by_id(request):
             unique_field = 'serial_number'
             object_name = getattr(query, unique_field)
 
-        if object_type == 'tags' and not validate_tag_perm(request, auth_user, object_name):
+        if object_type == 'tags' and not validate_tag_perm(request, user, object_name):
             return api_403()
 
         # Defines the key to log in the audit table for the given model type
@@ -936,14 +1045,14 @@ def api_delete_by_id(request):
         setattr(audit, 'field', deleted_key)
         setattr(audit, 'old_value', getattr(query, deleted_key))
         setattr(audit, 'new_value', 'deleted')
-        setattr(audit, 'updated_by', auth_user['user_id'])
+        setattr(audit, 'updated_by', user['name'])
         setattr(audit, 'created', utcnow)
 
-        DBSession.add(audit)
+        request.dbsession.add(audit)
 
-        LOG.info('Deleting {0}: {1} id: {2}'.format(unique_field, object_name, resource_id))
-        DBSession.delete(query)
-        DBSession.flush()
+        LOG.info('Deleting %s: %s id: %s', unique_field, object_name, resource_id)
+        request.dbsession.delete(query)
+        request.dbsession.flush()
 
         return api_200()
 
@@ -956,21 +1065,21 @@ def api_delete_by_id(request):
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_data_centers', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ec2_instances', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_hardware_profiles', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ip_addresses', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_network_interfaces', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_nodes', permission='node_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_operating_systems', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_devices', permission='physical_device_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_elevations', permission='physical_elevation_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_locations', permission='physical_location_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_racks', permission='physical_rack_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json')
-@view_config(route_name='api_tags', permission='tag_delete', request_method='DELETE', renderer='json')
+@view_config(route_name='api_data_centers', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_ec2_instances', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_hardware_profiles', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_hypervisor_vm_assignments', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_ip_addresses', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_network_interfaces', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_node_groups', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_nodes', permission='node_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_operating_systems', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_devices', permission='physical_device_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_elevations', permission='physical_elevation_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_locations', permission='physical_location_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_racks', permission='physical_rack_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_statuses', permission='api_write', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_tags', permission='tag_delete', request_method='DELETE', renderer='json', require_csrf=False)
 def api_delete_by_params(request):
     '''Process delete requests for /api/{object_type} route match. Iterates
        over passed parameters.'''
@@ -978,9 +1087,7 @@ def api_delete_by_params(request):
     # FIXME: Is any of this used? If so it needs to be locked down.
 
     try:
-        # FIXME: Should we enforce required parameters here?
-        # Will be used for auditing
-        auth_user = get_authenticated_user(request)
+        user = request.identity
         # FIXME: Should we allow this to be set on the client, or hard code it to true,
         # requiring an # exact match? Might make sense since there is no confirmation,
         # it just deletes.
@@ -990,7 +1097,7 @@ def api_delete_by_params(request):
         payload = request.json_body
         params = ''
 
-        query = DBSession.query(globals()[model_type])
+        query = request.dbsession.query(globals()[model_type])
 
         for key, val in payload.items():
             # FIXME: This is sub-par. Need a better way to distinguish
@@ -1001,19 +1108,20 @@ def api_delete_by_params(request):
 
             params += '{0}={1},'.format(key, val)
             if exact_get:
-                LOG.debug('Exact filtering on {0}={1}'.format(key, val))
+                LOG.debug('Exact filtering on %s=%s', key, val)
                 query = query.filter(getattr(globals()[model_type], key) == val)
             else:
-                LOG.debug('Loose filtering on {0}={1}'.format(key, val))
+                LOG.debug('Loose filtering on %s=%s', key, val)
                 query = query.filter(getattr(globals()[model_type], key).like('%{0}%'.format(val)))
-        LOG.debug('Searching for {0} with params: {1}'.format(camel, params.rstrip(',')))
+
+            LOG.debug('Searching for %s with params: %s', camel, params.rstrip(','))
 
         query = query.one()
 
         # FIXME: Need auditing
-        LOG.info('Deleting {0} with params: {1}'.format(camel, params.rstrip(',')))
-        DBSession.delete(query)
-        DBSession.flush()
+        LOG.info('Deleting %s with params: %s', camel, params.rstrip(','))
+        request.dbsession.delete(query)
+        request.dbsession.flush()
 
         return api_200()
 

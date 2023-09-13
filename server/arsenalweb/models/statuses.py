@@ -17,14 +17,16 @@ import logging
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy import (
     Column,
-    Integer,
+    Index,
     TIMESTAMP,
     Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
-    DBSession,
     get_name_id_dict,
     jsonify,
 )
@@ -36,12 +38,23 @@ class Status(Base):
     '''Arsenal Status object.'''
 
     __tablename__ = 'statuses'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text, nullable=False)
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    name = Column(VARCHAR(255), nullable=False)
     description = Column(Text, nullable=False)
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     @hybrid_method
     def get_status_id(self, name):
@@ -72,16 +85,15 @@ class Status(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return name and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            my_fields = fields.split(',')
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except KeyError:
@@ -90,7 +102,19 @@ class Status(Base):
             return resp
 
 
+Index('idx_status_name_id', Status.id, unique=False)
+Index('idx_status_name_uniq', Status.name, unique=True)
+
+
 class StatusAudit(BaseAudit):
     '''Arsenal StatusAudit object.'''
 
     __tablename__ = 'statuses_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

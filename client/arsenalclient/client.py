@@ -16,13 +16,17 @@
 #  limitations under the License.
 #
 import sys
-import ConfigParser
+try:
+    import ConfigParser as configparser
+except ModuleNotFoundError:
+    import configparser
 import logging
 from argparse import Namespace
 import requests
 
 from arsenalclient.interface.data_centers import DataCenters
 from arsenalclient.interface.hardware_profiles import HardwareProfiles
+from arsenalclient.interface.ip_addresses import IpAddresses
 from arsenalclient.interface.network_interfaces import NetworkInterfaces
 from arsenalclient.interface.node_groups import NodeGroups
 from arsenalclient.interface.nodes import Nodes
@@ -128,6 +132,7 @@ class Client(object):
 
         self.data_centers = DataCenters(**kwargs)
         self.hardware_profiles = HardwareProfiles(**kwargs)
+        self.ip_addresses = IpAddresses(**kwargs)
         self.network_interfaces = NetworkInterfaces(**kwargs)
         self.node_groups = NodeGroups(**kwargs)
         self.nodes = Nodes(**kwargs)
@@ -168,7 +173,7 @@ class Client(object):
     def load_main_conf(self):
         '''Load all settings from self.conf_file.'''
 
-        conf_parse = ConfigParser.ConfigParser()
+        conf_parse = configparser.ConfigParser()
         conf_parse.read(self.conf_file)
         for section in conf_parse.sections():
             for key, val in conf_parse.items(section):
@@ -181,7 +186,7 @@ class Client(object):
         '''Load all settings from self.secret_conf_file.'''
 
         if self.secret_conf_file:
-            secret_conf_parse = ConfigParser.SafeConfigParser()
+            secret_conf_parse = configparser.SafeConfigParser()
             secret_conf_parse.read(self.secret_conf_file)
             for key, val in secret_conf_parse.items('user'):
                 if val:

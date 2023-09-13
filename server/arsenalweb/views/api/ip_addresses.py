@@ -18,18 +18,12 @@ from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.ip_addresses import (
     IpAddress,
     IpAddressAudit,
     )
 from arsenalweb.models.network_interfaces import (
     NetworkInterfaceAudit,
-    )
-from arsenalweb.views import (
-    get_authenticated_user,
     )
 from arsenalweb.views.api.common import (
     api_200,
@@ -44,32 +38,31 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_ip_addr_by_addr(ip_address):
+def find_ip_addr_by_addr(dbsession, ip_address):
     '''Find an ip_address by ip_address. Return an object if found, raises
     an exception otherwise.'''
 
-    LOG.debug('Searching for ip_address.ip_address: '
-              '{0}'.format(ip_address))
-    ip_addr = DBSession.query(IpAddress)
+    LOG.debug('Searching for ip_address.ip_address: %s', ip_address)
+    ip_addr = dbsession.query(IpAddress)
     ip_addr = ip_addr.filter(IpAddress.ip_address == ip_address)
 
     return ip_addr.one()
 
-def find_ip_addr_by_id(ip_addr_id):
+def find_ip_addr_by_id(dbsession, ip_addr_id):
     '''Find a ip_address by id. Return an object if found, raises an exception
     otherwise.'''
 
-    LOG.debug('Searching for ip_address.id: {0}'.format(ip_addr_id))
-    ip_addr = DBSession.query(IpAddress)
+    LOG.debug('Searching for ip_address.id: %s', ip_addr_id)
+    ip_addr = dbsession.query(IpAddress)
     ip_addr = ip_addr.filter(IpAddress.id == ip_addr_id)
 
     return ip_addr.one()
 
-def create_ip_addr(ip_address=None, updated_by=None):
+def create_ip_addr(dbsession, ip_address=None, updated_by=None):
     '''Create a new ip_address.'''
 
     try:
-        LOG.info('Creating new ip_address: {0}'.format(ip_address))
+        LOG.info('Creating new ip_address: %s', ip_address)
 
         utcnow = datetime.utcnow()
         ip_address = IpAddress(ip_address=ip_address,
@@ -77,8 +70,8 @@ def create_ip_addr(ip_address=None, updated_by=None):
                                created=utcnow,
                                updated=utcnow)
 
-        DBSession.add(ip_address)
-        DBSession.flush()
+        dbsession.add(ip_address)
+        dbsession.flush()
 
         ip_address_audit = IpAddressAudit(object_id=ip_address.id,
                                           field='ip_address',
@@ -86,11 +79,11 @@ def create_ip_addr(ip_address=None, updated_by=None):
                                           new_value=ip_address.ip_address,
                                           updated_by=updated_by,
                                           created=utcnow)
-        DBSession.add(ip_address_audit)
-        DBSession.flush()
+        dbsession.add(ip_address_audit)
+        dbsession.flush()
 
     except Exception as ex:
-        msg = 'Error creating ip_address: {0} exception: {2}'.format(ip_address, ex)
+        msg = 'Error creating ip_address: {0} exception: {1}'.format(ip_address, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -102,7 +95,7 @@ def update_ip_addr(ip_address=None, user_id=None):
     copy the implementation from netowrk_interfaces.'''
     return None
 
-def ip_address_to_net_if(ip_address, net_if, user):
+def ip_address_to_net_if(dbsession, ip_address, net_if, user):
     '''Assign an ip_address to a network_interface.
 
        ip_address = An IpAddress object.
@@ -116,7 +109,7 @@ def ip_address_to_net_if(ip_address, net_if, user):
 
         utcnow = datetime.utcnow()
 
-        with DBSession.no_autoflush:
+        with dbsession.no_autoflush:
             resp[ip_address.ip_address].append(net_if.unique_id)
             orig_net_if_ip_addr_id = net_if.ip_address_id
             net_if.ip_address_id = ip_address.id
@@ -129,7 +122,7 @@ def ip_address_to_net_if(ip_address, net_if, user):
                                                      new_value=ip_address.id,
                                                      updated_by=user,
                                                      created=utcnow)
-                DBSession.add(net_if_audit)
+                dbsession.add(net_if_audit)
 
                 LOG.debug('Creating audit entry for ip_address assignment '
                           'to network_interface...')
@@ -140,11 +133,11 @@ def ip_address_to_net_if(ip_address, net_if, user):
                                                updated_by=user,
                                                created=utcnow)
 
-                DBSession.add(ip_addr_audit)
+                dbsession.add(ip_addr_audit)
 
 
-            DBSession.add(net_if)
-            DBSession.flush()
+            dbsession.add(net_if)
+            dbsession.flush()
 
     except (NoResultFound, AttributeError):
         return api_404(msg='ip_address not found')
@@ -153,7 +146,7 @@ def ip_address_to_net_if(ip_address, net_if, user):
         msg = 'Bad request: network_interface_id is not unique: {0}'.format(net_if.id)
         return api_400(msg=msg)
     except Exception as ex:
-        msg = 'Error updating ip_address: exception={0}'.format(ex)
+        msg = 'Error updating ip_address: exception: {0}'.format(ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -170,7 +163,7 @@ def api_ip_addresses_schema(request):
     return ip_addresses
 
 # TODO: Need to create the perms if we start allowing manual updates
-@view_config(route_name='api_ip_addresses', permission='ip_address_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_ip_addresses', permission='ip_address_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_ip_addreses_write(request):
     '''Process write requests for /api/ip_addreses route.'''
 
@@ -183,10 +176,10 @@ def api_ip_addreses_write(request):
         params['unique_id'] = params['unique_id'].lower()
 
         try:
-            ip_addr = find_ip_addr_by_addr(params['ip_address'])
+            ip_addr = find_ip_addr_by_addr(request.dbsession, params['ip_address'])
             update_ip_addr(ip_addr, **params)
         except NoResultFound:
-            net_if = create_ip_addr(**params)
+            net_if = create_ip_addr(request.dbsession, **params)
 
         return net_if
 
@@ -196,21 +189,21 @@ def api_ip_addreses_write(request):
         return api_500(msg=msg)
 
 # TODO: Need to create the perms if we start allowing manual add/delete
-@view_config(route_name='api_ip_address_r', permission='ip_address_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_ip_address_r', permission='ip_address_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_ip_address_r', permission='ip_address_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_ip_address_r', permission='ip_address_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_ip_address_write_attrib(request):
     '''Process write requests for the /api/ip_address/{id}/{resource} route.'''
 
     LOG.debug('START api_ip_address_write_attrib()')
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the network_interfaces, then figure out what to do to it.
-    ip_addr = find_ip_addr_by_id(request.matchdict['id'])
-    LOG.debug('ip_addr is: {0}'.format(ip_addr))
+    ip_addr = find_ip_addr_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('ip_addr is: %s', ip_addr)
 
     # List of resources allowed
     resources = [
@@ -221,14 +214,14 @@ def api_ip_address_write_attrib(request):
         try:
             actionable = payload[resource]
             if resource == 'undef':
-                LOG.warn('Not allowed.')
+                LOG.warning('Not allowed.')
                 resp = []
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating ip_addresses: {0} '
-                      'exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating ip_addresses: %s '
+                      'exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()

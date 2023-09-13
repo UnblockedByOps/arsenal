@@ -18,9 +18,6 @@ from datetime import datetime
 from datetime import timedelta
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.models.common import (
-    DBSession,
-)
 from arsenalweb.models.nodes import (
     Node,
 )
@@ -42,18 +39,18 @@ def api_reports_stale_node_read(request):
     statuses = status.split(',')
 
     try:
-        LOG.info('Searching for nodes with last_registered grater than {0} '
-                 'hours in the following statuses: {1}...'.format(hours_past,
-                                                                  statuses))
+        LOG.info('Searching for nodes with last_registered grater than %s '
+                 'hours in the following statuses: %s...', hours_past,
+                                                           statuses)
         status_ids = []
         for status in statuses:
-            my_status = DBSession.query(Status)
+            my_status = request.dbsession.query(Status)
             my_status = my_status.filter(Status.name == status)
             my_status = my_status.one()
             status_ids.append(my_status.id)
 
         threshold = datetime.now() - timedelta(hours=hours_past)
-        node = DBSession.query(Node)
+        node = request.dbsession.query(Node)
         node = node.filter(Node.last_registered <= threshold)
         node = node.filter(Node.status_id.in_(status_ids))
         nodes = node.all()
@@ -62,10 +59,10 @@ def api_reports_stale_node_read(request):
     except NoResultFound:
         nodes = []
 
-    LOG.info('Found {0} nodes with last_registered grater than {1} '
-             'hours in the following statuses: {2}.'.format(total,
-                                                            hours_past,
-                                                            statuses))
-    LOG.debug('Nodes: {0}'.format(nodes))
+    LOG.info('Found %s nodes with last_registered greater than %s '
+             'hours in the following statuses: %s.', total,
+                                                     hours_past,
+                                                     statuses)
+    LOG.debug('Nodes: %s', nodes)
 
     return api_200(results=nodes, total=total, result_count=total)

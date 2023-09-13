@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.physical_device import (
     search_physical_devices,
     create_physical_device,
@@ -35,13 +38,21 @@ def parser_physical_devices(top_parser, otsp):
                           parents=[top_parser])
 
     # physical_devices action sub-parser (asp)
-    asp = otp.add_subparsers(title='Available actions',
-                             dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        asp = otp.add_subparsers(title='Available actions',
+                                 dest='action_command')
+    else:
+        asp = otp.add_subparsers(title='Available actions',
+                                 dest='action_command',
+                                 required=True)
+
     # physical_devices search subcommand (ssc)
     ssc = asp.add_parser('search',
                          help='Search for physical_device objects and optionally ' \
                          'act upon the results.',
-                         parents=[top_parser])
+                         parents=[top_parser],
+                         formatter_class=RawTextHelpFormatter)
     ssc.add_argument('--fields',
                      '-f',
                      dest='fields',
@@ -116,7 +127,8 @@ def parser_physical_devices(top_parser, otsp):
                      default=None,
                      metavar='search_terms',
                      help='Comma separated list of key=value pairs to search ' \
-                     'for.\n {0}'.format(gen_help('physical_devices_search')))
+                          'for:\n{0} \n {1}'.format(gen_help('physical_devices_search'),
+                                                    date_help()))
     ssc.set_defaults(func=search_physical_devices)
 
     # physical_devices create subcommand (csc)

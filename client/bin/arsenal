@@ -52,6 +52,7 @@ try:
     requests.packages.urllib3.disable_warnings()
 except AttributeError:
     pass
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 def _parse_args():
     '''Parse all the command line arguments.'''
@@ -170,7 +171,10 @@ def main():
     client = Client(args.conf, args.secret_conf, args)
 
     # call whatever function was selected
-    args.func(args, client)
+    try:
+        args.func(args, client)
+    except AttributeError:
+        argparse.ArgumentParser().error('too few arguments')
 
 if __name__ == '__main__':
     main()

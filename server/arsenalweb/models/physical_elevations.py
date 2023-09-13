@@ -17,12 +17,14 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
+    Index,
     TIMESTAMP,
-    Text,
+    UniqueConstraint,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
@@ -37,12 +39,28 @@ class PhysicalElevation(Base):
     '''Arsenal PhysicalElevation object.'''
 
     __tablename__ = 'physical_elevations'
-    id = Column(Integer, primary_key=True, nullable=False)
-    elevation = Column(Text, nullable=False)
-    physical_rack_id = Column(Integer, ForeignKey('physical_racks.id'), nullable=False)
+    __table_args__ = (
+        UniqueConstraint('elevation',
+                         'physical_rack_id',
+                         name='idx_physical_elevation_location'),
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    elevation = Column(VARCHAR(11), nullable=False)
+    physical_rack_id = Column(INTEGER(unsigned=True),
+                              ForeignKey('physical_racks.id'),
+                              nullable=False)
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     physical_rack = relationship('PhysicalRack', backref='physical_elevations', lazy='joined')
     physical_device = relationship('PhysicalDevice',
@@ -74,17 +92,16 @@ class PhysicalElevation(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only these fields.
         except (KeyError, UnboundLocalError):
@@ -99,7 +116,18 @@ class PhysicalElevation(Base):
             return resp
 
 
+Index('idx_physical_elevation_id', PhysicalElevation.id, unique=True)
+
+
 class PhysicalElevationAudit(BaseAudit):
     '''Arsenal PhysicalElevationAudit object.'''
 
     __tablename__ = 'physical_elevations_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

@@ -99,7 +99,9 @@ def delete_tag(args, client):
             r_names.append('{0}={1}'.format(tag['name'], tag['value']))
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n  {2} item(s) will be deleted. Continue?'.format(args.object_type,
+                                                                       '\n '.join(r_names),
+                                                                       len(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
             for tag in results:

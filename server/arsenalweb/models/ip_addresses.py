@@ -16,10 +16,12 @@
 import logging
 from sqlalchemy import (
     Column,
-    Integer,
+    Index,
     TIMESTAMP,
-    Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
@@ -35,11 +37,22 @@ class IpAddress(Base):
     '''Arsenal IpAddress object.'''
 
     __tablename__ = 'ip_addresses'
-    id = Column(Integer, primary_key=True, nullable=False)
-    ip_address = Column(Text, nullable=False)
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    ip_address = Column(VARCHAR(255), nullable=False)
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def __json__(self, request):
         try:
@@ -58,20 +71,19 @@ class IpAddress(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return ip_address and id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], default_keys=['id', 'ip_address'])
+            # Always return ip_address and id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], default_keys=['id', 'ip_address'])
 
-                my_fields = fields.split(',')
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            my_fields = fields.split(',')
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'network_interfaces' in my_fields:
-                    resp['network_interfaces'] = get_name_id_list(self.network_interfaces)
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'network_interfaces' in my_fields:
+                resp['network_interfaces'] = get_name_id_list(self.network_interfaces)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only ip_address and id.
         except KeyError:
@@ -80,7 +92,18 @@ class IpAddress(Base):
             return resp
 
 
+Index('idx_ip_address_uniq', IpAddress.ip_address, unique=True)
+
+
 class IpAddressAudit(BaseAudit):
     '''Arsenal IpAddressAudit object.'''
 
     __tablename__ = 'ip_addresses_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

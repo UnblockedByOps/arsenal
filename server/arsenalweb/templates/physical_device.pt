@@ -50,6 +50,9 @@
                 <tr>
                     <td>Serial Number</td><td><span class="mono"><span class="mono">${physical_device.serial_number}</span></td>
                 </tr>
+                <tr>
+                    <td>Status</td><td><span class="mono"><span class="mono">${physical_device.status.name}</span></td>
+                </tr>
                 <tr tal:condition="physical_device.node">
                     <td>Node</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/nodes/{0}'.format(physical_device.node.id)" tal:content="physical_device.node.name">fopd-tst0000.inf1.fanops.net</a></span></td>
                 </tr>

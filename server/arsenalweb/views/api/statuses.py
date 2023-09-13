@@ -18,9 +18,6 @@ from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.data_centers import (
     DataCenterAudit,
     )
@@ -31,8 +28,11 @@ from arsenalweb.models.statuses import (
     Status,
     StatusAudit,
     )
-from arsenalweb.views import (
-    get_authenticated_user,
+from arsenalweb.models.physical_devices import (
+    PhysicalDeviceAudit,
+    )
+from arsenalweb.models.physical_locations import (
+    PhysicalLocationAudit,
     )
 from arsenalweb.views.api.common import (
     api_200,
@@ -41,6 +41,7 @@ from arsenalweb.views.api.common import (
     api_500,
     api_501,
     collect_params,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.nodes import (
     find_node_by_id,
@@ -52,33 +53,35 @@ from arsenalweb.views.api.physical_devices import (
     update_physical_device,
     find_physical_device_by_id,
     )
+from arsenalweb.views.api.physical_locations import (
+    find_physical_location_by_id,
+    )
 
 LOG = logging.getLogger(__name__)
 
-def find_status_by_name(status_name):
+def find_status_by_name(dbsession, status_name):
     '''Find a status by name.'''
 
-    LOG.debug('Searching for statuses name={0}'.format(status_name))
+    LOG.debug('Searching for statuses name: %s', status_name)
 
-    status = DBSession.query(Status)
+    status = dbsession.query(Status)
     status = status.filter(Status.name == status_name)
 
     return status.one()
 
-def find_status_by_id(status_id):
+def find_status_by_id(dbsession, status_id):
     '''Find a status by id.'''
 
-    status = DBSession.query(Status)
+    status = dbsession.query(Status)
     status = status.filter(Status.id == status_id)
 
     return status.one()
 
-def create_status(name=None, description=None, user_id=None):
+def create_status(dbsession, name=None, description=None, user_id=None):
     '''Create a new status.'''
 
     try:
-        LOG.info('Creating new status name={0},description={1}'.format(name,
-                                                                       description))
+        LOG.info('Creating new status name: %s description: %s', name, description)
         utcnow = datetime.utcnow()
 
         status = Status(name=name,
@@ -87,8 +90,8 @@ def create_status(name=None, description=None, user_id=None):
                         created=utcnow,
                         updated=utcnow)
 
-        DBSession.add(status)
-        DBSession.flush()
+        dbsession.add(status)
+        dbsession.flush()
 
         status_audit = StatusAudit(object_id=status.id,
                                    field='name',
@@ -96,18 +99,17 @@ def create_status(name=None, description=None, user_id=None):
                                    new_value=status.name,
                                    updated_by=user_id,
                                    created=utcnow)
-        DBSession.add(status_audit)
-        DBSession.flush()
+        dbsession.add(status_audit)
+        dbsession.flush()
 
     except Exception as ex:
-        msg = 'Error creating status name={0},description={1},' \
-              'exception={2}'.format(name, description, ex)
+        msg = f'Error creating status name={name},description={description},exception={ex}'
         LOG.error(msg)
         return api_500(msg=msg)
 
     return status
 
-def update_status(status, **kwargs):
+def update_status(dbsession, status, **kwargs):
     '''Update an existing status.
 
     Required params:
@@ -120,7 +122,7 @@ def update_status(status, **kwargs):
     try:
         my_attribs = kwargs.copy()
 
-        LOG.debug('Updating status: {0}'.format(status.name))
+        LOG.debug('Updating status: %s', status.name)
 
         utcnow = datetime.utcnow()
 
@@ -135,32 +137,30 @@ def update_status(status, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating status: {0} attribute: '
-                          '{1} new_value: {2}'.format(status.name,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating status: %s attribute: '
+                          '%s new_value: %s', status.name,
+                                              attribute,
+                                              new_value)
                 audit = StatusAudit(object_id=status.id,
                                     field=attribute,
                                     old_value=old_value,
                                     new_value=new_value,
                                     updated_by=my_attribs['updated_by'],
                                     created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(status, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return api_200(results=status)
 
     except Exception as ex:
-        msg = 'Error updating status name: {0} updated_by: {1} exception: ' \
-              '{2}'.format(status.name,
-                           my_attribs['updated_by'],
-                           repr(ex))
+        msg = f"Error updating status name: {status.name} updated_by: " \
+               "{my_attribs['updated_by']} exception: {ex}"
         LOG.error(msg)
         raise
 
-def assign_status(status, actionables, resource, user, settings):
+def assign_status(dbsession, status, actionables, resource, user, settings):
     '''Assign actionable_ids to a status.'''
 
     LOG.debug('START assign_status()')
@@ -169,15 +169,17 @@ def assign_status(status, actionables, resource, user, settings):
 
         utcnow = datetime.utcnow()
 
-        with DBSession.no_autoflush:
+        with dbsession.no_autoflush:
             for actionable_id in actionables:
 
                 if resource == 'nodes':
-                    my_obj = find_node_by_id(actionable_id)
+                    my_obj = find_node_by_id(dbsession, actionable_id)
                 elif resource == 'data_centers':
-                    my_obj = find_data_center_by_id(actionable_id)
+                    my_obj = find_data_center_by_id(dbsession, actionable_id)
                 elif resource == 'physical_devices':
-                    my_obj = find_physical_device_by_id(actionable_id)
+                    my_obj = find_physical_device_by_id(dbsession, actionable_id)
+                elif resource == 'physical_locations':
+                    my_obj = find_physical_location_by_id(dbsession, actionable_id)
 
                 if resource == 'physical_devices':
                     resp[status.name].append(my_obj.serial_number)
@@ -185,33 +187,43 @@ def assign_status(status, actionables, resource, user, settings):
                     resp[status.name].append(my_obj.name)
 
                 orig_status_id = my_obj.status_id
-                orig_status = find_status_by_id(my_obj.status_id)
+                orig_status = find_status_by_id(dbsession, my_obj.status_id)
                 LOG.debug('START assign_status() update status_id')
                 my_obj.status_id = status.id
                 LOG.debug('END assign_status() update status_id')
 
                 if orig_status_id != status.id:
                     LOG.debug('START assign_status() create audit')
+
+                    my_obj.updated = utcnow
+                    my_obj.updated_by = user
+
                     if resource == 'nodes':
 
                         if my_obj.physical_device:
 
                             try:
-                                pd_status = getattr(settings, 'arsenal.node_hw_map.{0}'.format(status.name))
-                                av = find_status_by_name(pd_status)
+                                pd_status = settings[f'arsenal.node_hw_map.{status.name}']
+                                av = find_status_by_name(dbsession, pd_status)
                                 final_status_id = av.id
+                                if my_obj.physical_device.status_id != final_status_id:
 
-                                pd_params = {
-                                    'status_id': final_status_id,
-                                    'updated_by': user,
-                                }
+                                    pd_params = {
+                                        'status_id': final_status_id,
+                                        'updated_by': user,
+                                    }
 
-                                update_physical_device(my_obj.physical_device,
-                                                       **pd_params)
+                                    update_physical_device(dbsession,
+                                                           my_obj.physical_device,
+                                                           **pd_params)
+                                else:
+                                    LOG.debug('current physical_device status_id: %s matches '
+                                              'expected status_id: %s. Nothing to do.',
+                                              my_obj.physical_device.status_id, final_status_id)
 
-                            except AttributeError:
+                            except KeyError:
                                 LOG.debug('No physical_device status map attribute defined in '
-                                          'config for node status: {0}'.format(status.name))
+                                          'config for node status: %s', status.name)
 
                         node_audit = NodeAudit(object_id=my_obj.id,
                                                field='status',
@@ -219,7 +231,7 @@ def assign_status(status, actionables, resource, user, settings):
                                                new_value=status.name,
                                                updated_by=user,
                                                created=utcnow)
-                        DBSession.add(node_audit)
+                        dbsession.add(node_audit)
 
                     elif resource == 'data_centers':
 
@@ -229,15 +241,35 @@ def assign_status(status, actionables, resource, user, settings):
                                                    new_value=status.name,
                                                    updated_by=user,
                                                    created=utcnow)
-                        DBSession.add(dc_audit)
+                        dbsession.add(dc_audit)
+
+                    elif resource == 'physical_devices':
+
+                        pd_audit = PhysicalDeviceAudit(object_id=my_obj.id,
+                                                       field='status',
+                                                       old_value=orig_status.name,
+                                                       new_value=status.name,
+                                                       updated_by=user,
+                                                       created=utcnow)
+                        dbsession.add(pd_audit)
+
+                    elif resource == 'physical_locations':
+
+                        pd_audit = PhysicalLocationAudit(object_id=my_obj.id,
+                                                         field='status',
+                                                         old_value=orig_status.name,
+                                                         new_value=status.name,
+                                                         updated_by=user,
+                                                         created=utcnow)
+                        dbsession.add(pd_audit)
 
                     LOG.debug('END assign_status() create audit')
 
             LOG.debug('START assign_status() session add')
-            DBSession.add(my_obj)
+            dbsession.add(my_obj)
             LOG.debug('END assign_status() session add')
             LOG.debug('START assign_status() session flush')
-            DBSession.flush()
+            dbsession.flush()
             LOG.debug('END assign_status() session flush')
 
     except (NoResultFound, AttributeError):
@@ -263,8 +295,7 @@ def api_statuses_schema(request):
 
     return status
 
-# api_register permission is so that kaboom can update status.
-@view_config(route_name='api_status_r', permission='api_register', request_method='PUT', renderer='json')
+@view_config(route_name='api_status_r', permission='status_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_status_write_attrib(request):
     '''Process write requests for the /api/statuses/{id}/{resource} route.'''
 
@@ -272,31 +303,43 @@ def api_status_write_attrib(request):
     try:
         resource = request.matchdict['resource']
         payload = request.json_body
-        auth_user = get_authenticated_user(request)
+        user = request.identity
 
-        LOG.debug('Updating {0}'.format(request.url))
+        LOG.debug('Updating %s', request.url)
 
         # First get the status, then figure out what to do to it.
-        status = find_status_by_id(request.matchdict['id'])
-        LOG.debug('status is: {0}'.format(status))
+        status = find_status_by_id(request.dbsession, request.matchdict['id'])
+        LOG.debug('status is: %s', status)
 
         # List of resources allowed
         resources = [
             'nodes',
             'data_centers',
             'physical_devices',
+            'physical_locations',
         ]
 
         if resource in resources:
             try:
                 actionable = payload[resource]
+
+                item_count = len(actionable)
+                denied = enforce_api_change_limit(request, item_count)
+                if denied:
+                    return api_400(msg=denied)
+
                 settings = request.registry.settings
-                resp = assign_status(status, actionable, resource, auth_user['user_id'], settings)
+                resp = assign_status(request.dbsession,
+                                     status,
+                                     actionable,
+                                     resource,
+                                     user['name'],
+                                     settings)
             except KeyError:
                 msg = 'Missing required parameter: {0}'.format(resource)
                 return api_400(msg=msg)
             except Exception as ex:
-                msg = 'Error updating status={0},exception={1}'.format(request.url, ex)
+                msg = 'Error updating status: {0} exception: {1}'.format(request.url, ex)
                 LOG.error(msg)
                 return api_500(msg=msg)
         else:
@@ -305,11 +348,11 @@ def api_status_write_attrib(request):
         LOG.debug('RETURN api_status_write_attrib()')
         return resp
     except Exception as ex:
-        msg = 'Error updating status={0},exception={1}'.format(request.url, ex)
+        msg = 'Error updating status: {0},exception: {1}'.format(request.url, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_statuses', permission='api_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_status_write(request):
     '''Process write requests for /api/statuses route.'''
 
@@ -321,10 +364,10 @@ def api_status_write(request):
         opt_params = []
         params = collect_params(request, req_params, opt_params)
         try:
-            status = find_status_by_name(params['name'])
-            status = update_status(status, **params)
+            status = find_status_by_name(request.dbsession, params['name'])
+            status = update_status(request.dbsession, status, **params)
         except NoResultFound:
-            status = create_status(**params)
+            status = create_status(request.dbsession, **params)
 
         return status
 

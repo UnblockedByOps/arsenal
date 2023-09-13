@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -31,7 +30,7 @@ def view_node(request):
     '''Handle requests for node UI route.'''
 
     page_title = 'Node'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
     uri = '/api/nodes/{0}'.format(request.matchdict['id'])
     resp = _api_get(request, uri)
@@ -56,7 +55,7 @@ def view_node(request):
         node['physical_device'] = resp['results'][0]
 
     return {
-        'au': auth_user,
+        'au': user,
         'node': node,
         'page_title': page_title,
     }
@@ -67,7 +66,7 @@ def view_nodes(request):
 
     page_title_type = 'objects/'
     page_title_name = 'nodes'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -111,7 +110,7 @@ def view_nodes(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

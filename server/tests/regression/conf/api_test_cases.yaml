@@ -179,26 +179,40 @@ tests:
     tests:
       - description: 'NODE - REGEX Single sub-parameter exclude singleton search, single value'
         url: '/api/nodes?hardware_profile.name=HP&ex_hardware_profile.name=m710x&fields=hardware_profile'
-        result_count: 4
+        result_count: 8
         expected_responses:
-          - name: 'cbl0000.docker'
-          - name: 'log0000.docker'
           - name: 'anr0000.docker'
+          - name: 'cbl0000.docker'
+          - name: 'kvm0000.docker'
+          - name: 'log0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
       - description: 'NODE - REGEX Single sub-parameter exclude singleton search, multi value'
         url: '/api/nodes?hardware_profile.name=HP,VMware&ex_hardware_profile.name=m710x&fields=hardware_profile'
-        result_count: 7
+        result_count: 11 
         expected_responses:
-          - name: 'pup0000.docker'
-          - name: 'pup0001.docker'
-          - name: 'pud0000.docker'
+          - name: 'anr0000.docker'
           - name: 'cbl0000.docker'
           - name: 'log0000.docker'
-          - name: 'anr0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
+          - name: 'pud0000.docker'
+          - name: 'pup0000.docker'
+          - name: 'pup0001.docker'
       - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, single/single value'
         url: '/api/nodes?hardware_profile.name=HP&operating_system.version_number=7.3&ex_hardware_profile.name=m510&fields=hardware_profile,operating_system'
-        result_count: 2
+        result_count: 6
         expected_responses:
           - name: 'cbl0000.docker'
+          - name: 'kvm0000.docker'
+          - name: 'node0000.datetime'
+          - name: 'node0001.datetime'
+          - name: 'node0002.datetime'
+          - name: 'node0003.datetime'
       - description: 'NODE - REGEX Multiple sub-parameter exclude singleton search, multi/single value'
         url: '/api/nodes?hardware_profile.name=VMware,m710x&operating_system.version_number=6.7&ex_name=emx0000.docker&fields=hardware_profile,operating_system'
         result_count: 3
@@ -601,6 +615,30 @@ tests:
           - parameters:
               enc_test_tag: 'data_center_level'
               enc_test_tag_2: 'fqdn_level'
+  api_authentication:
+    description: 'Test api authentication'
+    function: 'run_api_authentication_test'
+    tests:
+      - test_data: 'login_success'
+        url: '/api/login'
+        username: 'kaboom'
+        password: 'password'
+        expected_response: 200
+      - test_data: 'login_failure'
+        url: '/api/login'
+        username: 'kaboom'
+        password: 'bad_password'
+        expected_response: 401
+  parameter_validation:
+    description: 'Test api parameter validation'
+    function: 'run_parameter_validation_test'
+    tests:
+      - test_data: 'no_params'
+        url: '/api/nodes'
+        expected_response: 400
+      - test_data: 'empty_param'
+        url: '/api/nodes?name='
+        expected_response: 400
   # Node registration must be tested last or it hoses the other tests
   node_registration:
     description: 'Test node registration'

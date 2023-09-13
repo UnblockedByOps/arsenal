@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+'''Delete VMs in Arsenal that are in decom status and older than X days.'''
+#
+#  Copyright 2015 CityGrid Media, LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+import sys
+import logging
+import argparse
+import datetime
+import json
+import configparser
+import requests
+
+try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+except (ImportError, AttributeError):
+    pass
+# requests is chatty
+logging.getLogger("requests").setLevel(logging.WARNING)
+try:
+    requests.packages.urllib3.disable_warnings()
+except AttributeError:
+    pass
+
+LOG = logging.getLogger(__name__)
+
+def parse_args():
+    '''Parse all the command line arguments.'''
+
+    help_desc = '''
+    Delete VMs in Arsenal that are in decom status and older than X days.
+
+    >>> arsenal_vm_expire -x 30
+    Provisioning...
+    '''
+
+    pap = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+                                  description=help_desc)
+    pap.add_argument('-a',
+                     '--arsenal-server',
+                     help='Arsenal server to use.',
+                     default='https://arsenal')
+    pap.add_argument('-d',
+                     '--debug',
+                     action='store_true',
+                     help='Enable debugging.')
+    pap.add_argument('-D',
+                     '--dry-run',
+                     dest='dry_run',
+                     action='store_true',
+                     help='Dry run. Do not actually change anything, just print out '
+                     'what we would have done.')
+    pap.add_argument('-s',
+                     '--secrets',
+                     help='Secret config file to use.',
+                     default='/app/arsenal/conf/arsenal-jenkins.ini')
+    pap.add_argument('-S',
+                     '--ssl',
+                     dest='ssl_verify',
+                     help='Whether or not the server is using ssl. Can be True, False, '
+                     'or path to ca cert',
+                     default=False)
+    pap.add_argument('-x',
+                     '--expire-days',
+                     help='Delete VMs that are older than X days that are in decom status.',
+                     default=90)
+
+    return pap.parse_args()
+
+def configure_logging(args):
+    '''Set up logging.'''
+
+    if args.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    root = logging.getLogger()
+    root.setLevel(log_level)
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(log_level)
+    if args.dry_run:
+        formatter = logging.Formatter('%(levelname)-8s- DRY RUN: %(message)s')
+    else:
+        formatter = logging.Formatter('%(levelname)-8s- %(message)s')
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
+def arsenal_login(server, username, password):
+    '''Guess what this does'''
+
+    payload = {
+        'login': username,
+        'password': password,
+        'form.submitted': True,
+        'api.client': True,
+        'return_url': '/api',
+    }
+
+    session = requests.Session()
+    session.post('{0}/login'.format(server), data=payload, verify=False)
+    return session
+
+def get_vms_to_delete(args):
+    '''Get the list of VMs to delete from Arsenal.'''
+
+    headers = {'Content-Type': 'application/json'}
+    url = '{0}/api/nodes'.format(args.arsenal_server)
+    past_date = datetime.date.today() - datetime.timedelta(int(args.expire_days))
+    past_date_str = past_date.isoformat()
+
+    LOG.info('Searching for VMs in decom status older than: %s', past_date_str)
+
+    payload = {
+        'status': 'decom',
+        'hardware_profile': 'KVM,VMware,Amazon',
+        'last_registered': '<{0}'.format(past_date_str),
+        'fields': 'hardware_profile,last_registered',
+    }
+    LOG.debug(json.dumps(payload, sort_keys=True, indent=4))
+    resp = requests.get(url, headers=headers, params=payload, verify=False, timeout=120)
+    resp.raise_for_status()
+    my_json = resp.json()
+
+    LOG.info('Total VMs found: %s', my_json['meta']['total'])
+    LOG.debug(json.dumps(resp.json(), sort_keys=True, indent=4))
+
+    return my_json['results']
+
+def delete_vms(args, username, password, vms_to_delete):
+    '''Delete the passed VMs from Arsenal.'''
+
+    headers = {'Content-Type': 'application/json'}
+
+    session = arsenal_login(args.arsenal_server, username, password)
+
+    total_vms = len(vms_to_delete)
+    current_vm = 1
+    for my_vm in vms_to_delete:
+        LOG.info('Working on VM (%s of %s):', current_vm, total_vms)
+        LOG.info('    name            : %s', my_vm['name'])
+        LOG.info('    id              : %s', my_vm['id'])
+        LOG.info('    unique_id       : %s', my_vm['unique_id'])
+        LOG.info('    hardware_profile: %s', my_vm['hardware_profile']['name'])
+        LOG.info('    last_registered : %s', my_vm['last_registered'])
+        current_vm += 1
+
+        if not args.dry_run:
+            url = '{0}/api/nodes/{1}'.format(args.arsenal_server,  my_vm['id'])
+            resp = session.delete(url, headers=headers, verify=False, timeout=60)
+            resp.raise_for_status()
+            LOG.info('  Successfuly deleted VM.')
+
+def main():
+    '''Do All the things.'''
+
+    args = parse_args()
+    configure_logging(args)
+
+    secrets_config = configparser.ConfigParser()
+    secrets_config.read(args.secrets)
+    username = secrets_config.get('user', 'user_login')
+    password = secrets_config.get('user', 'user_password')
+
+    LOG.info('BEGIN gathering VMs to delete from Arsenal...')
+
+    vms_to_delete = get_vms_to_delete(args)
+    delete_vms(args, username, password, vms_to_delete)
+
+    LOG.info('END deleting VMs from Arsenal.')
+
+if __name__ == '__main__':
+    main()

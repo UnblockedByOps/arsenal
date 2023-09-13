@@ -12,5 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-include *.rst *.cfg
-recursive-include arsenalweb *.png *.css *.gif *.jpg *.pt *.js *.sql
+include *.txt *.ini *.cfg *.rst
+recursive-include arsenalweb *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml *.jinja2
+recursive-include tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py

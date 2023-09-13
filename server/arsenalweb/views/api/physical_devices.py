@@ -18,9 +18,6 @@ from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
@@ -28,6 +25,7 @@ from arsenalweb.views.api.common import (
     api_500,
     api_501,
     collect_params,
+    enforce_api_change_limit,
     )
 from arsenalweb.views.api.hardware_profiles import (
     get_hardware_profile,
@@ -41,9 +39,6 @@ from arsenalweb.views.api.physical_racks import (
 from arsenalweb.views.api.physical_elevations import (
     find_physical_elevation_by_elevation,
     )
-from arsenalweb.models.common import (
-    DBSession,
-    )
 from arsenalweb.models.physical_devices import (
     PhysicalDevice,
     PhysicalDeviceAudit,
@@ -56,34 +51,35 @@ LOG = logging.getLogger(__name__)
 
 
 # Functions
-def find_status_by_name(status_name):
+def find_status_by_name(dbsession, status_name):
     '''Find a status by name.'''
 
-    status = DBSession.query(Status)
+    status = dbsession.query(Status)
     status = status.filter(Status.name == status_name)
 
     return status.one()
 
-def find_physical_device_by_serial(serial_number):
+def find_physical_device_by_serial(dbsession, serial_number):
     '''Find a physical_device by serial_number. Returns a physical_device object if found,
     raises NoResultFound otherwise.'''
 
-    LOG.debug('Searching for physical_device by serial_number: {0}'.format(serial_number))
-    physical_device = DBSession.query(PhysicalDevice)
+    LOG.debug('Searching for physical_device by serial_number: %s', serial_number)
+    physical_device = dbsession.query(PhysicalDevice)
     physical_device = physical_device.filter(PhysicalDevice.serial_number == serial_number)
 
     return physical_device.one()
 
-def find_physical_device_by_id(physical_device_id):
+def find_physical_device_by_id(dbsession, physical_device_id):
     '''Find a physical_device by id.'''
 
-    LOG.debug('Searching for physical_device by id: {0}'.format(physical_device_id))
-    physical_device = DBSession.query(PhysicalDevice)
+    LOG.debug('Searching for physical_device by id: %s', physical_device_id)
+    physical_device = dbsession.query(PhysicalDevice)
     physical_device = physical_device.filter(PhysicalDevice.id == physical_device_id)
 
     return physical_device.one()
 
-def create_physical_device(serial_number=None,
+def create_physical_device(dbsession,
+                           serial_number=None,
                            mac_address_1=None,
                            physical_location_id=None,
                            physical_rack_id=None,
@@ -116,7 +112,7 @@ def create_physical_device(serial_number=None,
     '''
 
     try:
-        LOG.info('Creating new physical_device serial_number: {0}'.format(serial_number))
+        LOG.info('Creating new physical_device serial_number: %s', serial_number)
 
         utcnow = datetime.utcnow()
 
@@ -131,8 +127,8 @@ def create_physical_device(serial_number=None,
                                          updated=utcnow,
                                          **kwargs)
 
-        DBSession.add(physical_device)
-        DBSession.flush()
+        dbsession.add(physical_device)
+        dbsession.flush()
 
         audit = PhysicalDeviceAudit(object_id=physical_device.id,
                                     field='serial_number',
@@ -140,8 +136,8 @@ def create_physical_device(serial_number=None,
                                     new_value=physical_device.serial_number,
                                     updated_by=updated_by,
                                     created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return api_200(results=physical_device)
 
@@ -156,7 +152,7 @@ def create_physical_device(serial_number=None,
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_physical_device(physical_device, **kwargs):
+def update_physical_device(dbsession, physical_device, **kwargs):
     '''Update an existing physical_device.
 
     Required params:
@@ -184,7 +180,7 @@ def update_physical_device(physical_device, **kwargs):
     try:
         my_attribs = kwargs.copy()
 
-        LOG.info('Updating physical_device: {0}'.format(physical_device.serial_number))
+        LOG.info('Updating physical_device: %s', physical_device.serial_number)
 
         utcnow = datetime.utcnow()
 
@@ -199,20 +195,20 @@ def update_physical_device(physical_device, **kwargs):
                 if not old_value:
                     old_value = 'None'
 
-                LOG.debug('Updating physical_device: {0} attribute: '
-                          '{1} new_value: {2}'.format(physical_device.serial_number,
-                                                      attribute,
-                                                      new_value))
+                LOG.debug('Updating physical_device: %s attribute: '
+                          '%s new_value: %s', physical_device.serial_number,
+                                              attribute,
+                                              new_value)
                 audit = PhysicalDeviceAudit(object_id=physical_device.id,
                                             field=attribute,
                                             old_value=old_value,
                                             new_value=new_value,
                                             updated_by=my_attribs['updated_by'],
                                             created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
                 setattr(physical_device, attribute, new_value)
 
-        DBSession.flush()
+        dbsession.flush()
 
         return api_200(results=physical_device)
 
@@ -229,7 +225,7 @@ def update_physical_device(physical_device, **kwargs):
         LOG.error(msg)
         raise
 
-def convert_names_to_ids(params):
+def convert_names_to_ids(dbsession, params):
     '''Converts nice names to ids for creating/updating a physical_device.'''
 
     try:
@@ -239,9 +235,9 @@ def convert_names_to_ids(params):
             except TypeError:
                 physical_location = params['physical_location']
 
-            physical_location = find_physical_location_by_name(physical_location)
+            physical_location = find_physical_location_by_name(dbsession, physical_location)
             params['physical_location_id'] = physical_location.id
-            LOG.debug('physical_location_id: {0}'.format(params['physical_location_id']))
+            LOG.debug('physical_location_id: %s', params['physical_location_id'])
             del params['physical_location']
         except NoResultFound:
             msg = 'physical_location not found: {0}'.format(params['physical_location'])
@@ -253,7 +249,8 @@ def convert_names_to_ids(params):
                 physical_rack_name = params['physical_rack']['name']
             except TypeError:
                 physical_rack_name = params['physical_rack']
-            physical_rack = find_physical_rack_by_name_loc(physical_rack_name,
+            physical_rack = find_physical_rack_by_name_loc(dbsession,
+                                                           physical_rack_name,
                                                            params['physical_location_id'])
             params['physical_rack_id'] = physical_rack.id
             del params['physical_rack']
@@ -267,7 +264,8 @@ def convert_names_to_ids(params):
                 physical_elevation_el = params['physical_elevation']['elevation']
             except TypeError:
                 physical_elevation_el = params['physical_elevation']
-            physical_elevation = find_physical_elevation_by_elevation(physical_elevation_el,
+            physical_elevation = find_physical_elevation_by_elevation(dbsession,
+                                                                      physical_elevation_el,
                                                                       params['physical_rack_id'])
             params['physical_elevation_id'] = physical_elevation.id
             del params['physical_elevation']
@@ -285,7 +283,7 @@ def convert_names_to_ids(params):
             if not status_name:
                 status_name = 'available'
 
-            status = find_status_by_name(status_name)
+            status = find_status_by_name(dbsession, status_name)
             params['status_id'] = status.id
             try:
                 del params['status']
@@ -302,7 +300,7 @@ def convert_names_to_ids(params):
             except TypeError:
                 hw_profile_name = params['hardware_profile']
             try:
-                hardware_profile = get_hardware_profile(hw_profile_name)
+                hardware_profile = get_hardware_profile(dbsession, hw_profile_name)
                 params['hardware_profile_id'] = hardware_profile.id
                 del params['hardware_profile']
             except AttributeError:
@@ -326,7 +324,7 @@ def api_physical_devices_schema(request):
 
     return physical_devices
 
-@view_config(route_name='api_physical_devices', permission='physical_device_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_devices', permission='physical_device_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_devices_write(request):
     '''Process write requests for /api/physical_devices route.'''
 
@@ -347,7 +345,7 @@ def api_physical_devices_write(request):
         ]
         params = collect_params(request, req_params, opt_params)
         try:
-            params = convert_names_to_ids(params)
+            params = convert_names_to_ids(request.dbsession, params)
             LOG.debug('params are: {0}'.format(params))
         except NoResultFound as ex:
             msg = 'Error writing to physical_devices API: {0}'.format(ex)
@@ -355,10 +353,11 @@ def api_physical_devices_write(request):
             return api_404(msg=msg)
 
         try:
-            physical_device = find_physical_device_by_serial(params['serial_number'])
-            physical_device = update_physical_device(physical_device, **params)
+            physical_device = find_physical_device_by_serial(request.dbsession,
+                                                             params['serial_number'])
+            physical_device = update_physical_device(request.dbsession, physical_device, **params)
         except NoResultFound:
-            physical_device = create_physical_device(**params)
+            physical_device = create_physical_device(request.dbsession, **params)
 
         return physical_device
 
@@ -367,20 +366,19 @@ def api_physical_devices_write(request):
         LOG.error(msg)
         return api_500(msg=msg)
 
-@view_config(route_name='api_physical_device_r', permission='physical_device_delete', request_method='DELETE', renderer='json')
-@view_config(route_name='api_physical_device_r', permission='physical_device_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_physical_device_r', permission='physical_device_delete', request_method='DELETE', renderer='json', require_csrf=False)
+@view_config(route_name='api_physical_device_r', permission='physical_device_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_physical_device_write_attrib(request):
     '''Process write requests for the /api/physical_devices/{id}/{resource} route.'''
 
     resource = request.matchdict['resource']
     payload = request.json_body
-    auth_user = get_authenticated_user(request)
 
-    LOG.debug('Updating {0}'.format(request.url))
+    LOG.debug('Updating %s', request.url)
 
     # First get the physical_device, then figure out what to do to it.
-    physical_device = find_physical_device_by_id(request.matchdict['id'])
-    LOG.debug('physical_device is: {0}'.format(physical_device))
+    physical_device = find_physical_device_by_id(request.dbsession, request.matchdict['id'])
+    LOG.debug('physical_device is: %s', physical_device)
 
     # List of resources allowed
     resources = [
@@ -391,13 +389,19 @@ def api_physical_device_write_attrib(request):
     if resource in resources:
         try:
             actionable = payload[resource]
+
+            item_count = len(actionable)
+            denied = enforce_api_change_limit(request, item_count)
+            if denied:
+                return api_400(msg=denied)
+
         except KeyError:
             msg = 'Missing required parameter: {0}'.format(resource)
             return api_400(msg=msg)
         except Exception as ex:
-            LOG.error('Error updating physical_devices: {0} exception: {1}'.format(request.url, ex))
+            LOG.error('Error updating physical_devices: %s exception: %s', request.url, ex)
             return api_500(msg=str(ex))
     else:
         return api_501()
 
-    return resp
+    return []

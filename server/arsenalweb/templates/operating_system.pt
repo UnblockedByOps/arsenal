@@ -43,7 +43,7 @@
           <input type="radio" checked name="tabs" id="tab1">
           <label for="tab1">Operating System</label>
           <div id="tab-content1" class="tab-content">
-            <a tal:attributes="href '/nodes?operating_system_id={0}'.format(operating_system.id)">Search for nodes with this operating system</a><br>
+            <a tal:attributes="href '/nodes?operating_system_id=^{0}$'.format(operating_system.id)">Search for nodes with this operating system</a><br>
             <table>
                 <tr>
                     <td>Name</td><td><span class="mono">${operating_system.name}</span></td>

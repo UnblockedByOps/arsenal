@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -31,13 +30,13 @@ def view_tag(request):
     '''Handle requests for tag UI route.'''
 
     page_title = 'Tag'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
     uri = '/api/tags/{0}'.format(request.matchdict['id'])
     tag = _api_get(request, uri)
 
     return {
-        'au': auth_user,
+        'au': user,
         'page_title': page_title,
         'tag': tag['results'][0],
     }
@@ -48,7 +47,7 @@ def view_tags(request):
 
     page_title_type = 'objects/'
     page_title_name = 'tags'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -86,7 +85,7 @@ def view_tags(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

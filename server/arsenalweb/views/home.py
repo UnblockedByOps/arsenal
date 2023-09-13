@@ -1,4 +1,3 @@
-'''Arsenal home UI.'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,28 +14,24 @@
 #
 import logging
 from pyramid.view import view_config
-from pyramid.response import Response
-from datetime import datetime
-from datetime import timedelta
-import arrow
-from arsenalweb.views import (
-    get_authenticated_user,
-    site_layout,
-    )
-from arsenalweb.models.common import (
-    DBSession,
-    User,
-    )
+from pyramid.httpexceptions import (
+    HTTPForbidden,
+)
+from arsenalweb.views import site_layout
+
+from .. import models
 
 LOG = logging.getLogger(__name__)
 
 @view_config(route_name='home', permission='view', renderer='arsenalweb:templates/home.pt')
-def view_home(request):
-    '''Handle requests for home UI route.'''
+def my_view(request):
+
+    user = request.identity
+#    if user is None:
+#        raise HTTPForbidden
 
     page_title_type = '_'
     page_title_name = 'Home'
-    auth_user = get_authenticated_user(request)
 
     # Used by the columns menu to determine what to show/hide.
     column_selectors = [
@@ -49,7 +44,7 @@ def view_home(request):
     ]
 
     return {
-        'au': auth_user,
+        'user': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'page_title_name': page_title_name,

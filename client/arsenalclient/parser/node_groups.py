@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.node_group import (
     search_node_groups,
     create_node_group,
@@ -33,13 +36,21 @@ def parser_node_groups(top_parser, otsp):
                             parents=[top_parser])
 
     # node_groups action sub-parser (ngasp)
-    ngasp = ngotp.add_subparsers(title='Available actions',
-                                 dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        ngasp = ngotp.add_subparsers(title='Available actions',
+                                     dest='action_command')
+    else:
+        ngasp = ngotp.add_subparsers(title='Available actions',
+                                     dest='action_command',
+                                     required=True)
+
     # node_groups search subcommand (ngssc)
     ngssc = ngasp.add_parser('search',
                              help='Search for node_group objects and optionally ' \
                              'act upon the results.',
-                             parents=[top_parser])
+                             parents=[top_parser],
+                             formatter_class=RawTextHelpFormatter)
     ngssc.add_argument('--fields',
                        '-f',
                        dest='fields',
@@ -69,6 +80,9 @@ def parser_node_groups(top_parser, otsp):
     anguag.add_argument('--owner', '-o',
                         dest='node_group_owner',
                         help='Update node_group_owner.')
+    anguag.add_argument('--monitoring-contact', '-m',
+                        dest='node_group_monitoring_contact',
+                        help='Update node_group_monitoring_contact.')
     anguag.add_argument('--notes-url', '-u',
                         dest='node_group_notes_url',
                         help='Update node_group_notes_url.')
@@ -87,7 +101,8 @@ def parser_node_groups(top_parser, otsp):
                        default=None,
                        metavar='search_terms',
                        help='Comma separated list of key=value pairs to search ' \
-                       'for.\n {0}'.format(gen_help('node_groups_search')))
+                            'for:\n{0} \n {1}'.format(gen_help('node_groups_search'),
+                                                      date_help()))
     ngssc.set_defaults(func=search_node_groups)
 
     # node_groups create subcommand (ngcsc)
@@ -114,6 +129,10 @@ def parser_node_groups(top_parser, otsp):
                         dest='node_group_notes_url',
                         default=None,
                         help='node_group_notes_url to assign.')
+    rngcag.add_argument('--monitoring-contact', '-m',
+                        dest='node_group_monitoring_contact',
+                        default=None,
+                        help='node_group_monitoring_contact to assign.')
     rngcag.set_defaults(func=create_node_group)
 
     # node_groups delete subcommand (ngdsc)

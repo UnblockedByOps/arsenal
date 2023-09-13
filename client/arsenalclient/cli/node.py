@@ -59,6 +59,7 @@ def enc(args, client):
     apply_statuses = [
         'setup',
         'inservice',
+        'pending_maintenance',
     ]
 
     LOG.debug('Triggering node enc.')
@@ -125,7 +126,8 @@ def _format_msg(results, tags=None, mode='tag'):
                                              node['unique_id']))
 
     msg = 'We are ready to update the following nodes: ' \
-          '\n {0}\nContinue?'.format('\n '.join(r_names))
+          '\n {0}\n  {1} item(s) will be updated. Continue?'.format('\n '.join(r_names),
+                                                                    len(r_names))
 
     return msg
 
@@ -176,6 +178,11 @@ def process_actions(args, client, results):
         if ask_yes_no(msg, args.answer_yes):
             resp = client.tags.deassign_all(results)
 
+    if args.del_all_guest_vms:
+        msg = _format_msg(results)
+        if ask_yes_no(msg, args.answer_yes):
+            resp = client.nodes.deassign_all_vms(results)
+
     return resp
 
 def search_nodes(args, client):
@@ -208,7 +215,8 @@ def search_nodes(args, client):
                 args.set_node_groups,
                 args.del_node_groups,
                 args.del_all_tags,
-                args.del_all_node_groups,)):
+                args.del_all_node_groups,
+                args.del_all_guest_vms,)):
 
         first_keys = [
             'name',
@@ -301,7 +309,9 @@ def delete_nodes(args, client):
             r_names.append('{0}: {1}'.format(node['name'], node['unique_id']))
 
         msg = 'We are ready to delete the following {0}: ' \
-              '\n{1}\n Continue?'.format(args.object_type, '\n '.join(r_names))
+              '\n{1}\n  {2} item(s) will be deleted. Continue?'.format(args.object_type,
+                                                                       '\n '.join(r_names),
+                                                                       len(r_names))
 
         if ask_yes_no(msg, args.answer_yes):
             for node in results:

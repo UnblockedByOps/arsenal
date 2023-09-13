@@ -22,17 +22,8 @@
           <div class="centered">
 
             <div>
-              <iframe src="https://grafana.rp-core.com/dashboard-solo/db/arsenal-nodes?editorTab=Options&panelId=4" width="450" height="275" frameborder="0"></iframe>
-              <iframe src="https://grafana.rp-core.com/dashboard-solo/db/arsenal-nodes?editorTab=Options&panelId=5" width="450" height="275" frameborder="0"></iframe>
-            </div>
-            <div>
-              <iframe src="https://grafana.rp-core.com/dashboard-solo/db/arsenal-nodes?editorTab=Options&panelId=1" width="100%" height="250" frameborder="0"></iframe>
-            </div>
-            <div>
-              <iframe src="https://grafana.rp-core.com/dashboard-solo/db/arsenal-nodes?editorTab=Options&panelId=3" width="100%" height="250" frameborder="0"></iframe>
-            </div>
-            <div>
-              <iframe src="https://grafana.rp-core.com/dashboard-solo/db/arsenal-nodes?editorTab=Options&panelId=2" width="100%" height="250" frameborder="0"></iframe>
+                <p>
+                Search for something or use the menu in the top left to navigate.
             </div>
 
           </div> <!-- centered -->

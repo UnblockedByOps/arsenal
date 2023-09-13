@@ -16,16 +16,9 @@
 import logging
 from datetime import datetime
 from pyramid.view import view_config
-from pyramid.response import Response
 from sqlalchemy.orm.exc import NoResultFound
-from arsenalweb.views import (
-    get_authenticated_user,
-    )
 from arsenalweb.views.api.common import (
     api_500,
-    )
-from arsenalweb.models.common import (
-    DBSession,
     )
 from arsenalweb.models.operating_systems import (
     OperatingSystem,
@@ -36,31 +29,31 @@ LOG = logging.getLogger(__name__)
 
 
 # Common functions
-def get_operating_system(name):
+def get_operating_system(dbsession, name):
     '''Get an operating_system from the database.'''
 
     try:
-        query = DBSession.query(OperatingSystem)
+        query = dbsession.query(OperatingSystem)
         query = query.filter(OperatingSystem.name == name)
         operating_system = query.one()
 
         return operating_system
 
     except (NoResultFound, AttributeError):
-        LOG.debug('operating_system not found name={0}'.format(name))
+        LOG.debug('operating_system not found name: %s', name)
 
     return None
 
-def create_operating_system(name, variant, version_number, architecture, description, user_id):
+def create_operating_system(dbsession, name, variant, version_number, architecture, description, user_id):
     '''Create a new operating_system.'''
 
     try:
-        LOG.info('Creating new operating_system name={0},variant={1},version_number={2},'
-                 'architecture={3},description={4}'.format(name,
-                                                           variant,
-                                                           version_number,
-                                                           architecture,
-                                                           description))
+        LOG.info('Creating new operating_system name: %s variant: %s version_number: %s '
+                 'architecture: %s description: %s', name,
+                                                     variant,
+                                                     version_number,
+                                                     architecture,
+                                                     description)
         utcnow = datetime.utcnow()
 
         operating_system = OperatingSystem(name=name,
@@ -71,8 +64,8 @@ def create_operating_system(name, variant, version_number, architecture, descrip
                                            updated_by=user_id,
                                            created=utcnow,
                                            updated=utcnow)
-        DBSession.add(operating_system)
-        DBSession.flush()
+        dbsession.add(operating_system)
+        dbsession.flush()
 
         audit = OperatingSystemAudit(object_id=operating_system.id,
                                      field='name',
@@ -80,23 +73,24 @@ def create_operating_system(name, variant, version_number, architecture, descrip
                                      new_value=operating_system.name,
                                      updated_by=user_id,
                                      created=utcnow)
-        DBSession.add(audit)
-        DBSession.flush()
+        dbsession.add(audit)
+        dbsession.flush()
 
         return operating_system
 
     except Exception as ex:
-        msg = 'Error creating new operating_system name={0},variant={1},version_number={2},' \
-              'architecture={3},description={4},exception={5}'.format(name,
-                                                                      variant,
-                                                                      version_number,
-                                                                      architecture,
-                                                                      description,
-                                                                      ex)
+        msg = 'Error creating new operating_system name: {0} variant: {1} version_number: {2} ' \
+              'architecture: {3} description: {4} exception: {5}'.format(name,
+                                                                         variant,
+                                                                         version_number,
+                                                                         architecture,
+                                                                         description,
+                                                                         ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
-def update_operating_system(operating_system,
+def update_operating_system(dbsession,
+                            operating_system,
                             name,
                             variant,
                             version_number,
@@ -106,12 +100,12 @@ def update_operating_system(operating_system,
     '''Update an existing operating_system.'''
 
     try:
-        LOG.info('Updating operating_system name={0},variant={1},version_number={2},'
-                 'architecture={3},description={4}'.format(name,
-                                                           variant,
-                                                           version_number,
-                                                           architecture,
-                                                           description))
+        LOG.info('Updating operating_system name: %s variant: %s version_number: %s '
+                 'architecture: %s description: %s', name,
+                                                     variant,
+                                                     version_number,
+                                                     architecture,
+                                                     description)
 
         utcnow = datetime.utcnow()
 
@@ -121,15 +115,14 @@ def update_operating_system(operating_system,
                           'architecture',
                           'description']:
             if getattr(operating_system, attribute) != locals()[attribute]:
-                LOG.debug('Updating operating system {0}: {1}'.format(attribute,
-                                                                      locals()[attribute]))
+                LOG.debug('Updating operating system %s: %s', attribute, locals()[attribute])
                 audit = OperatingSystemAudit(object_id=operating_system.id,
                                              field=attribute,
                                              old_value=getattr(operating_system, attribute),
                                              new_value=locals()[attribute],
                                              updated_by=user_id,
                                              created=utcnow)
-                DBSession.add(audit)
+                dbsession.add(audit)
 
         operating_system.name = name
         operating_system.variant = variant
@@ -138,18 +131,18 @@ def update_operating_system(operating_system,
         operating_system.description = description
         operating_system.updated_by = user_id
 
-        DBSession.flush()
+        dbsession.flush()
 
         return operating_system
 
     except Exception as ex:
-        msg = 'Error updating operating_system name={0},variant={1},version_number={2},' \
-              'architecture={3},description={4},exception={5}'.format(name,
-                                                                      variant,
-                                                                      version_number,
-                                                                      architecture,
-                                                                      description,
-                                                                      ex)
+        msg = 'Error updating operating_system name: {0} variant: {1} version_number: {2} ' \
+              'architecture: {3} description: {4} exception: {5}'.format(name,
+                                                                         variant,
+                                                                         version_number,
+                                                                         architecture,
+                                                                         description,
+                                                                         ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -162,12 +155,12 @@ def api_operating_systems_schema(request):
 
     return operating_system
 
-@view_config(route_name='api_operating_systems', permission='api_write', request_method='PUT', renderer='json')
+@view_config(route_name='api_operating_systems', permission='api_write', request_method='PUT', renderer='json', require_csrf=False)
 def api_operating_system_write(request):
     '''Process write requests for /api/operating_systems route.'''
 
     try:
-        auth_user = get_authenticated_user(request)
+        user = request.identity
         payload = request.json_body
 
         name = payload['name'].rstrip()
@@ -176,28 +169,30 @@ def api_operating_system_write(request):
         architecture = payload['architecture'].rstrip()
         description = payload['description'].rstrip()
 
-        operating_system = get_operating_system(name)
+        operating_system = get_operating_system(request.dbsession, name)
 
         if not operating_system:
-            operating_system = create_operating_system(name,
-                                                       variant,
-                                                       version_number,
-                                                       architecture,
-                                                       description,
-                                                       auth_user['user_id'])
-        else:
-            operating_system = update_operating_system(operating_system,
+            operating_system = create_operating_system(request.dbsession,
                                                        name,
                                                        variant,
                                                        version_number,
                                                        architecture,
                                                        description,
-                                                       auth_user['user_id'])
+                                                       user['name'])
+        else:
+            operating_system = update_operating_system(request.dbsession,
+                                                       operating_system,
+                                                       name,
+                                                       variant,
+                                                       version_number,
+                                                       architecture,
+                                                       description,
+                                                       user['name'])
 
         return operating_system
 
     except Exception as ex:
-        msg = 'Error writing to operating_systems API={0},' \
-              'exception={1}'.format(request.url, ex)
+        msg = 'Error writing to operating_systems API: {0} ' \
+              'exception: {1}'.format(request.url, ex)
         LOG.error(msg)
         return api_500(msg=msg)

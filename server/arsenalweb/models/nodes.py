@@ -17,10 +17,13 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
+    Index,
     Integer,
     TIMESTAMP,
-    Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
@@ -32,6 +35,7 @@ from arsenalweb.models.common import (
     get_name_id_list,
     hypervisor_vm_assignments,
     jsonify,
+    localize_date,
 )
 
 LOG = logging.getLogger(__name__)
@@ -41,22 +45,38 @@ class Node(Base):
     '''Arsenal Node object.'''
 
     __tablename__ = 'nodes'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text, nullable=False)
-    unique_id = Column(Text, nullable=False)
-    status_id = Column(Integer, ForeignKey('statuses.id'), nullable=False)
-    hardware_profile_id = Column(Integer, ForeignKey('hardware_profiles.id'), nullable=False)
-    operating_system_id = Column(Integer, ForeignKey('operating_systems.id'), nullable=False)
-    ec2_id = Column(Integer, ForeignKey('ec2_instances.id'))
-    data_center_id = Column(Integer, ForeignKey('data_centers.id'))
-    uptime = Column(Text, nullable=False)
-    serial_number = Column(Text, ForeignKey('physical_devices.serial_number'))
-    os_memory = Column(Text)
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    name = Column(VARCHAR(255), nullable=False)
+    unique_id = Column(VARCHAR(255), nullable=False)
+    status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
+    hardware_profile_id = Column(INTEGER(unsigned=True),
+                                 ForeignKey('hardware_profiles.id'),
+                                 nullable=False)
+    operating_system_id = Column(INTEGER(unsigned=True),
+                                 ForeignKey('operating_systems.id'),
+                                 nullable=False)
+    ec2_id = Column(INTEGER(unsigned=True), ForeignKey('ec2_instances.id'))
+    data_center_id = Column(INTEGER(unsigned=True), ForeignKey('data_centers.id'))
+    uptime = Column(VARCHAR(255))
+    #serial_number = Column(VARCHAR(255), ForeignKey('physical_devices.serial_number'))
+    serial_number = Column(VARCHAR(255))
+    os_memory = Column(VARCHAR(255))
     processor_count = Column(Integer)
     last_registered = Column(TIMESTAMP)
-    created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    created = Column(TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
     status = relationship('Status', backref='nodes', lazy='joined')
     hardware_profile = relationship('HardwareProfile', backref=backref('nodes'), lazy='joined')
     operating_system = relationship('OperatingSystem', backref=backref('nodes'), lazy='joined')
@@ -65,6 +85,7 @@ class Node(Base):
     physical_device = relationship('PhysicalDevice',
                                    backref=backref('nodes'),
                                    lazy='joined',
+                                   primaryjoin='Node.serial_number==PhysicalDevice.serial_number',
                                    foreign_keys=[serial_number])
     node_groups = relationship('NodeGroup',
                                secondary='node_group_assignments',
@@ -80,8 +101,8 @@ class Node(Base):
                                       lazy='dynamic')
     hypervisor = relationship('Node',
                               secondary='hypervisor_vm_assignments',
-                              primaryjoin=hypervisor_vm_assignments.c.hypervisor_id == id,
-                              secondaryjoin=hypervisor_vm_assignments.c.guest_vm_id == id,
+                              primaryjoin=hypervisor_vm_assignments.c.guest_vm_id == id,
+                              secondaryjoin=hypervisor_vm_assignments.c.hypervisor_id == id,
                               backref='guest_vms',
                               lazy='dynamic')
 
@@ -109,88 +130,90 @@ class Node(Base):
                     network_interfaces=get_name_id_list(self.network_interfaces,
                                                         extra_keys=[
                                                             'unique_id',
+                                                            'port_description',
+                                                            'port_vlan',
+                                                            'seen_mac_address',
                                                         ]),
                     guest_vms=get_name_id_list(self.guest_vms),
                     hypervisor=get_name_id_list(self.hypervisor),
                     physical_device=self.physical_device,
-                    last_registered=self.last_registered,
-                    created=self.created,
-                    updated=self.updated,
+                    last_registered=localize_date(self.last_registered),
+                    created=localize_date(self.created),
+                    updated=localize_date(self.updated),
                     updated_by=self.updated_by,
                     )
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return name id and unique_id, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self], extra_keys=['unique_id'])
+            # Always return name id and unique_id, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self], extra_keys=['unique_id'])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                # Dynamic backrefs are not in the instance dict, so we handle them here.
-                if 'node_groups' in my_fields:
-                    resp['node_groups'] = get_name_id_list(self.node_groups)
-                if 'hypervisor' in my_fields:
-                    resp['hypervisor'] = get_name_id_list(self.hypervisor)
-                if 'guest_vms' in my_fields:
-                    my_guest_vms = get_name_id_list(self.guest_vms)
-                    if my_guest_vms:
-                        resp['guest_vms'] = my_guest_vms
-                    # Need this so we don't return an empty list of guest_vms
-                    # for each guest vm.
-                    else:
-                        del resp['guest_vms']
-                if 'tags' in my_fields:
-                    resp['tags'] = get_name_id_list(self.tags,
-                                                    extra_keys=['value'])
-                if 'network_interfaces' in my_fields:
-                    resp['network_interfaces'] = get_name_id_list(self.network_interfaces,
-                                                                  extra_keys=[
-                                                                      'unique_id',
-                                                                      'ip_address',
-                                                                      'bond_master',
-                                                                      'port_description',
-                                                                      'port_number',
-                                                                      'port_switch',
-                                                                      'port_vlan',
-                                                                  ])
+            # Dynamic backrefs are not in the instance dict, so we handle them here.
+            if 'node_groups' in my_fields:
+                resp['node_groups'] = get_name_id_list(self.node_groups)
+            if 'hypervisor' in my_fields:
+                resp['hypervisor'] = get_name_id_list(self.hypervisor)
+            if 'guest_vms' in my_fields:
+                my_guest_vms = get_name_id_list(self.guest_vms)
+                if my_guest_vms:
+                    resp['guest_vms'] = my_guest_vms
+                # Need this so we don't return an empty list of guest_vms
+                # for each guest vm.
+                else:
+                    del resp['guest_vms']
+            if 'tags' in my_fields:
+                resp['tags'] = get_name_id_list(self.tags,
+                                                extra_keys=['value'])
+            if 'network_interfaces' in my_fields:
+                resp['network_interfaces'] = get_name_id_list(self.network_interfaces,
+                                                              extra_keys=[
+                                                                  'unique_id',
+                                                                  'ip_address',
+                                                                  'bond_master',
+                                                                  'port_description',
+                                                                  'port_number',
+                                                                  'port_switch',
+                                                                  'port_vlan',
+                                                              ])
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                # These are in the dict because it is joined, but we
-                # want to add extra fields.
-                if 'physical_device' in my_fields and self.physical_device:
-                    resp['physical_device'] = get_name_id_dict([self.physical_device],
-                                                               default_keys=[
-                                                                   'id',
-                                                                   'serial_number',
-                                                               ],
-                                                               extra_keys=[
-                                                                   'physical_location',
-                                                                   'physical_rack',
-                                                                   'physical_elevation',
-                                                               ])
+            # These are in the dict because it is joined, but we
+            # want to add extra fields.
+            if 'physical_device' in my_fields and self.physical_device:
+                resp['physical_device'] = get_name_id_dict([self.physical_device],
+                                                           default_keys=[
+                                                               'id',
+                                                               'serial_number',
+                                                           ],
+                                                           extra_keys=[
+                                                               'physical_location',
+                                                               'physical_rack',
+                                                               'physical_elevation',
+                                                           ])
 
-                if 'ec2_instance' in my_fields and self.ec2_id:
-                    resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
-                                                            default_keys=[
-                                                                'id',
-                                                                'instance_id',
-                                                            ],
-                                                            extra_keys=[
-                                                                'account_id',
-                                                                'ami_id',
-                                                                'hostname',
-                                                                'instance_type',
-                                                                'availability_zone',
-                                                                'profile',
-                                                                'reservation_id',
-                                                                'security_groups',
-                                                            ])
+            if 'ec2_instance' in my_fields and self.ec2_id:
+                resp['ec2_instance'] = get_name_id_dict([self.ec2_instance],
+                                                        default_keys=[
+                                                            'id',
+                                                            'instance_id',
+                                                        ],
+                                                        extra_keys=[
+                                                            'account_id',
+                                                            'ami_id',
+                                                            'hostname',
+                                                            'instance_type',
+                                                            'availability_zone',
+                                                            'profile',
+                                                            'reservation_id',
+                                                            'security_groups',
+                                                        ])
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name, id, and unique_id.
         except KeyError:
@@ -199,7 +222,21 @@ class Node(Base):
             return resp
 
 
+Index('idx_node_id', Node.id, unique=False)
+Index('idx_node_name', Node.name, unique=False)
+Index('idx_node_serial_number', Node.serial_number, unique=False)
+Index('idx_node_ec2_id', Node.ec2_id, unique=True)
+
+
 class NodeAudit(BaseAudit):
     '''Arsenal NodeAudit object.'''
 
     __tablename__ = 'nodes_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

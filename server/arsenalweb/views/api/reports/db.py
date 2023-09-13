@@ -21,7 +21,6 @@ from arsenalweb.views.api.common import (
     api_200,
 )
 from arsenalweb.models.common import (
-    DBSession,
     Base,
 )
 
@@ -40,7 +39,7 @@ def api_reports_db_schema(request):
 def api_reports_db_read(request):
     '''Process read requests for the /api/reports/db route.'''
 
-    query = DBSession.execute("SHOW STATUS WHERE Variable_name IN ('wsrep_local_recv_que_avg', 'wsrep_connected', 'wsrep_cluster_conf_id', 'wsrep_cluster_state_uuid', 'wsrep_local_state_comment', 'wsrep_cluster_status', 'wsrep_cluster_size', 'wsrep_ready')")
+    query = request.dbsession.execute("SHOW STATUS WHERE Variable_name IN ('wsrep_local_recv_que_avg', 'wsrep_connected', 'wsrep_cluster_conf_id', 'wsrep_cluster_state_uuid', 'wsrep_local_state_comment', 'wsrep_cluster_status', 'wsrep_cluster_size', 'wsrep_ready')")
 
     db_status = {}
     for row in query:
@@ -49,7 +48,7 @@ def api_reports_db_read(request):
     row_counts = {}
     for my_table in Base.metadata.tables.keys():
         LOG.debug('Counting rows in table {0}'.format(my_table))
-        table_count = DBSession.execute('SELECT COUNT(*) FROM {0}'.format(my_table))
+        table_count = request.dbsession.execute('SELECT COUNT(*) FROM {0}'.format(my_table))
         table_count = table_count.fetchone()
         row_counts[my_table] = table_count[0]
         LOG.debug('table: {0} count: {1}'.format(my_table, table_count[0]))

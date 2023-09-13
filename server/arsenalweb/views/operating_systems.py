@@ -17,7 +17,6 @@ import logging
 from pyramid.view import view_config
 from arsenalweb.views import (
     _api_get,
-    get_authenticated_user,
     get_nav_urls,
     get_pag_params,
     site_layout,
@@ -31,13 +30,13 @@ def view_operating_system(request):
     '''Handle requests for opaerating_system UI route.'''
 
     page_title = 'Operating System'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
 
     uri = '/api/operating_systems/{0}'.format(request.matchdict['id'])
     operating_system = _api_get(request, uri)
 
     return {
-        'au': auth_user,
+        'au': user,
         'operating_system': operating_system['results'][0],
         'page_title': page_title,
     }
@@ -48,7 +47,7 @@ def view_operating_systems(request):
 
     page_title_type = 'object/'
     page_title_name = 'operating_systems'
-    auth_user = get_authenticated_user(request)
+    user = request.identity
     (perpage, offset) = get_pag_params(request)
 
     payload = {}
@@ -88,7 +87,7 @@ def view_operating_systems(request):
     ]
 
     return {
-        'au': auth_user,
+        'au': user,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),
         'nav_urls': nav_urls,

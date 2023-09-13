@@ -17,12 +17,14 @@ import logging
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
+    Index,
     TIMESTAMP,
     Text,
+    VARCHAR,
+    text,
 )
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 from arsenalweb.models.common import (
     Base,
     BaseAudit,
@@ -38,8 +40,17 @@ class PhysicalLocation(Base):
     '''Arsenal PhysicalLocation object.'''
 
     __tablename__ = 'physical_locations'
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text, nullable=False)
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    name = Column(VARCHAR(255), nullable=False)
     provider = Column(Text, nullable=True)
     address_1 = Column(Text, nullable=True)
     address_2 = Column(Text, nullable=True)
@@ -49,9 +60,13 @@ class PhysicalLocation(Base):
     postal_code = Column(Text, nullable=True)
     contact_name = Column(Text, nullable=True)
     phone_number = Column(Text, nullable=True)
+    status_id = Column(INTEGER(unsigned=True), ForeignKey('statuses.id'), nullable=False)
+    status = relationship('Status', backref='physical_locations', lazy='joined')
     created = Column(TIMESTAMP, nullable=False)
-    updated = Column(TIMESTAMP, nullable=False)
-    updated_by = Column(Text, nullable=False)
+    updated = Column(TIMESTAMP,
+                     server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+                     nullable=False)
+    updated_by = Column(VARCHAR(255), nullable=False)
 
     def __json__(self, request):
         try:
@@ -72,6 +87,7 @@ class PhysicalLocation(Base):
                     postal_code=self.postal_code,
                     contact_name=self.contact_name,
                     phone_number=self.phone_number,
+                    status=get_name_id_dict([self.status]),
                     physical_racks=get_name_id_list(self.physical_racks,
                                                     default_keys=['id',
                                                                   'name',
@@ -83,21 +99,20 @@ class PhysicalLocation(Base):
 
                 return jsonify(all_fields)
 
-            else:
-                # Always return id and name, then return whatever additional fields
-                # are asked for.
-                resp = get_name_id_dict([self])
+            # Always return id and name, then return whatever additional fields
+            # are asked for.
+            resp = get_name_id_dict([self])
 
-                my_fields = fields.split(',')
+            my_fields = fields.split(',')
 
-                resp.update((key, getattr(self, key)) for key in my_fields if
-                            key in self.__dict__)
+            resp.update((key, getattr(self, key)) for key in my_fields if
+                        key in self.__dict__)
 
-                # Backrefs are not in the instance dict, so we handle them here.
-                if 'physical_racks' in my_fields:
-                    resp['physical_racks'] = get_name_id_list(self.physical_racks)
+            # Backrefs are not in the instance dict, so we handle them here.
+            if 'physical_racks' in my_fields:
+                resp['physical_racks'] = get_name_id_list(self.physical_racks)
 
-                return jsonify(resp)
+            return jsonify(resp)
 
         # Default to returning only name and id.
         except (KeyError, UnboundLocalError):
@@ -106,7 +121,19 @@ class PhysicalLocation(Base):
             return resp
 
 
+Index('idx_physical_location_id', PhysicalLocation.id, unique=False)
+Index('idx_physical_location_name', PhysicalLocation.name, unique=True)
+
+
 class PhysicalLocationAudit(BaseAudit):
     '''Arsenal PhysicalLocationAudit object.'''
 
     __tablename__ = 'physical_locations_audit'
+    __table_args__ = (
+        {
+            'mysql_charset':'utf8',
+            'mysql_collate': 'utf8_bin',
+            'mariadb_charset':'utf8',
+            'mariadb_collate': 'utf8_bin',
+        }
+    )

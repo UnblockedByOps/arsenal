@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.tag import (
     search_tags,
     create_tag,
@@ -33,12 +36,20 @@ def parser_tags(top_parser, otsp):
                            parents=[top_parser])
 
     # tags action sub-parser (tasp)
-    tasp = totp.add_subparsers(title='Available actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        tasp = totp.add_subparsers(title='Available actions',
+                                   dest='action_command')
+    else:
+        tasp = totp.add_subparsers(title='Available actions',
+                                   dest='action_command',
+                                   required=True)
+
     # tags search subcommand (tssc)
     tssc = tasp.add_parser('search',
                            help='Search for tags objects and optionally act upon the results.',
-                           parents=[top_parser])
+                           parents=[top_parser],
+                           formatter_class=RawTextHelpFormatter)
     tssc.add_argument('--fields',
                       '-f',
                       dest='fields',
@@ -69,7 +80,8 @@ def parser_tags(top_parser, otsp):
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search ' \
-                      'for.\n {0}'.format(gen_help('tags_search')))
+                           'for:\n{0} \n {1}'.format(gen_help('tags_search'),
+                                                     date_help()))
     atsag.set_defaults(func=search_tags)
 
     # tags create subcommand (tcsc)

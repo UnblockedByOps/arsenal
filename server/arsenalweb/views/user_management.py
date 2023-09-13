@@ -1,4 +1,4 @@
-'''Arsenal user UI.'''
+'''Arsenal user_management UI.'''
 #  Copyright 2015 CityGrid Media, LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,22 +18,22 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 from passlib.hash import sha512_crypt
 from arsenalweb.views import (
-    get_authenticated_user,
     site_layout,
     )
 from arsenalweb.models.common import (
-    DBSession,
     User,
     )
 
 LOG = logging.getLogger(__name__)
 
-@view_config(route_name='user', permission='view', renderer='arsenalweb:templates/user.pt')
+#FIXME: This whole thing is broken
+@view_config(route_name='user_management', permission='view', renderer='arsenalweb:templates/user_management.pt')
 def view_user(request):
     '''Handle requests for user UI route.'''
 
-    auth_user = get_authenticated_user(request)
-    page_title_type = 'user/'
+    user = request.identity
+
+    page_title_type = 'user_management/'
     page_title_name = 'User Data'
     change_pw = False
     perpage = 1
@@ -47,8 +47,8 @@ def view_user(request):
         password = request.POST['password']
 
         # Need some security checking here
-        if email_address != auth_user['login']:
-            print "Naughty monkey"
+        if email_address != user['login']:
+            print('Naughty monkey')
         else:
             # Update
             LOG.info('UPDATE: email_address=%s,first_name=%s,last_name=%s,password=%s'
@@ -72,18 +72,18 @@ def view_user(request):
 
                 DBSession.flush()
 
-            except Exception, e:
+            except Exception as ex:
                 pass
-                LOG.info("%s (%s)" % (Exception, e))
+                LOG.info("%s (%s)" % (Exception, ex))
 
     # Get the changes
-    auth_user = get_authenticated_user(request)
-    subtitle = auth_user['first_last']
+    user = request.identity
+    subtitle = user['first_last']
 
     column_selectors = []
 
     return {
-        'au': auth_user,
+        'au': user,
         'change_pw': change_pw,
         'column_selectors': column_selectors,
         'layout': site_layout('max'),

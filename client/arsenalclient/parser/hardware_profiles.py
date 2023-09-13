@@ -14,7 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+from argparse import RawTextHelpFormatter
 from arsenalclient.cli.common import gen_help
+from arsenalclient.cli.common import date_help
 from arsenalclient.cli.hardware_profile import (
     search_hardware_profiles,
     )
@@ -32,12 +35,20 @@ def parser_hardware_profiles(top_parser, otsp):
                            parents=[top_parser])
 
     # hardware_profiles action sub-parser (sasp)
-    sasp = sotp.add_subparsers(title='Available actions',
-                               dest='action_command')
+    # https://bugs.python.org/issue16308
+    if sys.version_info.major == 2 or sys.version_info.minor < 7:
+        sasp = sotp.add_subparsers(title='Available actions',
+                                   dest='action_command')
+    else:
+        sasp = sotp.add_subparsers(title='Available actions',
+                                   dest='action_command',
+                                   required=True)
+
     # hardware_profiles search subcommand (sssc)
     sssc = sasp.add_parser('search',
                            help='Search for hardware_profile objects and optionally act upon the results.',
-                           parents=[top_parser])
+                           parents=[top_parser],
+                           formatter_class=RawTextHelpFormatter)
     sssc.add_argument('--fields',
                       '-f',
                       dest='fields',
@@ -72,7 +83,7 @@ def parser_hardware_profiles(top_parser, otsp):
                       default=None,
                       metavar='search_terms',
                       help='Comma separated list of key=value pairs to search ' \
-                      'for.\n {0}'.format(gen_help('hardware_profiles_search')))
+                      'for:\n{0} \n {1}'.format(gen_help('hardware_profiles_search'), date_help()))
     sssc.set_defaults(func=search_hardware_profiles)
 
     return top_parser, otsp
