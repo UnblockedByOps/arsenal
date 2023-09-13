@@ -73,7 +73,7 @@ requires = [
     'typing-extensions==3.10.0.0',
     'urllib3==1.26.5',
     'venusian==3.0.0',
-    'waitress==2.1.1',
+    'waitress==2.1.2',
     'wheel==0.38.1',
     'zipp==3.4.1',
     'zope.deprecation==4.4.0',
