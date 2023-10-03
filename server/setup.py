@@ -71,7 +71,7 @@ requires = [
     'transaction==3.0.1',
     'translationstring==1.4',
     'typing-extensions==3.10.0.0',
-    'urllib3==1.26.5',
+    'urllib3==1.26.17',
     'venusian==3.0.0',
     'waitress==2.1.2',
     'wheel==0.38.1',
