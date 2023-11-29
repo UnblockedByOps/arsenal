@@ -181,26 +181,30 @@ def register(args, session, payload):
 
     return False
 
-def generate_switch_names(args):
-    '''Generate all the assumed switch names based on the rack names
-    returned from arsenal.'''
+def get_switch_ips(args):
+    '''Return a list of ips of all the switches found in Arsenal as physical devices if they
+    have an oob_ip_address defined.'''
 
     pl_name = args.physical_location
-    ll_name = args.logical_location
-    url = f'{args.arsenal_server}/api/physical_racks?physical_location.name=^{pl_name}$'
+    url = f"{args.arsenal_server}/api/physical_devices"
+    data = {
+        "physical_location.name": f"^{pl_name}$",
+        "hardware_profile.name": "Arista",
+        "fields": "oob_ip_address",
+    }
     all_switches = []
 
     LOG.info('Retrieving rack information for physical_location: %s', pl_name)
 
-    resp = arsenal_query_api(args, url, 'get')
-    my_racks = resp['results']
+    resp = arsenal_query_api(args, url, 'get', data=data)
+    my_results = resp['results']
 
-    for rack in my_racks:
-        sanitized_rack = rack['name'][1:]
-        for num in ['1', '2']:
-            my_switch = f'msw{sanitized_rack}-{num}.{ll_name}.fanops.net'
-            LOG.info('  Adding switch to action list: %s', my_switch)
-            all_switches.append(my_switch)
+    for result in my_results:
+        if result['oob_ip_address']:
+            LOG.info('  Adding switch to action list: %s', result['oob_ip_address'])
+            all_switches.append(result['oob_ip_address'])
+        else:
+            LOG.warning('  No oob_ip_address for switch: %s', result['serial_number'])
 
     return all_switches
 
@@ -215,34 +219,24 @@ def process_all_switches(args, exclude_switches, all_switches):
     LOG.info('There are %s total switches to register.', total_switch_count)
 
     current_switch = 0
-    for switch_fqdn in all_switches:
+    for switch_ip in all_switches:
         current_switch += 1
-        if switch_fqdn in exclude_switches:
-            LOG.warning('Switch is in exclude config: %s skipping (%s of %s).', switch_fqdn,
+        if switch_ip in exclude_switches:
+            LOG.warning('Switch is in exclude config: %s skipping (%s of %s).', switch_ip,
                                                                                 current_switch,
                                                                                 total_switch_count)
             continue
-        LOG.info('Collecting data for switch: %s (%s of %s)...', switch_fqdn,
+        LOG.info('Collecting data for switch: %s (%s of %s)...', switch_ip,
                                                                  current_switch,
                                                                  total_switch_count)
         try:
-            socket.gethostbyname(switch_fqdn)
-            payload = get_switch_payload(args, switch_fqdn)
+            payload = get_switch_payload(args, switch_ip)
         except KeyError as ex:
             LOG.error('  KeyError collecting info from switch: %s', ex)
             LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
-                'name': switch_fqdn,
+                'name': switch_ip,
                 'error': f'KeyError: {ex}',
-            }
-            failed_switches.append(fail)
-            continue
-        except socket.gaierror as ex:
-            LOG.error('  Host unknown collecting info from switch: %s', ex)
-            LOG.debug('  traceback: %s', traceback.format_exc())
-            fail = {
-                'name': switch_fqdn,
-                'error': f'Host Unknown: {ex}',
             }
             failed_switches.append(fail)
             continue
@@ -250,7 +244,7 @@ def process_all_switches(args, exclude_switches, all_switches):
             LOG.error('  Connection refused collecting info from switch: %s', ex)
             LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
-                'name': switch_fqdn,
+                'name': switch_ip,
                 'error': f'Connection error: {ex}',
             }
             failed_switches.append(fail)
@@ -259,48 +253,52 @@ def process_all_switches(args, exclude_switches, all_switches):
             LOG.error('  Unknown Errror collecting info from switch: %s', ex)
             LOG.debug('  traceback: %s', traceback.format_exc())
             fail = {
-                'name': switch_fqdn,
+                'name': switch_ip,
                 'error': 'Unknown, see console output for more info.'
             }
             failed_switches.append(fail)
             continue
 
         if args.dry_run:
-            LOG.info('  Would have registered switch: %s', switch_fqdn)
+            LOG.info('  Would have registered switch: %s', switch_ip)
             success = {
-                'name': switch_fqdn,
+                'name': switch_ip,
                 'serial_number': payload['serial_number'],
             }
             success_switches.append(success)
         else:
-            LOG.info('  Registering switch with Arsenal: %s', switch_fqdn)
+            LOG.info('  Registering switch with Arsenal: %s', switch_ip)
             resp = register(args, session, payload)
             if not resp:
-                failed_switches.append(switch_fqdn)
+                failed_switches.append(switch_ip)
                 fail = {
-                    'name': switch_fqdn,
+                    'name': switch_ip,
                     'error': 'Failed to register with Arsenal.'
                 }
                 failed_switches.append(fail)
             success = {
-                'name': switch_fqdn,
+                'name': switch_ip,
                 'serial_number': payload['serial_number'],
             }
             success_switches.append(success)
 
     return success_switches, failed_switches
 
-def get_switch_payload(args, switch_fqdn):
+def get_switch_payload(args, switch_ip):
     '''Get all the stuff.'''
 
     payload = {}
-    switch_short_name = switch_fqdn.rsplit('.', 2)[0]
 
     node = pyeapi.connect(transport='https',
-                      host=switch_fqdn,
+                      host=switch_ip,
                       username=args.api_user,
                       password=args.api_pass,
                       return_node=True)
+
+    resp = node.enable('show hostname')
+    switch_short_name = resp[0]['result']['hostname']
+    switch_fqdn = f"{switch_short_name}.fanops.net"
+    LOG.info('  Switch fqdn is: %s', switch_fqdn)
 
     resp = node.enable('show inventory')
     sys_info = resp[0]['result']['systemInformation']
@@ -402,7 +400,7 @@ def main():
     LOG.info('BEGIN: Registering switches for location: %s - %s',
              args.physical_location, args.logical_location)
 
-    all_switches = generate_switch_names(args)
+    all_switches = get_switch_ips(args)
     yaml_config = load_yaml(args.yaml_config)
     success_switches, failed_switches = process_all_switches(args,
                                                              yaml_config['exclude_switches'],
