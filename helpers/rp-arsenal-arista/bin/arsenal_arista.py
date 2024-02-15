@@ -183,13 +183,15 @@ def register(args, session, payload):
 
 def get_switch_ips(args):
     '''Return a list of ips of all the switches found in Arsenal as physical devices if they
-    have an oob_ip_address defined.'''
+    have an oob_ip_address defined and have any status other than broken,
+    maintenance, or decom.'''
 
     pl_name = args.physical_location
     url = f"{args.arsenal_server}/api/physical_devices"
     data = {
         "physical_location.name": f"^{pl_name}$",
         "hardware_profile.name": "Arista",
+        "ex_status": "broken,maintenance,decom",
         "fields": "oob_ip_address",
     }
     all_switches = []
