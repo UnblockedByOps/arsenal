@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-# use arsenal;
-use arsenal3;
+use arsenal;
 
 # Initial Admin password is 'password'
 INSERT INTO users VALUES (1, 'admin', 'Admin', 'Superuser', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
@@ -263,7 +262,7 @@ INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', NOW()
 INSERT INTO statuses VALUES (11, 'pending_maintenance', 'Node that is marked for maintenance..', NOW(), NOW(), 'Admin');
 INSERT INTO statuses_audit VALUES (11, 11, 'name', 'created', 'allocated', NOW(), 'Admin');
 
-INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'http://my/documentation', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'http://my/documentation', 'pagerduty_24x7',NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', NOW(), 'Admin');
 
 INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', 1, '#fff', NOW(), NOW(), 'Admin');
