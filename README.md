@@ -55,21 +55,19 @@ Create a virtualenv and install the requirements.
 
 ```bash
 cd ~/venvs
-virtualenv arsenalweb
+python3 -m venv arsenalweb
 . arsenalweb/bin/activate
 mkdir arsenalweb/conf
 mkdir arsenalweb/sconf
-pip install -r ~/git/arsenal/server/requirements.txt --global-option=build_ext --global-option="-I$(xcrun --show-sdk-path)/usr/include/sasl"
+cd ~/git/arsenal/server
+pip install -e .
 ```
 
-Copy sample configs and install Arsenal.
+Copy sample configs
 
 ```bash
-cd ~/git/arsenal/server
 cp conf/arsenal-web-dev.ini ~/venvs/arsenalweb/conf/arsenal-web.ini
 cp conf/arsenal_secrets.ini ~/venvs/arsenalweb/sconf/
- 
-python setup.py develop
 ```
 
 Update configs to point at your local DB.
