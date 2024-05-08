@@ -402,7 +402,11 @@ def create_node(dbsession, **kwargs):
     operating_system_id = kwargs['operating_system_id']
     data_center_id = kwargs['data_center_id']
     ec2_id = kwargs['ec2_id']
-    serial_number = kwargs['serial_number']
+    try:
+        serial_number = kwargs['serial_number'].upper()
+    except AttributeError:
+        LOG.debug("serial_number is None type.")
+        serial_number = kwargs['serial_number']
     os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
@@ -474,7 +478,11 @@ def update_node(dbsession, node, settings, **kwargs):
     data_center_name = kwargs['data_center_name']
     ec2_id = kwargs['ec2_id']
     ec2_instance_id = kwargs['ec2_instance_id']
-    serial_number = kwargs['serial_number']
+    try:
+        serial_number = kwargs['serial_number'].upper()
+    except AttributeError:
+        LOG.debug("serial_number is None type.")
+        serial_number = kwargs['serial_number']
     os_memory = kwargs['os_memory']
     processor_count = kwargs['processor_count']
     uptime = kwargs['uptime']
@@ -613,7 +621,7 @@ def process_registration_payload(dbsession, payload, user_id):
         processed['user_id'] = user_id
         processed['unique_id'] = payload['unique_id'].lower().rstrip()
         processed['name'] = payload['name'].rstrip()
-        processed['serial_number'] = payload['serial_number'].rstrip()
+        processed['serial_number'] = payload['serial_number'].upper().rstrip()
         try:
             processed['os_memory'] = payload['os_memory'].rstrip()
         except (KeyError, AttributeError):

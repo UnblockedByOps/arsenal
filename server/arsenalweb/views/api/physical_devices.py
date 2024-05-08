@@ -112,11 +112,29 @@ def create_physical_device(dbsession,
     '''
 
     try:
-        LOG.info('Creating new physical_device serial_number: %s', serial_number)
+        my_serial_number = serial_number.upper()
+    except AttributeError:
+        LOG.debug("serial_number is None type.")
+        my_serial_number = serial_number
+
+    try:
+        LOG.info('Creating new physical_device serial_number: %s', my_serial_number)
 
         utcnow = datetime.utcnow()
 
-        physical_device = PhysicalDevice(serial_number=serial_number,
+        mac_address_1 = mac_address_1.lower()
+
+        try:
+            kwargs['mac_address_2'] = kwargs['mac_address_2'].lower()
+        except (AttributeError, KeyError):
+            pass
+
+        try:
+            kwargs['oob_mac_address'] = kwargs['oob_mac_address'].lower()
+        except (AttributeError, KeyError):
+            pass
+
+        physical_device = PhysicalDevice(serial_number=my_serial_number,
                                          mac_address_1=mac_address_1,
                                          physical_location_id=physical_location_id,
                                          physical_rack_id=physical_rack_id,
@@ -148,7 +166,7 @@ def create_physical_device(dbsession,
         raise Exception(msg)
     except Exception as ex:
         msg = 'Error creating new physical_device serial_number: {0} exception: ' \
-              '{1}'.format(serial_number, ex)
+              '{1}'.format(my_serial_number, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -189,7 +207,14 @@ def update_physical_device(dbsession, physical_device, **kwargs):
                 LOG.debug('Skipping update to physical_device.serial_number')
                 continue
             old_value = getattr(physical_device, attribute)
-            new_value = my_attribs[attribute]
+
+            if attribute in ["mac_address_1", "mac_address_2", "oob_mac_address"]:
+                try:
+                    new_value = my_attribs[attribute].lower()
+                except (AttributeError, KeyError):
+                    new_value = my_attribs[attribute]
+            else:
+                new_value = my_attribs[attribute]
 
             if old_value != new_value and new_value:
                 if not old_value:
@@ -353,8 +378,14 @@ def api_physical_devices_write(request):
             return api_404(msg=msg)
 
         try:
+            my_serial_number = params['serial_number'].upper()
+        except AttributeError:
+            LOG.debug("serial_number is None type.")
+            my_serial_number = params['serial_number']
+
+        try:
             physical_device = find_physical_device_by_serial(request.dbsession,
-                                                             params['serial_number'])
+                                                             my_serial_number)
             physical_device = update_physical_device(request.dbsession, physical_device, **params)
         except NoResultFound:
             physical_device = create_physical_device(request.dbsession, **params)

@@ -378,6 +378,7 @@ validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R10
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 4" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 5" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 6" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 7" 0
 validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0 "string" "name: TEST_LOCATION_1"
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 1" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 2" 0
@@ -388,9 +389,14 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 #
 # physical_devices
 #
-validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
-validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 00:aa:11:bb:22:cc -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
+validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 01:aa:11:bb:22:cc -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+# Make sure things are converted to the proper case
+validate_command "${rw_cmd} physical_devices create -s aabb1234502 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 7 -i 10.99.1.7 -m 07:AA:11:BB:22:CC -m1 77:55:66:AA:BB:C0 -m2 77:55:66:AA:BB:C1" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "oob_mac_address: 07:aa:11:bb:22:cc"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_1: 77:55:66:aa:bb:c0"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_2: 77:55:66:aa:bb:c1"
 # physical_device defaults to available
 validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
 # set physical_device to  allocated and ensure the status changes.
@@ -405,27 +411,27 @@ validate_command "${search_cmd} physical_devices search serial_number=Y00001 --f
 
 # physical_devices updates
 ## elevation
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '5'"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '5'"
 ## rack
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: R100"
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '6'"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: R100"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '6'"
 ## oob-ip-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-ip-address 1.2.3.4" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-ip-address 1.2.3.4" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
 ## oob-mac-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
 ## hardware-profile
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: HP ProLiant m710x Server Cartridge"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: HP ProLiant m710x Server Cartridge"
 ## mac-address-1
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -m1 cq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "mac_address_1: cq:11:zz:22:xx:33"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m1 cq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_1: cq:11:zz:22:xx:33"
 ## mac-address-2
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -m2 dq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m2 dq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
 #
 # Import tool
 #

@@ -89,6 +89,12 @@ def create_net_if(dbsession,
         except TypeError:
             pass
 
+        # Guarantee mac_address is lowercase
+        try:
+            mac_address = mac_address.lower()
+        except AttributeError:
+            pass
+
         LOG.info('Creating new network_interface name: %s unique_id: %s '
                  'ip_address_id: %s updated_by: %s bond_master: %s mac_address: %s '
                  'port_description: %s port_number: %s port_switch: %s '
@@ -179,12 +185,20 @@ def update_net_if(dbsession,
         for my_attr in my_attribs:
             if my_attribs.get(my_attr):
                 my_attribs[my_attr] = str(my_attribs[my_attr])
+
         # Guarantee unique_id is lowercase
         my_attribs['unique_id'] = my_attribs['unique_id'].lower()
+
         # Guarantee ip_address_id is an int
         try:
             my_attribs['ip_address_id'] = int(my_attribs['ip_address_id'])
         except TypeError:
+            pass
+
+        # Guarantee mac_address is lowercase
+        try:
+            mac_address = mac_address.lower()
+        except AttributeError:
             pass
 
         LOG.info('Updating network_interface.unique_id: %s', my_attribs['unique_id'])
