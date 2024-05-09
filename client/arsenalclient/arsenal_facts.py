@@ -74,7 +74,7 @@ class ArsenalFacts(object):
                 'name': None,
                 'virtual': None,
                 'is_virtual': None,
-                'serial_number': 'Unknown',
+                'serial_number': 'UNKNOWN',
             },
             'networking': {
                 'fqdn': None,
@@ -180,7 +180,7 @@ class ArsenalFacts(object):
         self.facts['hardware']['virtual'] = resp['virtual']
         self.facts['hardware']['is_virtual'] = resp['is_virtual']
         try:
-            self.facts['hardware']['serial_number'] = resp['dmi']['product']['serial_number']
+            self.facts['hardware']['serial_number'] = resp['dmi']['product']['serial_number'].upper()
         except KeyError:
             LOG.warn('Unable to determine serial number.')
         self.facts['networking']['fqdn'] = resp['networking']['fqdn']
@@ -332,7 +332,7 @@ class ArsenalFacts(object):
         self.facts['hardware']['virtual'] = resp['virtual']
         self.facts['hardware']['is_virtual'] = resp['is_virtual']
         try:
-            self.facts['hardware']['serial_number'] = resp['serialnumber']
+            self.facts['hardware']['serial_number'] = resp['serialnumber'].upper()
         except KeyError:
             LOG.warn('Unable to determine serial number.')
         self.facts['networking']['fqdn'] = resp['fqdn']
