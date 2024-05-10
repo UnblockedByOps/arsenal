@@ -269,6 +269,7 @@ class ArsenalFacts(object):
             'docker',
             'flannel',
             'lo',
+            'lxc',
             'veth',
         )
         for net_if in resp['networking']['interfaces']:
