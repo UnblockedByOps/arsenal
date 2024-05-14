@@ -86,6 +86,9 @@ def parser_node_groups(top_parser, otsp):
     anguag.add_argument('--notes-url', '-u',
                         dest='node_group_notes_url',
                         help='Update node_group_notes_url.')
+    anguag.add_argument('--technical-contact', '-t',
+                        dest='node_group_technical_contact',
+                        help='Update node_group_technical_contact.')
 
     # node_groups assignment action argument group (angsag)
     angsag = ngssc.add_argument_group('Assignment Actions')
@@ -133,6 +136,10 @@ def parser_node_groups(top_parser, otsp):
                         dest='node_group_monitoring_contact',
                         default=None,
                         help='node_group_monitoring_contact to assign.')
+    rngcag.add_argument('--technical-contact', '-t',
+                        dest='node_group_technical_contact',
+                        default=None,
+                        help='node_group_technical_contact to assign.')
     rngcag.set_defaults(func=create_node_group)
 
     # node_groups delete subcommand (ngdsc)

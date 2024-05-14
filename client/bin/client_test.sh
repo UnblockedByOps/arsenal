@@ -336,6 +336,8 @@ validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --notes-url
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "notes_url: https://wiki.rubiconproject.com"
 validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --monitoring-contact 'my_pg_team'" 0
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "monitoring_contact: my_pg_team"
+validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --technical-contact 'my_dev_team'" 0
+validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "technical_contact: my_dev_team"
 # Modify status attribute
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Like a bear, it hibernates.'" 0
 validate_command "${search_cmd} statuses search name=hibernating --fields all --exact" 0 "string" "description: Like a bear, it hibernates."

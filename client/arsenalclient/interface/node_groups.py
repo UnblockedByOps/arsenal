@@ -45,6 +45,7 @@ class NodeGroups(ArsenalInterface):
         description         : A text description of the members of this node_group.
         notes_url           : A url to documentation relevant to the node_group.
         monitoring_contact  : Who should receive monitoring notifications for this node_group.
+        technical_contact   : Who should receive technical escalations for this node_group.
 
         Usage:
 
@@ -54,6 +55,7 @@ class NodeGroups(ArsenalInterface):
         ...    'description': 'The nodegroup for all the magical servers',
         ...    'notes_url': 'https://somurl.somedomain.com/',
         ...    'monitoring_contact': 'my_pagerduty_team',
+        ...    'technical_contact': 'my_development_team',
         ... }
         >>> NodeGroups.create(params)
         <Response [200]>
@@ -76,6 +78,7 @@ class NodeGroups(ArsenalInterface):
         ...    'description': 'The nodegroup for all the magical servers',
         ...    'notes_url': 'https://somurl.somedomain.com/',
         ...    'monitoring_contact': 'my_pagerduty_team',
+        ...    'technical_contact': 'my_development_team',
         ... }
         >>> NodeGroups.update(params)
 
