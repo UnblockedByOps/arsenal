@@ -545,3 +545,8 @@ ALTER TABLE node_groups ADD COLUMN monitoring_contact TEXT after notes_url;
 
 UPDATE alembic_version SET version_num='b63d86dd6535' WHERE alembic_version.version_num = '3ee80746cca8';
 
+-- Running upgrade b63d86dd6535 -> 277a0c334975
+
+ALTER TABLE node_groups ADD COLUMN technical_contact TEXT AFTER monitoring_contact;
+
+UPDATE alembic_version SET version_num='277a0c334975' WHERE alembic_version.version_num = 'b63d86dd6535';
