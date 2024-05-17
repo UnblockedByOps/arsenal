@@ -349,7 +349,7 @@ def get_switch_payload(args, switch_ip):
     interfaces = node.api('interfaces')
     all_interfaces = interfaces.getall()
     for interface in all_interfaces:
-        if interface.startswith('Ethernet') and '/' not in interface:
+        if interface.startswith('Ethernet'):
             my_interface = {}
             my_interface['unique_id'] = f'{switch_short_name}-{interface}'
             my_interface['name'] = all_interfaces[interface]['name']
@@ -402,7 +402,14 @@ def main():
     LOG.info('BEGIN: Registering switches for location: %s - %s',
              args.physical_location, args.logical_location)
 
-    all_switches = get_switch_ips(args)
+    all_switches = [
+        'superspine-1.las2.fanops.net',
+        'mleaf-1.las2.fanops.net',
+        'core3.las2.fanops.net',
+        'border3.iad2.fanops.net',
+    ]
+
+#    all_switches = get_switch_ips(args)
     yaml_config = load_yaml(args.yaml_config)
     success_switches, failed_switches = process_all_switches(args,
                                                              yaml_config['exclude_switches'],
