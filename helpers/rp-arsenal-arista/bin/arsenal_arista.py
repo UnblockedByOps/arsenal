@@ -349,7 +349,7 @@ def get_switch_payload(args, switch_ip):
     interfaces = node.api('interfaces')
     all_interfaces = interfaces.getall()
     for interface in all_interfaces:
-        if interface.startswith('Ethernet') and '/' not in interface:
+        if interface.startswith('Ethernet'):
             my_interface = {}
             my_interface['unique_id'] = f'{switch_short_name}-{interface}'
             my_interface['name'] = all_interfaces[interface]['name']
