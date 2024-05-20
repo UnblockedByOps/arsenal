@@ -90,26 +90,32 @@ def api_reports_node_read(request):
             for status in statuses:
                 LOG.debug("Working on status: %s", status.name)
                 nodes_by_status = nodes.filter(Node.status_id == status.id)
-                node_metrics[data_center.name][status.name] = {}
-                node_metrics[data_center.name][status.name]['hardware_profile'] = {}
-                node_metrics[data_center.name][status.name]['operating_system'] = {}
-                node_metrics[data_center.name][status.name]['total'] = nodes_by_status.count()
+                my_count = nodes_by_status.count()
+                if my_count != 0:
+                    node_metrics[data_center.name].setdefault(status.name, {})
+                    node_metrics[data_center.name][status.name]['total'] = my_count
 
                 for hw_profile in hw_profiles:
                     LOG.debug("Working on hardware_profile: %s", hw_profile.name)
                     nodes_by_hw_profile = nodes.filter(Node.hardware_profile_id == hw_profile.id)
                     nodes_by_hw_profile = nodes_by_hw_profile.filter(Node.status_id == status.id)
                     my_hw_profile = sanitize_input(hw_profile.name)
-                    node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile] = {}
-                    node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['total'] = nodes_by_hw_profile.count()
+                    my_count = nodes_by_hw_profile.count()
+                    if my_count != 0:
+                        node_metrics[data_center.name][status.name].setdefault('hardware_profile', {})
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile] = {}
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['total'] = my_count
 
                 for os in operating_systems:
                     LOG.debug("Working on operating_system: %s", os.name)
                     nodes_by_os = nodes.filter(Node.operating_system_id == os.id)
                     nodes_by_os = nodes_by_os.filter(Node.status_id == status.id)
                     my_os = sanitize_input(os.name)
-                    node_metrics[data_center.name][status.name]['operating_system'][my_os] = {}
-                    node_metrics[data_center.name][status.name]['operating_system'][my_os]['total'] = nodes_by_os.count()
+                    my_count = nodes_by_os.count()
+                    if my_count != 0:
+                        node_metrics[data_center.name][status.name].setdefault('operating_system', {})
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os] = {}
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['total'] = my_count
 
     except NoResultFound:
         LOG.error('This should never happen')
