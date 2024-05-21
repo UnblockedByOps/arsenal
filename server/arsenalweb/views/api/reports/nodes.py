@@ -93,7 +93,7 @@ def api_reports_node_read(request):
                 my_count = nodes_by_status.count()
                 if my_count != 0:
                     node_metrics[data_center.name].setdefault(status.name, {})
-                    node_metrics[data_center.name][status.name]['total'] = my_count
+                    node_metrics[data_center.name][status.name]['total_count'] = my_count
 
                 for hw_profile in hw_profiles:
                     LOG.debug("Working on hardware_profile: %s", hw_profile.name)
@@ -104,7 +104,7 @@ def api_reports_node_read(request):
                     if my_count != 0:
                         node_metrics[data_center.name][status.name].setdefault('hardware_profile', {})
                         node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile] = {}
-                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['total'] = my_count
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['total_count'] = my_count
 
                 for os in operating_systems:
                     LOG.debug("Working on operating_system: %s", os.name)
@@ -115,7 +115,7 @@ def api_reports_node_read(request):
                     if my_count != 0:
                         node_metrics[data_center.name][status.name].setdefault('operating_system', {})
                         node_metrics[data_center.name][status.name]['operating_system'][my_os] = {}
-                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['total'] = my_count
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['total_count'] = my_count
 
     except NoResultFound:
         LOG.error('This should never happen')
