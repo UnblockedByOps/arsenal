@@ -84,7 +84,7 @@ def prep_node_metrics(args, results):
 
     for data_center, values in results['results'][0].items():
         for path in get_path(values):
-            metric_name = f"dashboards.arsenal.nodes.{data_center}.{path}"
+            metric_name = f"dashboards.arsenal.nodes.dc.{data_center}.{path}"
             split_path = path.split('.')
             my_value = values.get(split_path[0])
             for remainder in split_path[1:]:
