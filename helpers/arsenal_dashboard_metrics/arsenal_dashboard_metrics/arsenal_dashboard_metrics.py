@@ -43,10 +43,18 @@ def _parse_args():
                         help='Whether or not the server is using ssl. ' \
                         'Can be True, False, or path to ca cert',
                         default=None)
+    parser.add_argument('-D',
+                        '--dry-run',
+                        action='store_true',
+                        help='Do not send metrics to graphite, just print them.')
     parser.add_argument('-d',
                         '--debug',
                         action='store_true',
                         help='Enable debugging.')
+    parser.add_argument('-s',
+                        '--success-file',
+                        help='The file to write to upon sucessfully completeing.',
+                        default='/app/mgni-arsenal_dashboard_metrics/success.txt')
 
     return parser.parse_args()
 
@@ -55,15 +63,15 @@ def get_data(server, uri, params=None, data_type=None):
 
     headers = {'Content-Type': 'application/json', }
 
-    url = 'https://{0}/{1}'.format(server, uri)
+    url = f"https://{server}/{uri}"
 
     resp = requests.get(url, headers=headers, params=params)
     results = resp.json()
 
     if data_type == 'total':
         return int(results['meta']['total'])
-    else:
-        return results
+
+    return results
 
 def get_path(input_dict):
     """
@@ -117,17 +125,30 @@ def send_metric(args, message):
     server_ip = socket.gethostbyname(args.host_fqdn)
     server_port = int(args.host_port)
 
-    print(f'sending metric - server: {args.host_fqdn} port: {args.host_port} message: {message}')
+    if args.dry_run:
 
-    try:
-        sock = socket.socket()
-        sock.connect((server_ip, server_port))
-        sock.sendall(f'{message}\n'.encode())
-        sock.close()
-        print('metric sent')
-    except:
-        print('failed to send')
-        raise
+        print(f'sending metric - server: {args.host_fqdn} port: {args.host_port} message: {message}')
+
+    else:
+
+        try:
+            sock = socket.socket()
+            sock.connect((server_ip, server_port))
+            sock.sendall(f'{message}\n'.encode())
+            sock.close()
+            print('metric sent')
+        except:
+            print('failed to send')
+            raise
+
+def write_success(args):
+    """
+    Write a timestamp to a file upon successsfully completing.
+    """
+
+    now = time.time()
+    with open(args.success_file, "w", encoding="utf-8") as my_file:
+        my_file.write(f"Last success time: {now}\n")
 
 def main():
     '''Do all the things'''
@@ -144,6 +165,7 @@ def main():
     results = get_data(args.arsenal_server, '/api/reports/stale_nodes')
     prep_stale_node_metrics(args, results)
 
+    write_success(args)
+
 if __name__ == '__main__':
     main()
-
