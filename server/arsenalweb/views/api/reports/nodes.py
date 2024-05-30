@@ -36,6 +36,7 @@ from arsenalweb.models.statuses import (
 from arsenalweb.models.data_centers import (
     DataCenter,
 )
+import json
 
 LOG = logging.getLogger(__name__)
 
@@ -66,11 +67,17 @@ def api_reports_node_read(request):
     try:
         LOG.debug('Generating metrics...')
 
-        data_centers = request.dbsession.query(DataCenter)
-        data_centers = data_centers.all()
 
         statuses = request.dbsession.query(Status)
         statuses = statuses.all()
+        for status in statuses:
+            if status.name == 'inservice':
+                inservice_id = status.id
+        LOG.debug("inservice status id is: %s", inservice_id)
+
+        data_centers = request.dbsession.query(DataCenter)
+        data_centers = data_centers.filter(DataCenter.status_id == inservice_id)
+        data_centers = data_centers.all()
 
         hw_profiles = request.dbsession.query(HardwareProfile)
         hw_profiles = hw_profiles.all()
@@ -114,7 +121,7 @@ def api_reports_node_read(request):
                     my_count = nodes_by_hw_profile.count()
                     if my_count != 0:
                         node_metrics['all'][status.name].setdefault('hardware_profile', {})
-                        node_metrics['all'][status.name]['hardware_profile'][my_hw_profile] = {}
+                        node_metrics['all'][status.name]['hardware_profile'].setdefault(my_hw_profile, {})
                         try:
                             node_metrics['all'][status.name]['hardware_profile'][my_hw_profile]['count'] += my_count
                         except KeyError:
@@ -132,7 +139,7 @@ def api_reports_node_read(request):
                     my_count = nodes_by_os.count()
                     if my_count != 0:
                         node_metrics['all'][status.name].setdefault('operating_system', {})
-                        node_metrics['all'][status.name]['operating_system'][my_os] = {}
+                        node_metrics['all'][status.name]['operating_system'].setdefault(my_os, {})
                         try:
                             node_metrics['all'][status.name]['operating_system'][my_os]['count'] += my_count
                         except KeyError:
@@ -145,6 +152,7 @@ def api_reports_node_read(request):
     except NoResultFound:
         LOG.error('This should never happen')
 
-    LOG.debug('Metrics: %s', node_metrics)
+    LOG.debug('Metrics:')
+    LOG.debug(json.dumps(node_metrics, sort_keys=True, indent=4))
 
     return api_200(results=node_metrics)
