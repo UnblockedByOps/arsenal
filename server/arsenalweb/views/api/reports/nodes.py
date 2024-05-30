@@ -78,22 +78,33 @@ def api_reports_node_read(request):
         operating_systems = request.dbsession.query(OperatingSystem)
         operating_systems = operating_systems.all()
 
+        node_metrics['all'] = {}
+        node_metrics['all']['count'] = 0
+
         for data_center in data_centers:
             LOG.debug("Working on data_center: %s", data_center.name)
             node_metrics[data_center.name] = {}
             nodes = request.dbsession.query(Node)
             nodes = nodes.filter(Node.data_center == data_center)
             nodes_count = nodes.count()
-            node_metrics[data_center.name]['total'] = nodes_count
-            LOG.debug("total nodes: %s", nodes_count)
+            node_metrics['all']['count'] += nodes_count
+            LOG.debug("data_center: all total nodes: %s", node_metrics['all']['count'])
+            node_metrics[data_center.name]['count'] = nodes_count
+            LOG.debug("data_center: %s total nodes: %s", data_center, nodes_count)
 
             for status in statuses:
                 LOG.debug("Working on status: %s", status.name)
                 nodes_by_status = nodes.filter(Node.status_id == status.id)
                 my_count = nodes_by_status.count()
                 if my_count != 0:
+                    node_metrics['all'].setdefault(status.name, {})
+                    try:
+                        node_metrics['all'][status.name]['count'] += my_count
+                    except KeyError:
+                        node_metrics['all'][status.name]['count'] = my_count
+
                     node_metrics[data_center.name].setdefault(status.name, {})
-                    node_metrics[data_center.name][status.name]['total'] = my_count
+                    node_metrics[data_center.name][status.name]['count'] = my_count
 
                 for hw_profile in hw_profiles:
                     LOG.debug("Working on hardware_profile: %s", hw_profile.name)
@@ -102,9 +113,16 @@ def api_reports_node_read(request):
                     my_hw_profile = sanitize_input(hw_profile.name)
                     my_count = nodes_by_hw_profile.count()
                     if my_count != 0:
+                        node_metrics['all'][status.name].setdefault('hardware_profile', {})
+                        node_metrics['all'][status.name]['hardware_profile'][my_hw_profile] = {}
+                        try:
+                            node_metrics['all'][status.name]['hardware_profile'][my_hw_profile]['count'] += my_count
+                        except KeyError:
+                            node_metrics['all'][status.name]['hardware_profile'][my_hw_profile]['count'] = my_count
+
                         node_metrics[data_center.name][status.name].setdefault('hardware_profile', {})
                         node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile] = {}
-                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['total'] = my_count
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['count'] = my_count
 
                 for os in operating_systems:
                     LOG.debug("Working on operating_system: %s", os.name)
@@ -113,9 +131,16 @@ def api_reports_node_read(request):
                     my_os = sanitize_input(os.name)
                     my_count = nodes_by_os.count()
                     if my_count != 0:
+                        node_metrics['all'][status.name].setdefault('operating_system', {})
+                        node_metrics['all'][status.name]['operating_system'][my_os] = {}
+                        try:
+                            node_metrics['all'][status.name]['operating_system'][my_os]['count'] += my_count
+                        except KeyError:
+                            node_metrics['all'][status.name]['operating_system'][my_os]['count'] = my_count
+
                         node_metrics[data_center.name][status.name].setdefault('operating_system', {})
                         node_metrics[data_center.name][status.name]['operating_system'][my_os] = {}
-                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['total'] = my_count
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['count'] = my_count
 
     except NoResultFound:
         LOG.error('This should never happen')
