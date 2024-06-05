@@ -1,7 +1,12 @@
 [project]
 name = "mgni-arsenal-register-moonshots"
 version = "1.0.0"
-dependencies = ["rp-retry==2.0", "requests==2.27.1", "setuptools>=69.1.1"]
+dependencies = [
+    "arsenalclient==11.4.0",
+    "requests==2.27.1",
+    "rp-retry==2.0",
+    "setuptools>=69.1.1"
+]
 authors = [{name = "Magnite", email = "prodeng@magnite.com"}]
 requires-python = ">=3.8"
 maintainers = [{name = "Magnite", email = "prodeng@magnite.com"}]

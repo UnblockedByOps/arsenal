@@ -20,6 +20,8 @@ OVERALL_EXIT = 0
 logging.getLogger('requests').setLevel(logging.WARNING)
 requests.packages.urllib3.disable_warnings()
 
+
+
 def _parse_args():
     '''Parse all the command line arguments.'''
 
@@ -122,10 +124,10 @@ def arsenal_login(server, username, password):
     session.post('{0}/login'.format(server), data=payload, verify=False)
     return session
 
-def get_all_chassis(arsenal_server, chassis_roles, chassis_type):
+def get_all_chassis(arsenal_server, chassis_roles):
     '''Build the list of chassis to query from DNS. Returns a list.'''
 
-    LOG.info('Finding all {0} in DNS...'.format(chassis_type))
+    LOG.info('Finding all moosnhots in DNS...')
     chassis_list = []
     resp = requests.get('https://{0}/api/data_centers?status=inservice'.format(arsenal_server))
     resp.raise_for_status()
@@ -139,23 +141,18 @@ def get_all_chassis(arsenal_server, chassis_roles, chassis_type):
                 for chassis_role in chassis_roles:
                     for env in ['d', 'q', 'p']:
                         try:
-                            if chassis_type == 'moonshots':
-                                chassis = 'fop{0}-{1}{2}00{3}-ilo.{4}.fanops.net'.format(env,
-                                                                                         chassis_role,
-                                                                                         cluster,
-                                                                                         chassis_index,
-                                                                                         data_center)
+                            chassis = f"fop{env}-{chassis_role}{cluster}00{chassis_index}-ilo.{data_center}.fanops.net"
                             resp = socket.gethostbyname(chassis)
-                            LOG.info('chassis found: {0}'.format(chassis))
+                            LOG.info('chassis found: %s', chassis)
                             chassis_list.append(chassis)
                         except socket.gaierror:
-                            LOG.debug('{0} not found: {1}'.format(chassis_type, chassis))
+                            LOG.debug('Moonshot not found: %s', chassis)
 
     LOG.debug(json.dumps(chassis_list, sort_keys=True, indent=4))
-    LOG.info('Found {0} {1} in DNS.'.format(len(chassis_list), chassis_type))
+    LOG.info('Found %s moonshots in DNS.', len(chassis_list))
 
     chassis_list = filter_chassis(arsenal_server, chassis_list)
-    LOG.info('Found {0} {1} matched state requirement in arsenal.'.format(len(chassis_list), chassis_type))
+    LOG.info('Found %s moonshots  matched state requirement in arsenal.', len(chassis_list))
 
     return chassis_list
 
@@ -291,12 +288,12 @@ def collect_moonshots(args, moonshots):
 
     return all_moonshots, failed_chassis
 
-def register(arsenal_server, all_chassis, dry_run):
+def register(args, all_chassis):
     '''Register all the chasssis with Arsenal.'''
 
     headers = {'Content-Type': 'application/json'}
-    server = 'https://{0}'.format(arsenal_server)
-    url = '{0}/api/register'.format(server)
+    server = f'https://{args.arsenal_server}'
+    url = f'{server}/api/register'
     session = arsenal_login(server, 'kaboom', 'password')
 
     global OVERALL_EXIT
@@ -304,14 +301,15 @@ def register(arsenal_server, all_chassis, dry_run):
     total = len(all_chassis)
     complete = 1
     success = 0
+
     for chassis in all_chassis:
         name = chassis['name']
 
-        LOG.info('Registering chassis with Arsenal: {0} ({1} of {2})...'.format(name,
-                                                                                complete,
-                                                                                total,))
+        LOG.info("Registering chassis with Arsenal: %s (%s of %s)...", name,
+                                                                       complete,
+                                                                       total,)
         complete += 1
-        if dry_run:
+        if args.dry_run:
             LOG.info('Skipping registration, here is the payload we would have sent:')
             LOG.info(json.dumps(chassis, sort_keys=True, indent=4))
             success += 1
@@ -322,12 +320,63 @@ def register(arsenal_server, all_chassis, dry_run):
         if resp.status_code == 200:
             LOG.info('Success.')
             success += 1
+            assign_node_group(args, resp)
         else:
             OVERALL_EXIT = 1
-            LOG.error('There was a problem registering chassis: {0}'.format(name))
+            LOG.error('There was a problem registering chassis: %s', name)
             LOG.error(resp.text)
 
     return success
+
+def assign_node_group(args, resp):
+    """
+    Assign node group to node if possible.
+    """
+
+    results = resp.json()
+    result = results['results'][0]
+    node_name = result['name']
+    node_id = result['id']
+    node_group = f"{node_name[0:3]}_{node_name[5:8]}"
+    global OVERALL_EXIT
+
+    LOG.info("Attempting to assign node_group: %s to server: %s", node_group, node_name)
+
+    headers = {'Content-Type': 'application/json'}
+    server = f'https://{args.arsenal_server}'
+    session = arsenal_login(server, args.enc_user, args.enc_pass)
+
+    url = f'{server}/api/node_groups'
+    params = {
+        "name": f"^{node_group}$"
+    }
+    try:
+        resp = session.get(url, headers=headers, params=params)
+        results = resp.json()
+        result = results['results'][0]
+        node_group_id = result['id']
+    except IndexError:
+        OVERALL_EXIT = 1
+        LOG.error("node_group: %s not found in Arsenal.", node_group)
+        return
+    except Exception as ex:
+        OVERALL_EXIT = 1
+        LOG.error("There was an error finding the node_group: %s in arsenal: %s", node_group, ex)
+        return
+
+    try:
+        data = {
+            "nodes": [
+                node_id,
+            ]
+        }
+        url = f"{server}/api/node_groups/{node_group_id}/nodes"
+        resp = session.put(url, headers=headers, json=data, verify=False)
+        resp.raise_for_status()
+        LOG.info("Success.")
+    except Exception as ex:
+        OVERALL_EXIT = 1
+        LOG.error("There was an error assigning the node_group to the node: %s", ex)
 
 def main():
     '''Do Stuff.'''
@@ -335,14 +384,12 @@ def main():
     args = _parse_args()
     configure_logging(args)
 
-    if args.chassis_type != 'moonshots':
-        LOG.info("Moonshots are only supported chassis type.")
-        sys.exit(1)
-
     secrets_config = configparser.ConfigParser()
     secrets_config.read(args.secrets_config_file)
-    setattr(args, 'chassis_user', secrets_config.get(args.chassis_type[:-1], 'username'))
-    setattr(args, 'chassis_pass', secrets_config.get(args.chassis_type[:-1], 'password'))
+    setattr(args, 'chassis_user', secrets_config.get('moonshot', 'username'))
+    setattr(args, 'chassis_pass', secrets_config.get('moonshot', 'password'))
+    setattr(args, 'enc_user', secrets_config.get('external-enc', 'username'))
+    setattr(args, 'enc_pass', secrets_config.get('external-enc', 'password'))
 
     chassis_roles = {
         'moonshots': [
@@ -356,25 +403,23 @@ def main():
     if args.chassis_names:
         LOG.info('Using chassis list from command line input...')
         for chassis in args.chassis_names:
-            LOG.info('  {0}'.format(chassis))
+            LOG.info('  %s', chassis)
         chassis_list = args.chassis_names
     else:
         chassis_list = get_all_chassis(args.arsenal_server,
-                                       chassis_roles[args.chassis_type],
-                                       args.chassis_type)
+                                       chassis_roles['moonshots'])
 
     all_chassis, failed_dns_chassis = collect_moonshots(args, chassis_list)
 
-    success_count = register(args.arsenal_server, all_chassis, args.dry_run)
-    LOG.info('Successfully registered {0} total chassis.'.format(success_count))
+    success_count = register(args, all_chassis)
+    LOG.info('Successfully registered %s total chassis.', success_count)
 
     if failed_dns_chassis:
         LOG.error('The following chassis were found in DNS but unable to be reached:')
         for failed in failed_dns_chassis:
-            LOG.error('  {0}'.format(failed))
+            LOG.error('  %s', failed)
 
     sys.exit(OVERALL_EXIT)
-
 
 if __name__ == '__main__':
     main()
