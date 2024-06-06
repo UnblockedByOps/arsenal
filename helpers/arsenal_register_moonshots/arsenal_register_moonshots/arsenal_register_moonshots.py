@@ -20,8 +20,6 @@ OVERALL_EXIT = 0
 logging.getLogger('requests').setLevel(logging.WARNING)
 requests.packages.urllib3.disable_warnings()
 
-
-
 def _parse_args():
     '''Parse all the command line arguments.'''
 
