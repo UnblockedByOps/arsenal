@@ -88,7 +88,8 @@ def enc(args, client):
         print('classes: null')
 
     result['parameters']['arsenal_status'] = result['status']['name']
-    result['param_sources']['arsenal_status'] = 'builtin'
+    if args.inspect:
+        result['param_sources']['arsenal_status'] = 'builtin'
 
     print('parameters:')
     for param in sorted(result['parameters']):
