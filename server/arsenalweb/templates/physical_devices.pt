@@ -49,7 +49,7 @@
                     <td class="sr-hardware_profile"><a class="lower_pane" tal:attributes="href '/hardware_profiles/{0}'.format(item.hardware_profile.id)"
                                                                           tal:content="item.hardware_profile.name">Dell r610</a></td>
                     <td class="sr-mac_address_1"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.id)" tal:content="item.mac_address_1">00:11:22:33:44:56</a></td>
-                    <td class="sr-mac_address_2"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.id)" tal:content="item.mac_address_1">00:11:22:33:44:57</a></td>
+                    <td class="sr-mac_address_2"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.id)" tal:content="item.mac_address_2">00:11:22:33:44:57</a></td>
                     <td class="sr-oob_ip_address"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.id)" tal:content="item.oob_ip_address">1.2.3.4</a></td>
                     <td class="sr-oob_mac_address"><a class="lower_pane" tal:attributes="href '/physical_devices/{0}'.format(item.id)" tal:content="item.oob_mac_address">00:11:22:33:44:55</a></td>
                     <td class="sr-physical_elevation"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(item.physical_elevation.id)"
