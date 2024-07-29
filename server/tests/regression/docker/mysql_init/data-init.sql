@@ -229,8 +229,8 @@ INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 23);
 INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (6, 6);
 # Add user: external-enc to groups: node_group_write
 INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (9, 8);
-# Add user: decom-hq to groups: physical_device_delete
-INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (16, 10);
+# Add user: decom-hw to groups: physical_device_delete
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (10, 16);
 
 #
 # STATUSES
