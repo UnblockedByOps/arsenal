@@ -30,6 +30,11 @@ INSERT INTO users VALUES (6, 'puppet-enc', 'Puppet Node Classifier', 'Bot', 'Vf7
 INSERT INTO users VALUES (7, 'aws-lambda', 'AWS Lambda user for ec2 decom', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
 # Initial release password is 'password'
 INSERT INTO users VALUES (8, 'release', 'Bot user for automated releases', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial external-enc password is 'password'
+INSERT INTO users VALUES (9, 'external-enc', 'External (non-puppet) Node Classifier', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial decom-hw password is 'password'
+INSERT INTO users VALUES (10, 'decom-hw', 'Bot user to decommission harware', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+
 #
 # GROUPS
 #
@@ -204,6 +209,8 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (102,20);
 # puppet-enc      = 6
 # aws-lambda      = 7
 # release         = 8
+# external-enc    = 9
+# decom-hw        = 10
 # Add user: local_admin to groups: local_admin
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (1, 1);
 # Add user: hvm to groups: api_register, status_write
@@ -235,6 +242,10 @@ INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (23, 7);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (10, 8);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (11, 8);
 INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (14, 8);
+# Add user: external-enc to groups: node_group_write
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (8, 9);
+# Add user: decom-hw to groups: physical_device_delete
+INSERT INTO local_user_group_assignments (group_id,user_id) VALUES (16, 10);
 
 #
 # STATUSES
