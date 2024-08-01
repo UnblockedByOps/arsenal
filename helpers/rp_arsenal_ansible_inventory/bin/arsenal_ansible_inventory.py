@@ -19,6 +19,7 @@ import logging
 import sys
 import argparse
 import requests
+import urllib.parse
 
 # Requests is chatty
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -66,6 +67,10 @@ def parse_args():
     pap.add_argument('-n',
                      '--nodes',
                      help='nodes to search for.',
+                     default=None)
+    pap.add_argument('-o',
+                     '--os_exclude',
+                     help='operating system to exclude from the search.',
                      default=None)
     pap.add_argument('-s',
                      '--status',
@@ -123,6 +128,10 @@ def query_arsenal(args):
                                                              args.status)
     if args.exclude:
         url += '&ex_name={0}'.format(args.exclude)
+
+    if args.os_exclude:
+        encoded_os_exclude = urllib.parse.quote(args.os_exclude)
+        url += '&ex_operating_system={0}'.format(encoded_os_exclude)
 
     if args.debug:
         LOG.debug('Arsenal url: {0}'.format(url))
