@@ -391,11 +391,11 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 #
 # physical_devices
 #
-validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 00:aa:11:bb:22:cc -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
+validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 00:aa:11:bb:22:cc -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1 -R 2024-08-01" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
-validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 01:aa:11:bb:22:cc -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 01:aa:11:bb:22:cc -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1 -R 2024-08-01" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
 # Make sure things are converted to the proper case
-validate_command "${rw_cmd} physical_devices create -s aabb1234502 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 7 -i 10.99.1.7 -m 07:AA:11:BB:22:CC -m1 77:55:66:AA:BB:C0 -m2 77:55:66:AA:BB:C1" 0
+validate_command "${rw_cmd} physical_devices create -s aabb1234502 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 7 -i 10.99.1.7 -m 07:AA:11:BB:22:CC -m1 77:55:66:AA:BB:C0 -m2 77:55:66:AA:BB:C1 -R 2024-08-01" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "oob_mac_address: 07:aa:11:bb:22:cc"
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_1: 77:55:66:aa:bb:c0"
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_2: 77:55:66:aa:bb:c1"
@@ -440,7 +440,7 @@ validate_command "${search_cmd} physical_devices search serial_number=AABB123450
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import.csv" 0
 validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
 # Make sure physical_device without a status specified is set to available
-validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: available"
+validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: racked"
 # Make sure physical_device with a status specified has the correct status set
 validate_command "${search_cmd} physical_devices search serial_number=A00000003 -f status" 0 "string" "name: allocated"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_mixed.csv" 1

@@ -71,6 +71,8 @@ class PhysicalDevices(ArsenalInterface):
         ...     'hardware_profile': 'HP ProLiant DL360 Gen9',
         ...     'oob_ip_address': '10.0.0.1',
         ...     'oob_mac_address': 'aa:bb:cc:11:22:33',
+        ...     'inservice_date': '2024-07-31',
+        ...     'received_date': '2024-06-15',
         ... }
         >>> PhysicalDevices.update(params)
 

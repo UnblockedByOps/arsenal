@@ -38,6 +38,7 @@ from arsenalclient.exceptions import NoResultFound
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
     'hardware_profile',
+    'inservice_date',
     'mac_address_1',
     'mac_address_2',
     'oob_ip_address',
@@ -46,6 +47,7 @@ UPDATE_FIELDS = [
     'physical_elevation',
     'physical_location',
     'physical_rack',
+    'received_date',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -186,6 +188,7 @@ def create_physical_device(args, client, device=None):
             'physical_elevation': args.physical_elevation,
             'physical_location': args.physical_location,
             'physical_rack': args.physical_rack,
+            'received_date': args.received_date,
             'serial_number': args.serial_number,
         }
 
@@ -208,8 +211,8 @@ def create_physical_device(args, client, device=None):
                 except KeyError:
                     pass
                 return resp
-            else:
-                return check_resp(resp)
+
+            return check_resp(resp)
 
     except NoResultFound:
         resp = client.physical_devices.create(device)
@@ -263,6 +266,7 @@ def import_physical_device(args, client):
                 'hardware_profile',
                 'oob_ip_address',
                 'oob_mac_address',
+                'received_date',
                 'tags',
                 'status',
             ]
@@ -337,6 +341,8 @@ def export_physical_device(args, client):
             export_check_optional(result['hardware_profile']['name']),
             result['oob_ip_address'],
             result['oob_mac_address'],
+            export_check_optional(result['received_date']),
+            export_check_optional(result['inservice_date']),
         ]
         joined_tags = ''
         for tag in result['tags']:

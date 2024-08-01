@@ -84,6 +84,9 @@ def parser_physical_devices(top_parser, otsp):
     uaag.add_argument('-H',
                       '--hardware-profile',
                       help='Update physical_device hardware_profile.')
+    uaag.add_argument('-I',
+                      '--inservice-date',
+                      help='Update the inservice_date. Format is: YYYY-MM-DD')
     uaag.add_argument('-i',
                       '--oob-ip-address',
                       help='Update physical_device oob_ip_address.')
@@ -103,6 +106,9 @@ def parser_physical_devices(top_parser, otsp):
                       '--mac-address-2',
                       help='Update the mac address of the first network ' \
                       'interface of the physical_device.')
+    uaag.add_argument('-R',
+                      '--received-date',
+                      help='Update the received_date. Format is: YYYY-MM-DD')
     uaag.add_argument('-r',
                       '--rack',
                       dest='physical_rack',
@@ -170,6 +176,9 @@ def parser_physical_devices(top_parser, otsp):
                       '--mac-address-2',
                       help='The mac address of the first network ' \
                       'interface of the physical_device.')
+    rcag.add_argument('-R',
+                      '--received-date',
+                      help='Update the received_date. Format is: YYYY-MM-DD')
     rcag.add_argument('-r',
                       '--rack',
                       dest='physical_rack',
