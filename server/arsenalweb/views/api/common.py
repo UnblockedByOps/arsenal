@@ -89,10 +89,14 @@ from arsenalweb.views import (
     )
 
 LOG = logging.getLogger(__name__)
+# Add fields to this list to enable > < filtering on search results. All fields
+# in this list must be TIMESTAMP fields in the model.
 DATETIME_FIELDS = [
     'created',
-    'updated',
+    'inservice_date',
     'last_registered',
+    'received_date',
+    'updated',
 ]
 
 # Common functions

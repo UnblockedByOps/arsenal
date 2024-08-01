@@ -1,2 +1,2 @@
-# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address
-C00000001,TEST DC SCIF 0,R100,2,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL360 Gen9,10.1.1.1,xx:yy:zz:99:88:70
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,received_date,tags (optional, pipe separated),status_name (optional)
+C00000001,TEST DC SCIF 0,R100,2,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL360 Gen9,10.1.1.1,xx:yy:zz:99:88:70,2024-08-01
