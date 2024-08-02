@@ -410,36 +410,64 @@ validate_command "${search_cmd} physical_devices search serial_number=Y00001 --f
 # Set the node to hibernating, which is not in the map, ensure the physical_device status remains unchanged
 validate_command "${rw_cmd} nodes search name=kvm0000.docker --status hibernating" 0
 validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
-
+#
+# Boostrapping status changes
+#
+# Make sure a node going to bootstrapping sets the physical_device status to
+# bootstrapping and that the node going to bootstrapped sets the physical_device
+# as available.
+#
+validate_command "${rw_cmd} nodes search name=pd0000.test --status bootstrapping" 0
+validate_command "${search_cmd} nodes search name=pd0000.test --exact --fields status" 0 "string" "name: bootstrapping"
+validate_command "${search_cmd} physical_devices search serial_number=Y00002 -f status" 0 "string" "name: bootstrapping"
+validate_command "${rw_cmd} nodes search name=pd0000.test --status bootstrapped" 0
+validate_command "${search_cmd} nodes search name=pd0000.test --exact --fields status" 0 "string" "name: bootstrapped"
+validate_command "${search_cmd} physical_devices search serial_number=Y00002 -f status" 0 "string" "name: available"
+#
+# Make sure a physical_device that already has inservice_date set doesn't
+# change when the status goes from bootstrapping -> botstrapped a second time.
+#
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapping" 0
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapped" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f inservice_date" 0 "string" "inservice_date: 2024-08-01"
+#
 # physical_devices updates
-## elevation
+# elevation
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '5'"
-## rack
+# rack
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: R100"
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '6'"
-## oob-ip-address
+# oob-ip-address
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-ip-address 1.2.3.4" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
-## oob-mac-address
+# oob-mac-address
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
-## hardware-profile
+# hardware-profile
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: HP ProLiant m710x Server Cartridge"
-## mac-address-1
+# mac-address-1
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m1 cq:11:zz:22:xx:33" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_1: cq:11:zz:22:xx:33"
-## mac-address-2
+# mac-address-2
 validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m2 dq:11:zz:22:xx:33" 0
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
+# received-date
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --received-date 2024-08-02" 0
+# localization casues the date to render as yesterday since dates are inserted as midnight UTC.
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "received_date: 2024-08-01"
+# inservice-date
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --inservice-date 2024-08-02" 0
+# localization casues the date to render as yesterday since dates are inserted as midnight UTC.
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "inservice_date: 2024-08-01"
 #
 # Import tool
 #
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import.csv" 0
 validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
-# Make sure physical_device without a status specified is set to available
+# Make sure physical_device without a status specified is set to racked
 validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: racked"
 # Make sure physical_device with a status specified has the correct status set
 validate_command "${search_cmd} physical_devices search serial_number=A00000003 -f status" 0 "string" "name: allocated"

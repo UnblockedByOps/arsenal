@@ -71,6 +71,7 @@ INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,u
 INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (10, '4',    3, NOW(), NOW(), 'Admin');
 INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (11, '4.1',  3, NOW(), NOW(), 'Admin');
 INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (12, '4.10', 3, NOW(), NOW(), 'Admin');
+INSERT INTO physical_elevations (id,elevation,physical_rack_id,created,updated,updated_by) VALUES (13, '5', 3, NOW(), NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (1,  1,  'id', 'created', 1,  NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (2,  2,  'id', 'created', 2,  NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (3,  3,  'id', 'created', 3,  NOW(), 'Admin');
@@ -83,6 +84,7 @@ INSERT INTO physical_elevations_audit VALUES (9,  9,  'id', 'created', 9,  NOW()
 INSERT INTO physical_elevations_audit VALUES (10, 10, 'id', 'created', 10, NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (11, 11, 'id', 'created', 11, NOW(), 'Admin');
 INSERT INTO physical_elevations_audit VALUES (12, 12, 'id', 'created', 12, NOW(), 'Admin');
+INSERT INTO physical_elevations_audit VALUES (13, 13, 'id', 'created', 5, NOW(), 'Admin');
 
 # Test physical_devices
 #----------------------------------------------
@@ -96,6 +98,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              received_date,
                               status_id,
                               created,
                               updated,
@@ -109,6 +112,7 @@ INSERT INTO physical_devices (id,
                                                   2, 
                                                   '10.5.5.1', 
                                                   'bb:aa:aa:00:00:00', 
+                                                  NOW(),
                                                   7,
                                                   NOW(),
                                                   NOW(),
@@ -123,6 +127,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              received_date,
                               status_id,
                               created,
                               updated,
@@ -136,6 +141,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.2', 
                                                   'bb:aa:aa:00:00:01', 
+                                                  NOW(),
                                                   7,
                                                   NOW(),
                                                   NOW(),
@@ -149,6 +155,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              received_date,
                               status_id,
                               created,
                               updated,
@@ -161,6 +168,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.3', 
                                                   'bb:aa:aa:00:00:02', 
+                                                  NOW(),
                                                   7,
                                                   NOW(),
                                                   NOW(),
@@ -175,6 +183,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              received_date,
                               status_id,
                               created,
                               updated,
@@ -188,6 +197,7 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.4', 
                                                   'bb:aa:aa:00:00:03', 
+                                                  NOW(),
                                                   7,
                                                   NOW(),
                                                   NOW(),
@@ -202,6 +212,7 @@ INSERT INTO physical_devices (id,
                               hardware_profile_id,
                               oob_ip_address,
                               oob_mac_address,
+                              received_date,
                               status_id,
                               created,
                               updated,
@@ -215,7 +226,68 @@ INSERT INTO physical_devices (id,
                                                   3, 
                                                   '10.5.5.5', 
                                                   'bb:aa:aa:00:00:04', 
+                                                  NOW(),
                                                   7,
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              received_date,
+                              status_id,
+                              created,
+                              updated,
+                              updated_by) VALUES (6,
+                                                  'Y00002',
+                                                  4,
+                                                  2,
+                                                  3,
+                                                  'aa:aa:aa:10:00:00',
+                                                  'aa:aa:aa:10:00:01',
+                                                  3,
+                                                  '10.6.6.1',
+                                                  'bb:aa:aa:10:00:01',
+                                                  '2024-08-01 12:00:00',
+                                                  12,
+                                                  NOW(),
+                                                  NOW(),
+                                                  'Admin');
+INSERT INTO physical_devices (id,
+                              serial_number,
+                              physical_elevation_id,
+                              physical_location_id,
+                              physical_rack_id,
+                              mac_address_1,
+                              mac_address_2,
+                              hardware_profile_id,
+                              oob_ip_address,
+                              oob_mac_address,
+                              received_date,
+                              inservice_date,
+                              status_id,
+                              created,
+                              updated,
+                              updated_by) VALUES (7,
+                                                  'Y00003',
+                                                  5,
+                                                  2,
+                                                  3,
+                                                  'aa:aa:aa:10:00:02',
+                                                  'aa:aa:aa:10:00:03',
+                                                  3,
+                                                  '10.6.6.2',
+                                                  'bb:aa:aa:10:00:02',
+                                                  '2024-08-01 12:00:00',
+                                                  '2024-08-02 12:00:00',
+                                                  12,
                                                   NOW(),
                                                   NOW(),
                                                   'Admin');
@@ -224,21 +296,28 @@ INSERT INTO physical_devices_audit VALUES (2, 2, 'serial_number', 'created', 'Z0
 INSERT INTO physical_devices_audit VALUES (3, 3, 'serial_number', 'created', 'Z00003', NOW(), 'Admin');
 INSERT INTO physical_devices_audit VALUES (4, 4, 'serial_number', 'created', 'Z00004', NOW(), 'Admin');
 INSERT INTO physical_devices_audit VALUES (5, 5, 'serial_number', 'created', 'Y00001', NOW(), 'Admin');
+INSERT INTO physical_devices_audit VALUES (6, 6, 'serial_number', 'created', 'Y00002', NOW(), 'Admin');
+INSERT INTO physical_devices_audit VALUES (7, 7, 'serial_number', 'created', 'Y00003', NOW(), 'Admin');
 
 # Test nodes
 #----------------------------------------------
 #
 # Status id
 #
-# 1 = initializing
-# 2 = installed
-# 3 = setup
-# 4 = inservice
-# 5 = hibernating
-# 6 = decom
-# 7 = available
-# 8 = broken
-# 9 = maintenance
+# 1  = initializing
+# 2  = installed
+# 3  = setup
+# 4  = inservice
+# 5  = hibernating
+# 6  = decom
+# 7  = available
+# 8  = broken
+# 9  = maintenance
+# 10 = allocated
+# 11 = pending_maintenance
+# 12 = racked
+# 13 = bootstrapping
+# 14 = bootstrapped
 #                                                                                                                                                                          operating_system_id-----------------|
 #                                                                                                                                                                          hardware_profile_id--------------|  |
 #                                                                                                                                                                          status_id---------------------|  |  |
@@ -262,6 +341,7 @@ INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_i
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (17, 'node0001.datetime', 'node0001.datetime_uid', 2, 4, 3, 6,'Admin', '2020-06-15 14:30:00','2020-05-15 14:30:00','2020-06-10 14:30:00','DT00001');
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (18, 'node0002.datetime', 'node0002.datetime_uid', 2, 4, 3, 6,'Admin', '2020-10-01 12:00:00','2020-09-01 12:00:00','2020-09-20 12:00:00','DT00002');
 INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (19, 'node0003.datetime', 'node0003.datetime_uid', 2, 4, 3, 6,'Admin', '2021-02-01 08:00:00','2021-01-01 08:00:00','2021-01-20 08:00:00','DT00003');
+INSERT INTO nodes (id,name,unique_id,data_center_id,status_id,hardware_profile_id,operating_system_id,updated_by,last_registered,created,updated,serial_number) VALUES (20, 'pd0000.test', 'pd0000.test_uid', 2, 4, 3, 6,'Admin', NOW(), NOW(), NOW(),'Y00002');
 INSERT INTO nodes_audit VALUES (1,   1, 'name', 'created', 'pup0000.docker',    NOW(), 'Admin');
 INSERT INTO nodes_audit VALUES (2,   2, 'name', 'created', 'pup0001.docker',    NOW(), 'Admin');
 INSERT INTO nodes_audit VALUES (3,   3, 'name', 'created', 'pup0002.docker',    NOW(), 'Admin');
@@ -281,6 +361,7 @@ INSERT INTO nodes_audit VALUES (16, 16, 'name', 'created', 'node0000.datetime', 
 INSERT INTO nodes_audit VALUES (17, 17, 'name', 'created', 'node0001.datetime', NOW(), 'Admin');
 INSERT INTO nodes_audit VALUES (18, 18, 'name', 'created', 'node0002.datetime', NOW(), 'Admin');
 INSERT INTO nodes_audit VALUES (19, 19, 'name', 'created', 'node0003.datetime', NOW(), 'Admin');
+INSERT INTO nodes_audit VALUES (20, 20, 'name', 'created', 'pd0000.test', NOW(), 'Admin');
 
 # Test node_groups
 #----------------------------------------------
