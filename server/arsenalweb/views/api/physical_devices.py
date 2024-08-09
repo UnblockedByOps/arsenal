@@ -110,9 +110,12 @@ def create_physical_device(dbsession,
 
     Optional kwargs:
 
-    mac_address_2: A string representing the MAC address of the second interface.
-    oob_ip_address: A string representing the out of band IP address.
+    mac_address_2  : A string representing the MAC address of the second interface.
+    oob_ip_address : A string representing the out of band IP address.
     oob_mac_address: A string representing the out of band MAC address.
+    inservice_date : A string representing when the physical_device was
+        first put into service in the following format: YYYY-MM-DD. Will be
+        converted to a datetime object.
     '''
 
     try:
@@ -138,7 +141,15 @@ def create_physical_device(dbsession,
         except (AttributeError, KeyError):
             pass
 
-        received_datetime = datetime.strptime(received_date, "%Y-%m-%d")
+        received_date_noon = f"{received_date} 12:00:00"
+        received_datetime = datetime.strptime(received_date_noon, "%Y-%m-%d %H:%M:%S")
+
+        try:
+            if kwargs['inservice_date'] and kwargs['inservice_date'] != 'None':
+                inservice_date_noon = f"{kwargs['inservice_date']} 12:00:00"
+                kwargs['inservice_date'] = datetime.strptime(inservice_date_noon, "%Y-%m-%d %H:%M:%S")
+        except (AttributeError, KeyError):
+            pass
 
         physical_device = PhysicalDevice(serial_number=my_serial_number,
                                          mac_address_1=mac_address_1,
@@ -234,7 +245,8 @@ def update_physical_device(dbsession, physical_device, **kwargs):
                 except TypeError:
                     LOG.warning("%s has no value, skipping.", attribute)
                     continue
-                new_value = datetime.strptime(my_attribs[attribute], "%Y-%m-%d")
+                datetime_noon = f"{my_attribs[attribute]} 12:00:00"
+                new_value = datetime.strptime(datetime_noon, "%Y-%m-%d %H:%M:%S")
             else:
                 new_value = my_attribs[attribute]
 
