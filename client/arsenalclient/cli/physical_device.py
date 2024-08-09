@@ -331,6 +331,18 @@ def export_physical_device(args, client):
     all_results = []
     for result in resp['results']:
 
+        try:
+            received_date = result['received_date'][:10]
+        except (KeyError, TypeError):
+            received_date = ''
+            LOG.debug("received_date is not present for physical_device: %s", result['serial_number'])
+
+        try:
+            inservice_date = result['inservice_date'][:10]
+        except (KeyError, TypeError):
+            inservice_date = ''
+            LOG.debug("inservice_date is not present for physical_device: %s", result['serial_number'])
+
         my_device = [
             result['serial_number'],
             result['physical_location']['name'],
@@ -341,8 +353,8 @@ def export_physical_device(args, client):
             export_check_optional(result['hardware_profile']['name']),
             result['oob_ip_address'],
             result['oob_mac_address'],
-            export_check_optional(result['received_date']),
-            export_check_optional(result['inservice_date']),
+            export_check_optional(received_date),
+            export_check_optional(inservice_date),
         ]
         joined_tags = ''
         for tag in result['tags']:

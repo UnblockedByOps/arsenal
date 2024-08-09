@@ -38,9 +38,10 @@ validate_command () {
   results=$(eval "$CMD")
   ret_code=$?
   if [[ "$ret_code" == "$expected_ret" ]]; then 
-      echo -e "Expected return code received ($expected_ret). Command results:\n"
-      echo "$results"
+      echo -e "Expected return code received ($expected_ret).\n"
       if [ -n "$expected_text" ] ; then
+          echo -e "\nExpected text: $expected_text\n"
+          echo -e "Command results:\n $results"
           if [[ $results =~ "${expected_text}" ]] ; then
               echo -e "\nTEST $test_num RESULT: PASSED\n"
           else
@@ -49,9 +50,10 @@ validate_command () {
               overall_ret=1
           fi
       elif [ -n "$test_command" ] ; then
+          echo -e "Command results:\n $results"
           echo -e "\nExecuting test command: $test_command\n"
           cmd_result=$(eval "$test_command")
-          echo "Command result: $cmd_result"
+          echo "Test command result: $cmd_result"
           if [[ $cmd_result =~ "${command_result}" ]] ; then
               echo -e "\nTEST $test_num RESULT: PASSED\n"
           else
@@ -60,6 +62,7 @@ validate_command () {
               overall_ret=1
           fi
       else
+          echo -e "Command results:\n $results"
           echo -e "\nTEST $test_num RESULT: PASSED\n"
       fi
   else
@@ -429,7 +432,7 @@ validate_command "${search_cmd} physical_devices search serial_number=Y00002 -f 
 #
 validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapping" 0
 validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapped" 0
-validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f inservice_date" 0 "string" "inservice_date: 2024-08-01"
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f inservice_date" 0 "string" "inservice_date: 2024-08-02"
 #
 # physical_devices updates
 # elevation
@@ -456,12 +459,10 @@ validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m
 validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
 # received-date
 validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --received-date 2024-08-02" 0
-# localization casues the date to render as yesterday since dates are inserted as midnight UTC.
-validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "received_date: 2024-08-01"
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "received_date: 2024-08-02"
 # inservice-date
 validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --inservice-date 2024-08-02" 0
-# localization casues the date to render as yesterday since dates are inserted as midnight UTC.
-validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "inservice_date: 2024-08-01"
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "inservice_date: 2024-08-02"
 #
 # Import tool
 #
