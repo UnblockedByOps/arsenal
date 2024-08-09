@@ -337,7 +337,7 @@ You are now ready to add devices. The Arsenal client has an import tool to read 
 The format of the csv file is as follows:
 
 ```csv
-# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,received_date,tags (optional, pipe separated),status_name (optional)
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,received_date,inservice_date (optional),tags (optional, pipe separated),status_name (optional)
 AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70,2024-07-30
 AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71,2024-07-30
 BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72,2024-07-30
