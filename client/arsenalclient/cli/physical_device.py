@@ -267,6 +267,7 @@ def import_physical_device(args, client):
                 'oob_ip_address',
                 'oob_mac_address',
                 'received_date',
+                'inservice_date',
                 'tags',
                 'status',
             ]
