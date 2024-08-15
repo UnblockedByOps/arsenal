@@ -44,6 +44,7 @@ UPDATE_FIELDS = [
     'physical_location_postal_code',
     'physical_location_provider',
     'physical_location_status',
+    'physical_location_data_center',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -77,6 +78,11 @@ def process_actions(args, client, results):
 
     r_names = []
 
+    external_handle = [
+        'physical_location_status',
+        'physical_location_data_center'
+    ]
+
     for physical_location in results:
         r_names.append('name={0},id={1}'.format(physical_location['name'],
                                                 physical_location['id']))
@@ -88,6 +94,11 @@ def process_actions(args, client, results):
         resp = client.statuses.assign(args.physical_location_status,
                                       'physical_locations',
                                       results)
+
+    if args.physical_location_data_center and ask_yes_no(msg, args.answer_yes):
+        resp = client.data_centers.assign(args.physical_location_data_center,
+                                          'physical_locations',
+                                          results)
 
     if args.set_tags:
         msg = _format_msg(results, args.set_tags)
@@ -105,7 +116,7 @@ def process_actions(args, client, results):
                 name, value = tag.split('=')
                 resp = client.tags.deassign(name, value, 'physical_locations', results)
 
-    if any(getattr(args, key) and key != 'physical_location_status' for key in UPDATE_FIELDS):
+    if any(getattr(args, key) and key not in external_handle for key in UPDATE_FIELDS):
         msg = _format_msg(results)
         if ask_yes_no(msg, args.answer_yes):
             for physical_location in results:

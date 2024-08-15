@@ -1,6 +1,7 @@
 '''Arsenal client DataCenters class.'''
 import logging
 from arsenalclient.interface.arsenal_interface import ArsenalInterface
+from arsenalclient.exceptions import NoResultFound
 
 LOG = logging.getLogger(__name__)
 
@@ -90,4 +91,43 @@ class DataCenters(ArsenalInterface):
         return super(DataCenters, self).get_by_name(name)
 
     # Custom methods
-    # TBD
+    def assign(self, data_center_name, object_type, results):
+        '''Set the data_center of one or more physical_locations.
+
+        Args:
+
+            data_center_name (string): The name of the data_center you wish to set the
+                physical_location(s) to.
+            object_type (str): A string representing the object_type to assign the
+                data_center to. Only physical_locations are currently supported.
+            results    : The physical_locations from the results
+                of <Class>.search() to assign the data_center to.
+
+        Usage:
+
+            >>> DataCenters.assign('las2', 'physical_locations', <search() results>)
+            <Response [200]>
+        '''
+
+        try:
+            data_center = self.get_by_name(data_center_name)
+        except NoResultFound:
+            return None
+
+        action_ids = [result['id'] for result in results]
+
+        LOG.info('Assigning data_center: %s', data_center['name'])
+
+        for result in results:
+            try:
+                LOG.info('  %s: %s', object_type, result['name'])
+            # physical_devices don't have a name attribute
+            except KeyError:
+                LOG.info('  %s: %s', object_type, result['serial_number'])
+
+        data = {
+            object_type: action_ids
+        }
+
+        uri = "/api/data_centers/{0}/{1}".format(data_center['id'], object_type)
+        return self.api_conn(uri, data, method='put')

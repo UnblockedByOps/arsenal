@@ -559,3 +559,10 @@ ALTER TABLE physical_devices ADD COLUMN inservice_date TIMESTAMP NULL AFTER rece
 
 UPDATE alembic_version SET version_num='d8e2cee1e054' WHERE alembic_version.version_num = '277a0c334975';
 
+-- Running upgrade d8e2cee1e054 -> abc487ea9997
+
+ALTER TABLE physical_locations ADD COLUMN data_center_id INTEGER UNSIGNED AFTER status_id;
+
+ALTER TABLE physical_locations ADD CONSTRAINT fk_physical_locations_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id);
+
+UPDATE alembic_version SET version_num='abc487ea9997' WHERE alembic_version.version_num = 'd8e2cee1e054';

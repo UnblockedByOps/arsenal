@@ -25,6 +25,9 @@ from arsenalweb.views.api.common import (
     collect_params,
     enforce_api_change_limit,
     )
+from arsenalweb.views.api.data_centers import (
+    find_data_center_by_name,
+)
 from arsenalweb.models.physical_locations import (
     PhysicalLocation,
     PhysicalLocationAudit,
@@ -83,15 +86,16 @@ def create_physical_location(dbsession,
 
     Optional kwargs:
 
-    provider    : A string that is the physical_location provider.
-    address_1   : A string that is the address line 1.
-    address_2   : A string that is the address line 2.
-    city        : A string that is the address city.
-    admin_area  : A string that is the state/province.
-    country     : A string that is teh country.
-    postal_code : A string that is the postal code.
-    contact_name: A string that is the contat name of the data center.
-    phone_number: A string that is the phone number of the data center.
+    provider         : A string that is the physical_location provider.
+    address_1        : A string that is the address line 1.
+    address_2        : A string that is the address line 2.
+    city             : A string that is the address city.
+    admin_area       : A string that is the state/province.
+    country          : A string that is teh country.
+    postal_code      : A string that is the postal code.
+    contact_name     : A string that is the contat name of the data center.
+    phone_number     : A string that is the phone number of the data center.
+    data_center_name : A string that is the name of the data_center of the physical_location.
     '''
 
     try:
@@ -102,6 +106,13 @@ def create_physical_location(dbsession,
             my_status_id = my_status.id
         except NoResultFound:
             my_status_id = 2
+
+        try:
+            my_data_center = find_data_center_by_name(dbsession, kwargs['data_center_name'])
+            kwargs['data_center_id'] = my_data_center.id
+            kwargs.pop('data_center_name', None)
+        except (NoResultFound, KeyError):
+            kwargs.pop('data_center_name', None)
 
         utcnow = datetime.utcnow()
 

@@ -353,6 +353,10 @@ validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_
 validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --status inservice" 0
 validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "status: inservice"
 validate_command "${search_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --data-center test_data_center_1" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "data_center: test_data_center_1"
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --data-center other_test_data_center_1" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "data_center: other_test_data_center_1"
 validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 # physical_racks
