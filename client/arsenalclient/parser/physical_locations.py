@@ -89,6 +89,10 @@ def parser_physical_locations(top_parser, otsp):
                       '--city',
                       dest='physical_location_city',
                       help='Update physical_location city.')
+    uaag.add_argument('-d',
+                      '--data-center',
+                      dest='physical_location_data_center',
+                      help='Update physical_location data_center.')
     uaag.add_argument('-s',
                       '--state',
                       dest='physical_location_admin_area',
@@ -153,6 +157,10 @@ def parser_physical_locations(top_parser, otsp):
                      '--city',
                      dest='physical_location_city',
                      help='Update physical_location city.')
+    csc.add_argument('-d',
+                     '--data-center',
+                     dest='physical_location_data_center',
+                     help='Update physical_location data_center.')
     csc.add_argument('-s',
                      '--state',
                      dest='physical_location_admin_area',
