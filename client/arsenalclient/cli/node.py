@@ -57,9 +57,10 @@ def enc(args, client):
     are no classes returned for a node, attempt to assign the class.'''
 
     apply_statuses = [
-        'setup',
+        'bootstrapping',
         'inservice',
         'pending_maintenance',
+        'setup',
     ]
 
     LOG.debug('Triggering node enc.')
