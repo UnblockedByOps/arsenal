@@ -370,7 +370,12 @@ def export_physical_device(args, client):
         if joined_tags:
             my_device.append(joined_tags)
 
-        line = ','.join(my_device)
+        try:
+            line = ','.join(my_device)
+        except TypeError as ex:
+            LOG.error("There was a problem exporting the physical_device: %s", ex)
+            continue
+
         if args.export_csv:
             all_results.append(line)
         else:
