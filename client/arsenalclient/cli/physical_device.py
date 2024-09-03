@@ -332,6 +332,12 @@ def export_physical_device(args, client):
     all_results = []
     for result in resp['results']:
 
+        LOG.info("Exporting serial_number: %s", result['serial_number'])
+
+        if not result['oob_mac_address']:
+            LOG.error("Device has no oob_mac_addresss, unable to export.")
+            continue
+
         try:
             received_date = result['received_date'][:10]
         except (KeyError, TypeError):
