@@ -162,7 +162,12 @@ class Node(Base):
                 # Need this so we don't return an empty list of guest_vms
                 # for each guest vm.
                 else:
-                    del resp['guest_vms']
+                    my_hypervisor=get_name_id_list(self.hypervisor)
+                    if my_hypervisor:
+                        try:
+                            del resp['guest_vms']
+                        except KeyError:
+                            pass
             if 'tags' in my_fields:
                 resp['tags'] = get_name_id_list(self.tags,
                                                 extra_keys=['value'])
