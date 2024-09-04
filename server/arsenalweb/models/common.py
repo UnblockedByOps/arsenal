@@ -88,6 +88,7 @@ def jsonify(obj):
     '''Convert an object or dict to json.'''
 
     LOG.debug('jsonify()')
+    LOG.debug('jsonify() input: %s', obj)
     resp = {}
     try:
         convert = obj.__dict__
@@ -122,6 +123,7 @@ def jsonify(obj):
             resp[param] = date
         else:
             resp[param] = p_type
+    LOG.debug('jsonify() response: %s', resp)
 
     return resp
 
@@ -156,6 +158,7 @@ def get_name_id_dict(objs, default_keys=None, extra_keys=None):
                 item[key] = my_val
 
         resp = jsonify(item)
+    LOG.debug('get_name_id_dict() response: %s', resp)
 
     return resp
 
@@ -172,6 +175,7 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
         item = {}
         for key in default_keys:
             item[key] = getattr(obj, key)
+            LOG.debug("item[key] is: %s", item[key])
         if extra_keys:
             for key in extra_keys:
                 # Preserve integers in tag values.
@@ -184,6 +188,7 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
                     item[key] = getattr(obj, key)
 
         resp.append(jsonify(item))
+    LOG.debug('get_name_id_list() response: %s', resp)
 
     return resp
 
