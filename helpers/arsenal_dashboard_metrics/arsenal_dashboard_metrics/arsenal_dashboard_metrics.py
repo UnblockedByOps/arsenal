@@ -4,11 +4,14 @@ Collect metrics from Arsenal status endpoints and send
 them to graphite.
 """
 
+import sys
+import logging
 import argparse
 import socket
 import time
 import requests
 
+LOG = logging.getLogger(__name__)
 
 def _parse_args():
     '''Parse all the command line arguments.'''
@@ -58,9 +61,31 @@ def _parse_args():
 
     return parser.parse_args()
 
+def configure_logging(args):
+    '''Set up logging.'''
+
+    # Set up logging
+    if args.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    root = logging.getLogger()
+    root.setLevel(log_level)
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(log_level)
+    if args.dry_run:
+        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- DRY RUN: %(message)s", "%Y-%m-%d %H:%M:%S")
+    else:
+        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- %(message)s", "%Y-%m-%d %H:%M:%S")
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
 def get_data(server, uri, params=None, data_type=None):
     '''Get data from arsenal API.'''
 
+    LOG.debug("START: Getting data from endpoint: %s", uri)
     headers = {'Content-Type': 'application/json', }
 
     url = f"https://{server}/{uri}"
@@ -71,6 +96,7 @@ def get_data(server, uri, params=None, data_type=None):
     if data_type == 'total':
         return int(results['meta']['total'])
 
+    LOG.debug("END: Getting data from endpoint: %s", uri)
     return results
 
 def get_path(input_dict):
@@ -88,6 +114,7 @@ def get_path(input_dict):
 def prep_node_metrics(args, results):
     '''Prep node-based metrics and send them graphite.'''
 
+    LOG.debug("START: Prepping node metrics...")
     now = int(time.time())
 
     for data_center, values in results['results'][0].items():
@@ -100,24 +127,31 @@ def prep_node_metrics(args, results):
             metric = f"{metric_name} {my_value} {now}"
             send_metric(args, metric)
 
+    LOG.debug("DONE: Prepping node metrics.")
+
 def prep_stale_node_metrics(args, results):
     '''Prep stale node metric and send them to graphite.'''
 
+    LOG.debug("START: Prepping stale node metric...")
+
     now = int(time.time())
 
-    metric = 'dashboards.arsenal.nodes.stale_last_registered.inservice_count ' \
-             '{0} {1}'.format(results['meta']['total'], now)
+    metric = f"dashboards.arsenal.nodes.stale_last_registered.inservice_count {results['meta']['total']} {now}"
     send_metric(args, metric)
+
+    LOG.debug("END: Prepping stale node metric.")
 
 def prep_db_metrics(args, results):
     '''Prep db-based metrics and send them to graphite.'''
 
+    LOG.debug("START: Prepping db-based metrics...")
     now = int(time.time())
 
     for key, val in results['results'][0]['row_counts'].items():
-        metric = 'dashboards.arsenal.db.row_counts.{0}_count ' \
-                 '{1} {2}'.format(key, val, now)
+        metric = f"dashboards.arsenal.db.row_counts.{key}_count {val} {now}"
         send_metric(args, metric)
+
+    LOG.debug("END: Prepping db-based metrics.")
 
 def send_metric(args, message):
     '''Send metric to graphite.'''
@@ -127,18 +161,20 @@ def send_metric(args, message):
 
     if args.dry_run:
 
-        print(f'sending metric - server: {args.host_fqdn} port: {args.host_port} message: {message}')
+        msg = f"sending metric - server: {args.host_fqdn} port: {args.host_port} message: {message}"
+        LOG.info(msg)
 
     else:
 
         try:
+            LOG.debug("Sending metric: %s", message)
             sock = socket.socket()
             sock.connect((server_ip, server_port))
             sock.sendall(f'{message}\n'.encode())
             sock.close()
-            print('metric sent')
+            LOG.debug("Metric sent.")
         except:
-            print('failed to send')
+            LOG.error("Metric failed to send.")
             raise
 
 def write_success(args):
@@ -146,15 +182,18 @@ def write_success(args):
     Write a timestamp to a file upon successsfully completing.
     """
 
+    LOG.debug("START: Writing success file...")
     now = time.time()
     with open(args.success_file, "w", encoding="utf-8") as my_file:
         my_file.write(f"Last success time: {now}\n")
+    LOG.debug("END: Writing success file.")
 
 def main():
     '''Do all the things'''
 
     # parse the args
     args = _parse_args()
+    configure_logging(args)
 
     results = get_data(args.arsenal_server, '/api/reports/nodes')
     prep_node_metrics(args, results)
