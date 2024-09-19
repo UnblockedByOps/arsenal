@@ -76,9 +76,9 @@ def configure_logging(args):
     console = logging.StreamHandler(sys.stdout)
     console.setLevel(log_level)
     if args.dry_run:
-        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- DRY RUN: %(message)s", "%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- %(process)d - DRY RUN: %(message)s", "%Y-%m-%d %H:%M:%S")
     else:
-        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- %(message)s", "%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter("%(asctime)s - %(levelname)-8s- %(process)d %(message)s", "%Y-%m-%d %H:%M:%S")
     console.setFormatter(formatter)
     root.addHandler(console)
 
