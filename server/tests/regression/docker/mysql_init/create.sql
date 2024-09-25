@@ -545,3 +545,24 @@ ALTER TABLE node_groups ADD COLUMN monitoring_contact TEXT after notes_url;
 
 UPDATE alembic_version SET version_num='b63d86dd6535' WHERE alembic_version.version_num = '3ee80746cca8';
 
+-- Running upgrade b63d86dd6535 -> 277a0c334975
+
+ALTER TABLE node_groups ADD COLUMN technical_contact TEXT AFTER monitoring_contact;
+
+UPDATE alembic_version SET version_num='277a0c334975' WHERE alembic_version.version_num = 'b63d86dd6535';
+
+-- Running upgrade 277a0c334975 -> d8e2cee1e054
+
+ALTER TABLE physical_devices ADD COLUMN received_date TIMESTAMP NULL AFTER oob_mac_address;
+
+ALTER TABLE physical_devices ADD COLUMN inservice_date TIMESTAMP NULL AFTER received_date;
+
+UPDATE alembic_version SET version_num='d8e2cee1e054' WHERE alembic_version.version_num = '277a0c334975';
+
+-- Running upgrade d8e2cee1e054 -> abc487ea9997
+
+ALTER TABLE physical_locations ADD COLUMN data_center_id INTEGER UNSIGNED AFTER status_id;
+
+ALTER TABLE physical_locations ADD CONSTRAINT fk_physical_locations_data_center_id_data_centers FOREIGN KEY(data_center_id) REFERENCES data_centers (id);
+
+UPDATE alembic_version SET version_num='abc487ea9997' WHERE alembic_version.version_num = 'd8e2cee1e054';

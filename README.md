@@ -55,21 +55,19 @@ Create a virtualenv and install the requirements.
 
 ```bash
 cd ~/venvs
-virtualenv arsenalweb
+python3 -m venv arsenalweb
 . arsenalweb/bin/activate
 mkdir arsenalweb/conf
 mkdir arsenalweb/sconf
-pip install -r ~/git/arsenal/server/requirements.txt --global-option=build_ext --global-option="-I$(xcrun --show-sdk-path)/usr/include/sasl"
+cd ~/git/arsenal/server
+pip install -e .
 ```
 
-Copy sample configs and install Arsenal.
+Copy sample configs
 
 ```bash
-cd ~/git/arsenal/server
 cp conf/arsenal-web-dev.ini ~/venvs/arsenalweb/conf/arsenal-web.ini
 cp conf/arsenal_secrets.ini ~/venvs/arsenalweb/sconf/
- 
-python setup.py develop
 ```
 
 Update configs to point at your local DB.
@@ -339,18 +337,20 @@ You are now ready to add devices. The Arsenal client has an import tool to read 
 The format of the csv file is as follows:
 
 ```csv
-# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,tags (optional, pipe separated),status_name (optional)
-AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70
-AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71
-BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72
-BB0000002,TEST_LOCATION_1,R101,2,aa:bb:cc:11:22:60,aa:bb:cc:11:22:61,HP ProLiant DL380 Gen9,10.1.1.4,xx:yy:zz:99:88:73
-BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant DL380 Gen9,10.1.1.5,xx:yy:zz:99:88:74,,allocated
-ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,chassis_vlan=2240|chassis_subnet=10.0.44.0/25
+# serial_number,location,rack,elevation,mac_address_1,mac_address_2 (optional),hardware_profile,oob_ip_address,oob_mac_address,received_date,inservice_date (optional),tags (optional, pipe separated),status_name (optional)
+AA0000001,TEST_LOCATION_1,R100,1,aa:bb:cc:11:22:30,aa:bb:cc:11:22:31,HP ProLiant DL380 Gen9,10.1.1.1,xx:yy:zz:99:88:70,2024-07-30
+AA0000002,TEST_LOCATION_1,R100,2,aa:bb:cc:11:22:40,aa:bb:cc:11:22:41,HP ProLiant DL380 Gen9,10.1.1.2,xx:yy:zz:99:88:71,2024-07-30
+BB0000001,TEST_LOCATION_1,R101,1,aa:bb:cc:11:22:50,aa:bb:cc:11:22:51,HP ProLiant DL380 Gen9,10.1.1.3,xx:yy:zz:99:88:72,2024-07-30
+BB0000002,TEST_LOCATION_1,R101,2,aa:bb:cc:11:22:60,aa:bb:cc:11:22:61,HP ProLiant DL380 Gen9,10.1.1.4,xx:yy:zz:99:88:73,2024-07-30
+BB0000003,TEST_LOCATION_1,R101,3,aa:bb:cc:11:22:70,aa:bb:cc:11:22:71,HP ProLiant DL380 Gen9,10.1.1.5,xx:yy:zz:99:88:74,,2024-07-30,allocated
+ZZ0000000,TEST_LOCATION_1,R102,1,ab:bb:cc:11:22:90,ab:bb:cc:11:22:91,HP ProLiant DL380 Gen9,10.1.1.8,xx:yy:zz:99:88:95,,2024-07-30chassis_vlan=2240|chassis_subnet=10.0.44.0/25
 ```
 
 The hardware profile must match an existing hardware profile name already in Arsenal. If this is a new piece of gear that does not yet have a hardware profile, use `Unknown` for this field. When the node is kickstarted for the first time, it will register its hardware_profile and update the physical_device accordingly.
 
-If `status_name` is not defined, the physical_device will be imported with the status `available`
+If `status_name` is not defined, the physical_device will be imported with the status `racked`
+
+`(optional)` fields still require a comma separated placeholder (`,,`).
 
 #### Importing the devices
 

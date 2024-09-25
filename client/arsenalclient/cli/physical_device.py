@@ -38,6 +38,7 @@ from arsenalclient.exceptions import NoResultFound
 LOG = logging.getLogger(__name__)
 UPDATE_FIELDS = [
     'hardware_profile',
+    'inservice_date',
     'mac_address_1',
     'mac_address_2',
     'oob_ip_address',
@@ -46,6 +47,7 @@ UPDATE_FIELDS = [
     'physical_elevation',
     'physical_location',
     'physical_rack',
+    'received_date',
 ]
 TAG_FIELDS = [
     'set_tags',
@@ -186,6 +188,7 @@ def create_physical_device(args, client, device=None):
             'physical_elevation': args.physical_elevation,
             'physical_location': args.physical_location,
             'physical_rack': args.physical_rack,
+            'received_date': args.received_date,
             'serial_number': args.serial_number,
         }
 
@@ -208,8 +211,8 @@ def create_physical_device(args, client, device=None):
                 except KeyError:
                     pass
                 return resp
-            else:
-                return check_resp(resp)
+
+            return check_resp(resp)
 
     except NoResultFound:
         resp = client.physical_devices.create(device)
@@ -263,6 +266,8 @@ def import_physical_device(args, client):
                 'hardware_profile',
                 'oob_ip_address',
                 'oob_mac_address',
+                'received_date',
+                'inservice_date',
                 'tags',
                 'status',
             ]
@@ -327,6 +332,24 @@ def export_physical_device(args, client):
     all_results = []
     for result in resp['results']:
 
+        LOG.info("Exporting serial_number: %s", result['serial_number'])
+
+        if not result['oob_mac_address']:
+            LOG.error("Device has no oob_mac_addresss, unable to export.")
+            continue
+
+        try:
+            received_date = result['received_date'][:10]
+        except (KeyError, TypeError):
+            received_date = ''
+            LOG.debug("received_date is not present for physical_device: %s", result['serial_number'])
+
+        try:
+            inservice_date = result['inservice_date'][:10]
+        except (KeyError, TypeError):
+            inservice_date = ''
+            LOG.debug("inservice_date is not present for physical_device: %s", result['serial_number'])
+
         my_device = [
             result['serial_number'],
             result['physical_location']['name'],
@@ -337,6 +360,8 @@ def export_physical_device(args, client):
             export_check_optional(result['hardware_profile']['name']),
             result['oob_ip_address'],
             result['oob_mac_address'],
+            export_check_optional(received_date),
+            export_check_optional(inservice_date),
         ]
         joined_tags = ''
         for tag in result['tags']:
@@ -345,7 +370,12 @@ def export_physical_device(args, client):
         if joined_tags:
             my_device.append(joined_tags)
 
-        line = ','.join(my_device)
+        try:
+            line = ','.join(my_device)
+        except TypeError as ex:
+            LOG.error("There was a problem exporting the physical_device: %s", ex)
+            continue
+
         if args.export_csv:
             all_results.append(line)
         else:

@@ -67,7 +67,6 @@ class Node(Base):
     ec2_id = Column(INTEGER(unsigned=True), ForeignKey('ec2_instances.id'))
     data_center_id = Column(INTEGER(unsigned=True), ForeignKey('data_centers.id'))
     uptime = Column(VARCHAR(255))
-    #serial_number = Column(VARCHAR(255), ForeignKey('physical_devices.serial_number'))
     serial_number = Column(VARCHAR(255))
     os_memory = Column(VARCHAR(255))
     processor_count = Column(Integer)
@@ -163,7 +162,12 @@ class Node(Base):
                 # Need this so we don't return an empty list of guest_vms
                 # for each guest vm.
                 else:
-                    del resp['guest_vms']
+                    my_hypervisor=get_name_id_list(self.hypervisor)
+                    if my_hypervisor:
+                        try:
+                            del resp['guest_vms']
+                        except KeyError:
+                            pass
             if 'tags' in my_fields:
                 resp['tags'] = get_name_id_list(self.tags,
                                                 extra_keys=['value'])

@@ -26,6 +26,14 @@ INSERT INTO users VALUES (4, 'readonly', 'Readonly', 'User', 'AT4beMbzo1zYZRFN',
 INSERT INTO users VALUES (5, 'jenkins-techops', 'jenkins-techops', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
 # Initial puppet-enc password is 'password'
 INSERT INTO users VALUES (6, 'puppet-enc', 'Puppet Node Classifier', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial aws-lambda password is 'password'
+INSERT INTO users VALUES (7, 'aws-lambda', 'AWS Lambda user for ec2 decom', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial release password is 'password'
+INSERT INTO users VALUES (8, 'release', 'Bot user for automated releases', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial external-enc password is 'password'
+INSERT INTO users VALUES (9, 'external-enc', 'External (non-puppet) Node Classifier', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
+# Initial decom-hw password is 'password'
+INSERT INTO users VALUES (10, 'decom-hw', 'Bot user to decommission harware', 'Bot', 'Vf7ZmjQarLus/TqT', '$6$Vf7ZmjQarLus/TqT$l5qsqY4ntpX8nEzbm33n5StF5D.93yV3uoh8ucthwFf8mEJBitnGLr5SWhzD2vpkpnAJnUiLl40d0hH24qPOq1', NOW(), NOW(), 'Admin');
 #
 # GROUPS
 #
@@ -176,13 +184,17 @@ INSERT INTO group_perm_assignments (group_id,perm_id) VALUES (23,20);
 # Adding db users to db groups.
 ###########################################################################
 ### Becasue we need to allow kaboom to update status, any user added 
-### to the api_write group also needs ot be added to the api_register group.
+### to the api_write group also needs to be added to the api_register group.
 # admin           = 1
 # kaboom          = 2
 # hvm             = 3
 # readonly        = 4
 # jenkins-techops = 5
 # puppet-enc      = 6
+# aws-lambda      = 7
+# release         = 8
+# external-enc    = 9
+# decom-hw        = 10
 # Add user: local_admin to groups: local_admin
 INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (1, 1);
 # Add user: hvm to groups: api_register, status_write
@@ -215,6 +227,10 @@ INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 6);
 INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (2, 23);
 # Add user: puppet-enc to groups: node_write
 INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (6, 6);
+# Add user: external-enc to groups: node_group_write
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (9, 8);
+# Add user: decom-hw to groups: physical_device_delete
+INSERT INTO local_user_group_assignments (user_id,group_id) VALUES (10, 16);
 
 #
 # STATUSES
@@ -239,10 +255,16 @@ INSERT INTO statuses VALUES (9, 'maintenance', 'Hardware that is currently under
 INSERT INTO statuses_audit VALUES (9, 9, 'name', 'created', 'maintenance', NOW(), 'Admin');
 INSERT INTO statuses VALUES (10, 'allocated', 'Hardware that has been allocated for a purpose.', NOW(), NOW(), 'Admin');
 INSERT INTO statuses_audit VALUES (10, 10, 'name', 'created', 'allocated', NOW(), 'Admin');
-INSERT INTO statuses VALUES (11, 'pending_maintenance', 'Node that is marked for maintenance..', NOW(), NOW(), 'Admin');
-INSERT INTO statuses_audit VALUES (11, 11, 'name', 'created', 'allocated', NOW(), 'Admin');
+INSERT INTO statuses VALUES (11, 'pending_maintenance', 'Node that is marked for maintenance.', NOW(), NOW(), 'Admin');
+INSERT INTO statuses_audit VALUES (11, 11, 'name', 'created', 'pending_maintenance', NOW(), 'Admin');
+INSERT INTO statuses VALUES (12, 'racked', 'A physical_device that has been put in a rack and ready to be bootstrapped.', NOW(), NOW(), 'Admin');
+INSERT INTO statuses_audit VALUES (12, 12, 'name', 'created', 'racked', NOW(), 'Admin');
+INSERT INTO statuses VALUES (13, 'bootstrapping', 'A physical_device that is in the process of undergoing initial validation and configuration.', NOW(), NOW(), 'Admin');
+INSERT INTO statuses_audit VALUES (13, 13, 'name', 'created', 'bootstrapping', NOW(), 'Admin');
+INSERT INTO statuses VALUES (14, 'bootstrapped', 'A node or physical_device that has successfully completed the process of initial validation and configuration.', NOW(), NOW(), 'Admin');
+INSERT INTO statuses_audit VALUES (14, 14, 'name', 'created', 'bootstrapped', NOW(), 'Admin');
 
-INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'Documentation url', 'Monitoring Contact', NOW(), NOW(), 'Admin');
+INSERT INTO node_groups VALUES (1, 'default_install', 'admin@rubiconproject.com', 'Default node group for all nodes.', 'Documentation url', 'Monitoring Contact', 'Technical Contact', NOW(), NOW(), 'Admin');
 INSERT INTO node_groups_audit VALUES (1, 1, 'name', 'created', 'default_install', NOW(), 'Admin');
 
 INSERT INTO hardware_profiles VALUES (1, 'Unknown', 'Unknown', 'Unknown', 1, '#fff', NOW(), NOW(), 'Admin');

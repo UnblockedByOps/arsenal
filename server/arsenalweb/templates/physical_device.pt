@@ -72,6 +72,12 @@
                     <td>OOB Mac Address</td><td><span class="mono">${physical_device.oob_mac_address}</span></td>
                 </tr>
                 <tr>
+                    <td>Received Date</td><td><span class="mono">${physical_device.received_date}</span></td>
+                </tr>
+                <tr>
+                    <td>Inservice Date</td><td><span class="mono">${physical_device.inservice_date}</span></td>
+                </tr>
+                <tr>
                     <td>Physical Elevation</td><td><span class="mono"><a class="lower_pane" tal:attributes="href '/physical_elevations/{0}'.format(physical_device.physical_elevation.id)" tal:content="physical_device.physical_elevation.elevation">1</a></span></td>
                 </tr>
                 <tr>

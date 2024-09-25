@@ -38,9 +38,10 @@ validate_command () {
   results=$(eval "$CMD")
   ret_code=$?
   if [[ "$ret_code" == "$expected_ret" ]]; then 
-      echo -e "Expected return code received ($expected_ret). Command results:\n"
-      echo "$results"
+      echo -e "Expected return code received ($expected_ret).\n"
       if [ -n "$expected_text" ] ; then
+          echo -e "\nExpected text: $expected_text\n"
+          echo -e "Command results:\n $results"
           if [[ $results =~ "${expected_text}" ]] ; then
               echo -e "\nTEST $test_num RESULT: PASSED\n"
           else
@@ -49,9 +50,10 @@ validate_command () {
               overall_ret=1
           fi
       elif [ -n "$test_command" ] ; then
+          echo -e "Command results:\n $results"
           echo -e "\nExecuting test command: $test_command\n"
           cmd_result=$(eval "$test_command")
-          echo "Command result: $cmd_result"
+          echo "Test command result: $cmd_result"
           if [[ $cmd_result =~ "${command_result}" ]] ; then
               echo -e "\nTEST $test_num RESULT: PASSED\n"
           else
@@ -60,6 +62,7 @@ validate_command () {
               overall_ret=1
           fi
       else
+          echo -e "Command results:\n $results"
           echo -e "\nTEST $test_num RESULT: PASSED\n"
       fi
   else
@@ -336,6 +339,8 @@ validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --notes-url
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "notes_url: https://wiki.rubiconproject.com"
 validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --monitoring-contact 'my_pg_team'" 0
 validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "monitoring_contact: my_pg_team"
+validate_command "${rw_cmd} node_groups search name=TEST_NODE_GROUP1 --technical-contact 'my_dev_team'" 0
+validate_command "${search_cmd} node_groups search name=TEST_NODE_GROUP1 --fields all --exact" 0 "string" "technical_contact: my_dev_team"
 # Modify status attribute
 validate_command "${rw_cmd} statuses search name=hibernating --description 'Like a bear, it hibernates.'" 0
 validate_command "${search_cmd} statuses search name=hibernating --fields all --exact" 0 "string" "description: Like a bear, it hibernates."
@@ -348,6 +353,10 @@ validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_
 validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --status inservice" 0
 validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "status: inservice"
 validate_command "${search_cmd} physical_locations search name=TEST_LOCATION,admin_area=CA" 0
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --data-center test_data_center_1" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "data_center: test_data_center_1"
+validate_command "${rw_cmd} physical_locations search name=TEST_LOCATION_1 --data-center other_test_data_center_1" 0
+validate_command "${search_cmd} -b physical_locations search name=TEST_LOCATION_1 --fields all --exact" 0 "string" "data_center: other_test_data_center_1"
 validate_command "${rw_cmd} physical_locations delete --name TEST_LOCATION_2" 0
 #
 # physical_racks
@@ -378,6 +387,7 @@ validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R10
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 4" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 5" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 6" 0
+validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R100 -e 7" 0
 validate_command "${search_cmd} physical_racks search physical_location.name=TEST_LOCATION_1,name=R100 -f all" 0 "string" "name: TEST_LOCATION_1"
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 1" 0
 validate_command "${rw_cmd} physical_elevations create -l TEST_LOCATION_1 -r R200 -e 2" 0
@@ -388,9 +398,14 @@ validate_command "${search_cmd} physical_racks search physical_location.name=TES
 #
 # physical_devices
 #
-validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 10.199.1.1 -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
-validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 10.199.1.2 -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+validate_command "${rw_cmd} physical_devices create -s aabb1234500 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.1 -m 00:aa:11:bb:22:cc -m1 44:55:66:aa:bb:c0 -m2 44:55:66:aa:bb:c1 -R 2024-08-01" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 --fields all --exact" 0 "string" "mac_address_1: 44:55:66:aa:bb:c0"
+validate_command "${rw_cmd} physical_devices create -s aabb1234501 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 1 -i 10.99.1.2 -m 01:aa:11:bb:22:cc -m1 44:55:66:aa:bb:e0 -m2 44:55:66:aa:bb:e1 -R 2024-08-01" 1 "string" "Physical elevation is already occupied, move the existing physical_device first."
+# Make sure things are converted to the proper case
+validate_command "${rw_cmd} physical_devices create -s aabb1234502 -H 'HP ProLiant DL360 Gen9' -l TEST_LOCATION_1 -r R100 -e 7 -i 10.99.1.7 -m 07:AA:11:BB:22:CC -m1 77:55:66:AA:BB:C0 -m2 77:55:66:AA:BB:C1 -R 2024-08-01" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "oob_mac_address: 07:aa:11:bb:22:cc"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_1: 77:55:66:aa:bb:c0"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234502 --fields all --exact" 0 "string" "mac_address_2: 77:55:66:aa:bb:c1"
 # physical_device defaults to available
 validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
 # set physical_device to  allocated and ensure the status changes.
@@ -402,37 +417,63 @@ validate_command "${search_cmd} physical_devices search serial_number=Y00001 --f
 # Set the node to hibernating, which is not in the map, ensure the physical_device status remains unchanged
 validate_command "${rw_cmd} nodes search name=kvm0000.docker --status hibernating" 0
 validate_command "${search_cmd} physical_devices search serial_number=Y00001 --fields all --exact" 0 "string" "name: available"
-
+#
+# Boostrapping status changes
+#
+# Make sure a node going to bootstrapping sets the physical_device status to
+# bootstrapping and that the node going to bootstrapped sets the physical_device
+# as available.
+#
+validate_command "${rw_cmd} nodes search name=pd0000.test --status bootstrapping" 0
+validate_command "${search_cmd} nodes search name=pd0000.test --exact --fields status" 0 "string" "name: bootstrapping"
+validate_command "${search_cmd} physical_devices search serial_number=Y00002 -f status" 0 "string" "name: bootstrapping"
+validate_command "${rw_cmd} nodes search name=pd0000.test --status bootstrapped" 0
+validate_command "${search_cmd} nodes search name=pd0000.test --exact --fields status" 0 "string" "name: bootstrapped"
+validate_command "${search_cmd} physical_devices search serial_number=Y00002 -f status" 0 "string" "name: available"
+#
+# Make sure a physical_device that already has inservice_date set doesn't
+# change when the status goes from bootstrapping -> botstrapped a second time.
+#
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapping" 0
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --status bootstrapped" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f inservice_date" 0 "string" "inservice_date: 2024-08-02"
+#
 # physical_devices updates
-## elevation
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '5'"
-## rack
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: R100"
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "elevation: '6'"
-## oob-ip-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-ip-address 1.2.3.4" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
-## oob-mac-address
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
-## hardware-profile
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "name: HP ProLiant m710x Server Cartridge"
-## mac-address-1
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -m1 cq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "mac_address_1: cq:11:zz:22:xx:33"
-## mac-address-2
-validate_command "${rw_cmd} physical_devices search serial_number=aabb1234500 -m2 dq:11:zz:22:xx:33" 0
-validate_command "${search_cmd} physical_devices search serial_number=aabb1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
+# elevation
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 5" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '5'"
+# rack
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -l TEST_LOCATION_1 -r R100 -e 6" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: R100"
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "elevation: '6'"
+# oob-ip-address
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-ip-address 1.2.3.4" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_ip_address: 1.2.3.4"
+# oob-mac-address
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 --oob-mac-address qq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "oob_mac_address: qq:11:zz:22:xx:33"
+# hardware-profile
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -H 'HP ProLiant m710x Server Cartridge'" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "name: HP ProLiant m710x Server Cartridge"
+# mac-address-1
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m1 cq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_1: cq:11:zz:22:xx:33"
+# mac-address-2
+validate_command "${rw_cmd} physical_devices search serial_number=AABB1234500 -m2 dq:11:zz:22:xx:33" 0
+validate_command "${search_cmd} physical_devices search serial_number=AABB1234500 -f all" 0 "string" "mac_address_2: dq:11:zz:22:xx:33"
+# received-date
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --received-date 2024-08-02" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "received_date: 2024-08-02"
+# inservice-date
+validate_command "${rw_cmd} physical_devices search serial_number=Y00003 --inservice-date 2024-08-02" 0
+validate_command "${search_cmd} physical_devices search serial_number=Y00003 -f all" 0 "string" "inservice_date: 2024-08-02"
 #
 # Import tool
 #
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import.csv" 0
 validate_command "${search_cmd} physical_devices search serial_number=A0 -f all" 0 "command" "echo \"\$results\" | egrep -c 'name: TEST_LOCATION_1'" "3"
-# Make sure physical_device without a status specified is set to available
-validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: available"
+# Make sure physical_device without a status specified is set to racked
+validate_command "${search_cmd} physical_devices search serial_number=A00000002 -f status" 0 "string" "name: racked"
 # Make sure physical_device with a status specified has the correct status set
 validate_command "${search_cmd} physical_devices search serial_number=A00000003 -f status" 0 "string" "name: allocated"
 validate_command "${rw_cmd} physical_devices import -c conf/test_physical_device_import_mixed.csv" 1

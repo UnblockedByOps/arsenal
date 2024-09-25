@@ -85,6 +85,7 @@ def create_physical_device(dbsession,
                            physical_rack_id=None,
                            physical_elevation_id=None,
                            status_id=None,
+                           received_date=None,
                            updated_by=None,
                            **kwargs):
     '''Create a new physical_device.
@@ -102,26 +103,61 @@ def create_physical_device(dbsession,
         from the physical_elevations table.
     serial_number        : A string that is the serial_number of the physical_device.
     status_id            : An integer representing the status_id from the statuses table.
+    received_date        : A string representing when the physical_device was
+        first received in the following format: YYYY-MM-DD. Will be converted to a
+        datetime object.
     updated_by           : A string that is the user making the update.
 
     Optional kwargs:
 
-    mac_address_2: A string representing the MAC address of the second interface.
-    oob_ip_address: A string representing the out of band IP address.
+    mac_address_2  : A string representing the MAC address of the second interface.
+    oob_ip_address : A string representing the out of band IP address.
     oob_mac_address: A string representing the out of band MAC address.
+    inservice_date : A string representing when the physical_device was
+        first put into service in the following format: YYYY-MM-DD. Will be
+        converted to a datetime object.
     '''
 
     try:
-        LOG.info('Creating new physical_device serial_number: %s', serial_number)
+        my_serial_number = serial_number.upper()
+    except AttributeError:
+        LOG.debug("serial_number is None type.")
+        my_serial_number = serial_number
+
+    try:
+        LOG.info('Creating new physical_device serial_number: %s', my_serial_number)
 
         utcnow = datetime.utcnow()
 
-        physical_device = PhysicalDevice(serial_number=serial_number,
+        mac_address_1 = mac_address_1.lower()
+
+        try:
+            kwargs['mac_address_2'] = kwargs['mac_address_2'].lower()
+        except (AttributeError, KeyError):
+            pass
+
+        try:
+            kwargs['oob_mac_address'] = kwargs['oob_mac_address'].lower()
+        except (AttributeError, KeyError):
+            pass
+
+        received_date_noon = f"{received_date} 12:00:00"
+        received_datetime = datetime.strptime(received_date_noon, "%Y-%m-%d %H:%M:%S")
+
+        try:
+            if kwargs['inservice_date'] and kwargs['inservice_date'] != 'None':
+                inservice_date_noon = f"{kwargs['inservice_date']} 12:00:00"
+                kwargs['inservice_date'] = datetime.strptime(inservice_date_noon, "%Y-%m-%d %H:%M:%S")
+        except (AttributeError, KeyError):
+            pass
+
+        physical_device = PhysicalDevice(serial_number=my_serial_number,
                                          mac_address_1=mac_address_1,
                                          physical_location_id=physical_location_id,
                                          physical_rack_id=physical_rack_id,
                                          physical_elevation_id=physical_elevation_id,
                                          status_id=status_id,
+                                         received_date=received_datetime,
                                          updated_by=updated_by,
                                          created=utcnow,
                                          updated=utcnow,
@@ -148,7 +184,7 @@ def create_physical_device(dbsession,
         raise Exception(msg)
     except Exception as ex:
         msg = 'Error creating new physical_device serial_number: {0} exception: ' \
-              '{1}'.format(serial_number, ex)
+              '{1}'.format(my_serial_number, ex)
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -162,18 +198,24 @@ def update_physical_device(dbsession, physical_device, **kwargs):
 
     Optional kwargs:
 
-    hardware_profile_id: An integer representing the hardware_profile_id from
+    hardware_profile_id  : An integer representing the hardware_profile_id from
         the hardware_profiles table.
-    mac_address_1: A string representing the MAC address of the first interface.
-    mac_address_2: A string representing the MAC address of the second interface.
-    oob_ip_address: A string representing the out of band IP address.
-    oob_mac_address: A string representing the out of band MAC address.
+    mac_address_1        : A string representing the MAC address of the first interface.
+    mac_address_2        : A string representing the MAC address of the second interface.
+    oob_ip_address       : A string representing the out of band IP address.
+    oob_mac_address      : A string representing the out of band MAC address.
     physical_location_id : An integer representing the physical_location_id
         from the physical_locations table.
     physical_rack_id     : An integer representing the physical_rack_id
         from the physical_racks table.
     physical_elevation_id: An integer representing the physical_elevation_id
         from the physical_elevations table.
+    received_date        : A string representing when the physical_device was
+        first received in the following format: YYYY-MM-DD. Will be converted to a
+        datetime object.
+    inservice_date       : A string representing when the physical_device was
+        first put into service in the following format: YYYY-MM-DD. Will be converted to a
+        datetime object..
     status_id: An integer representing the status_id from the statuses table.
     '''
 
@@ -189,7 +231,48 @@ def update_physical_device(dbsession, physical_device, **kwargs):
                 LOG.debug('Skipping update to physical_device.serial_number')
                 continue
             old_value = getattr(physical_device, attribute)
-            new_value = my_attribs[attribute]
+
+            if attribute in ["mac_address_1", "mac_address_2", "oob_mac_address"]:
+                try:
+                    new_value = my_attribs[attribute].lower()
+                except (AttributeError, KeyError):
+                    new_value = my_attribs[attribute]
+            elif attribute in ['inservice_date', 'received_date']:
+                try:
+                    if len(my_attribs[attribute]) != 10:
+                        LOG.warning("%s value: %s is not in the correct YYYY-MM-DD format, skipping.", attribute, my_attribs[attribute])
+                        continue
+                except TypeError:
+                    LOG.warning("%s has no value, skipping.", attribute)
+                    continue
+                datetime_noon = f"{my_attribs[attribute]} 12:00:00"
+                new_value = datetime.strptime(datetime_noon, "%Y-%m-%d %H:%M:%S")
+            else:
+                new_value = my_attribs[attribute]
+
+            if attribute == "status_id":
+                LOG.debug("Checking to see if we need to set the inservice_date "
+                          "based on status change...")
+                available_status = find_status_by_name(dbsession, 'available')
+                LOG.debug("new_value: %s available_status.id: %s, physical_device.status_id: %s",
+                    new_value,
+                    available_status.id,
+                    physical_device.status_id)
+                if new_value == available_status.id and not physical_device.inservice_date:
+
+                    LOG.debug('Updating physical_device: %s attribute: '
+                              'inservice_date new_value: %s', physical_device.serial_number,
+                                                  utcnow)
+                    audit = PhysicalDeviceAudit(object_id=physical_device.id,
+                                                field='inservice_date',
+                                                old_value='None',
+                                                new_value=utcnow,
+                                                updated_by=my_attribs['updated_by'],
+                                                created=utcnow)
+                    dbsession.add(audit)
+                    setattr(physical_device, 'inservice_date', utcnow)
+                else:
+                    LOG.debug("Update not required.")
 
             if old_value != new_value and new_value:
                 if not old_value:
@@ -281,7 +364,7 @@ def convert_names_to_ids(dbsession, params):
                 status_name = params['status']
 
             if not status_name:
-                status_name = 'available'
+                status_name = 'racked'
 
             status = find_status_by_name(dbsession, status_name)
             params['status_id'] = status.id
@@ -335,9 +418,11 @@ def api_physical_devices_write(request):
             'physical_elevation',
             'physical_location',
             'physical_rack',
+            'received_date',
             'serial_number',
         ]
         opt_params = [
+            'inservice_date',
             'mac_address_2',
             'oob_ip_address',
             'oob_mac_address',
@@ -353,8 +438,14 @@ def api_physical_devices_write(request):
             return api_404(msg=msg)
 
         try:
+            my_serial_number = params['serial_number'].upper()
+        except AttributeError:
+            LOG.debug("serial_number is None type.")
+            my_serial_number = params['serial_number']
+
+        try:
             physical_device = find_physical_device_by_serial(request.dbsession,
-                                                             params['serial_number'])
+                                                             my_serial_number)
             physical_device = update_physical_device(request.dbsession, physical_device, **params)
         except NoResultFound:
             physical_device = create_physical_device(request.dbsession, **params)

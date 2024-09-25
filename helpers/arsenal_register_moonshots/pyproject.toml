@@ -1,0 +1,19 @@
+[project]
+name = "mgni-arsenal-register-moonshots"
+version = "1.1.0"
+dependencies = ["rp-retry==2.0", "requests==2.27.1", "setuptools>=69.1.1"]
+authors = [{name = "Magnite", email = "prodeng@magnite.com"}]
+requires-python = ">=3.8"
+maintainers = [{name = "Magnite", email = "prodeng@magnite.com"}]
+description = "arsenal-register-moonshots"
+keywords = ["arsenal-register-moonshots", "pyproject", "Arsenal", "moonshot"]
+
+[project.urls]
+Repository = "https://github.rp-core.com/Magnite/Arsenal/helpers/arsenal_register_moonshots"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+arsenal-register-moonshots = "arsenal_register_moonshots.arsenal_register_moonshots:main"

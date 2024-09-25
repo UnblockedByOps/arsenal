@@ -88,6 +88,7 @@ def jsonify(obj):
     '''Convert an object or dict to json.'''
 
     LOG.debug('jsonify()')
+    LOG.debug('jsonify() input: %s', obj)
     resp = {}
     try:
         convert = obj.__dict__
@@ -122,6 +123,7 @@ def jsonify(obj):
             resp[param] = date
         else:
             resp[param] = p_type
+    LOG.debug('jsonify() response: %s', resp)
 
     return resp
 
@@ -156,6 +158,7 @@ def get_name_id_dict(objs, default_keys=None, extra_keys=None):
                 item[key] = my_val
 
         resp = jsonify(item)
+    LOG.debug('get_name_id_dict() response: %s', resp)
 
     return resp
 
@@ -172,6 +175,7 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
         item = {}
         for key in default_keys:
             item[key] = getattr(obj, key)
+            LOG.debug("item[key] is: %s", item[key])
         if extra_keys:
             for key in extra_keys:
                 # Preserve integers in tag values.
@@ -184,6 +188,7 @@ def get_name_id_list(objs, default_keys=None, extra_keys=None):
                     item[key] = getattr(obj, key)
 
         resp.append(jsonify(item))
+    LOG.debug('get_name_id_list() response: %s', resp)
 
     return resp
 
@@ -261,6 +266,14 @@ tag_data_center_assignments = Table('tag_data_center_assignments',
                                     mysql_collate='utf8_bin'
                                    )
 
+Index(
+    'idx_uniq_tag_data_center_assignment',
+    tag_data_center_assignments.c.tag_id,
+    tag_data_center_assignments.c.data_center_id,
+    unique=True,
+    mysql_length=255
+)
+
 tag_node_assignments = Table('tag_node_assignments',
                              Base.metadata,
                              Column('tag_id',
@@ -272,6 +285,14 @@ tag_node_assignments = Table('tag_node_assignments',
                              mysql_charset='utf8',
                              mysql_collate='utf8_bin'
                             )
+
+Index(
+    'idx_uniq_tag_node_assignment',
+    tag_node_assignments.c.tag_id,
+    tag_node_assignments.c.node_id,
+    unique=True,
+    mysql_length=255
+)
 
 tag_node_group_assignments = Table('tag_node_group_assignments',
                                    Base.metadata,
@@ -285,6 +306,14 @@ tag_node_group_assignments = Table('tag_node_group_assignments',
                                    mysql_collate='utf8_bin'
                                   )
 
+Index(
+    'idx_uniq_tag_node_group_assignment',
+    tag_node_group_assignments.c.tag_id,
+    tag_node_group_assignments.c.node_group_id,
+    unique=True,
+    mysql_length=255
+)
+
 tag_physical_device_assignments = Table('tag_physical_device_assignments',
                                         Base.metadata,
                                         Column('tag_id',
@@ -297,6 +326,13 @@ tag_physical_device_assignments = Table('tag_physical_device_assignments',
                                         mysql_collate='utf8_bin'
                                        )
 
+Index(
+    'idx_uniq_tag_physical_device_assignment',
+    tag_physical_device_assignments.c.tag_id,
+    tag_physical_device_assignments.c.physical_device_id,
+    unique=True,
+    mysql_length=255
+)
 
 class User(Base):
     '''Arsenal User object.'''

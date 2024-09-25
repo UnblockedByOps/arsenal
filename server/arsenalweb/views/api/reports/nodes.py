@@ -33,6 +33,10 @@ from arsenalweb.models.operating_systems import (
 from arsenalweb.models.statuses import (
     Status,
 )
+from arsenalweb.models.data_centers import (
+    DataCenter,
+)
+import json
 
 LOG = logging.getLogger(__name__)
 
@@ -59,11 +63,21 @@ def api_reports_node_read(request):
     '''Process read requests for the /api/reports/node route.'''
 
     node_metrics = {}
+
     try:
         LOG.debug('Generating metrics...')
 
+
         statuses = request.dbsession.query(Status)
         statuses = statuses.all()
+        for status in statuses:
+            if status.name == 'inservice':
+                inservice_id = status.id
+        LOG.debug("inservice status id is: %s", inservice_id)
+
+        data_centers = request.dbsession.query(DataCenter)
+        data_centers = data_centers.filter(DataCenter.status_id == inservice_id)
+        data_centers = data_centers.all()
 
         hw_profiles = request.dbsession.query(HardwareProfile)
         hw_profiles = hw_profiles.all()
@@ -71,43 +85,74 @@ def api_reports_node_read(request):
         operating_systems = request.dbsession.query(OperatingSystem)
         operating_systems = operating_systems.all()
 
-        node_metrics['status'] = {}
-        for status in statuses:
+        node_metrics['all'] = {}
+        node_metrics['all']['count'] = 0
 
-            LOG.debug('Status id: %s', status.id)
+        for data_center in data_centers:
+            LOG.debug("Working on data_center: %s", data_center.name)
+            node_metrics[data_center.name] = {}
+            nodes = request.dbsession.query(Node)
+            nodes = nodes.filter(Node.data_center == data_center)
+            nodes_count = nodes.count()
+            node_metrics['all']['count'] += nodes_count
+            LOG.debug("data_center: all total nodes: %s", node_metrics['all']['count'])
+            node_metrics[data_center.name]['count'] = nodes_count
+            LOG.debug("data_center: %s total nodes: %s", data_center, nodes_count)
 
-            node = request.dbsession.query(Node)
-            node = node.filter(Node.status_id == status.id)
-            node_count = node.count()
-            node_metrics['status'][status.name] = node_count
+            for status in statuses:
+                LOG.debug("Working on status: %s", status.name)
+                nodes_by_status = nodes.filter(Node.status_id == status.id)
+                my_count = nodes_by_status.count()
+                if my_count != 0:
+                    node_metrics['all'].setdefault(status.name, {})
+                    try:
+                        node_metrics['all'][status.name]['count'] += my_count
+                    except KeyError:
+                        node_metrics['all'][status.name]['count'] = my_count
 
-        node_metrics['operating_system'] = {}
-        for operating_system in operating_systems:
+                    node_metrics[data_center.name].setdefault(status.name, {})
+                    node_metrics[data_center.name][status.name]['count'] = my_count
 
-            LOG.debug('Operating System id: %s', operating_system.id)
+                for hw_profile in hw_profiles:
+                    LOG.debug("Working on hardware_profile: %s", hw_profile.name)
+                    nodes_by_hw_profile = nodes.filter(Node.hardware_profile_id == hw_profile.id)
+                    nodes_by_hw_profile = nodes_by_hw_profile.filter(Node.status_id == status.id)
+                    my_hw_profile = sanitize_input(hw_profile.name)
+                    my_count = nodes_by_hw_profile.count()
+                    if my_count != 0:
+                        node_metrics['all'][status.name].setdefault('hardware_profile', {})
+                        node_metrics['all'][status.name]['hardware_profile'].setdefault(my_hw_profile, {})
+                        try:
+                            node_metrics['all'][status.name]['hardware_profile'][my_hw_profile]['count'] += my_count
+                        except KeyError:
+                            node_metrics['all'][status.name]['hardware_profile'][my_hw_profile]['count'] = my_count
 
-            node = request.dbsession.query(Node)
-            node = node.filter(Node.operating_system_id == operating_system.id)
-            node_count = node.count()
-            os_name = sanitize_input('{0} {1}'.format(operating_system.variant,
-                                                      operating_system.version_number))
-            node_metrics['operating_system'][os_name] = node_count
+                        node_metrics[data_center.name][status.name].setdefault('hardware_profile', {})
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile] = {}
+                        node_metrics[data_center.name][status.name]['hardware_profile'][my_hw_profile]['count'] = my_count
 
-        node_metrics['hardware_profile'] = {}
-        for hw_profile in hw_profiles:
+                for os in operating_systems:
+                    LOG.debug("Working on operating_system: %s", os.name)
+                    nodes_by_os = nodes.filter(Node.operating_system_id == os.id)
+                    nodes_by_os = nodes_by_os.filter(Node.status_id == status.id)
+                    my_os = sanitize_input(os.name)
+                    my_count = nodes_by_os.count()
+                    if my_count != 0:
+                        node_metrics['all'][status.name].setdefault('operating_system', {})
+                        node_metrics['all'][status.name]['operating_system'].setdefault(my_os, {})
+                        try:
+                            node_metrics['all'][status.name]['operating_system'][my_os]['count'] += my_count
+                        except KeyError:
+                            node_metrics['all'][status.name]['operating_system'][my_os]['count'] = my_count
 
-            LOG.debug('Hardware Profile id: %s', hw_profile.id)
-
-            node = request.dbsession.query(Node)
-            node = node.filter(Node.hardware_profile_id == hw_profile.id)
-            node_count = node.count()
-            hw_profile_name = sanitize_input('{0} {1}'.format(hw_profile.manufacturer,
-                                                              hw_profile.model))
-            node_metrics['hardware_profile'][hw_profile_name] = node_count
+                        node_metrics[data_center.name][status.name].setdefault('operating_system', {})
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os] = {}
+                        node_metrics[data_center.name][status.name]['operating_system'][my_os]['count'] = my_count
 
     except NoResultFound:
         LOG.error('This should never happen')
 
-    LOG.debug('Metrics: %s', node_metrics)
+    LOG.debug('Metrics:')
+    LOG.debug(json.dumps(node_metrics, sort_keys=True, indent=4))
 
     return api_200(results=node_metrics)

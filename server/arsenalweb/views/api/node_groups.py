@@ -57,16 +57,18 @@ def find_node_group_by_id(dbsession, node_group_id):
 
     return node_group.one()
 
-def create_node_group(dbsession, name, owner, description, notes_url, monitoring_contact, user):
+def create_node_group(dbsession, name, owner, description, notes_url, monitoring_contact, technical_contact, user):
     '''Create a new node_group.'''
 
     try:
         LOG.info('Creating new node_group name: %s owner: %s '
-                 'description: %s notes_url: %s monitoring_contact %s', name,
-                                                                        owner,
-                                                                        description,
-                                                                        notes_url,
-                                                                        monitoring_contact)
+                 'description: %s notes_url: %s monitoring_contact: %s '
+                 'technical_contact: %s', name,
+                                          owner,
+                                          description,
+                                          notes_url,
+                                          monitoring_contact,
+                                          technical_contact)
         utcnow = datetime.utcnow()
 
         node_group = NodeGroup(name=name,
@@ -74,6 +76,7 @@ def create_node_group(dbsession, name, owner, description, notes_url, monitoring
                                description=description,
                                notes_url=notes_url,
                                monitoring_contact=monitoring_contact,
+                               technical_contact=technical_contact,
                                updated_by=user,
                                created=utcnow,
                                updated=utcnow)
@@ -95,7 +98,7 @@ def create_node_group(dbsession, name, owner, description, notes_url, monitoring
     except Exception as ex:
         msg = f'Error creating new node_group name: {name} owner: {owner} ' \
                 'description: {description} notes_url: {notes_url} monitoring_contact: ' \
-                '{monitoring_contact} exception: {ex}'
+                '{monitoring_contact} technical_contact: {technical_contact} exception: {ex}'
 
         LOG.error(msg)
         return api_500(msg=msg)
@@ -183,6 +186,10 @@ def api_node_groups_write(request):
             monitoring_contact = payload['monitoring_contact'].rstrip()
         except:
             monitoring_contact = None
+        try:
+            technical_contact = payload['technical_contact'].rstrip()
+        except:
+            technical_contact = None
 
         LOG.debug('Searching for node_group name: %s', name)
 
@@ -199,6 +206,7 @@ def api_node_groups_write(request):
                     'description',
                     'notes_url',
                     'monitoring_contact',
+                    'technical_contact',
                 ]:
                     if getattr(node_group, attribute) != locals()[attribute]:
                         LOG.debug('Updating node group %s: %s', attribute, locals()[attribute])
@@ -218,6 +226,7 @@ def api_node_groups_write(request):
                 node_group.description = description
                 node_group.notes_url = notes_url
                 node_group.monitoring_contact = monitoring_contact
+                node_group.technical_contact = technical_contact
                 node_group.updated_by = user['name']
 
                 request.dbsession.flush()
@@ -225,7 +234,7 @@ def api_node_groups_write(request):
             except Exception as ex:
                 msg = f'Error updating node_group name: {name} owner: {owner} ' \
                        'description: {description} notes_url: {notes_url} monitoring_contact: ' \
-                       '{monitoring_contact} exception: {ex}'
+                       '{monitoring_contact} technical_contact: {technical_contact} exception: {ex}'
 
                 LOG.error(msg)
                 return api_500(msg=msg)
@@ -237,6 +246,7 @@ def api_node_groups_write(request):
                                            description,
                                            notes_url,
                                            monitoring_contact,
+                                           technical_contact,
                                            user['name'])
 
         return api_200(results=node_group)

@@ -167,6 +167,8 @@ def gen_help(help_type):
             'hardware_profile',
             'oob_ip_address',
             'oob_mac_address',
+            'inservice_date',
+            'received_date',
             'created',
             'updated',
             'updated_by',

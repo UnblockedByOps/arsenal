@@ -17,16 +17,23 @@ import logging
 from datetime import datetime
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import MultipleResultsFound
 from arsenalweb.views.api.common import (
     api_200,
     api_400,
+    api_404,
     api_500,
     api_501,
     collect_params,
+    enforce_api_change_limit,
     )
 from arsenalweb.models.data_centers import (
     DataCenter,
     DataCenterAudit,
+    )
+from arsenalweb.models.physical_locations import (
+    PhysicalLocation,
+    PhysicalLocationAudit,
     )
 from arsenalweb.models.statuses import (
     Status,
@@ -62,6 +69,15 @@ def find_data_center_by_id(dbsession, data_center_id):
     data_center = data_center.filter(DataCenter.id == data_center_id)
 
     return data_center.one()
+
+def find_physical_location_by_id(dbsession, physical_location_id):
+    '''Find a physical_location by id.'''
+
+    LOG.debug('Searching for physical_location by id: %s', physical_location_id)
+    physical_location = dbsession.query(PhysicalLocation)
+    physical_location = physical_location.filter(PhysicalLocation.id == physical_location_id)
+
+    return physical_location.one()
 
 def create_data_center(dbsession, name=None, updated_by=None, **kwargs):
     '''Create a new data_center.
@@ -115,8 +131,7 @@ def create_data_center(dbsession, name=None, updated_by=None, **kwargs):
         return api_200(results=data_center)
 
     except Exception as ex:
-        msg = 'Error creating new data_center name: {0} exception: {1}'.format(name,
-                                                                               ex)
+        msg = f"Error creating new data_center name: {name} exception: {ex}"
         LOG.error(msg)
         return api_500(msg=msg)
 
@@ -171,12 +186,78 @@ def update_data_center(dbsession, data_center, **kwargs):
         return api_200(results=data_center)
 
     except Exception as ex:
-        msg = 'Error updating data_center name: {0} updated_by: {1} exception: ' \
-              '{2}'.format(data_center.name,
-                           my_attribs['updated_by'],
-                           repr(ex))
+        msg = f"Error updating data_center name: {data_center.name} updated_by: " \
+              "{my_attribs['updated_by']} exception: {ex}"
         LOG.error(msg)
         raise
+
+def assign_data_center(dbsession, data_center, actionables, resource, user):
+    '''Assign actionable_ids to a data_center.'''
+
+    LOG.debug('START assign_data_center()')
+    resp = {data_center.name: []}
+    try:
+
+        utcnow = datetime.utcnow()
+
+        with dbsession.no_autoflush:
+            for actionable_id in actionables:
+
+                if resource == 'physical_locations':
+                    my_obj = find_physical_location_by_id(dbsession, actionable_id)
+                LOG.info('BLUBB 1')
+
+                resp[data_center.name].append(my_obj.name)
+
+                orig_data_center_id = my_obj.data_center_id
+                if orig_data_center_id:
+                    orig_data_center = find_data_center_by_id(dbsession, my_obj.data_center_id)
+                    orig_data_center_name = orig_data_center.name
+                else:
+                    orig_data_center_name = 'None'
+
+                LOG.debug('START assign_data_center() update data_center_id')
+                my_obj.data_center_id = data_center.id
+                LOG.debug('END assign_data_center() update data_center_id')
+
+                if orig_data_center_id != data_center.id:
+                    LOG.debug('START assign_data_center() create audit')
+
+                    my_obj.updated = utcnow
+                    my_obj.updated_by = user
+
+                    if resource == 'physical_locations':
+
+                        pd_audit = PhysicalLocationAudit(object_id=my_obj.id,
+                                                         field='data_center',
+                                                         old_value=orig_data_center_name,
+                                                         new_value=data_center.name,
+                                                         updated_by=user,
+                                                         created=utcnow)
+                        dbsession.add(pd_audit)
+
+                    LOG.debug('END assign_data_center() create audit')
+
+            LOG.debug('START assign_data_center() session add')
+            dbsession.add(my_obj)
+            LOG.debug('END assign_data_center() session add')
+            LOG.debug('START assign_data_center() session flush')
+            dbsession.flush()
+            LOG.debug('END assign_data_center() session flush')
+
+    except (NoResultFound, AttributeError):
+        return api_404(msg='data_center not found')
+
+    except MultipleResultsFound:
+        msg = f"Bad request: id is not unique: {actionable_id}"
+        return api_400(msg=msg)
+    except Exception as ex:
+        msg = f"Error updating data_center: exception={ex}"
+        LOG.error(msg)
+        return api_500(msg=msg)
+
+    LOG.debug('RETURN assign_data_center()')
+    return api_200(results=resp)
 
 # Routes
 @view_config(route_name='api_data_centers', request_method='GET', request_param='schema=true', renderer='json')
@@ -219,31 +300,50 @@ def api_data_centers_write(request):
 def api_data_center_write_attrib(request):
     '''Process write requests for the /api/data_centers/{id}/{resource} route.'''
 
-    resource = request.matchdict['resource']
-    payload = request.json_body
+    LOG.debug('START api_data_center_write_attrib()')
+    try:
+        resource = request.matchdict['resource']
+        payload = request.json_body
+        user = request.identity
 
-    LOG.debug('Updating %s', request.url)
+        LOG.debug('Updating %s', request.url)
 
-    # First get the data_center, then figure out what to do to it.
-    data_center = find_data_center_by_id(request, request.matchdict['id'])
-    LOG.debug('data_center is: %s', data_center)
+        # First get the data_center, then figure out what to do to it.
+        data_center = find_data_center_by_id(request.dbsession, request.matchdict['id'])
+        LOG.debug('data_center is: %s', data_center)
 
-    # List of resources allowed
-    resources = [
-        'nothing_yet',
-    ]
+        # List of resources allowed
+        resources = [
+            'physical_locations',
+        ]
 
-    # There's nothing to do here yet. Maye add updates to existing datacenters?
-    if resource in resources:
-        try:
-            actionable = payload[resource]
-        except KeyError:
-            msg = 'Missing required parameter: {0}'.format(resource)
-            return api_400(msg=msg)
-        except Exception as ex:
-            LOG.error('Error updating data_centers: %s exception: %s', request.url, ex)
-            return api_500(msg=str(ex))
-    else:
-        return api_501()
+        if resource in resources:
+            try:
+                actionable = payload[resource]
 
-    return []
+                item_count = len(actionable)
+                denied = enforce_api_change_limit(request, item_count)
+                if denied:
+                    return api_400(msg=denied)
+
+                resp = assign_data_center(request.dbsession,
+                                          data_center,
+                                          actionable,
+                                          resource,
+                                          user['name'])
+            except KeyError:
+                msg = 'Missing required parameter: {0}'.format(resource)
+                return api_400(msg=msg)
+            except Exception as ex:
+                msg = 'Error updating data_center: {0} exception: {1}'.format(request.url, ex)
+                LOG.error(msg)
+                return api_500(msg=msg)
+        else:
+            return api_501()
+
+        LOG.debug('RETURN api_data_center_write_attrib()')
+        return resp
+    except Exception as ex:
+        msg = 'Error updating data_center: {0},exception: {1}'.format(request.url, ex)
+        LOG.error(msg)
+        return api_500(msg=msg)

@@ -1,0 +1,19 @@
+[project]
+name = "mgni-arsenal-dashboard-metrics"
+version = "1.2.2"
+dependencies = ["requests==2.27.1", "setuptools>=69.1.1"]
+authors = [{name = "Magnite", email = "prodeng@magnite.com"}]
+requires-python = ">=3.8"
+maintainers = [{name = "Magnite", email = "prodeng@magnite.com"}]
+description = "arsenal-dashboard-metrics"
+keywords = ["arsenal-dashboard-metrics", "pyproject", "Arsenal"]
+
+[project.urls]
+Repository = "https://github.rp-core.com/Magnite/Arsenal/helpers/arsenal_dashboard_metrics"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+arsenal-dashboard-metrics = "arsenal_dashboard_metrics.arsenal_dashboard_metrics:main"

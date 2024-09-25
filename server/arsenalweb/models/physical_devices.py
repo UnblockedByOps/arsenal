@@ -83,6 +83,8 @@ class PhysicalDevice(Base):
                                     lazy='joined')
     oob_ip_address = Column(VARCHAR(255), nullable=True)
     oob_mac_address = Column(VARCHAR(255), nullable=True)
+    received_date = Column(TIMESTAMP, nullable=True)
+    inservice_date = Column(TIMESTAMP, nullable=True)
     tags = relationship('Tag',
                         secondary='tag_physical_device_assignments',
                         backref='physical_devices',
@@ -118,6 +120,8 @@ class PhysicalDevice(Base):
                     node=get_name_id_dict(self.nodes),
                     oob_ip_address=self.oob_ip_address,
                     oob_mac_address=self.oob_mac_address,
+                    received_date=self.received_date,
+                    inservice_date=self.inservice_date,
                     serial_number=check_null_string(self.serial_number),
                     tags=get_name_id_list(self.tags, extra_keys=['value']),
                     created=self.created,

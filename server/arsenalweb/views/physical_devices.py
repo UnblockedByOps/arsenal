@@ -84,6 +84,8 @@ def view_physical_devices(request):
         {'name': 'mac_address_2', 'pretty_name': 'Mac Address 2'},
         {'name': 'oob_ip_address', 'pretty_name': 'OOB IP Address'},
         {'name': 'oob_mac_address', 'pretty_name': 'OOB Mac Address'},
+        {'name': 'received_date', 'pretty_name': 'Received Date'},
+        {'name': 'inservice_date', 'pretty_name': 'Inservice Date'},
         {'name': 'physical_location', 'pretty_name': 'Physical Location'},
         {'name': 'physical_elevation', 'pretty_name': 'Physical Elevation'},
         {'name': 'physical_rack', 'pretty_name': 'Physical Rack'},

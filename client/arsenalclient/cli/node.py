@@ -57,9 +57,10 @@ def enc(args, client):
     are no classes returned for a node, attempt to assign the class.'''
 
     apply_statuses = [
-        'setup',
+        'bootstrapping',
         'inservice',
         'pending_maintenance',
+        'setup',
     ]
 
     LOG.debug('Triggering node enc.')
@@ -86,6 +87,10 @@ def enc(args, client):
             print('- {0}'.format(my_class))
     else:
         print('classes: null')
+
+    result['parameters']['arsenal_status'] = result['status']['name']
+    if args.inspect:
+        result['param_sources']['arsenal_status'] = 'builtin'
 
     print('parameters:')
     for param in sorted(result['parameters']):
