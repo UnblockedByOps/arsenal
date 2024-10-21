@@ -42,7 +42,7 @@ requires = [
     'idna==2.10',
     'importlib-metadata==4.0.1',
     'iniconfig==1.1.1',
-    'mysqlclient==2.0.3',
+    'mysqlclient==2.2.4',
     'packaging==20.9',
     'pam==0.2.0',
     'passlib==1.7.4',
