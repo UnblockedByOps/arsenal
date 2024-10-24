@@ -89,7 +89,7 @@ tests_require = [
 
 setup(
     name='arsenalweb',
-    version='12.6.1',
+    version='12.7.0',
     description='Arsenal web api/ui',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
