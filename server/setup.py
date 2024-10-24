@@ -42,7 +42,7 @@ requires = [
     'idna==2.10',
     'importlib-metadata==4.0.1',
     'iniconfig==1.1.1',
-    'mysqlclient==2.0.3',
+    'mysqlclient==2.2.4',
     'packaging==20.9',
     'pam==0.2.0',
     'passlib==1.7.4',
@@ -89,7 +89,7 @@ tests_require = [
 
 setup(
     name='arsenalweb',
-    version='12.6.1',
+    version='12.7.0',
     description='Arsenal web api/ui',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
