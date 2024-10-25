@@ -64,17 +64,17 @@ docker build --build-arg ARSENAL_VERSION=12.7.0 -t arsenal_server .
 ```
 docker run -d --network host \
   --name arsenal_server \
-  -v server/conf/docker/arsenal-web.ini:/app/arsenal_web/conf/arsenal-web.ini:ro \
-  -v server/conf/docker/arsenal.wsgi:/app/arsenal_web/conf/arsenal.wsgi:ro \
-  -v server/conf/docker/arsenal_secrets.ini:/app/arsenal_web/sconf/arsenal_secrets.ini:ro \
-  -v server/conf/docker/arsenal-wsgi.conf:/etc/httpd/conf.d/arsenal-wsgi.conf:ro \
+  -v server/conf/arsenal-web-prod.ini:/app/arsenal_web/conf/arsenal-web.ini:ro \
+  -v server/conf/arsenal.wsgi:/app/arsenal_web/conf/arsenal.wsgi:ro \
+  -v server/conf/arsenal_secrets.ini:/app/arsenal_web/sconf/arsenal_secrets.ini:ro \
+  -v server/conf/arsenal-wsgi.conf:/etc/httpd/conf.d/arsenal-wsgi.conf:ro \
   -v /path/to/ssl/server.crt:/etc/pki/tls/certs/server.crt:ro \
   -v /path/to/ssl/server.key:/etc/pki/tls/private/server.key:ro \
   -v /app/arsenal_web/hc:/app/arsenal_web/hc:ro \
   arsenal_server
 ```
 
-- All the configuration files needed to run the container are located in `server/conf/docker`. The main server configuration file is `server/conf/docker/arsenal-web.ini`, adjust it to taste.
+- All the configuration files needed to run the container are located in `server/conf`. The main server configuration file is `server/conf/arsenal-web-prod.ini`, adjust it to taste.
 - The `/app/arsenal_web/hc` mount is only needed if you intend to utilize the `/heathcheck` endpoint for a load balancer. See `arsenal-web.ini` for details.
 - The `arsenal_secrets.ini` file must be kept in a separate dir from `arsenal.wsgi` as the dir that `arsenal.wsgi` lives in must be exposed to apache in order for the app to run.
 
