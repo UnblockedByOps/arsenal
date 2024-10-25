@@ -42,6 +42,42 @@ git co main
 python setup.py bdist_wheel
 ```
 
+Docker
+------
+
+### Prerequisites
+- Docker engine
+- In order to build the docker container, you will need to build the version of Arsenal you wish to run per the above build instructions.
+- In order to run the container, you will need a database as described in the section below under `Install Mysql DB` and an SSL certificate.
+
+### Build the container
+
+To build the container, just cd into the server directory and run the build command with the version of Arsenal you wish to run:
+
+```
+cd server
+docker build --build-arg ARSENAL_VERSION=12.7.0 -t arsenal_server .
+```
+
+### Run the container
+
+```
+docker run -d --network host \
+  --name arsenal_server \
+  -v server/conf/docker/arsenal-web.ini:/app/arsenal_web/conf/arsenal-web.ini:ro \
+  -v server/conf/docker/arsenal.wsgi:/app/arsenal_web/conf/arsenal.wsgi:ro \
+  -v server/conf/docker/arsenal_secrets.ini:/app/arsenal_web/sconf/arsenal_secrets.ini:ro \
+  -v server/conf/docker/arsenal-wsgi.conf:/etc/httpd/conf.d/arsenal-wsgi.conf:ro \
+  -v /path/to/ssl/server.crt:/etc/pki/tls/certs/server.crt:ro \
+  -v /path/to/ssl/server.key:/etc/pki/tls/private/server.key:ro \
+  -v /app/arsenal_web/hc:/app/arsenal_web/hc:ro \
+  arsenal_server
+```
+
+- All the configuration files needed to run the container are located in `server/conf/docker`. The main server configuration file is `server/conf/docker/arsenal-web.ini`, adjust it to taste.
+- The `/app/arsenal_web/hc` mount is only needed if you intend to utilize the `/heathcheck` endpoint for a load balancer. See `arsenal-web.ini` for details.
+- The `arsenal_secrets.ini` file must be kept in a separate dir from `arsenal.wsgi` as the dir that `arsenal.wsgi` lives in must be exposed to apache in order for the app to run.
+
 Development
 ------
 
