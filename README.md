@@ -14,10 +14,33 @@ Arsenal is an operations database for tracking the lifecycle of physical and vir
 
 All with audit tracking to see what changed when, and by whom.
 
-Installation
+Build
 ------
 
-TBD. Need to get control of the python package on pypi.
+To build the client or server, you need a python 3.9 virtual environment as follows:
+
+```
+python3.9 -m venv ~/venvs/build_arsenal
+. ~/venvs/build_arsenal/bin/activate
+pip install --upgrade pip
+pip install setuptools wheel
+cd ~/git/arsenal/{client|server}
+```
+
+If you want to build a development build, do so by first running:
+
+```
+python setup.py setopt -c egg_info -o tag_build -s ".devX"
+```
+
+Where X is the development version number you wish to build (i.e. 1). Subsequent dev builds should increment by 1.
+
+To build the latest version:
+
+```
+git co main
+python setup.py bdist_wheel
+```
 
 Development
 ------
@@ -47,6 +70,18 @@ Import the schema and data.
 ```bash
 mysql -u root -p < ~/git/arsenal/server/arsenalweb/db/arsenal-schema.sql
 mysql -u root -p < ~/git/arsenal/server/arsenalweb/db/arsenal-data.sql
+```
+
+You will need additional packages in order to build mysqlclient. On a mac:
+
+```
+brew install mysql-client pkg-config
+```
+
+On Rocky Linux:
+
+```
+dnf install -y pkg-config mariadb-devel --enablerepo=devel
 ```
 
 ### Install the webapp
