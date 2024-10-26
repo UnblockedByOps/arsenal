@@ -11,3 +11,8 @@ Thumbs.db
 *.pyc
 *.swp
 *.egg-info
+# Build dirs
+client/build
+client/dist
+server/build
+server/dist
