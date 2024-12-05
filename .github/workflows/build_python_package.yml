@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  release-build:
+  build-pip-package:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Build release distributions
+      - name: Build pip package
         run: |
           # NOTE: put your own distribution build steps here.
           python -m pip install --upgrade pip
@@ -30,4 +30,4 @@ jobs:
           path: dist/
 
       - name: list files
-        run: ls -la
+        run: ls -la /dist
