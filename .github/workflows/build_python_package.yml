@@ -30,4 +30,4 @@ jobs:
           path: dist/
 
       - name: list files
-        run: ls -la /dist
+        run: ls -la dist
